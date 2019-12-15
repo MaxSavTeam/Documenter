@@ -2,32 +2,25 @@ package com.maxsavitsky.documenter;
 
 import android.content.Intent;
 import android.os.Bundle;
-
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
-import com.maxsavitsky.documenter.datatypes.Category;
-import com.maxsavitsky.documenter.datatypes.Document;
-import com.maxsavitsky.documenter.xml.XMLParser;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import android.os.Environment;
-import android.provider.DocumentsContract;
-import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.widget.Toast;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.maxsavitsky.documenter.datatypes.Category;
+import com.maxsavitsky.documenter.datatypes.Document;
+import com.maxsavitsky.documenter.datatypes.MainData;
+import com.maxsavitsky.documenter.utils.Utils;
+import com.maxsavitsky.documenter.xml.XMLParser;
 
 import org.xml.sax.SAXException;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 public class MainActivity extends AppCompatActivity {
 	XMLParser mXMLParser = new XMLParser();
@@ -38,7 +31,6 @@ public class MainActivity extends AppCompatActivity {
 		setContentView(R.layout.activity_main);
 		Toolbar toolbar = findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
-		Toast.makeText(this, getApplication().getExternalFilesDir(null).getPath(), Toast.LENGTH_SHORT).show();
 		FloatingActionButton fab = findViewById(R.id.fab);
 		fab.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -46,12 +38,29 @@ public class MainActivity extends AppCompatActivity {
 
 			}
 		});
+
+		Utils.setContext(getApplicationContext());
+
+		ArrayList<Document> documents = new ArrayList<>();
+		try{
+			documents = mXMLParser.parseDocuments();
+			MainData.setDocumentsList(documents);
+		}catch (Exception e){
+			Toast.makeText(this, e.toString(), Toast.LENGTH_LONG).show();
+		}
+
+		try {
+			MainData.readAllCategories();
+		} catch (IOException | SAXException e) {
+			e.printStackTrace();
+			Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show();
+		}
 	}
 
 	public void getCategories(View v){
 		ArrayList<Category> categories = new ArrayList<>();
 		try {
-			categories = mXMLParser.parseCategories(MainActivity.this);
+			categories = mXMLParser.parseCategories();
 		} catch (Exception e){
 			Toast.makeText(MainActivity.this, e.toString(), Toast.LENGTH_LONG).show();
 		}
@@ -65,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
 	public void getDocuments(View v){
 		ArrayList<Document> documents = new ArrayList<>();
 		try{
-			documents = mXMLParser.parseDocuments(this);
+			documents = mXMLParser.parseDocuments();
 		}catch (Exception e){
 			Toast.makeText(this, e.toString(), Toast.LENGTH_LONG).show();
 		}
@@ -74,6 +83,11 @@ public class MainActivity extends AppCompatActivity {
 			msg = String.format("%sid=%s name=%s\n", msg, documents.get(i).getId(), documents.get(i).getName());
 		}
 		Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+	}
+
+	public void viewCategoryList(View v){
+		Intent intent = new Intent(this, CategoryList.class);
+		startActivity(intent);
 	}
 
 

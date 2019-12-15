@@ -1,5 +1,12 @@
 package com.maxsavitsky.documenter.datatypes;
 
+import com.maxsavitsky.documenter.utils.Utils;
+import com.maxsavitsky.documenter.xml.XMLParser;
+
+import org.xml.sax.SAXException;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class MainData {
@@ -30,5 +37,24 @@ public class MainData {
 			}
 		}
 		return null;
+	}
+
+	public static Document getDocumentWithId(String id){
+		for(int i = 0; i < sDocumentsList.size(); i++){
+			if(sDocumentsList.get(i).getId().equals(id)){
+				return sDocumentsList.get(i);
+			}
+		}
+		return  null;
+	}
+
+	public static void readAllCategories() throws IOException, SAXException {
+		XMLParser xmlParser = new XMLParser();
+		setCategoriesList(xmlParser.parseCategories());
+	}
+
+	public static void readAllDocuments() throws IOException, SAXException {
+		XMLParser xmlParser = new XMLParser();
+		setDocumentsList(xmlParser.parseDocuments());
 	}
 }

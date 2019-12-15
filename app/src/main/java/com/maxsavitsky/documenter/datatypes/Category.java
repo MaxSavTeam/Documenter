@@ -1,5 +1,7 @@
 package com.maxsavitsky.documenter.datatypes;
 
+import androidx.annotation.NonNull;
+
 import java.util.ArrayList;
 
 public class Category {
@@ -45,5 +47,11 @@ public class Category {
 
 	public String getName() {
 		return mName;
+	}
+
+	@NonNull
+	@Override
+	public String toString() {
+		return "id=\"" + getId() + "\" name=\"" + getName() + "\"";
 	}
 }

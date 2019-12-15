@@ -5,12 +5,14 @@ import android.content.Context;
 import com.maxsavitsky.documenter.datatypes.Category;
 import com.maxsavitsky.documenter.datatypes.Document;
 import com.maxsavitsky.documenter.datatypes.MainData;
+import com.maxsavitsky.documenter.utils.Utils;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -31,20 +33,34 @@ public class XMLParser {
 		}
 	}
 
-	public ArrayList<Category> parseCategories(Context context) throws SAXException, IOException {
+	public ArrayList<Category> parseCategories() throws SAXException, IOException {
 		mCategories.clear();
-		mSAXParser.parse(new File(context.getApplicationContext().getExternalFilesDir(null).getPath() + "/categories.xml"), new XMLCategoriesHandler());
-		MainData.setCategoriesList(mCategories);
-
+		File path = new File(Utils.getContext().getExternalFilesDir(null).getPath() + "/categories.xml");
+		if(!path.exists()){
+			path.createNewFile();
+		}else {
+			mSAXParser.parse(path, new XMLCategoriesHandler());
+		}
 		return mCategories;
 	}
 
-	public ArrayList<Document> parseDocuments(Context context) throws IOException, SAXException {
+	public ArrayList<Document> parseDocuments() throws IOException, SAXException {
 		mDocuments.clear();
-		File path = new File(context.getApplicationContext().getExternalFilesDir(null).getPath() + "/documents.xml");
-		mSAXParser.parse(path, new XMLDocumentsHandler());
-		MainData.setDocumentsList(mDocuments);
-
+		File path = new File(Utils.getContext().getExternalFilesDir(null).getPath() + "/documents.xml");
+		if(!path.exists()){
+			path.createNewFile();
+			try{
+				FileWriter fr = new FileWriter(path, false);
+				fr.write(Utils.xmlHeader);
+				fr.append("<documents>\n</documents>");
+				fr.flush();
+				fr.close();
+			}catch (Exception e){
+				e.printStackTrace();
+			}
+		}else {
+			mSAXParser.parse(path, new XMLDocumentsHandler());
+		}
 		return mDocuments;
 	}
 

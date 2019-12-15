@@ -16,3 +16,5 @@
 # Project exclude paths
 /app/build/
 /app/build/intermediates/javac/debug/classes/
+/app/src/androidTest/
+/app/src/test/

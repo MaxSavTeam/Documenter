@@ -28,6 +28,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
+        android:backgroundTint="#000000"
         app:srcCompat="@drawable/ic_plus_sign_in_circle" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
