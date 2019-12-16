@@ -1,23 +1,8 @@
 package com.maxsavitsky.documenter;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
-
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
-import com.maxsavitsky.documenter.adapters.CategoryListAdapter;
-import com.maxsavitsky.documenter.datatypes.Category;
-import com.maxsavitsky.documenter.datatypes.Document;
-import com.maxsavitsky.documenter.datatypes.MainData;
-import com.maxsavitsky.documenter.utils.Utils;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,6 +11,19 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.maxsavitsky.documenter.datatypes.Category;
+import com.maxsavitsky.documenter.datatypes.Document;
+import com.maxsavitsky.documenter.datatypes.MainData;
+import com.maxsavitsky.documenter.utils.Utils;
 
 import java.util.ArrayList;
 
@@ -83,7 +81,7 @@ public class CreateCategory extends AppCompatActivity {
 				pd.setMessage("We are saving new category");
 				pd.show();
 
-				String uid = Utils.generateUniqueId();
+				String uid = Utils.generateUniqueId() + "_cat";
 				ArrayList<Category> categories = MainData.getCategoriesList();
 				categories.add(new Category(uid, name));
 
@@ -93,7 +91,7 @@ public class CreateCategory extends AppCompatActivity {
 
 				pd.dismiss();
 
-				Toast.makeText(CreateCategory.this, "Saved", Toast.LENGTH_SHORT).show();
+				Toast.makeText(CreateCategory.this, Integer.toString(categories.size()) + " " + Integer.toString(MainData.getCategoriesList().size()), Toast.LENGTH_SHORT).show();
 				finish();
 			}else{
 				editText.requestFocus();

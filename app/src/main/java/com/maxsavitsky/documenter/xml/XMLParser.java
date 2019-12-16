@@ -64,6 +64,31 @@ public class XMLParser {
 		return mDocuments;
 	}
 
+	public ArrayList<Category> parseCategoriesInWhichIncludedDocumentWithId(String id) throws IOException, SAXException {
+		File path = new File(Utils.getExternalStoragePath().getPath() + "/documents/" + id + "/included_in.xml");
+		XMLCategoriesWithDocumentHandler handler = new XMLCategoriesWithDocumentHandler();
+		mSAXParser.parse(path, handler);
+
+		return handler.getCategories();
+	}
+
+	class XMLCategoriesWithDocumentHandler extends DefaultHandler{
+		private ArrayList<Category> mCategoriesThis;
+
+		ArrayList<Category> getCategories() {
+			return mCategories;
+		}
+
+		@Override
+		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+			if(qName.equals("category")){
+				String id = attributes.getValue("id");
+				String name = attributes.getValue("name");
+				this.mCategoriesThis.add(new Category(id, name));
+			}
+		}
+	}
+
 	class XMLCategoriesHandler extends DefaultHandler {
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {

@@ -11,4 +11,6 @@
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="title_activity_create_category">Create Category</string>
     <string name="title_activity_category_list">CategoryList</string>
+    <string name="title_activity_create_documents">CreateDocuments</string>
+    <string name="title_activity_document_list">DocumentList</string>
 </resources>

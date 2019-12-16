@@ -10,7 +10,7 @@ public class Category {
 
 	private ArrayList<Document> mDocuments = new ArrayList<>();
 
-	public ArrayList<Document> getDocuments() {
+	ArrayList<Document> getDocuments() {
 		return mDocuments;
 	}
 

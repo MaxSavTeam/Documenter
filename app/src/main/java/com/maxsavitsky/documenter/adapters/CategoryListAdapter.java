@@ -17,13 +17,13 @@ import java.util.ArrayList;
 
 public class CategoryListAdapter extends RecyclerView.Adapter<CategoryListAdapter.ViewHolder> {
 	private ArrayList<Category> mData;
-	private Context mContext;
 	private LayoutInflater mLayoutInflater;
+	private View.OnClickListener mOnClickListener;
 
-	public CategoryListAdapter(Context context, ArrayList<Category> data){
-		this.mContext = context;
+	public CategoryListAdapter(Context context, ArrayList<Category> data, View.OnClickListener onClickListener){
 		this.mData = data;
 		this.mLayoutInflater = LayoutInflater.from(context);
+		mOnClickListener = onClickListener;
 	}
 
 	@NonNull
@@ -44,19 +44,14 @@ public class CategoryListAdapter extends RecyclerView.Adapter<CategoryListAdapte
 		return mData.size();
 	}
 
-	public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+	class ViewHolder extends RecyclerView.ViewHolder{
 		TextView name, id;
 
 		ViewHolder(@NonNull View itemView) {
 			super(itemView);
 			name = itemView.findViewById(R.id.lblCategoryName);
 			id = itemView.findViewById(R.id.lblHiddenCategoryId);
-			itemView.setOnClickListener(this);
-		}
-
-		@Override
-		public void onClick(View v) {
-
+			itemView.setOnClickListener(mOnClickListener);
 		}
 	}
 }

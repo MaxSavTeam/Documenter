@@ -16,6 +16,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class Utils {
 	@SuppressLint("StaticFieldLeak")
 	private static Context sContext;
+	private static File externalStoragePath;
 
 	public static String xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 
@@ -25,6 +26,11 @@ public class Utils {
 
 	public static void setContext(Context context) {
 		sContext = context;
+		externalStoragePath = context.getExternalFilesDir(null);
+	}
+
+	public static File getExternalStoragePath() {
+		return externalStoragePath;
 	}
 
 	public static void saveCategoriesList(ArrayList<Category> categories){
@@ -37,6 +43,23 @@ public class Utils {
 				fr.append("<category " + categories.get(i).toString() +"/>\n");
 			}
 			fr.append("</categories>");
+			fr.flush();
+			fr.close();
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+	}
+
+	public static void saveDocumentsList(ArrayList<Document> documents){
+		try{
+			File file = new File(getContext().getExternalFilesDir(null).getPath() + "/documents.xml");
+			FileWriter fr = new FileWriter(file, false);
+			fr.write(xmlHeader);
+			fr.append("<documents>\n");
+			for(int i = 0; i < documents.size(); i++){
+				fr.append("<document " + documents.get(i).toString() + " />");
+			}
+			fr.append("</documents");
 			fr.flush();
 			fr.close();
 		}catch (Exception e){

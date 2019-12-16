@@ -2,14 +2,10 @@ package com.maxsavitsky.documenter;
 
 import android.content.Intent;
 import android.os.Bundle;
-
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
-import com.maxsavitsky.documenter.adapters.CategoryListAdapter;
-import com.maxsavitsky.documenter.datatypes.Category;
-import com.maxsavitsky.documenter.datatypes.MainData;
-import com.maxsavitsky.documenter.xml.ParseSeparateCategory;
-import com.maxsavitsky.documenter.xml.XMLParser;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -18,11 +14,11 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.Toast;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.maxsavitsky.documenter.adapters.CategoryListAdapter;
+import com.maxsavitsky.documenter.datatypes.Category;
+import com.maxsavitsky.documenter.datatypes.MainData;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class CategoryList extends AppCompatActivity {
@@ -59,10 +55,31 @@ public class CategoryList extends AppCompatActivity {
 		LinearLayoutManager lay = new LinearLayoutManager(this);
 		lay.setOrientation(RecyclerView.VERTICAL);
 		mCategories = MainData.getCategoriesList();
-		CategoryListAdapter adapter = new CategoryListAdapter(this, mCategories);
-		recyclerView.setLayoutManager(lay);
-		recyclerView.setAdapter(adapter);
+		Toast.makeText(this, Integer.toString(mCategories.size()), Toast.LENGTH_SHORT).show();
+		if(mCategories.size() == 0){
+			recyclerView.setVisibility(View.GONE);
+			TextView textView = findViewById(R.id.textViewNothingFound);
+			textView.setVisibility(View.VISIBLE);
+		}else {
+			CategoryListAdapter adapter = new CategoryListAdapter(this, mCategories, onCategoryClick);
+			recyclerView.setLayoutManager(lay);
+			recyclerView.setAdapter(adapter);
+			recyclerView.setVisibility(View.VISIBLE);
+			TextView textView = findViewById(R.id.textViewNothingFound);
+			textView.setVisibility(View.GONE);
+		}
 	}
+
+	private View.OnClickListener onCategoryClick = new View.OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			Intent intent = new Intent(CategoryList.this, DocumentList.class);
+			TextView t = v.findViewById(R.id.lblHiddenCategoryId);
+			String id = t.getText().toString();
+			intent.putExtra("category_uid", id);
+			startActivity(intent);
+		}
+	};
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
