@@ -1,5 +1,7 @@
 package com.maxsavitsky.documenter.datatypes;
 
+import androidx.annotation.NonNull;
+
 import com.maxsavitsky.documenter.utils.Utils;
 
 public class Entry {
@@ -22,5 +24,11 @@ public class Entry {
 
 	public String getPathDir() {
 		return pathDir;
+	}
+
+	@NonNull
+	@Override
+	public String toString() {
+		return "id=\"" + getId() + "\" name=\"" + getName() + "\"";
 	}
 }

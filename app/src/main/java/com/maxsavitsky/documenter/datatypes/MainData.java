@@ -1,6 +1,7 @@
 package com.maxsavitsky.documenter.datatypes;
 
 import com.maxsavitsky.documenter.utils.Utils;
+import com.maxsavitsky.documenter.xml.ParseSeparate;
 import com.maxsavitsky.documenter.xml.XMLParser;
 
 import org.xml.sax.SAXException;
@@ -9,35 +10,26 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainData {
-	private static ArrayList<Category> sCategoriesList = new ArrayList<>();
 
-	private static ArrayList<Document> sDocumentsList = new ArrayList<>();
+	// START Categories
+	private static Map<String, Category> sCategoryMap = new HashMap<>();
+
+	private static ArrayList<Category> sCategoriesList = new ArrayList<>();
 
 	public static ArrayList<Category> getCategoriesList() {
 		return sCategoriesList;
 	}
 
 	public static void setCategoriesList(ArrayList<Category> categoriesList) {
-		MainData.sCategoriesList = categoriesList;
-	}
-
-	public static ArrayList<Document> getDocumentsList() {
-		return sDocumentsList;
-	}
-
-	public static void setDocumentsList(ArrayList<Document> documentsList) {
-		sDocumentsList = documentsList;
-	}
-
-	public static ArrayList<Document> getDocumentsFromCategoryWithId(String categoryId){
-		for(int i = 0; i < sCategoriesList.size(); i++){
-			if(sCategoriesList.get(i).getId().equals(categoryId)){
-				return sCategoriesList.get(i).getDocuments();
-			}
+		sCategoriesList = categoriesList;
+		sCategoryMap.clear();
+		for(Category category : categoriesList){
+			sCategoryMap.put(category.getId(), category);
 		}
-		return null;
 	}
 
 	public static ArrayList<Category> getCategoriesInWhichIncludedDocumentWithId(String id) throws IOException, SAXException {
@@ -56,12 +48,7 @@ public class MainData {
 	}
 
 	public static Category getCategoryWithId(String id){
-		for(int i = 0; i < sCategoriesList.size(); i++){
-			if(sCategoriesList.get(i).getId().equals(id)){
-				return sCategoriesList.get(i);
-			}
-		}
-		return null;
+		return sCategoryMap.get(id);
 	}
 
 	public static void removeCategoryWithId(String id){
@@ -71,15 +58,73 @@ public class MainData {
 				return;
 			}
 		}
+		sCategoryMap.remove(id);
+	}
+
+	public static boolean finallyDeleteCategoryWithId(String id){
+		File file = new File(Utils.getExternalStoragePath().getPath() + "/categories/" + id + "/" + id + ".xml");
+		if(file.delete()){
+			try{
+				Category category = getCategoryWithId(id);
+
+				if(category == null){
+					throw new IllegalArgumentException("MainData.finallyDeleteCategoryWithId: category with id=" + id + " does not exist");
+				}
+
+				ArrayList<Document> documents = ParseSeparate.parseCategoryWithId( id );
+				if(documents.size() != 0){
+					for(Document document : documents){
+						ArrayList<Category> categories = getCategoriesInWhichIncludedDocumentWithId(id);
+						if(categories.size() == 1){
+							deleteDocument(document.getId());
+						}
+					}
+				}
+				removeCategoryWithId(id);
+				Utils.saveCategoriesList(getCategoriesList());
+				file.delete();
+			}catch (Exception e){
+				e.printStackTrace();
+				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+
+	public static void readAllCategories() throws IOException, SAXException {
+		XMLParser xmlParser = new XMLParser();
+		setCategoriesList(xmlParser.parseCategories());
+	}
+	// END Categories
+	// START Documents
+	private static ArrayList<Document> sDocumentsList = new ArrayList<>();
+	private static Map<String, Document> sDocumentMap = new HashMap<>(  );
+
+	public static ArrayList<Document> getDocumentsList() {
+		return sDocumentsList;
+	}
+
+	public static void setDocumentsList(ArrayList<Document> documentsList) {
+		sDocumentsList = documentsList;
+		sDocumentMap.clear();
+		for(Document document : documentsList){
+			sDocumentMap.put( document.getId(), document );
+		}
 	}
 
 	private static void removeDocumentWithId(String id){
+		sDocumentMap.remove( id );
 		for(int i = 0; i < sDocumentsList.size(); i++){
 			if(sDocumentsList.get(i).getId().equals(id)){
 				sDocumentsList.remove(i);
 				return;
 			}
 		}
+	}
+
+	public static Document getDocumentWithId(String id){
+		return sDocumentMap.get( id );
 	}
 
 	/*public static boolean finallyDeleteDocumentWithId(String id) throws FileNotFoundException {
@@ -103,57 +148,68 @@ public class MainData {
 
 		Utils.saveDocumentsList(getDocumentsList());
 
-		// TODO: 16.12.2019 entries deletion
+		// Entries, which do not included in any document, will not be deleted
+		/*ArrayList<Entry> entries = ParseSeparate.parseDocumentWithId( id );
+		for(Entry entry : entries){
+			ArrayList<Document> documents = ParseSeparate.getDocumentsInWhichIncludedEntryWithId( entry.getId() );
+			if(documents.size() == 1){
+				deleteEntryWithId( entry.getId() );
+			}
+		}*/
 		path.delete();
-	}
-
-	public static boolean finallyDeleteCategoryWithId(String id){
-		File file = new File(Utils.getExternalStoragePath().getPath() + "/categories/" + id + ".xml");
-		if(file.delete()){
-			try{
-				Category category = getCategoryWithId(id);
-
-				if(category == null){
-					throw new IllegalArgumentException("MainData.finallyDeleteCategoryWithId: category with id=" + id + " does not exist");
-				}
-
-				ArrayList<Document> documents = category.getDocuments();
-				if(documents.size() != 0){
-					for(Document document : documents){
-						ArrayList<Category> categories = getCategoriesInWhichIncludedDocumentWithId(id);
-						if(categories.size() == 1){
-							deleteDocument(document.getId());
-						}
-					}
-				}
-				removeCategoryWithId(id);
-				Utils.saveCategoriesList(getCategoriesList());
-				file.delete();
-			}catch (Exception e){
-				e.printStackTrace();
-				return false;
-			}
-			return true;
-		}
-		return false;
-	}
-
-	public static Document getDocumentWithId(String id){
-		for(int i = 0; i < sDocumentsList.size(); i++){
-			if(sDocumentsList.get(i).getId().equals(id)){
-				return sDocumentsList.get(i);
-			}
-		}
-		return  null;
-	}
-
-	public static void readAllCategories() throws IOException, SAXException {
-		XMLParser xmlParser = new XMLParser();
-		setCategoriesList(xmlParser.parseCategories());
 	}
 
 	public static void readAllDocuments() throws IOException, SAXException {
 		XMLParser xmlParser = new XMLParser();
 		setDocumentsList(xmlParser.parseDocuments());
+	}
+	// END Documents
+	// START Entries
+	private static ArrayList<Entry> sEntriesList = new ArrayList<>();
+	private static Map<String, Entry> sEntryMap = new HashMap<>(  );
+
+	public static ArrayList<Entry> getEntriesList() {
+		return sEntriesList;
+	}
+
+	public static void setEntriesList(ArrayList<Entry> entriesList) {
+		sEntriesList = entriesList;
+		sEntryMap.clear();
+		for(Entry entry : entriesList){
+			sEntryMap.put( entry.getId(), entry );
+		}
+	}
+
+	public static Entry getEntryWithId(String id){
+		return sEntryMap.get( id );
+	}
+
+	public static void removeEntryWithId(String id){
+		sEntryMap.remove( id );
+		for(int i = 0; i < sEntriesList.size(); i++){
+			if(sEntriesList.get( i ).getId().equals( id )){
+				sEntriesList.remove( i );
+				return;
+			}
+		}
+	}
+
+	public static void readAllEntries() throws IOException, SAXException {
+		XMLParser xmlParser = new XMLParser();
+		setEntriesList( xmlParser.parseEntries() );
+	}
+
+	// TODO: 19.12.2019 realize entry deletion full
+	private static void deleteEntryWithId(String id){
+		File file = new File( Utils.getExternalStoragePath().getPath() + "/entries/" + id );
+		if(!file.exists()){
+			return;
+		}
+		if(!file.isDirectory()){
+			throw new IllegalArgumentException( "MainData.deleteEntryWithId: id=" + id + " not a directory" );
+		}
+
+		removeEntryWithId( id );
+		Utils.saveEntriesList( getEntriesList() );
 	}
 }

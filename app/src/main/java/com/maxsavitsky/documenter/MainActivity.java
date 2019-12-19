@@ -31,29 +31,25 @@ public class MainActivity extends AppCompatActivity {
 		setContentView(R.layout.activity_main);
 		Toolbar toolbar = findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
-		FloatingActionButton fab = findViewById(R.id.fab);
-		fab.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-
-			}
-		});
 
 		Utils.setContext(getApplicationContext());
 
-		ArrayList<Document> documents = new ArrayList<>();
 		try{
-			documents = mXMLParser.parseDocuments();
-			MainData.setDocumentsList(documents);
+			MainData.readAllDocuments();
 		}catch (Exception e){
 			Toast.makeText(this, e.toString(), Toast.LENGTH_LONG).show();
 		}
 
 		try {
 			MainData.readAllCategories();
-		} catch (IOException | SAXException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show();
+		}
+		try{
+			MainData.readAllEntries();
+		}catch (Exception e){
+			Toast.makeText( this, e.toString(), Toast.LENGTH_SHORT ).show();
 		}
 	}
 

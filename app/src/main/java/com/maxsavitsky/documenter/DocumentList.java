@@ -25,7 +25,7 @@ import com.maxsavitsky.documenter.datatypes.Category;
 import com.maxsavitsky.documenter.datatypes.Document;
 import com.maxsavitsky.documenter.datatypes.MainData;
 import com.maxsavitsky.documenter.utils.Utils;
-import com.maxsavitsky.documenter.xml.ParseSeparateCategory;
+import com.maxsavitsky.documenter.xml.ParseSeparate;
 
 import org.xml.sax.SAXException;
 
@@ -36,7 +36,6 @@ import javax.xml.parsers.ParserConfigurationException;
 
 public class DocumentList extends AppCompatActivity {
 	private ArrayList<Document> documents;
-	private static final int MENU_EDIT_TEXT_ID = 101;
 	private Category mCategory;
 
 	private void applyTheme(){
@@ -51,7 +50,13 @@ public class DocumentList extends AppCompatActivity {
 	}
 
 	private void setupRecyclerView(){
-		documents = MainData.getDocumentsList();
+		try {
+			documents = ParseSeparate.parseCategoryWithId( mCategory.getId() );
+		}catch (Exception e){
+			e.printStackTrace();
+			Toast.makeText( this, e.toString(), Toast.LENGTH_SHORT ).show();
+			return;
+		}
 		RecyclerView recyclerView = findViewById(R.id.category_list_view);
 		if(documents.isEmpty()){
 			recyclerView.setVisibility(View.GONE);
@@ -60,7 +65,7 @@ public class DocumentList extends AppCompatActivity {
 		}else {
 			LinearLayoutManager lay = new LinearLayoutManager(this);
 			lay.setOrientation(RecyclerView.VERTICAL);
-			DocumentsAdapter mAdapter = new DocumentsAdapter(documents);
+			DocumentsAdapter mAdapter = new DocumentsAdapter(documents, mOnClickListener);
 			recyclerView.setLayoutManager(lay);
 			recyclerView.setAdapter(mAdapter);
 			recyclerView.setVisibility(View.VISIBLE);
@@ -68,6 +73,17 @@ public class DocumentList extends AppCompatActivity {
 			textView.setVisibility(View.GONE);
 		}
 	}
+
+	private View.OnClickListener mOnClickListener = new View.OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			Intent intent = new Intent(DocumentList.this, EntriesList.class);
+			TextView t = v.findViewById(R.id.lblHiddenCategoryId);
+			String id = t.getText().toString();
+			intent.putExtra("id", id);
+			startActivity(intent);
+		}
+	};
 
 	@Override
 	protected void onResume() {
@@ -112,7 +128,7 @@ public class DocumentList extends AppCompatActivity {
 							MainData.removeCategoryWithId(mCategory.getId());
 							ArrayList<Category> categories = MainData.getCategoriesList();
 							mCategory = new Category(mCategory.getId(), text);
-							getSupportActionBar().setTitle(text);
+							applyTheme();
 							categories.add(mCategory);
 							MainData.setCategoriesList(categories);
 							Utils.saveCategoriesList(categories);
@@ -152,9 +168,10 @@ public class DocumentList extends AppCompatActivity {
 		applyTheme();
 
 		try {
-			documents = ParseSeparateCategory.parseCategoryWithId(id);
+			documents = ParseSeparate.parseCategoryWithId(id);
 		} catch (ParserConfigurationException | SAXException | IOException e) {
 			e.printStackTrace();
+			Toast.makeText( this, e.toString(), Toast.LENGTH_SHORT ).show();
 		}
 
 		setupRecyclerView();
@@ -169,9 +186,11 @@ public class DocumentList extends AppCompatActivity {
 
 	class DocumentsAdapter extends RecyclerView.Adapter<DocumentsAdapter.VH>{
 		private ArrayList<Document> mData;
+		private View.OnClickListener onClickListener;
 
-		DocumentsAdapter(ArrayList<Document> data) {
+		DocumentsAdapter(ArrayList<Document> data, View.OnClickListener onClickListener) {
 			mData = data;
+			this.onClickListener = onClickListener;
 		}
 
 		@NonNull
@@ -198,6 +217,7 @@ public class DocumentList extends AppCompatActivity {
 				super(itemView);
 				name = itemView.findViewById(R.id.lblCategoryName);
 				id = itemView.findViewById(R.id.lblHiddenCategoryId);
+				itemView.setOnClickListener( DocumentsAdapter.this.onClickListener );
 			}
 		}
 	}

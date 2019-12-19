@@ -11,6 +11,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -23,7 +24,12 @@ import com.maxsavitsky.documenter.datatypes.Document;
 import com.maxsavitsky.documenter.datatypes.MainData;
 import com.maxsavitsky.documenter.utils.Utils;
 
+import java.text.DateFormat;
+import java.text.FieldPosition;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class CreateCategory extends AppCompatActivity {
 
@@ -57,13 +63,17 @@ public class CreateCategory extends AppCompatActivity {
 		fab.setOnClickListener(saveCategory);
 		applyTheme();
 
+		ArrayList<Document> documents = MainData.getDocumentsList();
 		RecyclerView rv = findViewById(R.id.recyclerViewChooseDocuments);
-		LinearLayoutManager lay = new LinearLayoutManager(CreateCategory.this);
-		lay.setOrientation(RecyclerView.VERTICAL);
-		rv.setLayoutManager(lay);
-		Adapter adapter = new Adapter(MainData.getDocumentsList(), itemClicked);
-		rv.setAdapter(adapter);
-
+		if(!documents.isEmpty()) {
+			LinearLayoutManager lay = new LinearLayoutManager(CreateCategory.this);
+			lay.setOrientation(RecyclerView.VERTICAL);
+			rv.setLayoutManager(lay);
+			Adapter adapter = new Adapter(documents, itemClicked);
+			rv.setAdapter(adapter);
+		}else{
+			rv.setVisibility(View.GONE);
+		}
 		EditText editText = findViewById(R.id.editTextTextPersonName);
 		editText.requestFocus();
 	}

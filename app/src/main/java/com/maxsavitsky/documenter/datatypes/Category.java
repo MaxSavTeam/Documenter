@@ -1,6 +1,7 @@
 package com.maxsavitsky.documenter.datatypes;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 
@@ -10,7 +11,7 @@ public class Category {
 
 	private ArrayList<Document> mDocuments = new ArrayList<>();
 
-	ArrayList<Document> getDocuments() {
+	public ArrayList<Document> getDocuments() {
 		return mDocuments;
 	}
 
@@ -53,5 +54,12 @@ public class Category {
 	@Override
 	public String toString() {
 		return "id=\"" + getId() + "\" name=\"" + getName() + "\"";
+	}
+
+	@Override
+	public boolean equals(@Nullable Object obj) {
+		if(obj == null)
+			return false;
+		return getId().equals(((Category) obj).getId());
 	}
 }

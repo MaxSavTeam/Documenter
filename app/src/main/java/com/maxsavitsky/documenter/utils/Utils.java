@@ -5,9 +5,11 @@ import android.content.Context;
 
 import com.maxsavitsky.documenter.datatypes.Category;
 import com.maxsavitsky.documenter.datatypes.Document;
+import com.maxsavitsky.documenter.datatypes.Entry;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.ThreadLocalRandom;
@@ -66,9 +68,33 @@ public class Utils {
 		}
 	}
 
+	public static void saveEntriesList(ArrayList<Entry> entries){
+		try{
+			File file = new File( getExternalStoragePath().getPath() + "/entries.xml" );
+			if(!file.exists()){
+				file.createNewFile();
+			}
+			FileWriter fr = new FileWriter( file, false );
+			fr.write( xmlHeader );
+			fr.append( "<entries>\n" );
+			for(Entry entry : entries){
+				fr.append( "<entry " + entry.toString() + " />\n" );
+			}
+			fr.append( "</entries>" );
+			fr.flush();
+			fr.close();
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+	}
+
 	public static void saveCategoryDocuments(String id, ArrayList<Document> documents){
-		File file = new File(getContext().getExternalFilesDir(null).getPath() + "/categories/");
+		File file = new File(getExternalStoragePath().getPath() + "/categories/");
 		try {
+			if(!file.exists()){
+				file.mkdir();
+			}
+			file = new File(file.getPath() + "/" + id);
 			if(!file.exists()){
 				file.mkdir();
 			}
@@ -81,7 +107,7 @@ public class Utils {
 			fr.append("<documents>\n");
 			for(int i = 0; i < documents.size(); i++){
 				Document cur = documents.get(i);
-				fr.append("<document " + cur.toString() + "/>\n");
+				fr.append("<document " + "id=\"" + cur.getId() + "\" />\n");
 			}
 			fr.append("</documents>");
 			fr.flush();
@@ -89,6 +115,51 @@ public class Utils {
 		}catch (Exception e){
 			e.printStackTrace();
 		}
+	}
+
+	public static void saveDocumentEntries(String id, ArrayList<Entry> entries){
+		File file = new File(getExternalStoragePath().getPath() + "/documents/");
+		try{
+			if(!file.exists())
+				file.mkdir();
+			file = new File( file.getPath() + "/" + id );
+			if(!file.exists())
+				file.mkdir();
+			file = new File( file.getPath() + "/" + id + ".xml" );
+			if(!file.exists())
+				file.createNewFile();
+			FileWriter fr = new FileWriter( file, false );
+			fr.write( xmlHeader );
+			fr.append( "<entries>\n" );
+			for(Entry entry : entries){
+				fr.append( "<entry id=\"" + entry.getId() + "\" />\n" );
+			}
+			fr.append( "</entries" );
+			fr.flush();
+			fr.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void saveInWhichCategoriesDocumentWithIdIncludedIn(String id, ArrayList<Category> categories) throws IOException {
+		File file = new File( getExternalStoragePath().getPath() + "/documents/" + id );
+		if(!file.exists()){
+			file.mkdir();
+		}
+		file = new File( file.getPath() + "/included_in.xml" );
+		if(!file.exists())
+			file.createNewFile();
+
+		FileWriter fr = new FileWriter( file, false );
+		fr.write( xmlHeader );
+		fr.append( "<categories>\n" );
+		for(Category category : categories){
+			fr.append( "<category id=\"" + category.getId() + "\" />\n" );
+		}
+		fr.append( "</category>" );
+		fr.flush();
+		fr.close();
 	}
 
 	public static String generateUniqueId(){

@@ -13,4 +13,5 @@
     <string name="title_activity_category_list">CategoryList</string>
     <string name="title_activity_create_documents">CreateDocuments</string>
     <string name="title_activity_document_list">DocumentList</string>
+    <string name="title_activity_entries_list">Entries List</string>
 </resources>
