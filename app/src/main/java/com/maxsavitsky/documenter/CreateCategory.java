@@ -1,7 +1,6 @@
 package com.maxsavitsky.documenter;
 
 import android.app.ProgressDialog;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -10,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -91,7 +89,7 @@ public class CreateCategory extends AppCompatActivity {
 
 				pd.dismiss();
 
-				Toast.makeText(CreateCategory.this, Integer.toString(categories.size()) + " " + Integer.toString(MainData.getCategoriesList().size()), Toast.LENGTH_SHORT).show();
+				//Toast.makeText(CreateCategory.this, Integer.toString(categories.size()) + " " + Integer.toString(MainData.getCategoriesList().size()), Toast.LENGTH_SHORT).show();
 				finish();
 			}else{
 				editText.requestFocus();

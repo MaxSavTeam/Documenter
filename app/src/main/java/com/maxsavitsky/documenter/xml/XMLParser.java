@@ -1,7 +1,5 @@
 package com.maxsavitsky.documenter.xml;
 
-import android.content.Context;
-
 import com.maxsavitsky.documenter.datatypes.Category;
 import com.maxsavitsky.documenter.datatypes.Document;
 import com.maxsavitsky.documenter.datatypes.MainData;
@@ -83,8 +81,7 @@ public class XMLParser {
 		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 			if(qName.equals("category")){
 				String id = attributes.getValue("id");
-				String name = attributes.getValue("name");
-				this.mCategoriesThis.add(new Category(id, name));
+				this.mCategoriesThis.add(new Category(id, MainData.getCategoryWithId(id).getName()));
 			}
 		}
 	}

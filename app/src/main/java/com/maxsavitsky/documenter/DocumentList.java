@@ -1,18 +1,20 @@
 package com.maxsavitsky.documenter;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -69,9 +71,8 @@ public class DocumentList extends AppCompatActivity {
 
 	@Override
 	protected void onResume() {
-		if(documents.size() != MainData.getDocumentsList().size()){
+		//if(documents.size() != MainData.getDocumentsList().size())
 			setupRecyclerView();
-		}
 		super.onResume();
 	}
 
@@ -92,6 +93,40 @@ public class DocumentList extends AppCompatActivity {
 					Toast.makeText(this, "Failed", Toast.LENGTH_SHORT).show();
 				}else
 					finish();
+				break;
+			case R.id.menu_edit_name:
+				AlertDialog alertDialog;
+				AlertDialog.Builder builder = new AlertDialog.Builder(this).setTitle("Edit category name").setMessage("Edit category name here");
+				//View view = new View(this);
+				final EditText editText = new EditText(this);
+				editText.setText(mCategory.getName());
+				editText.append("");
+				editText.requestFocus();
+				ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+				editText.setLayoutParams(layoutParams);
+				builder.setView(editText).setPositiveButton("OK", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						String text = editText.getText().toString();
+						if(!text.isEmpty() && !text.equals(mCategory.getName())){
+							MainData.removeCategoryWithId(mCategory.getId());
+							ArrayList<Category> categories = MainData.getCategoriesList();
+							mCategory = new Category(mCategory.getId(), text);
+							getSupportActionBar().setTitle(text);
+							categories.add(mCategory);
+							MainData.setCategoriesList(categories);
+							Utils.saveCategoriesList(categories);
+						}
+						dialog.cancel();
+					}
+				}).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.cancel();
+					}
+				});
+				alertDialog = builder.create();
+				alertDialog.show();
 				break;
 		}
 		return super.onOptionsItemSelected(item);

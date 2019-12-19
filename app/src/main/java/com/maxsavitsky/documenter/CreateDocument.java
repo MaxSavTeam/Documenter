@@ -1,21 +1,19 @@
 package com.maxsavitsky.documenter;
 
 import android.os.Bundle;
-
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
-import com.maxsavitsky.documenter.datatypes.Document;
-import com.maxsavitsky.documenter.datatypes.MainData;
-import com.maxsavitsky.documenter.utils.Utils;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.EditText;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.maxsavitsky.documenter.datatypes.Document;
+import com.maxsavitsky.documenter.datatypes.MainData;
+import com.maxsavitsky.documenter.utils.Utils;
 
 import java.util.ArrayList;
 
@@ -70,7 +68,7 @@ public class CreateDocument extends AppCompatActivity {
 
 				MainData.setDocumentsList(documents);
 				Utils.saveDocumentsList(documents);
-
+				finish();
 			}else{
 				editText.requestFocus();
 			}

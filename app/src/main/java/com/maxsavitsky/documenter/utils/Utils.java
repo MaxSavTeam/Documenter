@@ -10,7 +10,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Utils {
@@ -57,9 +56,9 @@ public class Utils {
 			fr.write(xmlHeader);
 			fr.append("<documents>\n");
 			for(int i = 0; i < documents.size(); i++){
-				fr.append("<document " + documents.get(i).toString() + " />");
+				fr.append("<document " + documents.get(i).toString() + " />\n");
 			}
-			fr.append("</documents");
+			fr.append("</documents>");
 			fr.flush();
 			fr.close();
 		}catch (Exception e){

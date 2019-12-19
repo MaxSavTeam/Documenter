@@ -2,6 +2,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:title="Edit name"
         android:id="@+id/menu_edit_name" />
+
+    <item android:id="@+id/item_add_documents"
+        android:title="Add documents" />
+
     <item android:title="Delete"
         android:id="@+id/item_delete" />
 </menu>

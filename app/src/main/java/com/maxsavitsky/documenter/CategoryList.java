@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -46,7 +45,7 @@ public class CategoryList extends AppCompatActivity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		if(mCategories.size() != MainData.getCategoriesList().size())
+		//if(mCategories.size() != MainData.getCategoriesList().size())
 			setupRecyclerView();
 	}
 
@@ -55,7 +54,6 @@ public class CategoryList extends AppCompatActivity {
 		LinearLayoutManager lay = new LinearLayoutManager(this);
 		lay.setOrientation(RecyclerView.VERTICAL);
 		mCategories = MainData.getCategoriesList();
-		Toast.makeText(this, Integer.toString(mCategories.size()), Toast.LENGTH_SHORT).show();
 		if(mCategories.size() == 0){
 			recyclerView.setVisibility(View.GONE);
 			TextView textView = findViewById(R.id.textViewNothingFound);

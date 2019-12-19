@@ -8,7 +8,6 @@ import org.xml.sax.SAXException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 
 public class MainData {
@@ -65,10 +64,19 @@ public class MainData {
 		return null;
 	}
 
-	private static void removeCategoryWithId(String id){
+	public static void removeCategoryWithId(String id){
 		for(int i = 0; i < sCategoriesList.size(); i++){
 			if(sCategoriesList.get(i).getId().equals(id)){
 				sCategoriesList.remove(i);
+				return;
+			}
+		}
+	}
+
+	private static void removeDocumentWithId(String id){
+		for(int i = 0; i < sDocumentsList.size(); i++){
+			if(sDocumentsList.get(i).getId().equals(id)){
+				sDocumentsList.remove(i);
 				return;
 			}
 		}
@@ -86,38 +94,48 @@ public class MainData {
 		path = new File(path.getPath())
 	}*/
 
+	private static void deleteDocument(String id) throws Exception {
+		File path = new File(Utils.getExternalStoragePath().getPath() + "/documents/" + id);
+		if(!path.isDirectory()){
+			throw new Exception("MainData.deleteDocument: path with id=" + id + " not a directory");
+		}
+		removeDocumentWithId(id);
 
+		Utils.saveDocumentsList(getDocumentsList());
+
+		// TODO: 16.12.2019 entries deletion
+		path.delete();
+	}
 
 	public static boolean finallyDeleteCategoryWithId(String id){
 		File file = new File(Utils.getExternalStoragePath().getPath() + "/categories/" + id + ".xml");
 		if(file.delete()){
-			/*removeCategoryWithId(id);
-			Utils.saveCategoriesList(getCategoriesList());*/
-
 			try{
 				Category category = getCategoryWithId(id);
-				assert category != null;
+
+				if(category == null){
+					throw new IllegalArgumentException("MainData.finallyDeleteCategoryWithId: category with id=" + id + " does not exist");
+				}
 
 				ArrayList<Document> documents = category.getDocuments();
-				if(documents == null || documents.size() == 0){
-					removeCategoryWithId(id);
-					Utils.saveCategoriesList(getCategoriesList());
-				}else{
+				if(documents.size() != 0){
 					for(Document document : documents){
 						ArrayList<Category> categories = getCategoriesInWhichIncludedDocumentWithId(id);
 						if(categories.size() == 1){
-							// TODO: 16.12.2019 method to delete documents
+							deleteDocument(document.getId());
 						}
 					}
 				}
+				removeCategoryWithId(id);
+				Utils.saveCategoriesList(getCategoriesList());
+				file.delete();
 			}catch (Exception e){
 				e.printStackTrace();
 				return false;
 			}
 			return true;
-		}else{
-			return false;
 		}
+		return false;
 	}
 
 	public static Document getDocumentWithId(String id){
