@@ -40,10 +40,12 @@ import java.util.Map;
 import javax.xml.parsers.ParserConfigurationException;
 
 public class DocumentList extends AppCompatActivity {
-	private ArrayList<Document> documents;
+	private ArrayList<Document> mDocuments;
 	private Category mCategory;
 	private View decorView;
 	private Map<String, Document> mDocumentMap = new HashMap<>(  );
+	private Map<String, Document> documentsToInclude = new HashMap<>();
+	private ArrayList<String> documentsWhichWillBeExcluded = new ArrayList<>();
 
 	private void applyTheme(){
 		ActionBar actionBar = getSupportActionBar();
@@ -55,21 +57,21 @@ public class DocumentList extends AppCompatActivity {
 
 	private void setupRecyclerView(){
 		try {
-			documents = ParseSeparate.parseCategoryWithId( mCategory.getId() );
+			mDocuments = ParseSeparate.parseCategoryWithId( mCategory.getId() );
 		}catch (Exception e){
 			e.printStackTrace();
 			Toast.makeText( this, e.toString(), Toast.LENGTH_SHORT ).show();
 			return;
 		}
 		RecyclerView recyclerView = findViewById(R.id.category_list_view);
-		if(documents.isEmpty()){
+		if( mDocuments.isEmpty()){
 			recyclerView.setVisibility(View.GONE);
 			TextView textView = findViewById(R.id.textViewNothingFound);
 			textView.setVisibility(View.VISIBLE);
 		}else {
 			LinearLayoutManager lay = new LinearLayoutManager(this);
 			lay.setOrientation(RecyclerView.VERTICAL);
-			DocumentsAdapter mAdapter = new DocumentsAdapter(documents, mOnClickListener);
+			DocumentsAdapter mAdapter = new DocumentsAdapter( mDocuments, mOnClickListener);
 			recyclerView.setLayoutManager(lay);
 			recyclerView.setAdapter(mAdapter);
 			recyclerView.setVisibility(View.VISIBLE);
@@ -105,7 +107,6 @@ public class DocumentList extends AppCompatActivity {
 	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 		switch (item.getItemId()){
 			case R.id.item_edit_documents_list:
-				decorView = getWindow().getDecorView();
 				prepareChooseRecyclerView();
 				break;
 			case android.R.id.home:
@@ -164,7 +165,7 @@ public class DocumentList extends AppCompatActivity {
 	}
 
 	private void restartActivity() {
-		setResult( ResultCodes.RESULT_CODE_RESTART_ACTIVITY, new Intent(  ).putExtra( "id", mCategory.getId() ) );
+		setResult( ResultCodes.RESULT_CODE_RESTART_ACTIVITY, new Intent().putExtra( "id", mCategory.getId() ) );
 		this.finish();
 	}
 
@@ -176,7 +177,6 @@ public class DocumentList extends AppCompatActivity {
 			@Override
 			public void onClick(View v) {
 				restartActivity();
-				// TODO: 20.12.2019
 			}
 		};
 		Button btnCancel = findViewById( R.id.btnCancel );
@@ -185,7 +185,35 @@ public class DocumentList extends AppCompatActivity {
 		View.OnClickListener apply = new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				// TODO: 20.12.2019
+				ArrayList<Document> documents = new ArrayList<>();
+				/*for(String key : mDocumentMap.keySet()){
+					documents.add( mDocumentMap.get( key ) );
+				}*/
+				for(String key : documentsToInclude.keySet()){
+					Document document = documentsToInclude.get( key );
+					documents.add( document );
+					try {
+						//MainData.addCategoryToIncludedInXml( document.getId(), mCategory.getId() );
+						document.addCategoryToIncludedInXml( mCategory.getId() );
+					} catch (Exception e) {
+						e.printStackTrace();
+						Toast.makeText( DocumentList.this, e.toString() + "\napply", Toast.LENGTH_SHORT ).show();
+						return;
+					}
+				}
+				for(String key : documentsWhichWillBeExcluded){
+					Document document = MainData.getDocumentWithId( key );
+					documents.remove( document );
+					try {
+						document.removeCategoryFromIncludedXml( mCategory.getId() );
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+				Utils.saveCategoryDocuments( mCategory.getId(), documents );
+				//Toast.makeText( DocumentList.this, Integer.toString( documents.size() ), Toast.LENGTH_SHORT ).show();
+				restartActivity();
+				//Toast.makeText( DocumentList.this, documentsToInclude.toString(), Toast.LENGTH_LONG ).show();
 			}
 		};
 		Button btnApply = findViewById( R.id.btnApply );
@@ -196,23 +224,41 @@ public class DocumentList extends AppCompatActivity {
 		layoutManager.setOrientation( RecyclerView.VERTICAL );
 		recyclerView.setLayoutManager( layoutManager );
 
-		View.OnClickListener adapterOnClickListener = new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				// TODO: 20.12.2019
-			}
-		};
 		ArrayList<Document> documents = null;
 		try {
 			documents = MainData.getDocumentsFromThisCategory( mCategory.getId() );
 		} catch (Exception e) {
 			e.printStackTrace();
-			Toast.makeText( this, e.toString() + "\nprepareChooseRecyclerView", Toast.LENGTH_SHORT ).show();
+			Toast.makeText( this, e.toString() + "\nprepareChooseRecyclerView", Toast.LENGTH_LONG ).show();
 			return;
 		}
 		for(Document document : documents){
 			mDocumentMap.put( document.getId(), document );
 		}
+		documentsToInclude = mDocumentMap;
+
+		View.OnClickListener adapterOnClickListener = new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				CheckBox checkBox = v.findViewById( R.id.checkBoxInCheckboxItem );
+				checkBox.setChecked( !checkBox.isChecked() );
+				String id = ((TextView) v.findViewById( R.id.checkbox_item_hidden_id )).getText().toString();
+				if(checkBox.isChecked()){
+					documentsToInclude.put( id, MainData.getDocumentWithId( id ) );
+					if(mDocumentMap.containsKey( id )){
+						documentsWhichWillBeExcluded.remove( id );
+					}
+				}else{
+					if(mDocumentMap.containsKey( id )){
+						documentsWhichWillBeExcluded.add( id );
+					}
+					documentsToInclude.remove( id );
+					//Toast.makeText( DocumentList.this, Boolean.toString( documentsToInclude.containsKey( id ) ), Toast.LENGTH_SHORT ).show();
+				}
+				Toast.makeText( DocumentList.this, Integer.toString( documentsToInclude.size() ) + "\n" + Integer.toString( documentsWhichWillBeExcluded.size() ), Toast.LENGTH_LONG ).show();
+			}
+		};
+		// TODO: 20.12.2019 add list sorting
 		ChangeListAdapter changeListAdapter = new ChangeListAdapter(
 				MainData.getDocumentsList(),
 				adapterOnClickListener );
@@ -240,7 +286,7 @@ public class DocumentList extends AppCompatActivity {
 		applyTheme();
 
 		try {
-			documents = ParseSeparate.parseCategoryWithId(id);
+			mDocuments = ParseSeparate.parseCategoryWithId(id);
 		} catch (ParserConfigurationException | SAXException | IOException e) {
 			e.printStackTrace();
 			Toast.makeText( this, e.toString(), Toast.LENGTH_SHORT ).show();

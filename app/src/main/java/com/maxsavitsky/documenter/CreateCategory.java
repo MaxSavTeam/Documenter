@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -20,11 +21,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.maxsavitsky.documenter.datatypes.Category;
 import com.maxsavitsky.documenter.datatypes.Document;
+import com.maxsavitsky.documenter.datatypes.Info;
 import com.maxsavitsky.documenter.datatypes.MainData;
 import com.maxsavitsky.documenter.utils.ResultCodes;
 import com.maxsavitsky.documenter.utils.Utils;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class CreateCategory extends AppCompatActivity {
 
@@ -83,8 +87,21 @@ public class CreateCategory extends AppCompatActivity {
 				pd.show();
 
 				String uid = Utils.generateUniqueId() + "_cat";
+
+				Category newCategory = new Category( uid, name );
+
 				ArrayList<Category> categories = MainData.getCategoriesList();
-				categories.add(new Category(uid, name));
+				Info info = new Info();
+				info.setTimeStamp( (int) new Date().getTime() );
+				try {
+					newCategory.setAndSaveInfo( info );
+				} catch (Exception e) {
+					e.printStackTrace();
+					pd.dismiss();
+					Toast.makeText( CreateCategory.this, "Failed\n\n" + e.toString(), Toast.LENGTH_LONG ).show();
+					return;
+				}
+				categories.add(newCategory);
 
 				MainData.setCategoriesList(categories);
 				Utils.saveCategoriesList(categories);

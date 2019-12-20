@@ -10,6 +10,7 @@ import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.datatypes.Category;
 import com.maxsavitsky.documenter.datatypes.Document;
 import com.maxsavitsky.documenter.datatypes.Entry;
+import com.maxsavitsky.documenter.datatypes.MainData;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -23,7 +24,7 @@ public class Utils {
 	private static Context sContext;
 	private static File externalStoragePath;
 
-	public static String xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+	public static final String xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 
 	public static Context getContext() {
 		return sContext;
@@ -147,23 +148,7 @@ public class Utils {
 	}
 
 	public static void saveInWhichCategoriesDocumentWithIdIncludedIn(String id, ArrayList<Category> categories) throws IOException {
-		File file = new File( getExternalStoragePath().getPath() + "/documents/" + id );
-		if(!file.exists()){
-			file.mkdir();
-		}
-		file = new File( file.getPath() + "/included_in.xml" );
-		if(!file.exists())
-			file.createNewFile();
-
-		FileWriter fr = new FileWriter( file, false );
-		fr.write( xmlHeader );
-		fr.append( "<categories>\n" );
-		for(Category category : categories){
-			fr.append( "<category id=\"" + category.getId() + "\" />\n" );
-		}
-		fr.append( "</categories>" );
-		fr.flush();
-		fr.close();
+		MainData.getDocumentWithId( id ).saveInWhichCategoriesDocumentWithIdIncludedIn( categories );
 	}
 
 	public static void createAllNecessaryForDocument(String id) throws IOException {

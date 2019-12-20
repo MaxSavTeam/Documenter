@@ -4,6 +4,7 @@ import com.maxsavitsky.documenter.EntriesList;
 import com.maxsavitsky.documenter.datatypes.Category;
 import com.maxsavitsky.documenter.datatypes.Document;
 import com.maxsavitsky.documenter.datatypes.Entry;
+import com.maxsavitsky.documenter.datatypes.Info;
 import com.maxsavitsky.documenter.datatypes.MainData;
 import com.maxsavitsky.documenter.utils.Utils;
 
@@ -36,13 +37,32 @@ public class XMLParser {
 	// [START Categories_Parser]
 	public ArrayList<Category> parseCategories() throws SAXException, IOException {
 		mCategories.clear();
-		File path = new File(Utils.getContext().getExternalFilesDir(null).getPath() + "/categories.xml");
+		File path = new File(Utils.getExternalStoragePath().getPath() + "/categories.xml");
 		if(!path.exists()){
 			path.createNewFile();
 		}else {
 			mSAXParser.parse(path, new XMLCategoriesHandler());
+			for(int i = 0;  i < mCategories.size(); i++){
+				Category category = mCategories.get( i );
+				path = new File( Utils.getExternalStoragePath().getPath() + "/categories/" + category.getId() + "/info.xml" );
+				InfoHandler infoHandler = new InfoHandler();
+				mSAXParser.parse( path,  infoHandler );
+				mCategories.get( i ).setInfo( infoHandler.mInfo );
+			}
 		}
 		return mCategories;
+	}
+
+	class InfoHandler extends DefaultHandler{
+		Info mInfo = new Info();
+
+		@Override
+		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+			if(qName.equals( "timestamp" )){
+				int timestamp = Integer.parseInt( attributes.getValue( "value" ) );
+				mInfo.setTimeStamp( timestamp );
+			}
+		}
 	}
 
 	class XMLCategoriesHandler extends DefaultHandler {

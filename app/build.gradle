@@ -30,7 +30,7 @@ android {
 
 }
 
-def String getDate() {
+static def String getDate() {
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
     simpleDateFormat.setTimeZone(TimeZone.getTimeZone("GMT+3"));
     return simpleDateFormat.format(new Date());

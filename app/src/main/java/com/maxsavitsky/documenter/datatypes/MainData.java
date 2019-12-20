@@ -140,18 +140,6 @@ public class MainData {
 		return sDocumentMap.get( id );
 	}
 
-	/*public static boolean finallyDeleteDocumentWithId(String id) throws FileNotFoundException {
-		File path = new File(Utils.getExternalStoragePath().getPath() + "/documents");
-		if (!path.exists()) {
-			throw new FileNotFoundException("MainData.finallyDeleteDocumentWithId: documents dir not found");
-		}
-		path = new File(path.getPath() + "/" + id);
-		if(!path.exists()){
-			throw new FileNotFoundException("MainData.finallyDeleteDocumentWithId: id dir not found; id=" + id);
-		}
-		path = new File(path.getPath())
-	}*/
-
 	private static void deleteDocument(String id) throws Exception {
 		File path = new File(Utils.getExternalStoragePath().getPath() + "/documents/" + id);
 		if(!path.isDirectory()){
