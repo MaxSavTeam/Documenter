@@ -28,10 +28,7 @@ public class CreateDocument extends AppCompatActivity {
 		ActionBar actionBar = getSupportActionBar();
 		if (actionBar != null) {
 			actionBar.setTitle("Create Document");
-			actionBar.setDisplayHomeAsUpEnabled(true);
-			actionBar.setHomeAsUpIndicator(R.drawable.ic_arrow_back_white_32dp);
-			actionBar.setHomeButtonEnabled(true);
-			actionBar.setBackgroundDrawable(getDrawable(R.drawable.black));
+			Utils.applyDefaultActionBarStyle( actionBar );
 		}
 	}
 
@@ -84,10 +81,11 @@ public class CreateDocument extends AppCompatActivity {
 				ArrayList<Category> categories = new ArrayList<>(  );
 				categories.add( MainData.getCategoryWithId( categoryId ) );
 				try {
+					Utils.createAllNecessaryForDocument( id );
 					Utils.saveInWhichCategoriesDocumentWithIdIncludedIn( id, categories );
 				} catch (IOException e) {
 					e.printStackTrace();
-					Toast.makeText( CreateDocument.this, e.toString(), Toast.LENGTH_LONG ).show();
+					Toast.makeText( CreateDocument.this, e.toString() + "\nsaveDocument", Toast.LENGTH_LONG ).show();
 				}
 				// TODO: 19.12.2019 change to store included entries
 				Utils.saveDocumentEntries( id, new ArrayList<Entry>() );

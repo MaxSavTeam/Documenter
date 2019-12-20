@@ -2,7 +2,11 @@ package com.maxsavitsky.documenter.utils;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.drawable.ColorDrawable;
 
+import androidx.appcompat.app.ActionBar;
+
+import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.datatypes.Category;
 import com.maxsavitsky.documenter.datatypes.Document;
 import com.maxsavitsky.documenter.datatypes.Entry;
@@ -134,7 +138,7 @@ public class Utils {
 			for(Entry entry : entries){
 				fr.append( "<entry id=\"" + entry.getId() + "\" />\n" );
 			}
-			fr.append( "</entries" );
+			fr.append( "</entries>" );
 			fr.flush();
 			fr.close();
 		} catch (Exception e) {
@@ -157,9 +161,37 @@ public class Utils {
 		for(Category category : categories){
 			fr.append( "<category id=\"" + category.getId() + "\" />\n" );
 		}
-		fr.append( "</category>" );
+		fr.append( "</categories>" );
 		fr.flush();
 		fr.close();
+	}
+
+	public static void createAllNecessaryForDocument(String id) throws IOException {
+		File file = new File( getExternalStoragePath().getPath() + "/documents/" );
+		if(!file.exists()){
+			file.mkdir();
+		}
+		file = new File( file.getPath() + "/" + id );
+		if(!file.exists())
+			file.mkdir();
+		file = new File(file.getPath() + "/" + id + ".xml");
+		if(!file.exists()){
+			file.createNewFile();
+			FileWriter fr = new FileWriter( file, false );
+			fr.write( xmlHeader );
+			fr.append( "<entries>\n</entries>" );
+			fr.flush();
+			fr.close();
+		}
+		file = new File( getExternalStoragePath().getPath() + "/documents/" + id + "/included_in.xml" );
+		if(!file.exists()){
+			file.createNewFile();
+			FileWriter fr = new FileWriter( file, false );
+			fr.write( xmlHeader );
+			fr.append( "<categories>\n</categories>" );
+			fr.flush();
+			fr.close();
+		}
 	}
 
 	public static String generateUniqueId(){
@@ -182,5 +214,14 @@ public class Utils {
 		}
 
 		return id;
+	}
+
+	public static void applyDefaultActionBarStyle(ActionBar actionBar){
+		if(actionBar != null){
+			actionBar.setDisplayHomeAsUpEnabled(true);
+			actionBar.setHomeAsUpIndicator( R.drawable.ic_arrow_back_white_32dp);
+			actionBar.setHomeButtonEnabled(true);
+			actionBar.setBackgroundDrawable( new ColorDrawable( getContext().getResources().getColor( R.color.colorPrimary ) ) );
+		}
 	}
 }

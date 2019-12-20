@@ -7,7 +7,7 @@
     android:padding="10dp">
 
     <CheckBox
-        android:id="@+id/checkBox"
+        android:id="@+id/checkBoxInCheckboxItem"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="left"
@@ -15,7 +15,7 @@
         android:gravity="center_vertical|end" />
 
     <TextView
-        android:id="@+id/lblName"
+        android:id="@+id/lblNameInCheckbox"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"

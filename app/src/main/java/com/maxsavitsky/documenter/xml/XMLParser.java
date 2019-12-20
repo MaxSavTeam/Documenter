@@ -64,8 +64,9 @@ public class XMLParser {
 		return handler.getCategories();
 	}
 
+	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 	class XMLCategoriesWithDocumentHandler extends DefaultHandler{
-		private ArrayList<Category> mCategoriesThis;
+		private ArrayList<Category> mCategoriesThis = new ArrayList<>(  );
 
 		ArrayList<Category> getCategories() {
 			return mCategories;

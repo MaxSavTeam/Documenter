@@ -8,6 +8,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,6 +26,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.maxsavitsky.documenter.datatypes.Category;
 import com.maxsavitsky.documenter.datatypes.Document;
 import com.maxsavitsky.documenter.datatypes.MainData;
+import com.maxsavitsky.documenter.utils.ResultCodes;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.ParseSeparate;
 
@@ -31,21 +34,22 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 
 public class DocumentList extends AppCompatActivity {
 	private ArrayList<Document> documents;
 	private Category mCategory;
+	private View decorView;
+	private Map<String, Document> mDocumentMap = new HashMap<>(  );
 
 	private void applyTheme(){
 		ActionBar actionBar = getSupportActionBar();
 		if (actionBar != null) {
 			actionBar.setTitle(mCategory.getName());
-			actionBar.setDisplayHomeAsUpEnabled(true);
-			actionBar.setHomeAsUpIndicator(R.drawable.ic_arrow_back_white_32dp);
-			actionBar.setHomeButtonEnabled(true);
-			actionBar.setBackgroundDrawable(getDrawable(R.drawable.black));
+			Utils.applyDefaultActionBarStyle( actionBar );
 		}
 	}
 
@@ -87,8 +91,7 @@ public class DocumentList extends AppCompatActivity {
 
 	@Override
 	protected void onResume() {
-		//if(documents.size() != MainData.getDocumentsList().size())
-			setupRecyclerView();
+		setupRecyclerView();
 		super.onResume();
 	}
 
@@ -101,14 +104,25 @@ public class DocumentList extends AppCompatActivity {
 	@Override
 	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 		switch (item.getItemId()){
+			case R.id.item_edit_documents_list:
+				decorView = getWindow().getDecorView();
+				prepareChooseRecyclerView();
+				break;
 			case android.R.id.home:
 				finish();
 				break;
 			case R.id.item_delete:
-				if(!MainData.finallyDeleteCategoryWithId(mCategory.getId())){
-					Toast.makeText(this, "Failed", Toast.LENGTH_SHORT).show();
-				}else
-					finish();
+				try {
+					if(!MainData.finallyDeleteCategoryWithId(mCategory.getId()))
+						Toast.makeText(this, "Failed", Toast.LENGTH_SHORT).show();
+					else {
+						setResult( ResultCodes.NEED_TO_REFRESH );
+						finish();
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+					Toast.makeText( this, e.toString() + "\nonOptionsItemSelected", Toast.LENGTH_LONG ).show();
+				}
 				break;
 			case R.id.menu_edit_name:
 				AlertDialog alertDialog;
@@ -132,6 +146,7 @@ public class DocumentList extends AppCompatActivity {
 							categories.add(mCategory);
 							MainData.setCategoriesList(categories);
 							Utils.saveCategoriesList(categories);
+							setResult( ResultCodes.NEED_TO_REFRESH );
 						}
 						dialog.cancel();
 					}
@@ -146,6 +161,63 @@ public class DocumentList extends AppCompatActivity {
 				break;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	private void restartActivity() {
+		setResult( ResultCodes.RESULT_CODE_RESTART_ACTIVITY, new Intent(  ).putExtra( "id", mCategory.getId() ) );
+		this.finish();
+	}
+
+	private void prepareChooseRecyclerView(){
+		setContentView( R.layout.layout_choose_documents );
+		mDocumentMap.clear();
+
+		View.OnClickListener cancel = new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				restartActivity();
+				// TODO: 20.12.2019
+			}
+		};
+		Button btnCancel = findViewById( R.id.btnCancel );
+		btnCancel.setOnClickListener( cancel );
+
+		View.OnClickListener apply = new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				// TODO: 20.12.2019
+			}
+		};
+		Button btnApply = findViewById( R.id.btnApply );
+		btnApply.setOnClickListener( apply );
+
+		RecyclerView recyclerView = findViewById( R.id.recyclerViewChangeList );
+		LinearLayoutManager layoutManager = new LinearLayoutManager( this );
+		layoutManager.setOrientation( RecyclerView.VERTICAL );
+		recyclerView.setLayoutManager( layoutManager );
+
+		View.OnClickListener adapterOnClickListener = new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				// TODO: 20.12.2019
+			}
+		};
+		ArrayList<Document> documents = null;
+		try {
+			documents = MainData.getDocumentsFromThisCategory( mCategory.getId() );
+		} catch (Exception e) {
+			e.printStackTrace();
+			Toast.makeText( this, e.toString() + "\nprepareChooseRecyclerView", Toast.LENGTH_SHORT ).show();
+			return;
+		}
+		for(Document document : documents){
+			mDocumentMap.put( document.getId(), document );
+		}
+		ChangeListAdapter changeListAdapter = new ChangeListAdapter(
+				MainData.getDocumentsList(),
+				adapterOnClickListener );
+
+		recyclerView.setAdapter( changeListAdapter );
 	}
 
 	@Override
@@ -222,4 +294,50 @@ public class DocumentList extends AppCompatActivity {
 		}
 	}
 
+	class ChangeListAdapter extends RecyclerView.Adapter<ChangeListAdapter.ViewHolder>{
+		private ArrayList<Document> allDocumentsList;
+		private View.OnClickListener mOnClickListener;
+
+		ChangeListAdapter(ArrayList<Document> allDocumentsList, View.OnClickListener onClickListener) {
+			this.allDocumentsList = allDocumentsList;
+			mOnClickListener = onClickListener;
+		}
+
+		@NonNull
+		@Override
+		public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+			LayoutInflater layoutInflater = LayoutInflater.from( DocumentList.this );
+			View view = layoutInflater.inflate( R.layout.check_box_list_item, parent, false );
+			return new ViewHolder(view);
+		}
+
+		@Override
+		public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+			if(mDocumentMap.containsKey( allDocumentsList.get( position ).getId() )){
+				holder.mCheckBox.setChecked( true );
+			}else{
+				holder.mCheckBox.setChecked( false );
+			}
+			holder.mName.setText( allDocumentsList.get( position ).getName() );
+			holder.mId.setText( allDocumentsList.get( position ).getId() );
+		}
+
+		@Override
+		public int getItemCount() {
+			return allDocumentsList.size();
+		}
+
+		class ViewHolder extends RecyclerView.ViewHolder {
+			TextView mName, mId;
+			CheckBox mCheckBox;
+
+			ViewHolder(@NonNull View itemView) {
+				super( itemView );
+				mName = itemView.findViewById( R.id.lblNameInCheckbox );
+				mId = itemView.findViewById( R.id.checkbox_item_hidden_id );
+				mCheckBox = itemView.findViewById( R.id.checkBoxInCheckboxItem );
+				itemView.setOnClickListener( mOnClickListener );
+			}
+		}
+	}
 }

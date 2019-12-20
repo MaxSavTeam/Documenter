@@ -1,17 +1,14 @@
 <resources>
     <string name="app_name">Documenter</string>
     <string name="action_settings">Settings</string>
-    <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
-
-    <string name="hello_first_fragment">Hello first fragment</string>
-    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="title_activity_create_category">Create Category</string>
     <string name="title_activity_category_list">CategoryList</string>
     <string name="title_activity_create_documents">CreateDocuments</string>
     <string name="title_activity_document_list">DocumentList</string>
     <string name="title_activity_entries_list">Entries List</string>
+    <string name="edit_documents_list">Edit documents list</string>
+    <string name="edit_category_name">Edit category name</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="apply">Apply</string>
 </resources>

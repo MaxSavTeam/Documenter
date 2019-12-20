@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -17,6 +18,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.maxsavitsky.documenter.adapters.CategoryListAdapter;
 import com.maxsavitsky.documenter.datatypes.Category;
 import com.maxsavitsky.documenter.datatypes.MainData;
+import com.maxsavitsky.documenter.utils.RequestCodes;
+import com.maxsavitsky.documenter.utils.ResultCodes;
+import com.maxsavitsky.documenter.utils.Utils;
 
 import java.util.ArrayList;
 
@@ -27,26 +31,27 @@ public class CategoryList extends AppCompatActivity {
 		ActionBar actionBar = getSupportActionBar();
 		if (actionBar != null) {
 			actionBar.setTitle("Category List");
-			actionBar.setDisplayHomeAsUpEnabled(true);
-			actionBar.setHomeAsUpIndicator(R.drawable.ic_arrow_back_white_32dp);
-			actionBar.setHomeButtonEnabled(true);
-			actionBar.setBackgroundDrawable(getDrawable(R.drawable.black));
+			Utils.applyDefaultActionBarStyle(actionBar);
+			actionBar.setDisplayHomeAsUpEnabled( false );
 		}
+	}
+
+	private void onMyBackPressed(){
+		setResult( ResultCodes.RESULT_CODE_EXIT );
+		finish();
+	}
+
+	@Override
+	public void onBackPressed() {
+		onMyBackPressed();
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 		if(item.getItemId() == android.R.id.home){
-			finish();
+			onMyBackPressed();
 		}
 		return super.onOptionsItemSelected(item);
-	}
-
-	@Override
-	protected void onResume() {
-		super.onResume();
-		//if(mCategories.size() != MainData.getCategoriesList().size())
-			setupRecyclerView();
 	}
 
 	private void setupRecyclerView(){
@@ -75,9 +80,31 @@ public class CategoryList extends AppCompatActivity {
 			TextView t = v.findViewById(R.id.lblHiddenCategoryId);
 			String id = t.getText().toString();
 			intent.putExtra("category_uid", id);
-			startActivity(intent);
+			//startActivity(intent);
+			startActivityForResult( intent, RequestCodes.REQUEST_CODE_DOCUMENT_LIST );
 		}
 	};
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+		if(requestCode == RequestCodes.REQUEST_CODE_DOCUMENT_LIST){
+			if(resultCode == ResultCodes.RESULT_CODE_RESTART_ACTIVITY){
+				Intent intent = new Intent( this, DocumentList.class );
+				if ( data != null ) {
+					intent.putExtra( "category_uid", data.getStringExtra( "id" ) );
+				}
+				startActivityForResult( intent, RequestCodes.REQUEST_CODE_DOCUMENT_LIST );
+			}
+			if(resultCode == ResultCodes.NEED_TO_REFRESH){
+				setupRecyclerView();
+			}
+		}else if(requestCode == RequestCodes.REQUEST_CODE_CREATE_CATEGORY){
+			if(resultCode == ResultCodes.NEED_TO_REFRESH){
+				setupRecyclerView();
+			}
+		}
+		super.onActivityResult( requestCode, resultCode, data );
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -92,23 +119,11 @@ public class CategoryList extends AppCompatActivity {
 		fab.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				goToActivity(CreateCategory.class);
+				Intent intent = new Intent( CategoryList.this, CreateCategory.class );
+				startActivityForResult( intent, RequestCodes.REQUEST_CODE_CREATE_CATEGORY );
 			}
 		});
-		/*try{
-			XMLParser xmlParser = new XMLParser();
-			mCategories = xmlParser.parseCategories();
-		}catch (Exception e){
-			e.printStackTrace();
-			mCategories = new ArrayList<>();
-			Toast.makeText(this, e.toString(), Toast.LENGTH_LONG).show();
-		}*/
 
 		setupRecyclerView();
-	}
-
-	private void goToActivity(Class <?> cls){
-		Intent goTo = new Intent(this, cls);
-		startActivity(goTo);
 	}
 }

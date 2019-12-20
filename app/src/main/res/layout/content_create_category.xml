@@ -44,10 +44,11 @@
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewChooseDocuments"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:layout_weight="1"
+            android:scrollbars="vertical"
             android:visibility="visible"
             tools:listitem="@layout/check_box_list_item" />
 

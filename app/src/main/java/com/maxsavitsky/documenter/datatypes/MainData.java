@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.xml.parsers.ParserConfigurationException;
+
 public class MainData {
 
 	// START Categories
@@ -32,6 +34,18 @@ public class MainData {
 		}
 	}
 
+	public static ArrayList<Document> getDocumentsFromThisCategory(String id) throws Exception {
+		ArrayList<Document> documents;
+		try {
+			documents = ParseSeparate.parseCategoryWithId( id );
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new Exception( e.toString() );
+			//return new ArrayList<>(  );
+		}
+		return documents;
+	}
+
 	public static ArrayList<Category> getCategoriesInWhichIncludedDocumentWithId(String id) throws IOException, SAXException {
 		File path = new File(Utils.getExternalStoragePath().getPath() + "/documents");
 		if(!path.exists()){
@@ -39,9 +53,12 @@ public class MainData {
 		}
 		path = new File(path.getPath() + "/" + id);
 		if(!path.exists()){
-			throw new FileNotFoundException("MainData.getCategoriesInWhichIncludedDocumentWithId: dir for this id does not exist");
+			throw new FileNotFoundException("MainData.getCategoriesInWhichIncludedDocumentWithId: dir for this id does not exist; id=" + id + "; path=" + path.getPath());
 		}
 		path = new File(path.getPath() + "/included_in.xml");
+		if(!path.exists()){
+			return new ArrayList<>(  );
+		}
 
 		XMLParser xmlParser = new XMLParser();
 		return xmlParser.parseCategoriesInWhichIncludedDocumentWithId(id);
@@ -61,35 +78,31 @@ public class MainData {
 		sCategoryMap.remove(id);
 	}
 
-	public static boolean finallyDeleteCategoryWithId(String id){
+	public static boolean finallyDeleteCategoryWithId(String id) throws Exception {
 		File file = new File(Utils.getExternalStoragePath().getPath() + "/categories/" + id + "/" + id + ".xml");
-		if(file.delete()){
-			try{
-				Category category = getCategoryWithId(id);
+		try{
+			Category category = getCategoryWithId(id);
 
-				if(category == null){
-					throw new IllegalArgumentException("MainData.finallyDeleteCategoryWithId: category with id=" + id + " does not exist");
-				}
+			if(category == null){
+				throw new IllegalArgumentException("MainData.finallyDeleteCategoryWithId: category with id=" + id + " does not exist");
+			}
 
-				ArrayList<Document> documents = ParseSeparate.parseCategoryWithId( id );
-				if(documents.size() != 0){
-					for(Document document : documents){
-						ArrayList<Category> categories = getCategoriesInWhichIncludedDocumentWithId(id);
-						if(categories.size() == 1){
-							deleteDocument(document.getId());
-						}
+			ArrayList<Document> documents = ParseSeparate.parseCategoryWithId( id );
+			if(documents.size() != 0){
+				for(Document document : documents){
+					ArrayList<Category> categories = getCategoriesInWhichIncludedDocumentWithId(document.getId());
+					if(categories.size() <= 1){
+						deleteDocument(document.getId());
 					}
 				}
-				removeCategoryWithId(id);
-				Utils.saveCategoriesList(getCategoriesList());
-				file.delete();
-			}catch (Exception e){
-				e.printStackTrace();
-				return false;
 			}
-			return true;
+			removeCategoryWithId(id);
+			Utils.saveCategoriesList(getCategoriesList());
+			return file.delete();
+		}catch (Exception e){
+			e.printStackTrace();
+			throw new Exception( e.toString() );
 		}
-		return false;
 	}
 
 	public static void readAllCategories() throws IOException, SAXException {

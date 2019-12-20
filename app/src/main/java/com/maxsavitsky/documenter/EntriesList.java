@@ -9,6 +9,7 @@ import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.datatypes.Document;
 import com.maxsavitsky.documenter.datatypes.Entry;
 import com.maxsavitsky.documenter.datatypes.MainData;
+import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.ParseSeparate;
 
 import androidx.annotation.NonNull;
@@ -20,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.text.Layout;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -40,10 +42,7 @@ public class EntriesList extends AppCompatActivity {
 		ActionBar actionBar = getSupportActionBar();
 		if (actionBar != null) {
 			actionBar.setTitle(mDocument.getName());
-			actionBar.setDisplayHomeAsUpEnabled(true);
-			actionBar.setHomeAsUpIndicator(R.drawable.ic_arrow_back_white_32dp);
-			actionBar.setHomeButtonEnabled(true);
-			actionBar.setBackgroundDrawable(getDrawable(R.drawable.black));
+			Utils.applyDefaultActionBarStyle(actionBar);
 		}
 	}
 
@@ -81,11 +80,19 @@ public class EntriesList extends AppCompatActivity {
 			mEntries = ParseSeparate.parseDocumentWithId( mDocument.getId() );
 		} catch (Exception e) {
 			e.printStackTrace();
-			Toast.makeText( this, e.toString(), Toast.LENGTH_LONG ).show();
+			Toast.makeText( this, e.toString() + "\nonCreate 85", Toast.LENGTH_LONG ).show();
 		}
 		applyTheme();
 
 		setupRecyclerView();
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+		if ( item.getItemId() == android.R.id.home ) {
+			finish();
+		}
+		return super.onOptionsItemSelected( item );
 	}
 
 	class RVAdapter extends RecyclerView.Adapter<RVAdapter.ViewHolder>{

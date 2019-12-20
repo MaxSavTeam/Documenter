@@ -11,7 +11,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -22,14 +21,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.maxsavitsky.documenter.datatypes.Category;
 import com.maxsavitsky.documenter.datatypes.Document;
 import com.maxsavitsky.documenter.datatypes.MainData;
+import com.maxsavitsky.documenter.utils.ResultCodes;
 import com.maxsavitsky.documenter.utils.Utils;
 
-import java.text.DateFormat;
-import java.text.FieldPosition;
-import java.text.ParsePosition;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 public class CreateCategory extends AppCompatActivity {
 
@@ -38,9 +33,7 @@ public class CreateCategory extends AppCompatActivity {
 	private void applyTheme(){
 		ActionBar actionBar = getSupportActionBar();
 		if(actionBar != null){
-			actionBar.setBackgroundDrawable(getDrawable(R.drawable.black));
-			actionBar.setDisplayHomeAsUpEnabled(true);
-			actionBar.setHomeAsUpIndicator(R.drawable.ic_arrow_back_white_32dp);
+			Utils.applyDefaultActionBarStyle( actionBar );
 		}
 	}
 
@@ -99,7 +92,7 @@ public class CreateCategory extends AppCompatActivity {
 
 				pd.dismiss();
 
-				//Toast.makeText(CreateCategory.this, Integer.toString(categories.size()) + " " + Integer.toString(MainData.getCategoriesList().size()), Toast.LENGTH_SHORT).show();
+				setResult( ResultCodes.NEED_TO_REFRESH );
 				finish();
 			}else{
 				editText.requestFocus();
@@ -110,7 +103,7 @@ public class CreateCategory extends AppCompatActivity {
 	View.OnClickListener itemClicked = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
-			CheckBox checkBox = v.findViewById(R.id.checkBox);
+			CheckBox checkBox = v.findViewById(R.id.checkBoxInCheckboxItem );
 			checkBox.setChecked(!checkBox.isChecked());
 			TextView textViewId = v.findViewById(R.id.checkbox_item_hidden_id);
 			String id = textViewId.getText().toString();
@@ -162,7 +155,7 @@ public class CreateCategory extends AppCompatActivity {
 			VH(@NonNull View itemView) {
 				super(itemView);
 				id = itemView.findViewById(R.id.checkbox_item_hidden_id);
-				name = itemView.findViewById(R.id.lblName);
+				name = itemView.findViewById(R.id.lblNameInCheckbox );
 				itemView.setOnClickListener(mOnClickListener);
 			}
 		}

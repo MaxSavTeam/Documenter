@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:title="Edit name"
+    <item android:title="@string/edit_category_name"
         android:id="@+id/menu_edit_name" />
 
-    <item android:id="@+id/item_add_documents"
-        android:title="Add documents" />
+    <item android:id="@+id/item_edit_documents_list"
+        android:title="@string/edit_documents_list" />
 
-    <item android:title="Delete"
+    <item android:title="@string/delete"
         android:id="@+id/item_delete" />
 </menu>
