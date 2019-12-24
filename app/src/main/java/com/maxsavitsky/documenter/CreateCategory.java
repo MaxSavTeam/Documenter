@@ -56,7 +56,7 @@ public class CreateCategory extends AppCompatActivity {
 		Toolbar toolbar = findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 
-		FloatingActionButton fab = findViewById(R.id.fab);
+		FloatingActionButton fab = findViewById(R.id.fabSaveCategory);
 		fab.setOnClickListener(saveCategory);
 		applyTheme();
 
@@ -105,7 +105,11 @@ public class CreateCategory extends AppCompatActivity {
 
 				MainData.setCategoriesList(categories);
 				Utils.saveCategoriesList(categories);
-				Utils.saveCategoryDocuments(uid, documentsToIncludeInThisCategory);
+				try {
+					Utils.saveCategoryDocuments( uid, documentsToIncludeInThisCategory );
+				}catch (Exception e){
+					Toast.makeText( CreateCategory.this, e.toString(), Toast.LENGTH_SHORT ).show();
+				}
 
 				pd.dismiss();
 

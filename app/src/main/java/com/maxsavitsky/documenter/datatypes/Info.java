@@ -7,6 +7,12 @@ import java.util.Locale;
 public class Info {
 	private int timeStamp;
 
+	public Info(int timeStamp) {
+		this.timeStamp = timeStamp;
+	}
+
+	public Info() {}
+
 	public int getTimeStamp() {
 		return timeStamp;
 	}

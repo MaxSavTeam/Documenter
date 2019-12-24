@@ -25,7 +25,7 @@ public class ParseSeparate {
 	// [START categories[
 	public static ArrayList<Document> parseCategoryWithId(String id) throws ParserConfigurationException, SAXException, IOException {
 		sDocuments.clear();
-		File path = new File(Utils.getContext().getExternalFilesDir(null).getPath() + "/categories/" + id + "/" + id + ".xml");
+		File path = new File(Utils.getExternalStoragePath().getPath() + "/categories/" + id + "/" + id + ".xml");
 		SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
 		SAXParser parser = saxParserFactory.newSAXParser();
 		parser.parse(path, new CategoryHandler());

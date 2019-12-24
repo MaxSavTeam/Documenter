@@ -15,11 +15,15 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.maxsavitsky.documenter.datatypes.Category;
 import com.maxsavitsky.documenter.datatypes.Document;
 import com.maxsavitsky.documenter.datatypes.Entry;
+import com.maxsavitsky.documenter.datatypes.Info;
 import com.maxsavitsky.documenter.datatypes.MainData;
+import com.maxsavitsky.documenter.utils.ResultCodes;
 import com.maxsavitsky.documenter.utils.Utils;
+import com.maxsavitsky.documenter.xml.ParseSeparate;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class CreateDocument extends AppCompatActivity {
 	private String categoryId;
@@ -35,6 +39,7 @@ public class CreateDocument extends AppCompatActivity {
 	@Override
 	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 		if(item.getItemId() == android.R.id.home){
+			setResult( ResultCodes.RESULT_CODE_OK );
 			finish();
 		}
 		return super.onOptionsItemSelected(item);
@@ -50,7 +55,7 @@ public class CreateDocument extends AppCompatActivity {
 		applyTheme();
 		categoryId = getIntent().getStringExtra( "parent_id");
 
-		FloatingActionButton fab = findViewById(R.id.fab);
+		FloatingActionButton fab = findViewById(R.id.fabSaveDocument);
 		fab.setOnClickListener(saveDocument);
 		EditText editText = findViewById(R.id.editTextTextPersonName);
 		editText.requestFocus();
@@ -69,26 +74,44 @@ public class CreateDocument extends AppCompatActivity {
 				String id = Utils.generateUniqueId() + "_doc";
 
 				Document thisDocument = new Document(id, name);
-
-				ArrayList<Document> documents = MainData.getCategoryWithId( categoryId ).getDocuments();
+				ArrayList<Document> documents;
+				try {
+					thisDocument.setAndSaveInfo( new Info( (int) new Date().getTime() ) );
+					//documents = MainData.getCategoryWithId( categoryId ).getDocuments();
+					documents = ParseSeparate.parseCategoryWithId( categoryId );
+				}catch (Exception e){
+					Toast.makeText( CreateDocument.this, "saveDocument:\n\n" + e.toString(), Toast.LENGTH_LONG ).show();
+					return;
+				}
 				ArrayList<Document> allDocuments = MainData.getDocumentsList();
 				allDocuments.add(thisDocument);
 				documents.add( thisDocument );
-
-				MainData.setDocumentsList(allDocuments);
-				Utils.saveDocumentsList(allDocuments);
-				Utils.saveCategoryDocuments( categoryId, documents );
-				ArrayList<Category> categories = new ArrayList<>(  );
-				categories.add( MainData.getCategoryWithId( categoryId ) );
 				try {
 					Utils.createAllNecessaryForDocument( id );
-					Utils.saveInWhichCategoriesDocumentWithIdIncludedIn( id, categories );
+					thisDocument.addCategoryToIncludedInXml( categoryId );
+				}catch (Exception e){
+					e.printStackTrace();
+					Toast.makeText( CreateDocument.this, "saveDocument 1\n\n" + e.toString(), Toast.LENGTH_LONG ).show();
+					return;
+				}
+				MainData.setDocumentsList(allDocuments);
+				Utils.saveDocumentsList(allDocuments);
+				ArrayList<Category> categories = new ArrayList<>(  );
+				try {
+					Utils.saveCategoryDocuments( categoryId, documents );
+					categories.add( MainData.getCategoryWithId( categoryId ) );
+				}catch (Exception e){
+					Toast.makeText( CreateDocument.this, "saveDocument: \n\n" + e.toString(), Toast.LENGTH_LONG ).show();
+				}
+				try {
+					thisDocument.saveInWhichCategoriesDocumentWithIdIncludedIn( categories );
 				} catch (IOException e) {
 					e.printStackTrace();
 					Toast.makeText( CreateDocument.this, e.toString() + "\nsaveDocument", Toast.LENGTH_LONG ).show();
 				}
 				// TODO: 19.12.2019 change to store included entries
 				Utils.saveDocumentEntries( id, new ArrayList<Entry>() );
+				setResult( ResultCodes.NEED_TO_REFRESH );
 				finish();
 			}else{
 				editText.requestFocus();

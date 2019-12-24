@@ -115,7 +115,7 @@ public class CategoryList extends AppCompatActivity {
 
 		applyTheme();
 
-		FloatingActionButton fab = findViewById(R.id.fab);
+		FloatingActionButton fab = findViewById(R.id.fabCreateCategory);
 		fab.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {

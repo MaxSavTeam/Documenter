@@ -1,5 +1,6 @@
 package com.maxsavitsky.documenter;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -9,11 +10,13 @@ import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.datatypes.Document;
 import com.maxsavitsky.documenter.datatypes.Entry;
 import com.maxsavitsky.documenter.datatypes.MainData;
+import com.maxsavitsky.documenter.utils.ResultCodes;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.ParseSeparate;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -21,9 +24,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.text.Layout;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,6 +38,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Result;
 
 public class EntriesList extends AppCompatActivity {
 	private Document mDocument;
@@ -84,15 +90,80 @@ public class EntriesList extends AppCompatActivity {
 		}
 		applyTheme();
 
+		FloatingActionButton fab = findViewById( R.id.fabCreateEntry );
+		fab.setOnClickListener( new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent1 = new Intent( EntriesList.this, CreateEntry.class );
+				intent1.putExtra( "id", mDocument.getId() );
+				startActivity( intent1 );
+			}
+		} );
+
 		setupRecyclerView();
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-		if ( item.getItemId() == android.R.id.home ) {
-			finish();
+		switch ( item.getItemId() ) {
+			case android.R.id.home:
+				setResult( ResultCodes.RESULT_CODE_OK );
+				finish();
+				break;
+			case R.id.item_delete_document:
+				try {
+					if(MainData.finallyDeleteDocumentWithId( mDocument.getId() )){
+						setResult( ResultCodes.NEED_TO_REFRESH );
+						finish();
+					}else{
+						Toast.makeText( this, "Failed", Toast.LENGTH_SHORT ).show();
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+					Toast.makeText( this, e.toString(), Toast.LENGTH_LONG ).show();
+				}
+				break;
+			case R.id.item_change_document_name:
+				AlertDialog alertDialog;
+				AlertDialog.Builder builder = new AlertDialog.Builder( this ).setTitle( "Edit document name" ).setMessage( "Edit document name here" );
+				final EditText editText = new EditText( this );
+				editText.setText( mDocument.getName() );
+				editText.append( "" );
+				editText.requestFocus();
+				ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT );
+				editText.setLayoutParams( layoutParams );
+				builder.setView( editText ).setPositiveButton( "OK", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						String text = editText.getText().toString();
+						if ( !text.isEmpty() && !text.equals( mDocument.getName() ) ) {
+							ArrayList<Document> documents = MainData.getDocumentsList();
+							documents.remove( mDocument );
+							mDocument = new Document( mDocument.getId(), text );
+							documents.add( mDocument );
+							applyTheme();
+							MainData.setDocumentsList( documents );
+							Utils.saveDocumentsList( documents );
+							setResult( ResultCodes.NEED_TO_REFRESH );
+						}
+					}
+				} ).setNegativeButton( getResources().getString( R.string.cancel ), new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.cancel();
+					}
+				} );
+				alertDialog = builder.create();
+				alertDialog.show();
+				break;
 		}
 		return super.onOptionsItemSelected( item );
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate( R.menu.document_menu, menu );
+		return super.onCreateOptionsMenu( menu );
 	}
 
 	class RVAdapter extends RecyclerView.Adapter<RVAdapter.ViewHolder>{

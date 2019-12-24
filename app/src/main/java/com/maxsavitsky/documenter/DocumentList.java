@@ -15,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -26,6 +27,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.maxsavitsky.documenter.datatypes.Category;
 import com.maxsavitsky.documenter.datatypes.Document;
 import com.maxsavitsky.documenter.datatypes.MainData;
+import com.maxsavitsky.documenter.utils.RequestCodes;
 import com.maxsavitsky.documenter.utils.ResultCodes;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.ParseSeparate;
@@ -34,6 +36,9 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -55,12 +60,17 @@ public class DocumentList extends AppCompatActivity {
 		}
 	}
 
+	private void backPressed(){
+		setResult( ResultCodes.RESULT_CODE_OK );
+		finish();
+	}
+
 	private void setupRecyclerView(){
 		try {
 			mDocuments = ParseSeparate.parseCategoryWithId( mCategory.getId() );
 		}catch (Exception e){
 			e.printStackTrace();
-			Toast.makeText( this, e.toString(), Toast.LENGTH_SHORT ).show();
+			Toast.makeText( this, e.toString() + "\n\nsetup", Toast.LENGTH_LONG ).show();
 			return;
 		}
 		RecyclerView recyclerView = findViewById(R.id.category_list_view);
@@ -71,6 +81,8 @@ public class DocumentList extends AppCompatActivity {
 		}else {
 			LinearLayoutManager lay = new LinearLayoutManager(this);
 			lay.setOrientation(RecyclerView.VERTICAL);
+			if(mDocuments.size() > 1)
+				Collections.sort( mDocuments );
 			DocumentsAdapter mAdapter = new DocumentsAdapter( mDocuments, mOnClickListener);
 			recyclerView.setLayoutManager(lay);
 			recyclerView.setAdapter(mAdapter);
@@ -92,15 +104,8 @@ public class DocumentList extends AppCompatActivity {
 	};
 
 	@Override
-	protected void onResume() {
-		setupRecyclerView();
-		super.onResume();
-	}
-
-	@Override
 	public void onBackPressed() {
-		finish();
-		super.onBackPressed();
+		backPressed();
 	}
 
 	@Override
@@ -110,15 +115,15 @@ public class DocumentList extends AppCompatActivity {
 				prepareChooseRecyclerView();
 				break;
 			case android.R.id.home:
-				finish();
+				backPressed();
 				break;
 			case R.id.item_delete:
 				try {
-					if(!MainData.finallyDeleteCategoryWithId(mCategory.getId()))
-						Toast.makeText(this, "Failed", Toast.LENGTH_SHORT).show();
-					else {
+					if ( MainData.finallyDeleteCategoryWithId( mCategory.getId() ) ) {
 						setResult( ResultCodes.NEED_TO_REFRESH );
 						finish();
+					} else {
+						Toast.makeText(this, "Failed", Toast.LENGTH_SHORT).show();
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -151,7 +156,7 @@ public class DocumentList extends AppCompatActivity {
 						}
 						dialog.cancel();
 					}
-				}).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+				}).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						dialog.cancel();
@@ -210,7 +215,11 @@ public class DocumentList extends AppCompatActivity {
 						e.printStackTrace();
 					}
 				}
-				Utils.saveCategoryDocuments( mCategory.getId(), documents );
+				try {
+					Utils.saveCategoryDocuments( mCategory.getId(), documents );
+				}catch (Exception e){
+					Toast.makeText( DocumentList.this, e.toString(), Toast.LENGTH_LONG ).show();
+				}
 				//Toast.makeText( DocumentList.this, Integer.toString( documents.size() ), Toast.LENGTH_SHORT ).show();
 				restartActivity();
 				//Toast.makeText( DocumentList.this, documentsToInclude.toString(), Toast.LENGTH_LONG ).show();
@@ -255,7 +264,7 @@ public class DocumentList extends AppCompatActivity {
 					documentsToInclude.remove( id );
 					//Toast.makeText( DocumentList.this, Boolean.toString( documentsToInclude.containsKey( id ) ), Toast.LENGTH_SHORT ).show();
 				}
-				Toast.makeText( DocumentList.this, Integer.toString( documentsToInclude.size() ) + "\n" + Integer.toString( documentsWhichWillBeExcluded.size() ), Toast.LENGTH_LONG ).show();
+				//Toast.makeText( DocumentList.this, Integer.toString( documentsToInclude.size() ) + "\n" + Integer.toString( documentsWhichWillBeExcluded.size() ), Toast.LENGTH_LONG ).show();
 			}
 		};
 		// TODO: 20.12.2019 add list sorting
@@ -281,25 +290,36 @@ public class DocumentList extends AppCompatActivity {
 
 		Intent intent = getIntent();
 		String id = intent.getStringExtra("category_uid");
-		mCategory = MainData.getCategoryWithId(id);
+
+		try {
+			mCategory = MainData.getCategoryWithId(id);
+			mDocuments = ParseSeparate.parseCategoryWithId(id);
+		} catch (Exception e) {
+			e.printStackTrace();
+			Toast.makeText( this, e.toString(), Toast.LENGTH_LONG ).show();
+			return;
+		}
 
 		applyTheme();
 
-		try {
-			mDocuments = ParseSeparate.parseCategoryWithId(id);
-		} catch (ParserConfigurationException | SAXException | IOException e) {
-			e.printStackTrace();
-			Toast.makeText( this, e.toString(), Toast.LENGTH_SHORT ).show();
-		}
-
 		setupRecyclerView();
-		FloatingActionButton fab = findViewById(R.id.fab);
+		FloatingActionButton fab = findViewById(R.id.fabCreateDocument);
 		fab.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				startActivity(new Intent(DocumentList.this, CreateDocument.class).putExtra("parent_id", mCategory.getId()));
+				startActivityForResult(new Intent(DocumentList.this, CreateDocument.class).putExtra("parent_id", mCategory.getId()), RequestCodes.REQUEST_CODE_CREATE_DOCUMENT );
 			}
 		});
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+		super.onActivityResult( requestCode, resultCode, data );
+		if ( requestCode == RequestCodes.REQUEST_CODE_CREATE_DOCUMENT ) {
+			if(resultCode == ResultCodes.NEED_TO_REFRESH){
+				setupRecyclerView();
+			}
+		}
 	}
 
 	class DocumentsAdapter extends RecyclerView.Adapter<DocumentsAdapter.VH>{

@@ -46,7 +46,7 @@ public class MainData {
 		return documents;
 	}
 
-	public static ArrayList<Category> getCategoriesInWhichIncludedDocumentWithId(String id) throws IOException, SAXException {
+	public static ArrayList<Category> getCategoriesInWhichIncludedDocumentWithId(String id) throws Exception {
 		File path = new File(Utils.getExternalStoragePath().getPath() + "/documents");
 		if(!path.exists()){
 			throw new FileNotFoundException("MainData.getCategoriesInWhichIncludedDocumentWithId: documents dir does not exist");
@@ -57,14 +57,18 @@ public class MainData {
 		}
 		path = new File(path.getPath() + "/included_in.xml");
 		if(!path.exists()){
-			return new ArrayList<>(  );
+			throw new FileNotFoundException( "MainData.getCategoriesInWhichIncludedDocumentWithId: included_in.xml not found; id="+ id );
 		}
 
 		XMLParser xmlParser = new XMLParser();
 		return xmlParser.parseCategoriesInWhichIncludedDocumentWithId(id);
 	}
 
-	public static Category getCategoryWithId(String id){
+	public static Category getCategoryWithId(String id) throws NullPointerException {
+		Category category = sCategoryMap.get( id );
+		if(category == null){
+			throw new NullPointerException( "MainData.getCategoryWithId: category with id=" + id + " not found" );
+		}
 		return sCategoryMap.get(id);
 	}
 
@@ -98,6 +102,10 @@ public class MainData {
 			}
 			removeCategoryWithId(id);
 			Utils.saveCategoriesList(getCategoriesList());
+			file = new File( Utils.getExternalStoragePath().getPath() + "/categories/" + id );
+			for(File file1 : file.listFiles()){
+				file1.delete();
+			}
 			return file.delete();
 		}catch (Exception e){
 			e.printStackTrace();
@@ -157,7 +165,36 @@ public class MainData {
 				deleteEntryWithId( entry.getId() );
 			}
 		}*/
+		for(File file : path.listFiles()){
+			file.delete();
+		}
 		path.delete();
+	}
+
+	public static boolean finallyDeleteDocumentWithId(String id) throws Exception {
+		File file = new File( Utils.getExternalStoragePath().getPath() + "/documents/" + id + "/" + id + ".xml" );
+		if ( !file.exists() )
+			throw new IllegalArgumentException( "MainData.finallyDeleteDocumentWithId: document with id=" + id + " does not exist" );
+
+		Document document = MainData.getDocumentWithId( id );
+		if ( document == null )
+			throw new IllegalArgumentException( "MainData.finallyDeleteDocumentWithId: document not found; id=" + id );
+
+		ArrayList<Entry> entries = ParseSeparate.parseDocumentWithId( id );
+		if(entries.size() != 0){
+			for(Entry entry : entries){
+				/*ArrayList<Document> documents = getDocumentsInWhichIncludedThisEntry( entry.getId() );
+				documents.remove( document );
+				entry.saveInWhichDocumentsIncludedThisEntry( documents );*/
+				entry.removeDocumentFromIncluded( document.getId() );
+			}
+		}
+		ArrayList<Category> categories = document.getCategoriesInWhichIncludedDocument();
+		for(Category category : categories){
+			category.removeDocument( document );
+		}
+		deleteDocument( id );
+		return true;
 	}
 
 	public static void readAllDocuments() throws IOException, SAXException {
@@ -193,6 +230,20 @@ public class MainData {
 				return;
 			}
 		}
+	}
+
+	public static ArrayList<Document> getDocumentsInWhichIncludedThisEntry(String id) throws IOException, SAXException, ParserConfigurationException {
+		File file = new File( Utils.getExternalStoragePath().getPath() + "/entries" );
+		if(!file.exists())
+			throw new IllegalArgumentException( "MainData.getDocumentsInWhichIncludedThisEntry: entries dir does not exist" );
+		file = new File( file.getPath() + "/" + id );
+		if(!file.exists())
+			throw new IllegalArgumentException( "MainData.getDocumentsInWhichIncludedThisEntry: entry dir with id=" + id + " does not exist" );
+		file = new File( file.getPath() + "/included_in.xml" );
+		if(!file.exists())
+			return new ArrayList<>(  );
+
+		return ParseSeparate.getDocumentsInWhichIncludedEntryWithId( id );
 	}
 
 	public static void readAllEntries() throws IOException, SAXException {

@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.maxsavitsky.documenter.utils.Utils;
+import com.maxsavitsky.documenter.xml.ParseSeparate;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -58,13 +59,22 @@ public class Category {
 		mDocuments.add(document);
 	}
 
-	public void removeDocumentWithId(String documentId){
-		for(int i = 0; i < mDocuments.size(); i++){
-			if(mDocuments.get(i).getId().equals(documentId)){
-				mDocuments.remove(i);
-				return;
+	public void removeDocumentWithId(String documentId) throws Exception{
+		ArrayList<Document> documents = ParseSeparate.parseCategoryWithId( getId() );
+		documents.remove( MainData.getDocumentWithId( documentId ) );
+		Utils.saveCategoryDocuments( getId(), documents );
+	}
+
+	public void removeDocument(Document document) throws Exception{
+		ArrayList<Document> documents = ParseSeparate.parseCategoryWithId( getId() );
+		//documents.remove( document );
+		for(int i = 0; i < documents.size(); i++){
+			if(documents.get( i ).getId().equals( document.getId() )){
+				documents.remove( i );
+				break;
 			}
 		}
+		Utils.saveCategoryDocuments( getId(), documents );
 	}
 
 	public Document getDocumentWithId(String id){

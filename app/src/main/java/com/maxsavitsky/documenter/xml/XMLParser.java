@@ -76,7 +76,7 @@ public class XMLParser {
 		}
 	}
 
-	public ArrayList<Category> parseCategoriesInWhichIncludedDocumentWithId(String id) throws IOException, SAXException {
+	public ArrayList<Category> parseCategoriesInWhichIncludedDocumentWithId(String id) throws Exception {
 		File path = new File(Utils.getExternalStoragePath().getPath() + "/documents/" + id + "/included_in.xml");
 		XMLCategoriesWithDocumentHandler handler = new XMLCategoriesWithDocumentHandler();
 		mSAXParser.parse(path, handler);
@@ -85,18 +85,24 @@ public class XMLParser {
 	}
 
 	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-	class XMLCategoriesWithDocumentHandler extends DefaultHandler{
+	static class XMLCategoriesWithDocumentHandler extends DefaultHandler{
 		private ArrayList<Category> mCategoriesThis = new ArrayList<>(  );
 
 		ArrayList<Category> getCategories() {
-			return mCategories;
+			return mCategoriesThis;
 		}
 
 		@Override
-		public void startElement(String uri, String localName, String qName, Attributes attributes) {
+		public void startElement(String uri, String localName, String qName, Attributes attributes)  throws SAXException{
 			if(qName.equals("category")){
 				String id = attributes.getValue("id");
-				this.mCategoriesThis.add(new Category(id, MainData.getCategoryWithId(id).getName()));
+				//try {
+					this.mCategoriesThis.add(new Category(id, MainData.getCategoryWithId(id).getName()));
+				/*} catch (NullPointerException e) {
+					SAXException saxException = new SAXException( "NPE: category id=" + id + " not found in list" );
+					saxException.printStackTrace();
+					throw saxException;
+				}*/
 			}
 		}
 	}
@@ -106,7 +112,7 @@ public class XMLParser {
 
 	public ArrayList<Document> parseDocuments() throws IOException, SAXException {
 		mDocuments.clear();
-		File path = new File(Utils.getContext().getExternalFilesDir(null).getPath() + "/documents.xml");
+		File path = new File(Utils.getExternalStoragePath().getPath() + "/documents.xml");
 		if(!path.exists()){
 			path.createNewFile();
 			try{
@@ -120,6 +126,13 @@ public class XMLParser {
 			}
 		}else {
 			mSAXParser.parse(path, new XMLDocumentsHandler());
+			for(int i = 0; i < mDocuments.size(); i++){
+				Document document = mDocuments.get( i );
+				File file = new File( Utils.getExternalStoragePath().getPath() + "/documents/" + document.getId() + "/info.xml" );
+				InfoHandler infoHandler = new InfoHandler();
+				mSAXParser.parse( file, infoHandler );
+				mDocuments.get( i ).setInfo( infoHandler.mInfo );
+			}
 		}
 		return mDocuments;
 	}

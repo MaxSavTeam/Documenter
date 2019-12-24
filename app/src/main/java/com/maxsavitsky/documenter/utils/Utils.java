@@ -93,33 +93,29 @@ public class Utils {
 		}
 	}
 
-	public static void saveCategoryDocuments(String id, ArrayList<Document> documents){
+	public static void saveCategoryDocuments(String id, ArrayList<Document> documents) throws Exception{
 		File file = new File(getExternalStoragePath().getPath() + "/categories/");
-		try {
-			if(!file.exists()){
-				file.mkdir();
-			}
-			file = new File(file.getPath() + "/" + id);
-			if(!file.exists()){
-				file.mkdir();
-			}
-			file = new File(file.getPath() + "/" + id + ".xml");
-			if (!file.exists()) {
-				file.createNewFile();
-			}
-			FileWriter fr = new FileWriter(file, false);
-			fr.write(xmlHeader);
-			fr.append("<documents>\n");
-			for(int i = 0; i < documents.size(); i++){
-				Document cur = documents.get(i);
-				fr.append("<document " + "id=\"" + cur.getId() + "\" />\n");
-			}
-			fr.append("</documents>");
-			fr.flush();
-			fr.close();
-		}catch (Exception e){
-			e.printStackTrace();
+		if(!file.exists()){
+			file.mkdir();
 		}
+		file = new File(file.getPath() + "/" + id);
+		if(!file.exists()){
+			file.mkdir();
+		}
+		file = new File(file.getPath() + "/" + id + ".xml");
+		if (!file.exists()) {
+			file.createNewFile();
+		}
+		FileWriter fr = new FileWriter(file, false);
+		fr.write(xmlHeader);
+		fr.append("<documents>\n");
+		for(int i = 0; i < documents.size(); i++){
+			Document cur = documents.get(i);
+			fr.append("<document " + "id=\"" + cur.getId() + "\" />\n");
+		}
+		fr.append("</documents>");
+		fr.flush();
+		fr.close();
 	}
 
 	public static void saveDocumentEntries(String id, ArrayList<Entry> entries){

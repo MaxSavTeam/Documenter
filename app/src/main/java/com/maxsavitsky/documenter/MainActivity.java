@@ -36,18 +36,19 @@ public class MainActivity extends AppCompatActivity {
 
 		Utils.setContext(getApplicationContext());
 
-		try{
-			MainData.readAllDocuments();
-		}catch (Exception e){
-			Toast.makeText(this, e.toString(), Toast.LENGTH_LONG).show();
-		}
-
 		try {
 			MainData.readAllCategories();
 		} catch (Exception e) {
 			e.printStackTrace();
 			Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show();
 		}
+
+		try{
+			MainData.readAllDocuments();
+		}catch (Exception e){
+			Toast.makeText(this, e.toString(), Toast.LENGTH_LONG).show();
+		}
+
 		try{
 			MainData.readAllEntries();
 		}catch (Exception e){

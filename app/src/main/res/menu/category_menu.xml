@@ -1,11 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:title="@string/sort_by"
+        android:id="@+id/item_sort_documents"
+        android:icon="@drawable/ic_sort_down"
+        app:showAsAction="ifRoom" />
+
     <item android:title="@string/edit_category_name"
-        android:id="@+id/menu_edit_name" />
+        android:id="@+id/menu_edit_name"
+        app:showAsAction="never"/>
 
     <item android:id="@+id/item_edit_documents_list"
-        android:title="@string/edit_documents_list" />
+        android:title="@string/edit_documents_list"
+        app:showAsAction="never"/>
 
     <item android:title="@string/delete"
-        android:id="@+id/item_delete" />
+        android:id="@+id/item_delete"
+        app:showAsAction="never"/>
 </menu>
