@@ -18,4 +18,9 @@
     <string name="enter_name">Enter name</string>
     <string name="name_yours_minds">Name your thoughts</string>
     <string name="edit_entries_list">Edit entries list</string>
+    <string name="choose_sort_mode">Choose sort mode</string>
+    <string-array name="sort_modes">
+        <item>Name</item>
+        <item>Creation date</item>
+    </string-array>
 </resources>

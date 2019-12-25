@@ -2,7 +2,9 @@ package com.maxsavitsky.documenter;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -31,9 +33,11 @@ import com.maxsavitsky.documenter.utils.RequestCodes;
 import com.maxsavitsky.documenter.utils.ResultCodes;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.ParseSeparate;
+import com.maxsavitsky.documenter.R;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,6 +45,7 @@ public class DocumentList extends AppCompatActivity {
 	private ArrayList<Document> mDocuments;
 	private Category mCategory;
 	private View decorView;
+	private SharedPreferences sp;
 	private Map<String, Document> mDocumentMap = new HashMap<>(  );
 	private Map<String, Document> documentsToInclude = new HashMap<>();
 	private ArrayList<String> documentsWhichWillBeExcluded = new ArrayList<>();
@@ -57,6 +62,16 @@ public class DocumentList extends AppCompatActivity {
 		setResult( ResultCodes.RESULT_CODE_OK );
 		finish();
 	}
+
+	Comparator<Document> mDocumentComparator = new Comparator<Document>() {
+		@Override
+		public int compare(Document o1, Document o2) {
+			if(sp.getInt( "sort_documents", 0 ) == 0)
+				return o1.getName().compareTo( o2.getName() );
+			else
+				return Integer.compare( o1.getInfo().getTimeStamp(), o2.getInfo().getTimeStamp() );
+		}
+	};
 
 	private void setupRecyclerView(){
 		try {
@@ -75,7 +90,7 @@ public class DocumentList extends AppCompatActivity {
 			LinearLayoutManager lay = new LinearLayoutManager(this);
 			lay.setOrientation(RecyclerView.VERTICAL);
 			if(mDocuments.size() > 1)
-				Collections.sort( mDocuments );
+				Collections.sort( mDocuments, mDocumentComparator);
 			DocumentsAdapter mAdapter = new DocumentsAdapter( mDocuments, mOnClickListener);
 			recyclerView.setLayoutManager(lay);
 			recyclerView.setAdapter(mAdapter);
@@ -157,6 +172,20 @@ public class DocumentList extends AppCompatActivity {
 				});
 				alertDialog = builder.create();
 				alertDialog.show();
+				break;
+			case R.id.item_sort_documents:
+				AlertDialog chooseSortType;
+				builder = new AlertDialog.Builder( this )
+					.setTitle( R.string.choose_sort_mode ).setItems( R.array.sort_modes, new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								sp.edit().putInt( "sort_documents", which ).apply();
+								setupRecyclerView();
+								dialog.cancel();
+							}
+						} );
+				chooseSortType = builder.create();
+				chooseSortType.show();
 				break;
 		}
 		return super.onOptionsItemSelected(item);
@@ -262,7 +291,6 @@ public class DocumentList extends AppCompatActivity {
 				//Toast.makeText( DocumentList.this, Integer.toString( documentsToInclude.size() ) + "\n" + Integer.toString( documentsWhichWillBeExcluded.size() ), Toast.LENGTH_LONG ).show();
 			}
 		};
-		// TODO: 20.12.2019 add list sorting
 		ChangeListAdapter changeListAdapter = new ChangeListAdapter(
 				MainData.getDocumentsList(),
 				adapterOnClickListener );
@@ -285,7 +313,7 @@ public class DocumentList extends AppCompatActivity {
 
 		Intent intent = getIntent();
 		String id = intent.getStringExtra("category_uid");
-
+		sp = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
 		try {
 			mCategory = MainData.getCategoryWithId(id);
 			mDocuments = ParseSeparate.parseCategoryWithId(id);
@@ -321,6 +349,8 @@ public class DocumentList extends AppCompatActivity {
 
 		DocumentsAdapter(ArrayList<Document> data, View.OnClickListener onClickListener) {
 			mData = data;
+			if(mData.size()  > 1)
+				Collections.sort( mData, mDocumentComparator );
 			this.onClickListener = onClickListener;
 		}
 
