@@ -2,24 +2,26 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:weightSum="1">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewChangeList"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1" />
+        android:layout_height="wrap_content"
+        android:layout_weight="0.99" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="0.1"
+        android:layout_weight="0.01"
         android:orientation="horizontal">
 
         <Button
             android:id="@+id/btnCancel"
+            style="@style/Widget.AppCompat.Button.Colored"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:backgroundTint="@color/colorRed"
             android:text="@string/cancel"
@@ -27,8 +29,9 @@
 
         <Button
             android:id="@+id/btnApply"
+            style="@style/Widget.AppCompat.Button.Colored"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:backgroundTint="@color/colorAccent"
             android:text="@string/apply"

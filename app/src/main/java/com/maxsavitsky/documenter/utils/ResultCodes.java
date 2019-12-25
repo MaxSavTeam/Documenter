@@ -9,5 +9,4 @@ public class ResultCodes {
 
 	// 3xx
 	public static final int NEED_TO_REFRESH = 301;
-	public static final int NOT_NEED_TO_REFRESH = 302;
 }

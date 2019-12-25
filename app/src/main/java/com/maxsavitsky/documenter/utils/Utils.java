@@ -25,6 +25,7 @@ public class Utils {
 	private static File externalStoragePath;
 
 	public static final String xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+	public static final String htmlHeader = "<!DOCTYPE html>\n";
 
 	public static Context getContext() {
 		return sContext;

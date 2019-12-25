@@ -7,13 +7,14 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
     <EditText
-        android:id="@+id/editTextTextMultiLine"
+        android:id="@+id/edittextEntry"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:ems="10"
         android:gravity="start|top"
         android:hint="@string/enter_your_minds_here"
         android:inputType="textMultiLine"
+        android:textSize="22sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

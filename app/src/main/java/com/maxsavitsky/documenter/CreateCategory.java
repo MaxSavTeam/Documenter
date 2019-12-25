@@ -106,6 +106,9 @@ public class CreateCategory extends AppCompatActivity {
 				MainData.setCategoriesList(categories);
 				Utils.saveCategoriesList(categories);
 				try {
+					for(Document document : documentsToIncludeInThisCategory){
+						document.addCategoryToIncludedInXml( uid );
+					}
 					Utils.saveCategoryDocuments( uid, documentsToIncludeInThisCategory );
 				}catch (Exception e){
 					Toast.makeText( CreateCategory.this, e.toString(), Toast.LENGTH_SHORT ).show();

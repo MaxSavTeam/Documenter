@@ -3,6 +3,7 @@ package com.maxsavitsky.documenter.datatypes;
 import androidx.annotation.NonNull;
 
 import com.maxsavitsky.documenter.utils.Utils;
+import com.maxsavitsky.documenter.xml.ParseSeparate;
 import com.maxsavitsky.documenter.xml.XMLParser;
 
 import org.jetbrains.annotations.NotNull;
@@ -24,6 +25,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 public class Document implements Comparable{
 	private String id, name;
+	private String pathDir;
 
 	private ArrayList<Entry> mEntries = new ArrayList<>();
 	private Info mInfo = new Info();
@@ -31,6 +33,7 @@ public class Document implements Comparable{
 	public Document(String id, String name){
 		this.id = id;
 		this.name = name;
+		this.pathDir = Utils.getExternalStoragePath().getPath() + "/documents/" + id;
 	}
 
 	public String getId() {
@@ -77,8 +80,18 @@ public class Document implements Comparable{
 		return mEntries;
 	}
 
-	public void addEntry(Entry entry){
+	public void addEntry(Entry entry) throws Exception{
+		mEntries = ParseSeparate.parseDocumentWithId( id );
 		mEntries.add(entry);
+		FileWriter fr = new FileWriter( pathDir + "/" + id + ".xml" );
+		fr.write( Utils.xmlHeader );
+		fr.append( "<entries>\n" );
+		for(Entry entry1 : mEntries){
+			fr.append( "<entry id=\"" + entry1.getId() + "\" />\n" );
+		}
+		fr.append( "</entries>" );
+		fr.flush();
+		fr.close();
 	}
 
 	public void addCategoryToIncludedInXml(String categoryId) throws Exception {

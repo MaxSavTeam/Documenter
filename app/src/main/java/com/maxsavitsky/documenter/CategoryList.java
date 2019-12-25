@@ -81,27 +81,23 @@ public class CategoryList extends AppCompatActivity {
 			String id = t.getText().toString();
 			intent.putExtra("category_uid", id);
 			//startActivity(intent);
-			startActivityForResult( intent, RequestCodes.REQUEST_CODE_DOCUMENT_LIST );
+			startActivityForResult( intent, RequestCodes.DOCUMENT_LIST );
 		}
 	};
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-		if(requestCode == RequestCodes.REQUEST_CODE_DOCUMENT_LIST){
+		if(requestCode == RequestCodes.DOCUMENT_LIST ){
 			if(resultCode == ResultCodes.RESULT_CODE_RESTART_ACTIVITY){
 				Intent intent = new Intent( this, DocumentList.class );
 				if ( data != null ) {
 					intent.putExtra( "category_uid", data.getStringExtra( "id" ) );
 				}
-				startActivityForResult( intent, RequestCodes.REQUEST_CODE_DOCUMENT_LIST );
+				startActivityForResult( intent, RequestCodes.DOCUMENT_LIST );
 			}
-			if(resultCode == ResultCodes.NEED_TO_REFRESH){
-				setupRecyclerView();
-			}
-		}else if(requestCode == RequestCodes.REQUEST_CODE_CREATE_CATEGORY){
-			if(resultCode == ResultCodes.NEED_TO_REFRESH){
-				setupRecyclerView();
-			}
+		}
+		if(resultCode == ResultCodes.NEED_TO_REFRESH){
+			setupRecyclerView();
 		}
 		super.onActivityResult( requestCode, resultCode, data );
 	}
@@ -120,7 +116,7 @@ public class CategoryList extends AppCompatActivity {
 			@Override
 			public void onClick(View view) {
 				Intent intent = new Intent( CategoryList.this, CreateCategory.class );
-				startActivityForResult( intent, RequestCodes.REQUEST_CODE_CREATE_CATEGORY );
+				startActivityForResult( intent, RequestCodes.CREATE_CATEGORY );
 			}
 		});
 

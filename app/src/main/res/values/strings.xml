@@ -14,13 +14,8 @@
     <string name="edit_document_name">Edit document name</string>
     <string name="sort_by">Sort by</string>
     <string name="title_activity_create_entry">CreateEntry</string>
-    <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
-
-    <string name="hello_first_fragment">Hello first fragment</string>
-    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
-    <string name="enter_your_minds_here">Enter your minds here...</string>
+    <string name="enter_your_minds_here">Enter your thoughts here…</string>
+    <string name="enter_name">Enter name</string>
+    <string name="name_yours_minds">Name your thoughts</string>
+    <string name="edit_entries_list">Edit entries list</string>
 </resources>

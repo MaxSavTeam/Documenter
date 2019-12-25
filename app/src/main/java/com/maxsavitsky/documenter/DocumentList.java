@@ -32,17 +32,10 @@ import com.maxsavitsky.documenter.utils.ResultCodes;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.ParseSeparate;
 
-import org.xml.sax.SAXException;
-
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.xml.parsers.ParserConfigurationException;
 
 public class DocumentList extends AppCompatActivity {
 	private ArrayList<Document> mDocuments;
@@ -99,7 +92,7 @@ public class DocumentList extends AppCompatActivity {
 			TextView t = v.findViewById(R.id.lblHiddenCategoryId);
 			String id = t.getText().toString();
 			intent.putExtra("id", id);
-			startActivity(intent);
+			startActivityForResult(intent, RequestCodes.ENTRIES_LIST );
 		}
 	};
 
@@ -197,6 +190,8 @@ public class DocumentList extends AppCompatActivity {
 				for(String key : documentsToInclude.keySet()){
 					Document document = documentsToInclude.get( key );
 					documents.add( document );
+					if ( document == null )
+						continue;
 					try {
 						//MainData.addCategoryToIncludedInXml( document.getId(), mCategory.getId() );
 						document.addCategoryToIncludedInXml( mCategory.getId() );
@@ -307,19 +302,17 @@ public class DocumentList extends AppCompatActivity {
 		fab.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				startActivityForResult(new Intent(DocumentList.this, CreateDocument.class).putExtra("parent_id", mCategory.getId()), RequestCodes.REQUEST_CODE_CREATE_DOCUMENT );
+				startActivityForResult(new Intent(DocumentList.this, CreateDocument.class).putExtra("parent_id", mCategory.getId()), RequestCodes.CREATE_DOCUMENT );
 			}
 		});
 	}
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-		super.onActivityResult( requestCode, resultCode, data );
-		if ( requestCode == RequestCodes.REQUEST_CODE_CREATE_DOCUMENT ) {
-			if(resultCode == ResultCodes.NEED_TO_REFRESH){
-				setupRecyclerView();
-			}
+		if(resultCode == ResultCodes.NEED_TO_REFRESH){
+			setupRecyclerView();
 		}
+		super.onActivityResult( requestCode, resultCode, data );
 	}
 
 	class DocumentsAdapter extends RecyclerView.Adapter<DocumentsAdapter.VH>{

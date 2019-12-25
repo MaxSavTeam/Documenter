@@ -64,7 +64,7 @@ public class ParseSeparate {
 	}
 
 	public static ArrayList<Document> getDocumentsInWhichIncludedEntryWithId(String id) throws ParserConfigurationException, SAXException, IOException {
-		File path = new File( Utils.getExternalStoragePath().getPath() + "/entries/" + id + "/" + id + ".xml" );
+		File path = new File( Utils.getExternalStoragePath().getPath() + "/entries/" + id + "/included_in.xml" );
 		DocumentsInWhichIncludedEntryHandler handler = new DocumentsInWhichIncludedEntryHandler();
 		SAXParserFactory.newInstance().newSAXParser().parse( path, handler );
 		return handler.getDocuments();

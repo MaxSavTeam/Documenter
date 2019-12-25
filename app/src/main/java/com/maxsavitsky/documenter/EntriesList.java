@@ -10,11 +10,13 @@ import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.datatypes.Document;
 import com.maxsavitsky.documenter.datatypes.Entry;
 import com.maxsavitsky.documenter.datatypes.MainData;
+import com.maxsavitsky.documenter.utils.RequestCodes;
 import com.maxsavitsky.documenter.utils.ResultCodes;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.ParseSeparate;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -53,7 +55,13 @@ public class EntriesList extends AppCompatActivity {
 	}
 
 	private void setupRecyclerView(){
-		mEntries = MainData.getDocumentWithId( mDocument.getId() ).getEntries();
+		try {
+			mEntries = ParseSeparate.parseDocumentWithId( mDocument.getId() );
+		}catch (Exception e){
+			e.printStackTrace();
+			Toast.makeText( this, "setupRecyclerView EntriesList\n\n" + e.toString(), Toast.LENGTH_LONG ).show();
+			return;
+		}
 		RecyclerView recyclerView = findViewById( R.id.category_list_view );
 		if(mEntries.isEmpty()){
 			recyclerView.setVisibility(View.GONE);
@@ -72,6 +80,16 @@ public class EntriesList extends AppCompatActivity {
 			textView.setVisibility(View.GONE);
 		}
 	}
+
+	View.OnClickListener onItemClick = new View.OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			Intent intent = new Intent( EntriesList.this, ViewEntry.class );
+			String id = ((TextView) v.findViewById( R.id.lblHiddenCategoryId )).getText().toString();
+			intent.putExtra( "id",  id);
+			startActivityForResult( intent, RequestCodes.VIEW_ENTRY );
+		}
+	};
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -96,7 +114,7 @@ public class EntriesList extends AppCompatActivity {
 			public void onClick(View v) {
 				Intent intent1 = new Intent( EntriesList.this, CreateEntry.class );
 				intent1.putExtra( "id", mDocument.getId() );
-				startActivity( intent1 );
+				startActivityForResult( intent1, RequestCodes.CREATE_ENTRY );
 			}
 		} );
 
@@ -161,6 +179,13 @@ public class EntriesList extends AppCompatActivity {
 	}
 
 	@Override
+	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+		if(resultCode == ResultCodes.NEED_TO_REFRESH)
+			setupRecyclerView();
+		super.onActivityResult( requestCode, resultCode, data );
+	}
+
+	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate( R.menu.document_menu, menu );
 		return super.onCreateOptionsMenu( menu );
@@ -197,6 +222,7 @@ public class EntriesList extends AppCompatActivity {
 				super(itemView);
 				id = itemView.findViewById( R.id.lblHiddenCategoryId );
 				name = itemView.findViewById( R.id.lblCategoryName );
+				itemView.setOnClickListener( onItemClick );
 			}
 		}
 	}
