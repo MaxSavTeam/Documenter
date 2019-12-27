@@ -40,6 +40,11 @@ public class XMLParser {
 		File path = new File(Utils.getExternalStoragePath().getPath() + "/categories.xml");
 		if(!path.exists()){
 			path.createNewFile();
+			FileWriter fr = new FileWriter(path, false);
+			fr.write(Utils.xmlHeader);
+			fr.append("<categories>\n</categories>");
+			fr.flush();
+			fr.close();
 		}else {
 			mSAXParser.parse(path, new XMLCategoriesHandler());
 			for(int i = 0;  i < mCategories.size(); i++){

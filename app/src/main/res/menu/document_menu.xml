@@ -3,7 +3,7 @@
     <item android:id="@+id/item_change_document_name"
         android:title="@string/edit_document_name" />
 
-    <item android:id="@+id/item_apply_entries_list"
+    <item android:id="@+id/item_edit_entries_list"
         android:title="@string/edit_entries_list" />
 
     <item android:id="@+id/item_delete_document"

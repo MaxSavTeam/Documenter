@@ -37,7 +37,7 @@ public class CategoryList extends AppCompatActivity {
 	}
 
 	private void onMyBackPressed(){
-		setResult( ResultCodes.RESULT_CODE_EXIT );
+		setResult( ResultCodes.EXIT );
 		finish();
 	}
 
@@ -88,7 +88,7 @@ public class CategoryList extends AppCompatActivity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 		if(requestCode == RequestCodes.DOCUMENT_LIST ){
-			if(resultCode == ResultCodes.RESULT_CODE_RESTART_ACTIVITY){
+			if(resultCode == ResultCodes.RESTART_ACTIVITY ){
 				Intent intent = new Intent( this, DocumentList.class );
 				if ( data != null ) {
 					intent.putExtra( "category_uid", data.getStringExtra( "id" ) );

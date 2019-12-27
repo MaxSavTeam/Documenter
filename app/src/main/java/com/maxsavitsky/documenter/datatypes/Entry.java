@@ -5,6 +5,7 @@ import android.text.Html;
 import androidx.annotation.NonNull;
 
 import com.maxsavitsky.documenter.utils.Utils;
+import com.maxsavitsky.documenter.xml.ParseSeparate;
 
 import org.xml.sax.SAXException;
 
@@ -15,7 +16,8 @@ import java.util.ArrayList;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-public class Entry {
+public class Entry extends Type {
+
 	private String id, name, pathDir;
 	private Info mInfo;
 
@@ -58,10 +60,12 @@ public class Entry {
 		fr.close();
 	}
 
+	@Override
 	public String getId() {
 		return id;
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -84,16 +88,30 @@ public class Entry {
 		fr.close();
 	}
 
-	public void addDocumentToIncluded(String documentId) throws ParserConfigurationException, SAXException, IOException {
-		ArrayList<Document> documents = MainData.getDocumentsInWhichIncludedThisEntry( getId() );
+	public void addDocumentToIncluded(String documentId) throws Exception {
+		ArrayList<Document> documents = getDocumentsInWhichIncludedThisEntry();
 		documents.add(MainData.getDocumentWithId( documentId ));
 		saveInWhichDocumentsIncludedThisEntry( documents );
 	}
 
-	public void removeDocumentFromIncluded(String documentId) throws ParserConfigurationException, SAXException, IOException {
-		ArrayList<Document> documents = MainData.getDocumentsInWhichIncludedThisEntry( getId() );
+	public void removeDocumentFromIncluded(String documentId) throws Exception {
+		ArrayList<Document> documents = getDocumentsInWhichIncludedThisEntry();
 		documents.remove(MainData.getDocumentWithId( documentId ));
 		saveInWhichDocumentsIncludedThisEntry( documents );
+	}
+
+	public ArrayList<Document> getDocumentsInWhichIncludedThisEntry() throws Exception {
+		File file = new File( Utils.getExternalStoragePath().getPath() + "/entries" );
+		if(!file.exists())
+			throw new IllegalArgumentException( "MainData.getDocumentsInWhichIncludedThisEntry: entries dir does not exist" );
+		file = new File( file.getPath() + "/" + id );
+		if(!file.exists())
+			throw new IllegalArgumentException( "MainData.getDocumentsInWhichIncludedThisEntry: entry dir with id=" + id + " does not exist" );
+		file = new File( file.getPath() + "/included_in.xml" );
+		if(!file.exists())
+			return new ArrayList<>(  );
+
+		return ParseSeparate.getDocumentsInWhichIncludedEntryWithId( id );
 	}
 
 	public void saveInWhichDocumentsIncludedThisEntry(ArrayList<Document> documents) throws IOException {

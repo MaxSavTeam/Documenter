@@ -2,10 +2,8 @@ package com.maxsavitsky.documenter;
 
 import android.app.ProgressDialog;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -19,6 +17,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.maxsavitsky.documenter.adapters.DefaultChooseAdapter;
 import com.maxsavitsky.documenter.datatypes.Category;
 import com.maxsavitsky.documenter.datatypes.Document;
 import com.maxsavitsky.documenter.datatypes.Info;
@@ -26,7 +25,6 @@ import com.maxsavitsky.documenter.datatypes.MainData;
 import com.maxsavitsky.documenter.utils.ResultCodes;
 import com.maxsavitsky.documenter.utils.Utils;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -66,13 +64,13 @@ public class CreateCategory extends AppCompatActivity {
 			LinearLayoutManager lay = new LinearLayoutManager(CreateCategory.this);
 			lay.setOrientation(RecyclerView.VERTICAL);
 			rv.setLayoutManager(lay);
-			Adapter adapter = new Adapter(documents, itemClicked);
+			DefaultChooseAdapter adapter = new DefaultChooseAdapter(documents, itemClicked, this);
 			rv.setAdapter(adapter);
 		}else{
 			rv.setVisibility(View.GONE);
 		}
 		EditText editText = findViewById(R.id.editTextTextPersonName);
-		editText.requestFocus();
+		Utils.showKeyboard( editText, this );
 	}
 
 	View.OnClickListener saveCategory = new View.OnClickListener() {
@@ -143,45 +141,4 @@ public class CreateCategory extends AppCompatActivity {
 			}
 		}
 	};
-
-	class Adapter extends RecyclerView.Adapter<Adapter.VH>{
-		private ArrayList<Document> mDocuments;
-		private LayoutInflater mLayoutInflater;
-		private View.OnClickListener mOnClickListener;
-
-		Adapter(ArrayList<Document> documents, View.OnClickListener onClickListener) {
-			mDocuments = documents;
-			mLayoutInflater = LayoutInflater.from(CreateCategory.this);
-			mOnClickListener = onClickListener;
-		}
-
-		@NonNull
-		@Override
-		public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-			View view = mLayoutInflater.inflate(R.layout.check_box_list_item, parent, false);
-			return new VH(view);
-		}
-
-		@Override
-		public void onBindViewHolder(@NonNull VH holder, int position) {
-			holder.name.setText(mDocuments.get(position).getName());
-			holder.id.setText(mDocuments.get(position).getId());
-		}
-
-		@Override
-		public int getItemCount() {
-			return mDocuments.size();
-		}
-
-		class VH extends RecyclerView.ViewHolder {
-			TextView name, id;
-
-			VH(@NonNull View itemView) {
-				super(itemView);
-				id = itemView.findViewById(R.id.checkbox_item_hidden_id);
-				name = itemView.findViewById(R.id.lblNameInCheckbox );
-				itemView.setOnClickListener(mOnClickListener);
-			}
-		}
-	}
 }

@@ -4,7 +4,6 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -18,7 +17,6 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.datatypes.Document;
 import com.maxsavitsky.documenter.datatypes.Entry;
 import com.maxsavitsky.documenter.datatypes.Info;
@@ -43,7 +41,7 @@ public class CreateEntry extends AppCompatActivity {
 	}
 
 	private void backPressed(){
-		setResult( ResultCodes.RESULT_CODE_OK );
+		setResult( ResultCodes.OK );
 		finish();
 	}
 
@@ -72,6 +70,8 @@ public class CreateEntry extends AppCompatActivity {
 
 		FloatingActionButton fab = findViewById( R.id.fabSaveEntry );
 		fab.setOnClickListener( saveEntry );
+
+		Utils.showKeyboard( (EditText) findViewById( R.id.edittextEntry ), this );
 	}
 
 	private void createEntry(String name, String text){

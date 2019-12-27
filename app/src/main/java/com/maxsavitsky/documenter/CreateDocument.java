@@ -3,15 +3,21 @@ package com.maxsavitsky.documenter;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.Checkable;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.maxsavitsky.documenter.adapters.DefaultChooseAdapter;
 import com.maxsavitsky.documenter.datatypes.Category;
 import com.maxsavitsky.documenter.datatypes.Document;
 import com.maxsavitsky.documenter.datatypes.Entry;
@@ -21,12 +27,14 @@ import com.maxsavitsky.documenter.utils.ResultCodes;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.ParseSeparate;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 
 public class CreateDocument extends AppCompatActivity {
 	private String categoryId;
+	private ArrayList<Entry> mEntriesToInclude = new ArrayList<>(  );
 
 	private void applyTheme(){
 		ActionBar actionBar = getSupportActionBar();
@@ -39,7 +47,7 @@ public class CreateDocument extends AppCompatActivity {
 	@Override
 	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 		if(item.getItemId() == android.R.id.home){
-			setResult( ResultCodes.RESULT_CODE_OK );
+			setResult( ResultCodes.OK );
 			finish();
 		}
 		return super.onOptionsItemSelected(item);
@@ -58,11 +66,43 @@ public class CreateDocument extends AppCompatActivity {
 		FloatingActionButton fab = findViewById(R.id.fabSaveDocument);
 		fab.setOnClickListener(saveDocument);
 		EditText editText = findViewById(R.id.editTextTextPersonName);
-		editText.requestFocus();
+		Utils.showKeyboard( editText, this );
+		setupRecyclerView();
+	}
 
-		// TODO: 19.12.2019 when add entries support, activate recycler view
+	private void setupRecyclerView(){
+		final ArrayList<Entry> mEntries = MainData.getEntriesList();
+		if(mEntries.isEmpty()){
+			findViewById(R.id.recyclerViewChooseDocuments).setVisibility(View.GONE);
+		}else{
+			RecyclerView rv = findViewById( R.id.recyclerViewChooseDocuments );
+			LinearLayoutManager layoutManager = new LinearLayoutManager( this );
+			layoutManager.setOrientation( RecyclerView.VERTICAL );
+			rv.setLayoutManager( layoutManager );
 
-		findViewById(R.id.recyclerViewChooseDocuments).setVisibility(View.GONE);
+			View.OnClickListener onItemClick = new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					CheckBox checkBox = v.findViewById( R.id.checkBoxInCheckboxItem );
+					checkBox.setChecked( !checkBox.isChecked() );
+					TextView t = v.findViewById( R.id.checkbox_item_hidden_id );
+					String id = t.getText().toString();
+					if(checkBox.isChecked()){
+						mEntriesToInclude.add( MainData.getEntryWithId( id ) );
+					}else{
+						for(int i = 0; i < mEntriesToInclude.size(); i++){
+							if(mEntriesToInclude.get( i ).getId().equals( id )){
+								mEntriesToInclude.remove( i );
+								break;
+							}
+						}
+					}
+				}
+			};
+			DefaultChooseAdapter adapter = new DefaultChooseAdapter( mEntries, onItemClick, this );
+			rv.setAdapter( adapter );
+			rv.setVisibility( View.VISIBLE );
+		}
 	}
 
 	View.OnClickListener saveDocument = new View.OnClickListener() {
@@ -109,8 +149,16 @@ public class CreateDocument extends AppCompatActivity {
 					e.printStackTrace();
 					Toast.makeText( CreateDocument.this, e.toString() + "\nsaveDocument", Toast.LENGTH_LONG ).show();
 				}
-				// TODO: 19.12.2019 change to store included entries
-				Utils.saveDocumentEntries( id, new ArrayList<Entry>() );
+
+				try {
+					for (Entry entry : mEntriesToInclude) {
+						entry.addDocumentToIncluded( id );
+					}
+				}catch (Exception e){
+					e.printStackTrace();
+				}
+
+				Utils.saveDocumentEntries( id, mEntriesToInclude );
 				setResult( ResultCodes.NEED_TO_REFRESH );
 				finish();
 			}else{

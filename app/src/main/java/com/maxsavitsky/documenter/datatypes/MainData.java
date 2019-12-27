@@ -83,7 +83,6 @@ public class MainData {
 	}
 
 	public static boolean finallyDeleteCategoryWithId(String id) throws Exception {
-		File file = new File(Utils.getExternalStoragePath().getPath() + "/categories/" + id + "/" + id + ".xml");
 		try{
 			Category category = getCategoryWithId(id);
 
@@ -102,7 +101,7 @@ public class MainData {
 			}
 			removeCategoryWithId(id);
 			Utils.saveCategoriesList(getCategoriesList());
-			file = new File( Utils.getExternalStoragePath().getPath() + "/categories/" + id );
+			File file = new File( Utils.getExternalStoragePath().getPath() + "/categories/" + id );
 			for(File file1 : file.listFiles()){
 				file1.delete();
 			}
@@ -148,7 +147,7 @@ public class MainData {
 		return sDocumentMap.get( id );
 	}
 
-	private static void deleteDocument(String id) throws Exception {
+	private static boolean deleteDocument(String id) throws Exception {
 		File path = new File(Utils.getExternalStoragePath().getPath() + "/documents/" + id);
 		if(!path.isDirectory()){
 			throw new Exception("MainData.deleteDocument: path with id=" + id + " not a directory");
@@ -168,7 +167,7 @@ public class MainData {
 		for(File file : path.listFiles()){
 			file.delete();
 		}
-		path.delete();
+		return path.delete();
 	}
 
 	public static boolean finallyDeleteDocumentWithId(String id) throws Exception {
@@ -183,9 +182,6 @@ public class MainData {
 		ArrayList<Entry> entries = ParseSeparate.parseDocumentWithId( id );
 		if(entries.size() != 0){
 			for(Entry entry : entries){
-				/*ArrayList<Document> documents = getDocumentsInWhichIncludedThisEntry( entry.getId() );
-				documents.remove( document );
-				entry.saveInWhichDocumentsIncludedThisEntry( documents );*/
 				entry.removeDocumentFromIncluded( document.getId() );
 			}
 		}
@@ -193,8 +189,8 @@ public class MainData {
 		for(Category category : categories){
 			category.removeDocument( document );
 		}
-		deleteDocument( id );
-		return true;
+		return deleteDocument( id );
+
 	}
 
 	public static void readAllDocuments() throws IOException, SAXException {
@@ -208,6 +204,17 @@ public class MainData {
 
 	public static ArrayList<Entry> getEntriesList() {
 		return sEntriesList;
+	}
+
+	public static boolean finallyDeleteEntryWithId(String id) throws Exception{
+		Entry entry = getEntryWithId( id );
+		ArrayList<Document> documents = entry.getDocumentsInWhichIncludedThisEntry();
+		for(Document document : documents){
+			entry.removeDocumentFromIncluded( document.getId() );
+			document.removeEntry( entry );
+		}
+
+		return deleteEntryWithId( id );
 	}
 
 	public static void setEntriesList(ArrayList<Entry> entriesList) {
@@ -232,30 +239,15 @@ public class MainData {
 		}
 	}
 
-	public static ArrayList<Document> getDocumentsInWhichIncludedThisEntry(String id) throws IOException, SAXException, ParserConfigurationException {
-		File file = new File( Utils.getExternalStoragePath().getPath() + "/entries" );
-		if(!file.exists())
-			throw new IllegalArgumentException( "MainData.getDocumentsInWhichIncludedThisEntry: entries dir does not exist" );
-		file = new File( file.getPath() + "/" + id );
-		if(!file.exists())
-			throw new IllegalArgumentException( "MainData.getDocumentsInWhichIncludedThisEntry: entry dir with id=" + id + " does not exist" );
-		file = new File( file.getPath() + "/included_in.xml" );
-		if(!file.exists())
-			return new ArrayList<>(  );
-
-		return ParseSeparate.getDocumentsInWhichIncludedEntryWithId( id );
-	}
-
 	public static void readAllEntries() throws IOException, SAXException {
 		XMLParser xmlParser = new XMLParser();
 		setEntriesList( xmlParser.parseEntries() );
 	}
 
-	// TODO: 19.12.2019 realize entry deletion full
-	private static void deleteEntryWithId(String id){
+	private static boolean deleteEntryWithId(String id){
 		File file = new File( Utils.getExternalStoragePath().getPath() + "/entries/" + id );
 		if(!file.exists()){
-			return;
+			return true;
 		}
 		if(!file.isDirectory()){
 			throw new IllegalArgumentException( "MainData.deleteEntryWithId: id=" + id + " not a directory" );
@@ -263,5 +255,14 @@ public class MainData {
 
 		removeEntryWithId( id );
 		Utils.saveEntriesList( getEntriesList() );
+
+		File[] files = file.listFiles();
+		if(files == null)
+			return file.delete();
+		for(File subFile : files){
+			if(!subFile.delete())
+				return false;
+		}
+		return file.delete();
 	}
 }

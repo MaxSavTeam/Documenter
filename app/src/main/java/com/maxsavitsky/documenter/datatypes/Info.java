@@ -26,28 +26,4 @@ public class Info {
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat( param, Locale.ROOT );
 		return simpleDateFormat.format( date );
 	}
-
-	public int getCreateYear(){
-		return Integer.parseInt( formatDateWithParameter( "yyyy" ) );
-	}
-
-	public int getCreateMonth(){
-		return Integer.parseInt( formatDateWithParameter( "MM" ) );
-	}
-
-	public int getCreateDay(){
-		return Integer.parseInt( formatDateWithParameter( "dd" ) );
-	}
-
-	public int getCreateHour(){
-		return Integer.parseInt( formatDateWithParameter( "hh" ) );
-	}
-
-	public int getCreateMinute(){
-		return Integer.parseInt( formatDateWithParameter( "mm" ) );
-	}
-
-	public int getCreateSeconds(){
-		return Integer.parseInt( formatDateWithParameter( "ss" ) );
-	}
 }

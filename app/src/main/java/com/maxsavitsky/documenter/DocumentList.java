@@ -1,10 +1,12 @@
 package com.maxsavitsky.documenter;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.view.DisplayCutout;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -26,6 +28,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.maxsavitsky.documenter.adapters.DefaultChooseAdapter;
 import com.maxsavitsky.documenter.datatypes.Category;
 import com.maxsavitsky.documenter.datatypes.Document;
 import com.maxsavitsky.documenter.datatypes.MainData;
@@ -33,7 +36,6 @@ import com.maxsavitsky.documenter.utils.RequestCodes;
 import com.maxsavitsky.documenter.utils.ResultCodes;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.ParseSeparate;
-import com.maxsavitsky.documenter.R;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,6 +51,9 @@ public class DocumentList extends AppCompatActivity {
 	private Map<String, Document> mDocumentMap = new HashMap<>(  );
 	private Map<String, Document> documentsToInclude = new HashMap<>();
 	private ArrayList<String> documentsWhichWillBeExcluded = new ArrayList<>();
+	private int mSortOrder = 1; // 1 - in ascending order; -1 - in descending order
+	private String[] orders = {"Descending order",  "", "", "Ascending order" };
+	private Menu mMenu;
 
 	private void applyTheme(){
 		ActionBar actionBar = getSupportActionBar();
@@ -59,7 +64,7 @@ public class DocumentList extends AppCompatActivity {
 	}
 
 	private void backPressed(){
-		setResult( ResultCodes.RESULT_CODE_OK );
+		setResult( ResultCodes.OK );
 		finish();
 	}
 
@@ -67,9 +72,14 @@ public class DocumentList extends AppCompatActivity {
 		@Override
 		public int compare(Document o1, Document o2) {
 			if(sp.getInt( "sort_documents", 0 ) == 0)
-				return o1.getName().compareTo( o2.getName() );
-			else
-				return Integer.compare( o1.getInfo().getTimeStamp(), o2.getInfo().getTimeStamp() );
+				return o1.getName().compareToIgnoreCase( o2.getName() ) * mSortOrder;
+			else {
+				int t1 = MainData.getDocumentWithId( o1.getId() ).getInfo().getTimeStamp();
+				int t2 = MainData.getDocumentWithId( o2.getId() ).getInfo().getTimeStamp();
+				int compared = Integer.compare( t1, t2 );
+				return compared * mSortOrder;
+			}
+
 		}
 	};
 
@@ -173,7 +183,7 @@ public class DocumentList extends AppCompatActivity {
 				alertDialog = builder.create();
 				alertDialog.show();
 				break;
-			case R.id.item_sort_documents:
+			case R.id.item_category_choose_sort_mode:
 				AlertDialog chooseSortType;
 				builder = new AlertDialog.Builder( this )
 					.setTitle( R.string.choose_sort_mode ).setItems( R.array.sort_modes, new DialogInterface.OnClickListener() {
@@ -187,12 +197,16 @@ public class DocumentList extends AppCompatActivity {
 				chooseSortType = builder.create();
 				chooseSortType.show();
 				break;
+			case R.id.item_sort_documents:
+				mSortOrder = -mSortOrder;
+				setupRecyclerView();
+				break;
 		}
 		return super.onOptionsItemSelected(item);
 	}
 
 	private void restartActivity() {
-		setResult( ResultCodes.RESULT_CODE_RESTART_ACTIVITY, new Intent().putExtra( "id", mCategory.getId() ) );
+		setResult( ResultCodes.RESTART_ACTIVITY, new Intent().putExtra( "id", mCategory.getId() ) );
 		this.finish();
 	}
 
@@ -213,9 +227,6 @@ public class DocumentList extends AppCompatActivity {
 			@Override
 			public void onClick(View v) {
 				ArrayList<Document> documents = new ArrayList<>();
-				/*for(String key : mDocumentMap.keySet()){
-					documents.add( mDocumentMap.get( key ) );
-				}*/
 				for(String key : documentsToInclude.keySet()){
 					Document document = documentsToInclude.get( key );
 					documents.add( document );
@@ -291,9 +302,9 @@ public class DocumentList extends AppCompatActivity {
 				//Toast.makeText( DocumentList.this, Integer.toString( documentsToInclude.size() ) + "\n" + Integer.toString( documentsWhichWillBeExcluded.size() ), Toast.LENGTH_LONG ).show();
 			}
 		};
-		ChangeListAdapter changeListAdapter = new ChangeListAdapter(
+		ChangeListAdapter2 changeListAdapter = new ChangeListAdapter2(
 				MainData.getDocumentsList(),
-				adapterOnClickListener );
+				adapterOnClickListener, this, null );
 
 		recyclerView.setAdapter( changeListAdapter );
 	}
@@ -301,6 +312,7 @@ public class DocumentList extends AppCompatActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.category_menu, menu);
+		mMenu = menu;
 		return super.onCreateOptionsMenu(menu);
 	}
 
@@ -383,50 +395,23 @@ public class DocumentList extends AppCompatActivity {
 		}
 	}
 
-	class ChangeListAdapter extends RecyclerView.Adapter<ChangeListAdapter.ViewHolder>{
-		private ArrayList<Document> allDocumentsList;
-		private View.OnClickListener mOnClickListener;
+	class ChangeListAdapter2 extends DefaultChooseAdapter{
+		ArrayList<Document> mDocuments;
 
-		ChangeListAdapter(ArrayList<Document> allDocumentsList, View.OnClickListener onClickListener) {
-			this.allDocumentsList = allDocumentsList;
-			mOnClickListener = onClickListener;
-		}
-
-		@NonNull
-		@Override
-		public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-			LayoutInflater layoutInflater = LayoutInflater.from( DocumentList.this );
-			View view = layoutInflater.inflate( R.layout.check_box_list_item, parent, false );
-			return new ViewHolder(view);
+		public ChangeListAdapter2(ArrayList<Document> elements, @Nullable View.OnClickListener onClickListener, Context context, @Nullable Runnable onBindRun) {
+			super( elements, onClickListener, context);
+			mDocuments = elements;
 		}
 
 		@Override
-		public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-			if(mDocumentMap.containsKey( allDocumentsList.get( position ).getId() )){
+		public void onBindViewHolder(@NonNull DefaultChooseAdapter.VH holder, int position) {
+			if(mDocumentMap.containsKey( mDocuments.get( position ).getId() )){
 				holder.mCheckBox.setChecked( true );
 			}else{
 				holder.mCheckBox.setChecked( false );
 			}
-			holder.mName.setText( allDocumentsList.get( position ).getName() );
-			holder.mId.setText( allDocumentsList.get( position ).getId() );
-		}
-
-		@Override
-		public int getItemCount() {
-			return allDocumentsList.size();
-		}
-
-		class ViewHolder extends RecyclerView.ViewHolder {
-			TextView mName, mId;
-			CheckBox mCheckBox;
-
-			ViewHolder(@NonNull View itemView) {
-				super( itemView );
-				mName = itemView.findViewById( R.id.lblNameInCheckbox );
-				mId = itemView.findViewById( R.id.checkbox_item_hidden_id );
-				mCheckBox = itemView.findViewById( R.id.checkBoxInCheckboxItem );
-				itemView.setOnClickListener( mOnClickListener );
-			}
+			holder.mName.setText( mDocuments.get( position ).getName() );
+			holder.mId.setText( mDocuments.get( position ).getId() );
 		}
 	}
 }

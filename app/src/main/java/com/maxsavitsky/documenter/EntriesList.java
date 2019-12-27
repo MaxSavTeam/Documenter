@@ -5,8 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
-import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.datatypes.Document;
 import com.maxsavitsky.documenter.datatypes.Entry;
 import com.maxsavitsky.documenter.datatypes.MainData;
@@ -24,7 +22,6 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -34,13 +31,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.xml.sax.SAXException;
-
-import java.io.IOException;
 import java.util.ArrayList;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Result;
 
 public class EntriesList extends AppCompatActivity {
 	private Document mDocument;
@@ -125,7 +116,7 @@ public class EntriesList extends AppCompatActivity {
 	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 		switch ( item.getItemId() ) {
 			case android.R.id.home:
-				setResult( ResultCodes.RESULT_CODE_OK );
+				setResult( ResultCodes.OK );
 				finish();
 				break;
 			case R.id.item_delete_document:
@@ -174,8 +165,15 @@ public class EntriesList extends AppCompatActivity {
 				alertDialog = builder.create();
 				alertDialog.show();
 				break;
+			case R.id.item_edit_entries_list:
+
+				break;
 		}
 		return super.onOptionsItemSelected( item );
+	}
+
+	private void prepareChooseLayout(){
+
 	}
 
 	@Override

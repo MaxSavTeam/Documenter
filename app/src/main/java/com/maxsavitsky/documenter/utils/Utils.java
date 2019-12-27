@@ -3,6 +3,8 @@ package com.maxsavitsky.documenter.utils;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 
 import androidx.appcompat.app.ActionBar;
 
@@ -72,6 +74,12 @@ public class Utils {
 		}catch (Exception e){
 			e.printStackTrace();
 		}
+	}
+
+	public static void showKeyboard(EditText editText, Context context){
+		editText.requestFocus();
+		InputMethodManager imm = (InputMethodManager) context.getSystemService( Context.INPUT_METHOD_SERVICE );
+		if ( imm != null ) imm.toggleSoftInput( InputMethodManager.HIDE_IMPLICIT_ONLY, 0 );
 	}
 
 	public static void saveEntriesList(ArrayList<Entry> entries){

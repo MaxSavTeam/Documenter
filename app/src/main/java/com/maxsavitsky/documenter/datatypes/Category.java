@@ -11,7 +11,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class Category {
+public class Category extends Type {
 	private String mId;
 	private String mName;
 
@@ -91,10 +91,20 @@ public class Category {
 		this.mName = name;
 	}
 
+	/*public String getId() {
+		return mId;
+	}
+
+	public String getName() {
+		return mName;
+	}*/
+
+	@Override
 	public String getId() {
 		return mId;
 	}
 
+	@Override
 	public String getName() {
 		return mName;
 	}

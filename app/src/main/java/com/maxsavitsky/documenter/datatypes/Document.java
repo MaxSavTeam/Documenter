@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-public class Document implements Comparable{
+public class Document extends Type implements Comparable{
 	private String id, name;
 	private String pathDir;
 
@@ -36,10 +36,12 @@ public class Document implements Comparable{
 		this.pathDir = Utils.getExternalStoragePath().getPath() + "/documents/" + id;
 	}
 
+	@Override
 	public String getId() {
 		return id;
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -83,7 +85,8 @@ public class Document implements Comparable{
 	public void addEntry(Entry entry) throws Exception{
 		mEntries = ParseSeparate.parseDocumentWithId( id );
 		mEntries.add(entry);
-		FileWriter fr = new FileWriter( pathDir + "/" + id + ".xml" );
+		Utils.saveDocumentEntries( id, mEntries );
+		/*FileWriter fr = new FileWriter( pathDir + "/" + id + ".xml" );
 		fr.write( Utils.xmlHeader );
 		fr.append( "<entries>\n" );
 		for(Entry entry1 : mEntries){
@@ -91,7 +94,18 @@ public class Document implements Comparable{
 		}
 		fr.append( "</entries>" );
 		fr.flush();
-		fr.close();
+		fr.close();*/
+	}
+
+	public void removeEntry(Entry entry) throws Exception{
+		mEntries = ParseSeparate.parseDocumentWithId( id );
+		for(int i = 0; i < mEntries.size(); i++){
+			if(mEntries.get( i ).getId().equals( entry.getId() )){
+				mEntries.remove( i );
+				break;
+			}
+		}
+		Utils.saveDocumentEntries( id, mEntries );
 	}
 
 	public void addCategoryToIncludedInXml(String categoryId) throws Exception {

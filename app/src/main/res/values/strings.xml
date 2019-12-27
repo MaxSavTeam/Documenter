@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Documenter</string>
+    <string name="app_name">Documenter Preview</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_create_category">Create Category</string>
     <string name="title_activity_category_list">CategoryList</string>
@@ -23,4 +23,6 @@
         <item>Name</item>
         <item>Creation date</item>
     </string-array>
+    <string name="edit_entry_name">Edit entry name</string>
+    <string name="sort_mode">Sort mode</string>
 </resources>

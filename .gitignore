@@ -18,3 +18,4 @@
 /app/build/intermediates/javac/debug/classes/
 /app/src/androidTest/
 /app/src/test/
+/app/google-services.json
