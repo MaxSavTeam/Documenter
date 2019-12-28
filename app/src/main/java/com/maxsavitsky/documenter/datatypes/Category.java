@@ -91,14 +91,6 @@ public class Category extends Type {
 		this.mName = name;
 	}
 
-	/*public String getId() {
-		return mId;
-	}
-
-	public String getName() {
-		return mName;
-	}*/
-
 	@Override
 	public String getId() {
 		return mId;
@@ -113,12 +105,5 @@ public class Category extends Type {
 	@Override
 	public String toString() {
 		return "id=\"" + getId() + "\" name=\"" + getName() + "\"";
-	}
-
-	@Override
-	public boolean equals(@Nullable Object obj) {
-		if(obj == null)
-			return false;
-		return getId().equals(((Category) obj).getId());
 	}
 }

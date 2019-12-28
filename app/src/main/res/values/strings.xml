@@ -25,4 +25,5 @@
     </string-array>
     <string name="edit_entry_name">Edit entry name</string>
     <string name="sort_mode">Sort mode</string>
+    <string name="edit_text">Edit text</string>
 </resources>

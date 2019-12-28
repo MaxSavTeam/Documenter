@@ -9,4 +9,7 @@ public class ResultCodes {
 
 	// 3xx
 	public static final int NEED_TO_REFRESH = 301;
+
+	// 4xx
+	public static final int REOPEN = 401;
 }

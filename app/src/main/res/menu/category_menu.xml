@@ -9,11 +9,13 @@
 
     <item android:title="@string/edit_category_name"
         android:id="@+id/menu_edit_name"
-        app:showAsAction="never"/>
+        android:icon="@drawable/ic_edit_name"
+        app:showAsAction="ifRoom"/>
 
     <item android:id="@+id/item_edit_documents_list"
         android:title="@string/edit_documents_list"
-        app:showAsAction="never"/>
+        android:icon="@drawable/ic_edit_list"
+        app:showAsAction="ifRoom"/>
 
     <item android:id="@+id/item_category_choose_sort_mode"
         android:title="@string/sort_mode"
@@ -21,5 +23,6 @@
 
     <item android:title="@string/delete"
         android:id="@+id/item_delete"
-        app:showAsAction="never"/>
+        android:icon="@drawable/ic_delete"
+        app:showAsAction="ifRoom"/>
 </menu>

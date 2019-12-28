@@ -10,6 +10,7 @@ import com.maxsavitsky.documenter.xml.ParseSeparate;
 import org.xml.sax.SAXException;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -81,11 +82,25 @@ public class Entry extends Type {
 			file.createNewFile();
 		FileWriter fr = new FileWriter( file );
 		fr.write( Utils.htmlHeader );
-		fr.append( "<html>\n<body>\n" );
-		fr.append( text + "\n" );
-		fr.append( "</body>\n</html>" );
+		fr.append( "<html>\n<body>\n" )
+				.append( text )
+				.append( "\n</body>\n</html>" );
+		fr.flush();
+
+		fr = new FileWriter( pathDir + "text" );
+		fr.write( text );
 		fr.flush();
 		fr.close();
+	}
+
+	public String loadText() throws Exception{
+		String text = "";
+		FileReader fr = new FileReader( pathDir + "text" );
+		while(fr.ready()){
+			text = String.format( "%s%c", text, (char)fr.read() );
+		}
+
+		return text;
 	}
 
 	public void addDocumentToIncluded(String documentId) throws Exception {

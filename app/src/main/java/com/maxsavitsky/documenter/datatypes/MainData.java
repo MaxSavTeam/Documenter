@@ -93,10 +93,7 @@ public class MainData {
 			ArrayList<Document> documents = ParseSeparate.parseCategoryWithId( id );
 			if(documents.size() != 0){
 				for(Document document : documents){
-					ArrayList<Category> categories = getCategoriesInWhichIncludedDocumentWithId(document.getId());
-					if(categories.size() <= 1){
-						deleteDocument(document.getId());
-					}
+					document.removeCategoryFromIncludedXml( id );
 				}
 			}
 			removeCategoryWithId(id);
@@ -108,7 +105,7 @@ public class MainData {
 			return file.delete();
 		}catch (Exception e){
 			e.printStackTrace();
-			throw new Exception( e.toString() );
+			throw new Exception( e.toString() + "\n" + e.getStackTrace()[0] );
 		}
 	}
 

@@ -1,6 +1,7 @@
 package com.maxsavitsky.documenter;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,6 +20,7 @@ import android.widget.Toast;
 
 import com.maxsavitsky.documenter.datatypes.Entry;
 import com.maxsavitsky.documenter.datatypes.MainData;
+import com.maxsavitsky.documenter.utils.RequestCodes;
 import com.maxsavitsky.documenter.utils.ResultCodes;
 import com.maxsavitsky.documenter.utils.Utils;
 
@@ -85,7 +87,7 @@ public class ViewEntry extends AppCompatActivity {
 						public void onClick(DialogInterface dialog, int which) {
 							dialog.cancel();
 						}
-					} );
+					} ).setCancelable( false );
 			changeNameDialog = builder.create();
 			changeNameDialog.show();
 		}else if(item.getItemId() == R.id.item_delete_entry){
@@ -100,8 +102,24 @@ public class ViewEntry extends AppCompatActivity {
 				e.printStackTrace();
 				Toast.makeText( this, e.toString(), Toast.LENGTH_LONG ).show();
 			}
+		}else if(item.getItemId() == R.id.item_edit_entry_text){
+			Intent intent = new Intent( this, CreateEntry.class );
+			intent.putExtra( "type", "edit" );
+			intent.putExtra( "id", mEntry.getId() );
+			startActivityForResult( intent, RequestCodes.EDIT_ENTRY );
 		}
 		return super.onOptionsItemSelected( item );
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+		if(requestCode == RequestCodes.EDIT_ENTRY){
+			if(resultCode == ResultCodes.REOPEN){
+				setResult( resultCode, data );
+				finish();
+			}
+		}
+		super.onActivityResult( requestCode, resultCode, data );
 	}
 
 	@Override

@@ -1,6 +1,7 @@
 package com.maxsavitsky.documenter;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -11,6 +12,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.text.Html;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,13 +33,20 @@ import java.util.Date;
 
 public class CreateEntry extends AppCompatActivity {
 	private Document mDocument;
+	private String type;
+	private Entry mEntry;
+	private String title = "Create new entry";
 
 	private void applyTheme(){
 		ActionBar actionBar = getSupportActionBar();
 		if(actionBar != null){
 			Utils.applyDefaultActionBarStyle(actionBar);
-			actionBar.setTitle( "Create new entry" );
+			actionBar.setTitle( title );
 		}
+	}
+
+	private void _finishActivity(){
+		finish();
 	}
 
 	private void backPressed(){
@@ -66,7 +75,22 @@ public class CreateEntry extends AppCompatActivity {
 		setSupportActionBar( toolbar );
 
 		applyTheme();
-		mDocument = MainData.getDocumentWithId( getIntent().getStringExtra( "id" ) );
+		type = getIntent().getStringExtra( "type" );
+		if(type.equals( "edit" )){
+			mEntry = MainData.getEntryWithId( getIntent().getStringExtra( "id" ) );
+			title = "Edit entry text";
+			applyTheme();
+			EditText editText = findViewById( R.id.edittextEntry );
+			try {
+				editText.setText( Html.fromHtml( mEntry.loadText() ) );
+			}catch (Exception e){
+				e.printStackTrace();
+				Toast.makeText( this, "loadText()\n\n" + e.toString(), Toast.LENGTH_LONG ).show();
+				return;
+			}
+		}else{
+			mDocument = MainData.getDocumentWithId( getIntent().getStringExtra( "id" ) );
+		}
 
 		FloatingActionButton fab = findViewById( R.id.fabSaveEntry );
 		fab.setOnClickListener( saveEntry );
@@ -113,34 +137,48 @@ public class CreateEntry extends AppCompatActivity {
 		@Override
 		public void onClick(View v) {
 			final EditText editText = findViewById( R.id.edittextEntry );
-			if(editText.getText().length() != 0){
-				AlertDialog alertDialog;
-				final EditText name = new EditText( CreateEntry.this );
-				name.setId( View.NO_ID );
-				name.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT ) );
-				AlertDialog.Builder builder = new AlertDialog.Builder( CreateEntry.this )
-						.setView( name )
-						.setTitle( R.string.enter_name )
-						.setMessage( R.string.name_yours_minds )
-						.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								dialog.cancel();
-								String n = name.getText().toString();
-								createEntry( n, editText.getText().toString() );
-							}
-						} )
-						.setNegativeButton( R.string.cancel, new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								dialog.cancel();
-							}
-						} );
+			if(type.equals( "create" )) {
+				if ( editText.getText().length() != 0 ) {
+					AlertDialog alertDialog;
+					final EditText name = new EditText( CreateEntry.this );
+					name.setId( View.NO_ID );
+					name.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT ) );
+					AlertDialog.Builder builder = new AlertDialog.Builder( CreateEntry.this )
+							.setView( name )
+							.setTitle( R.string.enter_name )
+							.setMessage( R.string.name_yours_minds )
+							.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									dialog.cancel();
+									String n = name.getText().toString();
+									createEntry( n, editText.getText().toString() );
+								}
+							} )
+							.setNegativeButton( R.string.cancel, new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									dialog.cancel();
+								}
+							} );
 
-				alertDialog = builder.create();
-				alertDialog.show();
-			}else{
-				editText.requestFocus();
+					alertDialog = builder.create();
+					alertDialog.show();
+				} else {
+					editText.requestFocus();
+				}
+			}else if(type.equals( "edit" )){
+				String text = editText.getText().toString();
+				if(!text.isEmpty()){
+					try {
+						mEntry.saveText( text );
+						setResult( ResultCodes.REOPEN, new Intent(  ).putExtra( "id", mEntry.getId() ) );
+						_finishActivity();
+					}catch (Exception e){
+						Toast.makeText( CreateEntry.this, "edit text\n\n" + e.toString(), Toast.LENGTH_LONG ).show();
+						e.printStackTrace();
+					}
+				}
 			}
 		}
 	};

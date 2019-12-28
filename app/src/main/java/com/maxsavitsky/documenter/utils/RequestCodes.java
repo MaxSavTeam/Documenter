@@ -9,4 +9,5 @@ public class RequestCodes {
 	public static final int ENTRIES_LIST = 105;
 	public static final int VIEW_ENTRY = 106;
 	public static final int CREATE_ENTRY = 107;
+	public static final int EDIT_ENTRY = 108;
 }

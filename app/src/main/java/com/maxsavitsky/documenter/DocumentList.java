@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.Html;
 import android.view.DisplayCutout;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -52,7 +53,7 @@ public class DocumentList extends AppCompatActivity {
 	private Map<String, Document> documentsToInclude = new HashMap<>();
 	private ArrayList<String> documentsWhichWillBeExcluded = new ArrayList<>();
 	private int mSortOrder = 1; // 1 - in ascending order; -1 - in descending order
-	private String[] orders = {"Descending order",  "", "", "Ascending order" };
+	private String[] orders = {"Descending order",  "", "Ascending order" };
 	private Menu mMenu;
 
 	private void applyTheme(){
@@ -185,15 +186,18 @@ public class DocumentList extends AppCompatActivity {
 				break;
 			case R.id.item_category_choose_sort_mode:
 				AlertDialog chooseSortType;
+				String[] items = getResources().getStringArray( R.array.sort_modes );
+				int pos = sp.getInt( "sort_documents", 0 );
+				items[pos] = Html.fromHtml( "<font color=\"red\">" + items[pos] + "</font>" ).toString();
 				builder = new AlertDialog.Builder( this )
-					.setTitle( R.string.choose_sort_mode ).setItems( R.array.sort_modes, new DialogInterface.OnClickListener() {
+					.setTitle( R.string.choose_sort_mode ).setSingleChoiceItems( items, pos, new DialogInterface.OnClickListener() {
 							@Override
 							public void onClick(DialogInterface dialog, int which) {
 								sp.edit().putInt( "sort_documents", which ).apply();
 								setupRecyclerView();
 								dialog.cancel();
 							}
-						} );
+						}).setCancelable( false );
 				chooseSortType = builder.create();
 				chooseSortType.show();
 				break;
@@ -351,6 +355,13 @@ public class DocumentList extends AppCompatActivity {
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 		if(resultCode == ResultCodes.NEED_TO_REFRESH){
 			setupRecyclerView();
+		}
+		if(requestCode == RequestCodes.ENTRIES_LIST){
+			if(resultCode == ResultCodes.RESTART_ACTIVITY){
+				Intent intent = new Intent( this, EntriesList.class );
+				intent.putExtra( "id", data.getStringExtra( "id" ) );
+				startActivityForResult( intent, RequestCodes.ENTRIES_LIST );
+			}
 		}
 		super.onActivityResult( requestCode, resultCode, data );
 	}

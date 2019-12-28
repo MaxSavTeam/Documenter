@@ -1,13 +1,16 @@
 package com.maxsavitsky.documenter;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.maxsavitsky.documenter.adapters.DefaultChooseAdapter;
 import com.maxsavitsky.documenter.datatypes.Document;
 import com.maxsavitsky.documenter.datatypes.Entry;
 import com.maxsavitsky.documenter.datatypes.MainData;
+import com.maxsavitsky.documenter.datatypes.Type;
 import com.maxsavitsky.documenter.utils.RequestCodes;
 import com.maxsavitsky.documenter.utils.ResultCodes;
 import com.maxsavitsky.documenter.utils.Utils;
@@ -27,11 +30,15 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class EntriesList extends AppCompatActivity {
 	private Document mDocument;
@@ -89,7 +96,7 @@ public class EntriesList extends AppCompatActivity {
 		Toolbar toolbar = findViewById ( R.id.toolbar );
 		setSupportActionBar ( toolbar );
 
-		Intent intent = getIntent ();
+		final Intent intent = getIntent ();
 		mDocument = MainData.getDocumentWithId( intent.getStringExtra ( "id" ) );
 		try {
 			mEntries = ParseSeparate.parseDocumentWithId( mDocument.getId() );
@@ -105,6 +112,7 @@ public class EntriesList extends AppCompatActivity {
 			public void onClick(View v) {
 				Intent intent1 = new Intent( EntriesList.this, CreateEntry.class );
 				intent1.putExtra( "id", mDocument.getId() );
+				intent1.putExtra( "type", "create" );
 				startActivityForResult( intent1, RequestCodes.CREATE_ENTRY );
 			}
 		} );
@@ -161,25 +169,118 @@ public class EntriesList extends AppCompatActivity {
 					public void onClick(DialogInterface dialog, int which) {
 						dialog.cancel();
 					}
-				} );
+				} ).setCancelable( false );
 				alertDialog = builder.create();
 				alertDialog.show();
 				break;
 			case R.id.item_edit_entries_list:
-
+				try {
+					prepareChooseLayout();
+				}catch (Exception e){
+					Toast.makeText( this, e.toString(), Toast.LENGTH_LONG ).show();
+					e.printStackTrace();
+					restartActivity();
+				}
 				break;
 		}
 		return super.onOptionsItemSelected( item );
 	}
 
-	private void prepareChooseLayout(){
+	private void restartActivity(){
+		setResult( ResultCodes.RESTART_ACTIVITY, new Intent(  ).putExtra( "id", mDocument.getId() ) );
+		finish();
+	}
 
+	private ArrayList<Entry> entriesToChange = new ArrayList<>(  );
+	private Map<String, Entry> mDocumentEntriesMap = new HashMap<>(  );
+
+	private void prepareChooseLayout() throws Exception{
+		final ArrayList<Entry> entries = MainData.getEntriesList();
+		if(!entries.isEmpty()){
+			setContentView( R.layout.layout_choose_documents);
+
+			ArrayList<Entry> documentEntries = ParseSeparate.parseDocumentWithId( mDocument.getId() );
+			for(Entry entry : documentEntries){
+				mDocumentEntriesMap.put( entry.getId(), entry );
+			}
+
+			View.OnClickListener cancel = new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					restartActivity();
+				}
+			};
+			Button btn = findViewById( R.id.btnCancel );
+			btn.setOnClickListener( cancel );
+
+			View.OnClickListener apply = new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					Utils.saveDocumentEntries( mDocument.getId(), entriesToChange );
+					restartActivity();
+				}
+			};
+			btn = findViewById( R.id.btnApply );
+			btn.setOnClickListener( apply );
+
+			View.OnClickListener onItemClick = new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					CheckBox checkBox = v.findViewById( R.id.checkBoxInCheckboxItem );
+					checkBox.setChecked( !checkBox.isChecked() );
+					String id = ((TextView) v.findViewById( R.id.checkbox_item_hidden_id )).getText().toString();
+					if(checkBox.isChecked()){
+						Entry entry = MainData.getEntryWithId( id );
+						entriesToChange.add( entry );
+					}else{
+						for(int i = 0; i < entriesToChange.size(); i++){
+							if(entriesToChange.get( i ).getId().equals( id )){
+								entriesToChange.remove( i );
+								break;
+							}
+						}
+					}
+				}
+			};
+
+			ChooseAdapter adapter = new ChooseAdapter( entries, onItemClick, this );
+			RecyclerView recyclerView = findViewById( R.id.recyclerViewChangeList );
+			LinearLayoutManager layoutManager = new LinearLayoutManager( this );
+			layoutManager.setOrientation( RecyclerView.VERTICAL );
+			recyclerView.setLayoutManager( layoutManager );
+
+			recyclerView.setAdapter( adapter );
+		}
+	}
+
+	class ChooseAdapter extends DefaultChooseAdapter{
+		ArrayList<Entry> mElements;
+
+		public ChooseAdapter(ArrayList<Entry> elements, @Nullable View.OnClickListener onClickListener, Context context) {
+			super( elements, onClickListener, context );
+			mElements = elements;
+		}
+
+		@Override
+		public void onBindViewHolder(@NonNull VH holder, int position) {
+			holder.mCheckBox.setChecked( mDocumentEntriesMap.containsKey( mElements.get( position ).getId() ) );
+			holder.mId.setText( mElements.get( position ).getId() );
+			holder.mName.setText( mElements.get( position ).getName() );
+		}
 	}
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 		if(resultCode == ResultCodes.NEED_TO_REFRESH)
 			setupRecyclerView();
+		if(requestCode == RequestCodes.VIEW_ENTRY){
+			if(resultCode == ResultCodes.REOPEN){
+				Intent intent = new Intent( this, ViewEntry.class );
+				if(data != null)
+					intent.putExtras( data );
+				startActivityForResult( intent, RequestCodes.VIEW_ENTRY );
+			}
+		}
 		super.onActivityResult( requestCode, resultCode, data );
 	}
 
