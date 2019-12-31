@@ -120,7 +120,8 @@ public class CreateDocument extends AppCompatActivity {
 					//documents = MainData.getCategoryWithId( categoryId ).getDocuments();
 					documents = ParseSeparate.parseCategoryWithId( categoryId );
 				}catch (Exception e){
-					Toast.makeText( CreateDocument.this, "saveDocument:\n\n" + e.toString(), Toast.LENGTH_LONG ).show();
+					Toast.makeText( CreateDocument.this, "saveDocument", Toast.LENGTH_SHORT ).show();
+					Utils.getErrorDialog( e, CreateDocument.this ).show();
 					return;
 				}
 				ArrayList<Document> allDocuments = MainData.getDocumentsList();
@@ -131,7 +132,8 @@ public class CreateDocument extends AppCompatActivity {
 					thisDocument.addCategoryToIncludedInXml( categoryId );
 				}catch (Exception e){
 					e.printStackTrace();
-					Toast.makeText( CreateDocument.this, "saveDocument 1\n\n" + e.toString(), Toast.LENGTH_LONG ).show();
+					Toast.makeText( CreateDocument.this, "saveDocument 1", Toast.LENGTH_LONG ).show();
+					Utils.getErrorDialog( e, CreateDocument.this ).show();
 					return;
 				}
 				MainData.setDocumentsList(allDocuments);
@@ -141,13 +143,15 @@ public class CreateDocument extends AppCompatActivity {
 					Utils.saveCategoryDocuments( categoryId, documents );
 					categories.add( MainData.getCategoryWithId( categoryId ) );
 				}catch (Exception e){
-					Toast.makeText( CreateDocument.this, "saveDocument: \n\n" + e.toString(), Toast.LENGTH_LONG ).show();
+					Toast.makeText( CreateDocument.this, "saveDocument1.5" + e.toString(), Toast.LENGTH_LONG ).show();
+					Utils.getErrorDialog( e, CreateDocument.this ).show();
 				}
 				try {
 					thisDocument.saveInWhichCategoriesDocumentWithIdIncludedIn( categories );
-				} catch (IOException e) {
+				} catch (Exception e) {
 					e.printStackTrace();
-					Toast.makeText( CreateDocument.this, e.toString() + "\nsaveDocument", Toast.LENGTH_LONG ).show();
+					Toast.makeText( CreateDocument.this, "saveDocument2", Toast.LENGTH_LONG ).show();
+					Utils.getErrorDialog( e, CreateDocument.this ).show();
 				}
 
 				try {
@@ -156,6 +160,7 @@ public class CreateDocument extends AppCompatActivity {
 					}
 				}catch (Exception e){
 					e.printStackTrace();
+					Utils.getErrorDialog( e, CreateDocument.this ).show();
 				}
 
 				Utils.saveDocumentEntries( id, mEntriesToInclude );

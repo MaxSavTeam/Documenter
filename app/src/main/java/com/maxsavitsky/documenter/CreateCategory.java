@@ -96,7 +96,8 @@ public class CreateCategory extends AppCompatActivity {
 				} catch (Exception e) {
 					e.printStackTrace();
 					pd.dismiss();
-					Toast.makeText( CreateCategory.this, "Failed\n\n" + e.toString(), Toast.LENGTH_LONG ).show();
+					//Toast.makeText( CreateCategory.this, "Failed\n\n" + e.toString(), Toast.LENGTH_LONG ).show();
+					Utils.getErrorDialog( e, CreateCategory.this ).show();
 					return;
 				}
 				categories.add(newCategory);
@@ -109,7 +110,7 @@ public class CreateCategory extends AppCompatActivity {
 					}
 					Utils.saveCategoryDocuments( uid, documentsToIncludeInThisCategory );
 				}catch (Exception e){
-					Toast.makeText( CreateCategory.this, e.toString(), Toast.LENGTH_SHORT ).show();
+					Utils.getErrorDialog( e, CreateCategory.this ).show();
 				}
 
 				pd.dismiss();

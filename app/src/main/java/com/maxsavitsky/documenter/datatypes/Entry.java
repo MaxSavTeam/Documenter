@@ -111,7 +111,12 @@ public class Entry extends Type {
 
 	public void removeDocumentFromIncluded(String documentId) throws Exception {
 		ArrayList<Document> documents = getDocumentsInWhichIncludedThisEntry();
-		documents.remove(MainData.getDocumentWithId( documentId ));
+		//documents.remove(MainData.getDocumentWithId( documentId ));
+		for(int i = 0; i < documents.size(); i++){
+			if(documents.get( i ).getId().equals( documentId )){
+				documents.remove( i );
+			}
+		}
 		saveInWhichDocumentsIncludedThisEntry( documents );
 	}
 

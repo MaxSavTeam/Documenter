@@ -2,15 +2,15 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:title="@string/sort_by"
-        android:id="@+id/item_sort_documents"
-        android:icon="@drawable/ic_sort"
-        app:showAsAction="ifRoom" />
-
     <item android:title="@string/edit_category_name"
         android:id="@+id/menu_edit_name"
         android:icon="@drawable/ic_edit_name"
         app:showAsAction="ifRoom"/>
+
+    <item android:title="@string/invert"
+        android:id="@+id/item_sort_documents"
+        android:icon="@drawable/ic_sort"
+        app:showAsAction="ifRoom" />
 
     <item android:id="@+id/item_edit_documents_list"
         android:title="@string/edit_documents_list"

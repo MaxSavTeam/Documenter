@@ -1,9 +1,11 @@
 package com.maxsavitsky.documenter.xml;
 
 import com.maxsavitsky.documenter.EntriesList;
+import com.maxsavitsky.documenter.adapters.DefaultChooseAdapter;
 import com.maxsavitsky.documenter.datatypes.Category;
 import com.maxsavitsky.documenter.datatypes.Document;
 import com.maxsavitsky.documenter.datatypes.Entry;
+import com.maxsavitsky.documenter.datatypes.EntryProperty;
 import com.maxsavitsky.documenter.datatypes.Info;
 import com.maxsavitsky.documenter.datatypes.MainData;
 import com.maxsavitsky.documenter.utils.Utils;
@@ -16,6 +18,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Stack;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -171,6 +174,13 @@ public class XMLParser {
 			}
 		}else{
 			mSAXParser.parse( file, new EntriesHandler() );
+			for(int i = 0; i < mEntries.size(); i++){
+				Entry entry = mEntries.get( i );
+				File path = new File( entry.getPathDir() + "info.xml" );
+				InfoHandler infoHandler = new InfoHandler();
+				mSAXParser.parse( path,  infoHandler);
+				mEntries.get( i ).setInfo( infoHandler.mInfo );
+			}
 		}
 		return mEntries;
 	}
@@ -182,6 +192,23 @@ public class XMLParser {
 				String id = attributes.getValue( "id" );
 				String name = attributes.getValue( "name" );
 				mEntries.add( new Entry( id, name ) );
+			}
+		}
+	}
+	Stack<String> xmlElements = new Stack<>();
+	private EntryProperty mEntryProperty = new EntryProperty();
+
+	public EntryProperty parseEntryProperties(String entryId) throws IOException, SAXException {
+		File file = new File( MainData.getEntryWithId( entryId ).getPathDir() + "properties.xml" );
+		mSAXParser.parse( file, new PropertyHandler() );
+		return mEntryProperty;
+	}
+
+	class PropertyHandler extends DefaultHandler{
+		@Override
+		public void startElement(String uri, String localName, String qName, Attributes attributes) {
+			if(qName.equals( "textSize" )){
+				mEntryProperty.setTextSize( Integer.parseInt( attributes.getValue( "value" ) ) );
 			}
 		}
 	}

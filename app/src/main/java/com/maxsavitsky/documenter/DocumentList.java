@@ -52,7 +52,7 @@ public class DocumentList extends AppCompatActivity {
 	private Map<String, Document> mDocumentMap = new HashMap<>(  );
 	private Map<String, Document> documentsToInclude = new HashMap<>();
 	private ArrayList<String> documentsWhichWillBeExcluded = new ArrayList<>();
-	private int mSortOrder = 1; // 1 - in ascending order; -1 - in descending order
+	private int mSortOrder = 1; // 1 - по возрастанию; -1 -
 	private String[] orders = {"Descending order",  "", "Ascending order" };
 	private Menu mMenu;
 
@@ -65,16 +65,15 @@ public class DocumentList extends AppCompatActivity {
 	}
 
 	private void backPressed(){
-		setResult( ResultCodes.OK );
 		finish();
 	}
 
 	Comparator<Document> mDocumentComparator = new Comparator<Document>() {
 		@Override
 		public int compare(Document o1, Document o2) {
-			if(sp.getInt( "sort_documents", 0 ) == 0)
+			if(sp.getInt( "sort_documents", 0 ) == 0) {
 				return o1.getName().compareToIgnoreCase( o2.getName() ) * mSortOrder;
-			else {
+			}else {
 				int t1 = MainData.getDocumentWithId( o1.getId() ).getInfo().getTimeStamp();
 				int t2 = MainData.getDocumentWithId( o2.getId() ).getInfo().getTimeStamp();
 				int compared = Integer.compare( t1, t2 );
@@ -89,7 +88,8 @@ public class DocumentList extends AppCompatActivity {
 			mDocuments = ParseSeparate.parseCategoryWithId( mCategory.getId() );
 		}catch (Exception e){
 			e.printStackTrace();
-			Toast.makeText( this, e.toString() + "\n\nsetup", Toast.LENGTH_LONG ).show();
+			Utils.getErrorDialog( e, this ).show();
+			Toast.makeText( this, "setup", Toast.LENGTH_SHORT ).show();
 			return;
 		}
 		RecyclerView recyclerView = findViewById(R.id.category_list_view);
@@ -137,17 +137,33 @@ public class DocumentList extends AppCompatActivity {
 				backPressed();
 				break;
 			case R.id.item_delete:
-				try {
-					if ( MainData.finallyDeleteCategoryWithId( mCategory.getId() ) ) {
-						setResult( ResultCodes.NEED_TO_REFRESH );
-						finish();
-					} else {
-						Toast.makeText(this, "Failed", Toast.LENGTH_SHORT).show();
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-					Toast.makeText( this, e.toString() + "\nonOptionsItemSelected", Toast.LENGTH_LONG ).show();
-				}
+				AlertDialog.Builder deletionBuilder = new AlertDialog.Builder( this )
+						.setMessage( R.string.delete_cofirmation_text )
+						.setTitle( R.string.confirmation )
+						.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								dialog.cancel();
+								try {
+									if ( MainData.finallyDeleteCategoryWithId( mCategory.getId() ) ) {
+										setResult( ResultCodes.NEED_TO_REFRESH );
+										finish();
+									} else {
+										Toast.makeText(DocumentList.this, "Failed", Toast.LENGTH_SHORT).show();
+									}
+								} catch (Exception e) {
+									e.printStackTrace();
+									Toast.makeText( DocumentList.this, "onOptionsItemSelected", Toast.LENGTH_LONG ).show();
+									Utils.getErrorDialog( e, DocumentList.this ).show();
+								}
+							}
+						} ).setNeutralButton( R.string.cancel, new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								dialog.cancel();
+							}
+						} ).setCancelable( false );
+				deletionBuilder.create().show();
 				break;
 			case R.id.menu_edit_name:
 				AlertDialog alertDialog;
@@ -180,7 +196,7 @@ public class DocumentList extends AppCompatActivity {
 					public void onClick(DialogInterface dialog, int which) {
 						dialog.cancel();
 					}
-				});
+				}).setCancelable( false );
 				alertDialog = builder.create();
 				alertDialog.show();
 				break;
@@ -188,16 +204,22 @@ public class DocumentList extends AppCompatActivity {
 				AlertDialog chooseSortType;
 				String[] items = getResources().getStringArray( R.array.sort_modes );
 				int pos = sp.getInt( "sort_documents", 0 );
-				items[pos] = Html.fromHtml( "<font color=\"red\">" + items[pos] + "</font>" ).toString();
 				builder = new AlertDialog.Builder( this )
 					.setTitle( R.string.choose_sort_mode ).setSingleChoiceItems( items, pos, new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								sp.edit().putInt( "sort_documents", which ).apply();
-								setupRecyclerView();
-								dialog.cancel();
-							}
-						}).setCancelable( false );
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							sp.edit().putInt( "sort_documents", which ).apply();
+							setupRecyclerView();
+							dialog.cancel();
+						}
+					})
+					.setCancelable( false )
+					.setNeutralButton( R.string.cancel, new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							dialog.cancel();
+						}
+					} );
 				chooseSortType = builder.create();
 				chooseSortType.show();
 				break;
@@ -241,7 +263,8 @@ public class DocumentList extends AppCompatActivity {
 						document.addCategoryToIncludedInXml( mCategory.getId() );
 					} catch (Exception e) {
 						e.printStackTrace();
-						Toast.makeText( DocumentList.this, e.toString() + "\napply", Toast.LENGTH_SHORT ).show();
+						Toast.makeText( DocumentList.this, "apply", Toast.LENGTH_SHORT ).show();
+						Utils.getErrorDialog( e, DocumentList.this ).show();
 						return;
 					}
 				}
@@ -252,12 +275,13 @@ public class DocumentList extends AppCompatActivity {
 						document.removeCategoryFromIncludedXml( mCategory.getId() );
 					} catch (Exception e) {
 						e.printStackTrace();
+						Utils.getErrorDialog( e, DocumentList.this ).show();
 					}
 				}
 				try {
 					Utils.saveCategoryDocuments( mCategory.getId(), documents );
 				}catch (Exception e){
-					Toast.makeText( DocumentList.this, e.toString(), Toast.LENGTH_LONG ).show();
+					Utils.getErrorDialog( e, DocumentList.this ).show();
 				}
 				//Toast.makeText( DocumentList.this, Integer.toString( documents.size() ), Toast.LENGTH_SHORT ).show();
 				restartActivity();
@@ -277,7 +301,8 @@ public class DocumentList extends AppCompatActivity {
 			documents = MainData.getDocumentsFromThisCategory( mCategory.getId() );
 		} catch (Exception e) {
 			e.printStackTrace();
-			Toast.makeText( this, e.toString() + "\nprepareChooseRecyclerView", Toast.LENGTH_LONG ).show();
+			Toast.makeText( this, "prepareChooseRecyclerView", Toast.LENGTH_LONG ).show();
+			Utils.getErrorDialog( e, this ).show();
 			return;
 		}
 		for(Document document : documents){
@@ -335,7 +360,7 @@ public class DocumentList extends AppCompatActivity {
 			mDocuments = ParseSeparate.parseCategoryWithId(id);
 		} catch (Exception e) {
 			e.printStackTrace();
-			Toast.makeText( this, e.toString(), Toast.LENGTH_LONG ).show();
+			Utils.getErrorDialog( e, this ).show();
 			return;
 		}
 

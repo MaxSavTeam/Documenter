@@ -13,29 +13,36 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.text.Html;
+import android.util.TypedValue;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.maxsavitsky.documenter.datatypes.Document;
 import com.maxsavitsky.documenter.datatypes.Entry;
+import com.maxsavitsky.documenter.datatypes.EntryProperty;
 import com.maxsavitsky.documenter.datatypes.Info;
 import com.maxsavitsky.documenter.datatypes.MainData;
 import com.maxsavitsky.documenter.utils.ResultCodes;
 import com.maxsavitsky.documenter.utils.Utils;
+import com.maxsavitsky.documenter.xml.XMLParser;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Locale;
 
 public class CreateEntry extends AppCompatActivity {
 	private Document mDocument;
 	private String type;
 	private Entry mEntry;
 	private String title = "Create new entry";
+	private EntryProperty mEntryProperty;
 
 	private void applyTheme(){
 		ActionBar actionBar = getSupportActionBar();
@@ -76,8 +83,14 @@ public class CreateEntry extends AppCompatActivity {
 
 		applyTheme();
 		type = getIntent().getStringExtra( "type" );
+		mEntryProperty = new EntryProperty();
 		if(type.equals( "edit" )){
 			mEntry = MainData.getEntryWithId( getIntent().getStringExtra( "id" ) );
+			try {
+				mEntryProperty = new XMLParser().parseEntryProperties( mEntry.getId() );
+			}catch (Exception e){
+				Utils.getErrorDialog( e, this ).show();
+			}
 			title = "Edit entry text";
 			applyTheme();
 			EditText editText = findViewById( R.id.edittextEntry );
@@ -85,24 +98,42 @@ public class CreateEntry extends AppCompatActivity {
 				editText.setText( Html.fromHtml( mEntry.loadText() ) );
 			}catch (Exception e){
 				e.printStackTrace();
-				Toast.makeText( this, "loadText()\n\n" + e.toString(), Toast.LENGTH_LONG ).show();
+				Utils.getErrorDialog( e, this ).show();
 				return;
 			}
 		}else{
 			mDocument = MainData.getDocumentWithId( getIntent().getStringExtra( "id" ) );
 		}
-
+		setEditTextSize();
 		FloatingActionButton fab = findViewById( R.id.fabSaveEntry );
 		fab.setOnClickListener( saveEntry );
 
 		Utils.showKeyboard( (EditText) findViewById( R.id.edittextEntry ), this );
 	}
 
+	public void plusTextSize(View view){
+		if(mEntryProperty.textSize < 45)
+			mEntryProperty.textSize++;
+		setEditTextSize();
+	}
+
+	public void minusTextSize(View view){
+		if(mEntryProperty.textSize > 15)
+			mEntryProperty.textSize--;
+		setEditTextSize();
+	}
+
+	private void setEditTextSize(){
+		((EditText) findViewById( R.id.edittextEntry )).setTextSize( TypedValue.COMPLEX_UNIT_SP, (float) mEntryProperty.textSize );
+		TextView t = findViewById( R.id.textViewTextSize );
+		t.setText( String.format( Locale.ROOT, "%d", mEntryProperty.textSize ) );
+	}
+
 	private void createEntry(String name, String text){
 		String id = Utils.generateUniqueId() + "_ent";
-		Entry entry = new Entry( id, name );
+		mEntry = new Entry( id, name );
 		ArrayList<Entry> entries = MainData.getEntriesList();
-		entries.add( entry );
+		entries.add( mEntry );
 		MainData.setEntriesList( entries );
 		Utils.saveEntriesList( entries );
 		File file = new File( Utils.getExternalStoragePath().getPath() + "/entries" );
@@ -110,27 +141,48 @@ public class CreateEntry extends AppCompatActivity {
 			file.mkdir();
 		file = new File( Utils.getExternalStoragePath().getPath() + "/entries/" + id );
 		file.mkdir();
+		try {
+			saveProperties();
+		}catch (Exception e){
+			Utils.getErrorDialog( e, this ).show();
+			return;
+		}
 		file = new File( file.getPath() + "/included_in.xml" );
 		try{
 			file.createNewFile();
 		}catch (Exception e){
-			Toast.makeText( this, "createNewFile\n\n" + e.toString(), Toast.LENGTH_LONG ).show();
+			Utils.getErrorDialog( e, this ).show();
 		}
 		try {
 			FileWriter fr = new FileWriter( file, false );
 			fr.write( Utils.xmlHeader + "<documents>\n</documents>" );
 			fr.flush();
 			fr.close();
-			entry.addDocumentToIncluded( mDocument.getId() );
-			entry.saveText( text );
-			entry.setAndSaveInfo( new Info( (int) new Date().getTime() ) );
-			mDocument.addEntry( entry );
-			setResult( ResultCodes.NEED_TO_REFRESH );
+			mEntry.addDocumentToIncluded( mDocument.getId() );
+			mEntry.saveText( text );
+			mEntry.setAndSaveInfo( new Info( (int) new Date().getTime() ) );
+			mDocument.addEntry( mEntry );
+			setResult( ResultCodes.REOPEN, new Intent().putExtra( "id", id ) );
 			finish();
 		}catch (Exception e){
-			Toast.makeText( this, "createEntry\n\n" + e.toString(), Toast.LENGTH_LONG ).show();
+			Utils.getErrorDialog( e, this ).show();
 			e.printStackTrace();
 		}
+	}
+
+	private void saveProperties()throws Exception{
+		File file = new File( mEntry.getPathDir() + "properties.xml" );
+		if ( !file.exists() )
+			file.createNewFile();
+		FileWriter fr = null;
+		fr = new FileWriter( file, false );
+		fr.write( Utils.xmlHeader );
+		fr.append( "<properties>\n" )
+				.append( "<textSize value=\"" ).append( String.format( Locale.ROOT, "%d", mEntryProperty.textSize ) ).append( "\" />\n" )
+				.append( "</properties>" );
+
+		fr.flush();
+		fr.close();
 	}
 
 	View.OnClickListener saveEntry = new View.OnClickListener() {
@@ -143,6 +195,7 @@ public class CreateEntry extends AppCompatActivity {
 					final EditText name = new EditText( CreateEntry.this );
 					name.setId( View.NO_ID );
 					name.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT ) );
+					name.requestFocus();
 					AlertDialog.Builder builder = new AlertDialog.Builder( CreateEntry.this )
 							.setView( name )
 							.setTitle( R.string.enter_name )
@@ -160,9 +213,15 @@ public class CreateEntry extends AppCompatActivity {
 								public void onClick(DialogInterface dialog, int which) {
 									dialog.cancel();
 								}
-							} );
+							} ).setCancelable( false );
 
 					alertDialog = builder.create();
+					alertDialog.setOnShowListener( new DialogInterface.OnShowListener() {
+						@Override
+						public void onShow(DialogInterface dialog) {
+							Utils.showKeyboard( name, CreateEntry.this );
+						}
+					} );
 					alertDialog.show();
 				} else {
 					editText.requestFocus();
@@ -171,13 +230,16 @@ public class CreateEntry extends AppCompatActivity {
 				String text = editText.getText().toString();
 				if(!text.isEmpty()){
 					try {
+						saveProperties();
 						mEntry.saveText( text );
 						setResult( ResultCodes.REOPEN, new Intent(  ).putExtra( "id", mEntry.getId() ) );
-						_finishActivity();
 					}catch (Exception e){
 						Toast.makeText( CreateEntry.this, "edit text\n\n" + e.toString(), Toast.LENGTH_LONG ).show();
 						e.printStackTrace();
+						Utils.getErrorDialog( e, CreateEntry.this ).show();
+						return;
 					}
+					_finishActivity();
 				}
 			}
 		}

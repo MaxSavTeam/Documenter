@@ -2,11 +2,14 @@ package com.maxsavitsky.documenter.utils;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.drawable.ColorDrawable;
+import android.text.Html;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.datatypes.Category;
@@ -19,6 +22,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Utils {
@@ -213,5 +217,51 @@ public class Utils {
 			actionBar.setHomeButtonEnabled(true);
 			actionBar.setBackgroundDrawable( new ColorDrawable( getContext().getResources().getColor( R.color.colorPrimary ) ) );
 		}
+	}
+
+	public static String getThrowableStackTrace(Throwable t){
+		return getStackTrace( t.getStackTrace() );
+	}
+
+	public static String getExceptionStackTrace(Exception e){
+		return getStackTrace( e.getStackTrace() );
+	}
+
+	@SuppressLint("DefaultLocale")
+	public static String getStackTrace(StackTraceElement[] stackTraceElements){
+		String msg = "";
+
+		for(int i = 0; i < Math.min( 5, stackTraceElements.length ); i++){
+			msg = String.format( "%s%d. %s<br>", msg, 5 - i, stackTraceElements[i]);
+		}
+
+		return msg;
+	}
+
+	public static AlertDialog getErrorDialog(Exception e, Context context){
+		e.printStackTrace();
+		AlertDialog.Builder builder = new AlertDialog.Builder( context ).setTitle( "Error stacktrace" );
+		builder.setMessage( Html.fromHtml( "<b>Stacktrace:</b><br><br>" + getExceptionStackTrace( e ) + "<br><br>" + e.getMessage()) )
+			.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					dialog.cancel();
+				}
+			} ).setCancelable( false );
+
+		return builder.create();
+	}
+
+	public static AlertDialog getErrorDialog(Throwable t, Context context){
+		AlertDialog.Builder builder = new AlertDialog.Builder( context ).setTitle( "Error stacktrace" );
+		builder.setMessage( Html.fromHtml( "<b>Stacktrace:</b><br><br>" + getThrowableStackTrace( t ) + "<br><br>" + t.getMessage()) )
+				.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.cancel();
+					}
+				} ).setCancelable( false );
+
+		return builder.create();
 	}
 }

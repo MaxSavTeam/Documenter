@@ -1,7 +1,11 @@
 package com.maxsavitsky.documenter;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
@@ -9,6 +13,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -23,9 +28,13 @@ import com.maxsavitsky.documenter.utils.ResultCodes;
 import com.maxsavitsky.documenter.utils.Utils;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class CategoryList extends AppCompatActivity {
 	private ArrayList<Category> mCategories;
+	private int mSortOrder = 1; //1 - по возрастанию; -1 - по убыванию
+	private SharedPreferences sp;
 
 	private void applyTheme(){
 		ActionBar actionBar = getSupportActionBar();
@@ -50,9 +59,51 @@ public class CategoryList extends AppCompatActivity {
 	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 		if(item.getItemId() == android.R.id.home){
 			onMyBackPressed();
+		}else if(item.getItemId() == R.id.item_main_invert){
+			mSortOrder = -mSortOrder;
+			setupRecyclerView();
+		}else if(item.getItemId() == R.id.item_main_choose_sort_mode){
+			AlertDialog.Builder builder = new AlertDialog.Builder( this )
+					.setTitle( R.string.choose_sort_mode )
+					.setCancelable( false )
+					.setSingleChoiceItems( R.array.sort_modes, sp.getInt( "sort_categories", 0 ), new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							sp.edit().putInt( "sort_categories", which ).apply();
+							setupRecyclerView();
+							dialog.cancel();
+						}
+					} )
+					.setNeutralButton( R.string.cancel, new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							dialog.cancel();
+						}
+					} );
+			builder.create().show();
 		}
 		return super.onOptionsItemSelected(item);
 	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate( R.menu.categories_main_list_menu, menu );
+		return super.onCreateOptionsMenu( menu );
+	}
+
+	private Comparator<Category> mCategoryComparator = new Comparator<Category>() {
+		@Override
+		public int compare(Category o1, Category o2) {
+			if(sp.getInt( "sort_categories", 0 ) == 0)
+				return o1.getName().compareToIgnoreCase( o2.getName() ) * mSortOrder;
+			else{
+				int t1 = MainData.getCategoryWithId( o1.getId() ).getInfo().getTimeStamp();
+				int t2 = MainData.getCategoryWithId( o2.getId() ).getInfo().getTimeStamp();
+				int compareRes = Integer.compare( t1, t2 );
+				return compareRes * mSortOrder;
+			}
+		}
+	};
 
 	private void setupRecyclerView(){
 		RecyclerView recyclerView = findViewById(R.id.category_list_view);
@@ -64,6 +115,8 @@ public class CategoryList extends AppCompatActivity {
 			TextView textView = findViewById(R.id.textViewNothingFound);
 			textView.setVisibility(View.VISIBLE);
 		}else {
+			if(mCategories.size() > 1)
+				Collections.sort( mCategories, mCategoryComparator );
 			CategoryListAdapter adapter = new CategoryListAdapter(this, mCategories, onCategoryClick);
 			recyclerView.setLayoutManager(lay);
 			recyclerView.setAdapter(adapter);
@@ -105,6 +158,7 @@ public class CategoryList extends AppCompatActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		sp = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
 		setContentView(R.layout.activity_category_list);
 		Toolbar toolbar = findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);

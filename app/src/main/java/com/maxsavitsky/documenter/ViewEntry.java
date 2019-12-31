@@ -19,10 +19,12 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.maxsavitsky.documenter.datatypes.Entry;
+import com.maxsavitsky.documenter.datatypes.EntryProperty;
 import com.maxsavitsky.documenter.datatypes.MainData;
 import com.maxsavitsky.documenter.utils.RequestCodes;
 import com.maxsavitsky.documenter.utils.ResultCodes;
 import com.maxsavitsky.documenter.utils.Utils;
+import com.maxsavitsky.documenter.xml.XMLParser;
 
 import java.util.ArrayList;
 
@@ -91,17 +93,33 @@ public class ViewEntry extends AppCompatActivity {
 			changeNameDialog = builder.create();
 			changeNameDialog.show();
 		}else if(item.getItemId() == R.id.item_delete_entry){
-			try {
-				if ( MainData.finallyDeleteEntryWithId( mEntry.getId() ) ){
-					setResult( ResultCodes.NEED_TO_REFRESH );
-					finish();
-				}else{
-					Toast.makeText( this, "Failed", Toast.LENGTH_SHORT ).show();
-				}
-			}catch (Exception e){
-				e.printStackTrace();
-				Toast.makeText( this, e.toString(), Toast.LENGTH_LONG ).show();
-			}
+			AlertDialog.Builder deletionBuilder = new AlertDialog.Builder( this )
+					.setMessage( R.string.delete_cofirmation_text )
+					.setTitle( R.string.confirmation )
+					.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							dialog.cancel();
+							try {
+								if ( MainData.finallyDeleteEntryWithId( mEntry.getId() ) ) {
+									setResult( ResultCodes.NEED_TO_REFRESH );
+									finish();
+								} else {
+									Toast.makeText(ViewEntry.this, "Failed", Toast.LENGTH_SHORT).show();
+								}
+							} catch (Exception e) {
+								e.printStackTrace();
+								Toast.makeText( ViewEntry.this, "onOptionsItemSelected", Toast.LENGTH_LONG ).show();
+								Utils.getErrorDialog( e, ViewEntry.this ).show();
+							}
+						}
+					} ).setNeutralButton( R.string.cancel, new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							dialog.cancel();
+						}
+					} ).setCancelable( false );
+			deletionBuilder.create().show();
 		}else if(item.getItemId() == R.id.item_edit_entry_text){
 			Intent intent = new Intent( this, CreateEntry.class );
 			intent.putExtra( "type", "edit" );
@@ -133,6 +151,12 @@ public class ViewEntry extends AppCompatActivity {
 		super.onCreate( savedInstanceState );
 		Intent intent = getIntent();
 		mEntry = MainData.getEntryWithId( intent.getStringExtra( "id" ) );
+		EntryProperty entryProperty = new EntryProperty();
+		try{
+			entryProperty = new XMLParser().parseEntryProperties( mEntry.getId() );
+		}catch (Exception e){
+			Utils.getErrorDialog( e, this );
+		}
 		applyTheme();
 
 		sp = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
@@ -141,7 +165,7 @@ public class ViewEntry extends AppCompatActivity {
 		webView.getSettings().setAllowFileAccessFromFileURLs( true );
 		webView.getSettings().setAllowFileAccess( true );
 		webView.getSettings().setJavaScriptCanOpenWindowsAutomatically( false );
-		webView.getSettings().setDefaultFontSize( sp.getInt( "default_webview_font_size_sp", 22 ) );
+		webView.getSettings().setDefaultFontSize( entryProperty.textSize );
 		webView.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT ) );
 		webView.loadUrl( "file://" + mEntry.getPathDir() + "text.html" );
 		setContentView( webView );

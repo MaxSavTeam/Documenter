@@ -3,6 +3,7 @@ package com.maxsavitsky.documenter;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -25,6 +26,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -37,12 +39,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
 public class EntriesList extends AppCompatActivity {
 	private Document mDocument;
 	private ArrayList<Entry> mEntries;
+	private int mSortOrder = 1;
+	private SharedPreferences sp;
 
 	private void applyTheme(){
 		ActionBar actionBar = getSupportActionBar();
@@ -52,12 +58,27 @@ public class EntriesList extends AppCompatActivity {
 		}
 	}
 
+	private Comparator<Entry> mEntryComparator = new Comparator<Entry>() {
+		@Override
+		public int compare(Entry o1, Entry o2) {
+			if(sp.getInt( "sort_entries", 0 ) == 0)
+				return o1.getName().compareToIgnoreCase( o2.getName() ) * mSortOrder;
+			else{
+				int t1 = MainData.getEntryWithId( o1.getId() ).getInfo().getTimeStamp();
+				int t2 = MainData.getEntryWithId( o2.getId() ).getInfo().getTimeStamp();
+				int compareRes = Integer.compare( t1, t2 );
+				return compareRes * mSortOrder;
+			}
+		}
+	};
+
 	private void setupRecyclerView(){
 		try {
 			mEntries = ParseSeparate.parseDocumentWithId( mDocument.getId() );
 		}catch (Exception e){
 			e.printStackTrace();
-			Toast.makeText( this, "setupRecyclerView EntriesList\n\n" + e.toString(), Toast.LENGTH_LONG ).show();
+			Toast.makeText( this, "setupRecyclerView EntriesList", Toast.LENGTH_LONG ).show();
+			Utils.getErrorDialog( e, this ).show();
 			return;
 		}
 		RecyclerView recyclerView = findViewById( R.id.category_list_view );
@@ -66,6 +87,9 @@ public class EntriesList extends AppCompatActivity {
 			TextView textView = findViewById(R.id.textViewNothingFound);
 			textView.setVisibility(View.VISIBLE);
 		}else{
+			if(mEntries.size() > 1)
+				Collections.sort( mEntries, mEntryComparator );
+
 			LinearLayoutManager linearLayoutManager = new LinearLayoutManager( this );
 			linearLayoutManager.setOrientation( RecyclerView.VERTICAL );
 
@@ -95,14 +119,14 @@ public class EntriesList extends AppCompatActivity {
 		setContentView ( R.layout.activity_entries_list );
 		Toolbar toolbar = findViewById ( R.id.toolbar );
 		setSupportActionBar ( toolbar );
-
+		sp = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
 		final Intent intent = getIntent ();
 		mDocument = MainData.getDocumentWithId( intent.getStringExtra ( "id" ) );
 		try {
 			mEntries = ParseSeparate.parseDocumentWithId( mDocument.getId() );
 		} catch (Exception e) {
 			e.printStackTrace();
-			Toast.makeText( this, e.toString() + "\nonCreate 85", Toast.LENGTH_LONG ).show();
+			Utils.getErrorDialog( e, this ).show();
 		}
 		applyTheme();
 
@@ -124,21 +148,59 @@ public class EntriesList extends AppCompatActivity {
 	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 		switch ( item.getItemId() ) {
 			case android.R.id.home:
-				setResult( ResultCodes.OK );
 				finish();
 				break;
+			case R.id.item_invert_in_document:
+				mSortOrder = -mSortOrder;
+				setupRecyclerView();
+				break;
+			case R.id.item_choose_entry_sort_mode:
+				AlertDialog.Builder chooserBuilder = new AlertDialog.Builder( this )
+						.setTitle( R.string.choose_sort_mode )
+						.setCancelable( false )
+						.setSingleChoiceItems( R.array.sort_modes, sp.getInt( "sort_entries", 0 ), new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								sp.edit().putInt( "sort_entries", which ).apply();
+								setupRecyclerView();
+								dialog.cancel();
+							}
+						} )
+						.setNeutralButton( R.string.cancel, new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								dialog.cancel();
+							}
+						} );
+				chooserBuilder.create().show();
+				break;
 			case R.id.item_delete_document:
-				try {
-					if(MainData.finallyDeleteDocumentWithId( mDocument.getId() )){
-						setResult( ResultCodes.NEED_TO_REFRESH );
-						finish();
-					}else{
-						Toast.makeText( this, "Failed", Toast.LENGTH_SHORT ).show();
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-					Toast.makeText( this, e.toString(), Toast.LENGTH_LONG ).show();
-				}
+				AlertDialog.Builder deletionBuilder = new AlertDialog.Builder( this )
+						.setMessage( R.string.delete_cofirmation_text )
+						.setTitle( R.string.confirmation )
+						.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								dialog.cancel();
+								try {
+									if ( MainData.finallyDeleteDocumentWithId( mDocument.getId() ) ) {
+										setResult( ResultCodes.NEED_TO_REFRESH );
+										finish();
+									} else {
+										Toast.makeText(EntriesList.this, "Failed", Toast.LENGTH_SHORT).show();
+									}
+								} catch (Exception e) {
+									e.printStackTrace();
+									Utils.getErrorDialog( e, EntriesList.this ).show();
+								}
+							}
+						} ).setNeutralButton( R.string.cancel, new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								dialog.cancel();
+							}
+						} ).setCancelable( false );
+				deletionBuilder.create().show();
 				break;
 			case R.id.item_change_document_name:
 				AlertDialog alertDialog;
@@ -177,7 +239,7 @@ public class EntriesList extends AppCompatActivity {
 				try {
 					prepareChooseLayout();
 				}catch (Exception e){
-					Toast.makeText( this, e.toString(), Toast.LENGTH_LONG ).show();
+					Utils.getErrorDialog( e, this ).show();
 					e.printStackTrace();
 					restartActivity();
 				}
@@ -203,6 +265,7 @@ public class EntriesList extends AppCompatActivity {
 			for(Entry entry : documentEntries){
 				mDocumentEntriesMap.put( entry.getId(), entry );
 			}
+			entriesToChange = documentEntries;
 
 			View.OnClickListener cancel = new View.OnClickListener() {
 				@Override
@@ -256,7 +319,7 @@ public class EntriesList extends AppCompatActivity {
 	class ChooseAdapter extends DefaultChooseAdapter{
 		ArrayList<Entry> mElements;
 
-		public ChooseAdapter(ArrayList<Entry> elements, @Nullable View.OnClickListener onClickListener, Context context) {
+		ChooseAdapter(ArrayList<Entry> elements, @Nullable View.OnClickListener onClickListener, Context context) {
 			super( elements, onClickListener, context );
 			mElements = elements;
 		}
@@ -273,8 +336,9 @@ public class EntriesList extends AppCompatActivity {
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 		if(resultCode == ResultCodes.NEED_TO_REFRESH)
 			setupRecyclerView();
-		if(requestCode == RequestCodes.VIEW_ENTRY){
+		if(requestCode == RequestCodes.VIEW_ENTRY || requestCode == RequestCodes.CREATE_ENTRY){
 			if(resultCode == ResultCodes.REOPEN){
+				setupRecyclerView();
 				Intent intent = new Intent( this, ViewEntry.class );
 				if(data != null)
 					intent.putExtras( data );
