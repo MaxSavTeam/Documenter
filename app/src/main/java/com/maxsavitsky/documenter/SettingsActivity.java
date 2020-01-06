@@ -101,6 +101,19 @@ public class SettingsActivity extends AppCompatActivity {
 
 	private void unpack() {
 		File file = new File( Environment.getExternalStorageDirectory().getPath() + "/documenter_backup.zip" );
+		if ( !file.exists() ) {
+			Toast.makeText( this, R.string.file_not_found, Toast.LENGTH_SHORT ).show();
+			return;
+		}
+		File[] files = Utils.getExternalStoragePath().listFiles();
+		for (File child : files) {
+			if ( child.isDirectory() ) {
+				deleteDirectory( file );
+			} else {
+				child.delete();
+			}
+		}
+
 		File destinationDir = Utils.getExternalStoragePath();
 		try {
 			ZipInputStream zis = new ZipInputStream( new FileInputStream( file.getAbsoluteFile() ) );
@@ -123,7 +136,7 @@ public class SettingsActivity extends AppCompatActivity {
 			zis.closeEntry();
 			zis.close();
 
-			Toast.makeText( this, "Successful", Toast.LENGTH_SHORT ).show();
+			Toast.makeText( this, R.string.successful, Toast.LENGTH_SHORT ).show();
 			setResult( ResultCodes.RESTART_APP );
 			finish();
 		} catch (Exception e) {
@@ -151,15 +164,11 @@ public class SettingsActivity extends AppCompatActivity {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						dialog.cancel();
-						File[] files = Utils.getExternalStoragePath().listFiles();
-						for (File file : files) {
-							if ( file.isDirectory() ) {
-								deleteDirectory( file );
-							} else {
-								file.delete();
-							}
+						if ( ContextCompat.checkSelfPermission( SettingsActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE ) == PackageManager.PERMISSION_DENIED ) {
+							requestPermissions( new String[]{ Manifest.permission.READ_EXTERNAL_STORAGE }, 11 );
+						} else {
+							unpack();
 						}
-						unpack();
 					}
 				} )
 				.setNeutralButton( R.string.cancel, new DialogInterface.OnClickListener() {
@@ -200,7 +209,7 @@ public class SettingsActivity extends AppCompatActivity {
 				}
 			}
 			zipOutputStream.close();
-			Toast.makeText( this, "Successful", Toast.LENGTH_SHORT ).show();
+			Toast.makeText( this, R.string.successful, Toast.LENGTH_SHORT ).show();
 		} catch (Exception e) {
 			Utils.getErrorDialog( e, this ).show();
 		}
@@ -229,6 +238,12 @@ public class SettingsActivity extends AppCompatActivity {
 		if ( requestCode == 10 ) {
 			if ( grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED && grantResults[ 1 ] == PackageManager.PERMISSION_GRANTED ) {
 				createMyBackup();
+			} else {
+				Toast.makeText( this, "Denied", Toast.LENGTH_SHORT ).show();
+			}
+		} else if ( requestCode == 11 ) {
+			if ( grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED ) {
+				unpack();
 			} else {
 				Toast.makeText( this, "Denied", Toast.LENGTH_SHORT ).show();
 			}

@@ -44,4 +44,6 @@
     <string name="send_report">Send report</string>
     <string name="please">Please</string>
     <string name="seng_report_dialog_mes">It seems that an error has occurred and it is our fault. You can make your invaluable contribution to improving the application by sending us a file with a description of the error. &lt;br&gt;&lt;b&gt;We will immediately begin work on the bugs.&lt;/b&gt; &lt;br&gt; And if you still describe the problem and where and how it happened, then you have no price.&lt;br&gt;&lt;br&gt;Thank you for using our application and all the best!</string>
+    <string name="successful">Successful</string>
+    <string name="file_not_found">File not found</string>
 </resources>
