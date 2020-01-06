@@ -1,7 +1,5 @@
 package com.maxsavitsky.documenter.xml;
 
-import com.maxsavitsky.documenter.EntriesList;
-import com.maxsavitsky.documenter.adapters.DefaultChooseAdapter;
 import com.maxsavitsky.documenter.datatypes.Category;
 import com.maxsavitsky.documenter.datatypes.Document;
 import com.maxsavitsky.documenter.datatypes.Entry;
@@ -207,8 +205,16 @@ public class XMLParser {
 	class PropertyHandler extends DefaultHandler{
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes) {
-			if(qName.equals( "textSize" )){
-				mEntryProperty.setTextSize( Integer.parseInt( attributes.getValue( "value" ) ) );
+			switch ( qName ) {
+				case "textSize":
+					mEntryProperty.setTextSize( Integer.parseInt( attributes.getValue( "value" ) ) );
+					break;
+				case "bgColor":
+					mEntryProperty.setBgColor( Integer.parseInt( attributes.getValue( "value" ) ) );
+					break;
+				case "textColor":
+					mEntryProperty.setTextColor( Integer.parseInt( attributes.getValue( "value" ) ) );
+					break;
 			}
 		}
 	}

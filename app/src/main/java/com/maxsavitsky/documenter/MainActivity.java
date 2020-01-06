@@ -1,12 +1,13 @@
 package com.maxsavitsky.documenter;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -45,27 +46,18 @@ public class MainActivity extends AppCompatActivity {
 		} );
 
 		try {
-			MainData.readAllCategories();
-		} catch (Exception e) {
-			e.printStackTrace();
-			Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show();
-		}
-
-		try{
-			MainData.readAllDocuments();
+			initialize();
 		}catch (Exception e){
-			Toast.makeText(this, e.toString(), Toast.LENGTH_LONG).show();
+			Utils.getErrorDialog( e, this ).show();
+			return;
 		}
+		viewCategoryList( null );
+	}
 
-		try{
-			MainData.readAllEntries();
-		}catch (Exception e){
-			Toast.makeText( this, e.toString(), Toast.LENGTH_SHORT ).show();
-		}
-		Intent intent = new Intent(this, CategoryList.class);
-		startActivityForResult( intent, RequestCodes.CATEGORY_LIST );
-		/*int x = 0;
-		BigDecimal ans = BigDecimal.ONE.divide( BigDecimal.valueOf( 3 ) );*/
+	private void initialize() throws Exception {
+		MainData.readAllCategories();
+		MainData.readAllDocuments();
+		MainData.readAllEntries();
 	}
 
 	public void viewCategoryList(View v){
@@ -93,7 +85,8 @@ public class MainActivity extends AppCompatActivity {
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat( "dd.MM.yyyy HH:mm:ss", Locale.ROOT );
 		SimpleDateFormat fileFormatter = new SimpleDateFormat( "dd-MM-yyyy_HH:mm:ss", Locale.ROOT );
 		String formattedDate = fileFormatter.format( date );
-		file = new File( file.getPath() + "/stacktrace-" + formattedDate );
+		file = new File( file.getPath() + "/stacktrace-" + formattedDate + ".trace" );
+
 		try {
 			file.createNewFile();
 		}catch (IOException ignored){
@@ -102,12 +95,13 @@ public class MainActivity extends AppCompatActivity {
 		report.append( "Time: " ).append( simpleDateFormat.format( date ) ).append( "\n" )
 				.append( "Thread name: " ).append( t.getName() ).append( "\n" )
 				.append( "Thread id: " ).append( t.getId() ).append( "\n" )
+				.append( "Thread state: " ).append( t.getState() ).append( "\n" )
 				.append( "Version name: " ).append( mPackageInfo.versionName ).append( "\n" )
 				.append( "Version code: " ).append( mPackageInfo.versionCode ).append( "\n" );
 		printStackTrace( e, report );
 		report.append( "Caused by:\n" );
 		for(StackTraceElement element : e.getCause().getStackTrace()){
-			report.append( "\t" ).append( element.toString() ).append( "\n" );
+			report.append( "\tat " ).append( element.toString() ).append( "\n" );
 		}
 		try {
 			FileWriter fr = new FileWriter( file, false );
@@ -116,8 +110,14 @@ public class MainActivity extends AppCompatActivity {
 			fr.close();
 		}catch (Exception ignored){
 		}
-
-		System.exit( 1 );
+		AlarmManager alarmManager = (AlarmManager) getSystemService( Context.ALARM_SERVICE );
+		Intent intent = new Intent( this, ErrorHandlerActivity.class )
+				.addFlags( Intent.FLAG_ACTIVITY_NEW_TASK )
+				.putExtra( "path", file.getAbsolutePath() );
+		PendingIntent pendingIntent = PendingIntent.getActivity( this, 0, intent, PendingIntent.FLAG_ONE_SHOT );
+		alarmManager.set( AlarmManager.RTC, System.currentTimeMillis() + 500, pendingIntent );
+		finish();
+		System.exit( 2 );
 	}
 
 	private void printStackTrace(Throwable t, StringBuilder builder){
@@ -133,6 +133,12 @@ public class MainActivity extends AppCompatActivity {
 		}
 	}
 
+	private void restartApp() {
+		Intent intent = new Intent( this, MainActivity.class );
+		startActivity( intent );
+		this.finish();
+	}
+
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 		if(requestCode == RequestCodes.CATEGORY_LIST ){
@@ -143,6 +149,9 @@ public class MainActivity extends AppCompatActivity {
 				Intent intent = new Intent( this, CategoryList.class );
 				startActivityForResult( intent, RequestCodes.CATEGORY_LIST );
 			}
+		}
+		if ( resultCode == ResultCodes.RESTART_APP ) {
+			restartApp();
 		}
 		super.onActivityResult( requestCode, resultCode, data );
 	}

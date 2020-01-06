@@ -1,11 +1,5 @@
 package com.maxsavitsky.documenter;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -14,9 +8,16 @@ import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.maxsavitsky.documenter.datatypes.Entry;
 import com.maxsavitsky.documenter.datatypes.EntryProperty;
@@ -31,6 +32,7 @@ import java.util.ArrayList;
 public class ViewEntry extends AppCompatActivity {
 
 	private Entry mEntry;
+	private EntryProperty mEntryProperty;
 	private SharedPreferences sp;
 	private boolean resultSet = false;
 
@@ -162,10 +164,12 @@ public class ViewEntry extends AppCompatActivity {
 		sp = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
 
 		WebView webView = new WebView( this );
-		webView.getSettings().setAllowFileAccessFromFileURLs( true );
-		webView.getSettings().setAllowFileAccess( true );
-		webView.getSettings().setJavaScriptCanOpenWindowsAutomatically( false );
-		webView.getSettings().setDefaultFontSize( entryProperty.textSize );
+		WebSettings settings = webView.getSettings();
+		settings.setAllowFileAccessFromFileURLs( true );
+		settings.setAllowFileAccess( true );
+		settings.setJavaScriptCanOpenWindowsAutomatically( false );
+		settings.setDefaultFontSize( entryProperty.textSize );
+		//webView.setBackgroundColor( entryProperty.getBgColor() );
 		webView.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT ) );
 		webView.loadUrl( "file://" + mEntry.getPathDir() + "text.html" );
 		setContentView( webView );

@@ -2,13 +2,13 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
+    android:id="@+id/bottom_sheet"
     android:layout_width="match_parent"
-    android:layout_height="200dp"
+    android:layout_height="260dp"
     android:background="@drawable/top_borders"
+    android:orientation="vertical"
     app:behavior_hideable="false"
     app:behavior_peekHeight="@dimen/peekHeight"
-    android:id="@+id/bottom_sheet"
     app:layout_behavior="@string/bottom_sheet_behavior"
     tools:context=".CreateEntry">
 
@@ -17,12 +17,14 @@
         android:layout_height="@dimen/peekHeight"
         android:gravity="center"
         android:orientation="vertical">
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/tools"
+            android:textColor="@color/black"
             android:textSize="24sp"
-            android:textColor="@color/black"/>
+            android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -32,19 +34,20 @@
     </LinearLayout>
 
     <LinearLayout
-        android:layout_margin="10dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_margin="10dp"
         android:background="@color/white"
         android:gravity="center"
-        android:layout_gravity="center_vertical"
         android:orientation="vertical">
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/text_size"
-            android:textSize="18sp"
-            android:textColor="@color/black"/>
+            android:textColor="@color/black"
+            android:textSize="18sp" />
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -56,25 +59,83 @@
                 style="@style/Widget.AppCompat.Button.Borderless"
                 android:layout_width="@dimen/textSizeButtonControlsWidth"
                 android:layout_height="@dimen/textSizeButtonControlsWidth"
-                android:text="-"
                 android:onClick="minusTextSize"
+                android:text="-"
                 android:textSize="18sp" />
 
             <TextView
+                android:id="@+id/textViewTextSize"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/textViewTextSize"
-                android:textSize="22sp"
-                android:textColor="@color/black"/>
+                android:textColor="@color/black"
+                android:textSize="22sp" />
 
             <Button
                 android:id="@+id/btnPlus"
                 style="@style/Widget.AppCompat.Button.Borderless"
                 android:layout_width="@dimen/textSizeButtonControlsWidth"
                 android:layout_height="@dimen/textSizeButtonControlsWidth"
+                android:onClick="plusTextSize"
                 android:text="+"
-                android:textSize="18sp"
-                android:onClick="plusTextSize"/>
+                android:textSize="18sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/textView3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="15dp"
+            android:text="@string/background_color"
+            android:textColor="@color/black"
+            android:textSize="18sp" />
+
+        <LinearLayout
+            android:layout_width="@dimen/backLayoutWidth"
+            android:layout_height="@dimen/backLayoutWidth"
+            android:background="@color/black"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnBgColorPicker"
+                android:layout_width="@dimen/bgColorPickerWidth"
+                android:layout_height="@dimen/bgColorPickerWidth" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/textView4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/text_color"
+            android:textColor="@color/black"
+            android:textSize="18sp" />
+
+        <LinearLayout
+            android:layout_width="@dimen/backLayoutWidth"
+            android:layout_height="@dimen/backLayoutWidth"
+            android:background="@color/black"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnTextColorPicker"
+                android:layout_width="@dimen/bgColorPickerWidth"
+                android:layout_height="@dimen/bgColorPickerWidth" />
         </LinearLayout>
     </LinearLayout>
 

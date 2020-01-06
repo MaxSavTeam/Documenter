@@ -1,21 +1,15 @@
 package com.maxsavitsky.documenter.datatypes;
 
-import android.text.Html;
-
 import androidx.annotation.NonNull;
 
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.ParseSeparate;
-
-import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-
-import javax.xml.parsers.ParserConfigurationException;
 
 public class Entry extends Type {
 
@@ -75,16 +69,20 @@ public class Entry extends Type {
 		return pathDir;
 	}
 
-	public void saveText(String text) throws Exception{
+	public void saveText(String text, EntryProperty property) throws Exception {
 		text = text.replaceAll( "\n", "<br>" );
 		File file = new File( pathDir + "text.html" );
 		if(!file.exists())
 			file.createNewFile();
 		FileWriter fr = new FileWriter( file );
 		fr.write( Utils.htmlHeader );
-		fr.append( "<html>\n<body>\n" )
-				.append( text )
-				.append( "\n</body>\n</html>" );
+		fr.append( "<html>\n" )
+				.append( "\t<body bgcolor=\"" ).append( "#" ).append( Integer.toHexString( property.getBgColor() ).substring( 2 ) ).append( "\" >\n" )
+				//.append( "<body>\n" )
+				.append( "\t\t<font color=\"" ).append( "#" ).append( Integer.toHexString( property.getTextColor() ).substring( 2 ) ).append( "\">" )
+				.append( text ).append( "</font>" )
+				.append( "\n\t</body>" )
+				.append( "\n</html>" );
 		fr.flush();
 
 		fr = new FileWriter( pathDir + "text" );

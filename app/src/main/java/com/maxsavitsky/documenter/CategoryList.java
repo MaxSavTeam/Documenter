@@ -50,6 +50,10 @@ public class CategoryList extends AppCompatActivity {
 		finish();
 	}
 
+	private void finishActivity() {
+		finish(); ;
+	}
+
 	@Override
 	public void onBackPressed() {
 		onMyBackPressed();
@@ -57,30 +61,38 @@ public class CategoryList extends AppCompatActivity {
 
 	@Override
 	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-		if(item.getItemId() == android.R.id.home){
-			onMyBackPressed();
-		}else if(item.getItemId() == R.id.item_main_invert){
-			mSortOrder = -mSortOrder;
-			setupRecyclerView();
-		}else if(item.getItemId() == R.id.item_main_choose_sort_mode){
-			AlertDialog.Builder builder = new AlertDialog.Builder( this )
-					.setTitle( R.string.choose_sort_mode )
-					.setCancelable( false )
-					.setSingleChoiceItems( R.array.sort_modes, sp.getInt( "sort_categories", 0 ), new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							sp.edit().putInt( "sort_categories", which ).apply();
-							setupRecyclerView();
-							dialog.cancel();
-						}
-					} )
-					.setNeutralButton( R.string.cancel, new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							dialog.cancel();
-						}
-					} );
-			builder.create().show();
+		switch ( item.getItemId() ) {
+			case android.R.id.home:
+				onMyBackPressed();
+				break;
+			case R.id.item_main_invert:
+				mSortOrder = -mSortOrder;
+				setupRecyclerView();
+				break;
+			case R.id.item_settings:
+				Intent intent = new Intent( this, SettingsActivity.class );
+				startActivityForResult( intent, RequestCodes.SETTINGS );
+				break;
+			case R.id.item_main_choose_sort_mode:
+				AlertDialog.Builder builder = new AlertDialog.Builder( this )
+						.setTitle( R.string.choose_sort_mode )
+						.setCancelable( false )
+						.setSingleChoiceItems( R.array.sort_modes, sp.getInt( "sort_categories", 0 ), new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								sp.edit().putInt( "sort_categories", which ).apply();
+								setupRecyclerView();
+								dialog.cancel();
+							}
+						} )
+						.setNeutralButton( R.string.cancel, new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								dialog.cancel();
+							}
+						} );
+				builder.create().show();
+				break;
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -149,6 +161,10 @@ public class CategoryList extends AppCompatActivity {
 				startActivityForResult( intent, RequestCodes.DOCUMENT_LIST );
 			}
 		}
+		if ( resultCode == ResultCodes.RESTART_APP ) {
+			setResult( resultCode );
+			finishActivity();
+		}
 		if(resultCode == ResultCodes.NEED_TO_REFRESH){
 			setupRecyclerView();
 		}
@@ -173,6 +189,15 @@ public class CategoryList extends AppCompatActivity {
 				startActivityForResult( intent, RequestCodes.CREATE_CATEGORY );
 			}
 		});
+
+		fab.setOnLongClickListener( new View.OnLongClickListener() {
+			@Override
+			public boolean onLongClick(View v) {
+				setResult( ResultCodes.OK );
+				finish();
+				return true;
+			}
+		} );
 
 		setupRecyclerView();
 	}

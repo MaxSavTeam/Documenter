@@ -2,4 +2,6 @@
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="peekHeight">80dp</dimen>
     <dimen name="textSizeButtonControlsWidth">55dp</dimen>
+    <dimen name="bgColorPickerWidth">40dp</dimen>
+    <dimen name="backLayoutWidth">42dp</dimen>
 </resources>

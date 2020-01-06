@@ -22,7 +22,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Utils {
@@ -53,7 +52,7 @@ public class Utils {
 			fr.write(xmlHeader);
 			fr.append("<categories>\n");
 			for(int i = 0; i < categories.size(); i++){
-				fr.append("<category " + categories.get(i).toString() +"/>\n");
+				fr.append( "\t<category " + categories.get( i ).toString() + "/>\n" );
 			}
 			fr.append("</categories>");
 			fr.flush();
@@ -70,7 +69,7 @@ public class Utils {
 			fr.write(xmlHeader);
 			fr.append("<documents>\n");
 			for(int i = 0; i < documents.size(); i++){
-				fr.append("<document " + documents.get(i).toString() + " />\n");
+				fr.append( "\t<document " + documents.get( i ).toString() + " />\n" );
 			}
 			fr.append("</documents>");
 			fr.flush();
@@ -96,7 +95,7 @@ public class Utils {
 			fr.write( xmlHeader );
 			fr.append( "<entries>\n" );
 			for(Entry entry : entries){
-				fr.append( "<entry " + entry.toString() + " />\n" );
+				fr.append( "\t<entry " + entry.toString() + " />\n" );
 			}
 			fr.append( "</entries>" );
 			fr.flush();
@@ -124,7 +123,7 @@ public class Utils {
 		fr.append("<documents>\n");
 		for(int i = 0; i < documents.size(); i++){
 			Document cur = documents.get(i);
-			fr.append("<document " + "id=\"" + cur.getId() + "\" />\n");
+			fr.append( "\t<document " + "id=\"" + cur.getId() + "\" />\n" );
 		}
 		fr.append("</documents>");
 		fr.flush();
@@ -146,7 +145,7 @@ public class Utils {
 			fr.write( xmlHeader );
 			fr.append( "<entries>\n" );
 			for(Entry entry : entries){
-				fr.append( "<entry id=\"" + entry.getId() + "\" />\n" );
+				fr.append( "\t<entry id=\"" + entry.getId() + "\" />\n" );
 			}
 			fr.append( "</entries>" );
 			fr.flush();
@@ -241,7 +240,7 @@ public class Utils {
 	public static AlertDialog getErrorDialog(Exception e, Context context){
 		e.printStackTrace();
 		AlertDialog.Builder builder = new AlertDialog.Builder( context ).setTitle( "Error stacktrace" );
-		builder.setMessage( Html.fromHtml( "<b>Stacktrace:</b><br><br>" + getExceptionStackTrace( e ) + "<br><br>" + e.getMessage()) )
+		builder.setMessage( Html.fromHtml( "<b>Stacktrace:</b><br><br>" + getExceptionStackTrace( e ) + "<br><br>" + e.getClass().getName() + ": " + e.getMessage() ) )
 			.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
