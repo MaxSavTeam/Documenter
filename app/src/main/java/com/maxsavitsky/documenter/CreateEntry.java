@@ -46,6 +46,7 @@ public class CreateEntry extends AppCompatActivity {
 	private String title = "Create new entry";
 	private EntryProperty mEntryProperty;
 
+
 	private void applyTheme(){
 		ActionBar actionBar = getSupportActionBar();
 		if(actionBar != null){
@@ -59,8 +60,30 @@ public class CreateEntry extends AppCompatActivity {
 	}
 
 	private void backPressed(){
-		setResult( ResultCodes.OK );
-		finish();
+		String t = ( (EditText) findViewById( R.id.edittextEntry ) ).getText().toString();
+		if ( !t.isEmpty() && ( !type.equals( "edit" ) || !mEntryProperty.equals( mEntry.getProperty() ) ) ) {
+			AlertDialog.Builder builder = new AlertDialog.Builder( this )
+					.setTitle( R.string.confirmation )
+					.setMessage( R.string.create_entry_exit_mes ).setCancelable( false )
+					.setNeutralButton( R.string.cancel, new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							dialog.cancel();
+						}
+					} )
+					.setPositiveButton( R.string.yes, new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							setResult( ResultCodes.OK );
+							_finishActivity();
+						}
+					} );
+
+			builder.create().show();
+		} else {
+			setResult( ResultCodes.OK );
+			_finishActivity();
+		}
 	}
 
 	@Override
@@ -93,6 +116,7 @@ public class CreateEntry extends AppCompatActivity {
 			}catch (Exception e){
 				Utils.getErrorDialog( e, this ).show();
 			}
+			mEntry.setProperty( new EntryProperty( mEntryProperty ) );
 			title = "Edit entry text";
 			applyTheme();
 			EditText editText = findViewById( R.id.edittextEntry );
@@ -199,7 +223,7 @@ public class CreateEntry extends AppCompatActivity {
 		file = new File( Utils.getExternalStoragePath().getPath() + "/entries/" + id );
 		file.mkdir();
 		try {
-			saveProperties();
+			mEntry.saveProperties( mEntryProperty );
 		}catch (Exception e){
 			Utils.getErrorDialog( e, this ).show();
 			return;
@@ -227,22 +251,7 @@ public class CreateEntry extends AppCompatActivity {
 		}
 	}
 
-	private void saveProperties()throws Exception{
-		File file = new File( mEntry.getPathDir() + "properties.xml" );
-		if ( !file.exists() )
-			file.createNewFile();
-		FileWriter fr = null;
-		fr = new FileWriter( file, false );
-		fr.write( Utils.xmlHeader );
-		fr.append( "<properties>\n" )
-				.append( "\t<textSize value=\"" ).append( String.format( Locale.ROOT, "%d", mEntryProperty.textSize ) ).append( "\" />\n" )
-				.append( "\t<bgColor value=\"" ).append( String.format( Locale.ROOT, "%d", mEntryProperty.getBgColor() ) ).append( "\" />\n" )
-				.append( "\t<textColor value=\"" ).append( String.format( Locale.ROOT, "%d", mEntryProperty.getTextColor() ) ).append( "\" />\n" )
-				.append( "</properties>" );
 
-		fr.flush();
-		fr.close();
-	}
 
 	View.OnClickListener saveEntry = new View.OnClickListener() {
 		@Override
@@ -289,7 +298,7 @@ public class CreateEntry extends AppCompatActivity {
 				String text = editText.getText().toString();
 				if(!text.isEmpty()){
 					try {
-						saveProperties();
+						mEntry.saveProperties( mEntryProperty );
 						mEntry.saveText( text, mEntryProperty );
 						setResult( ResultCodes.REOPEN, new Intent(  ).putExtra( "id", mEntry.getId() ) );
 					}catch (Exception e){

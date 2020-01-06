@@ -108,7 +108,7 @@ public class SettingsActivity extends AppCompatActivity {
 		File[] files = Utils.getExternalStoragePath().listFiles();
 		for (File child : files) {
 			if ( child.isDirectory() ) {
-				deleteDirectory( file );
+				deleteDirectory( child );
 			} else {
 				child.delete();
 			}
@@ -198,6 +198,7 @@ public class SettingsActivity extends AppCompatActivity {
 			File outputFile = new File( Environment.getExternalStorageDirectory().getPath() + "/documenter_backup.zip" );
 			outputFile.createNewFile();
 			ZipOutputStream zipOutputStream = new ZipOutputStream( new FileOutputStream( outputFile ) );
+			zipOutputStream.setLevel( 9 );
 
 			if ( dir.listFiles() == null ) {
 				zipOutputStream.close();

@@ -10,11 +10,21 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class Entry extends Type {
 
 	private String id, name, pathDir;
 	private Info mInfo;
+	private EntryProperty mProperty;
+
+	public EntryProperty getProperty() {
+		return mProperty;
+	}
+
+	public void setProperty(EntryProperty property) {
+		mProperty = property;
+	}
 
 	public Entry(String id, String name) {
 		this.id = id;
@@ -87,6 +97,25 @@ public class Entry extends Type {
 
 		fr = new FileWriter( pathDir + "text" );
 		fr.write( text );
+		fr.flush();
+		fr.close();
+	}
+
+	public void saveProperties(EntryProperty entryProperty) throws Exception {
+		File file = new File( getPathDir() + "properties.xml" );
+		if ( !file.exists() ) {
+			file.createNewFile();
+		}
+		FileWriter fr = null;
+		fr = new FileWriter( file, false );
+		fr.write( Utils.xmlHeader );
+		fr.append( "<properties>\n" )
+				.append( "\t<textSize value=\"" ).append( String.format( Locale.ROOT, "%d", entryProperty.textSize ) ).append( "\" />\n" )
+				.append( "\t<bgColor value=\"" ).append( String.format( Locale.ROOT, "%d", entryProperty.getBgColor() ) ).append( "\" />\n" )
+				.append( "\t<textColor value=\"" ).append( String.format( Locale.ROOT, "%d", entryProperty.getTextColor() ) ).append( "\" />\n" )
+				.append( "\t<scrollPosition value=\"" ).append( String.format( Locale.ROOT, "%d", entryProperty.getScrollPosition() ) ).append( "\" />\n" )
+				.append( "</properties>" );
+
 		fr.flush();
 		fr.close();
 	}

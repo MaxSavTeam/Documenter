@@ -215,6 +215,9 @@ public class XMLParser {
 				case "textColor":
 					mEntryProperty.setTextColor( Integer.parseInt( attributes.getValue( "value" ) ) );
 					break;
+				case "scrollPosition":
+					mEntryProperty.setScrollPosition( Integer.parseInt( attributes.getValue( "value" ) ) );
+					break;
 			}
 		}
 	}

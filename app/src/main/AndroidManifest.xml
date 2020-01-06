@@ -20,7 +20,7 @@
         <activity android:name=".SettingsActivity" />
         <activity
             android:name=".ErrorHandlerActivity"
-            android:process=":report_process"></activity>
+            android:process=":report_process" />
         <activity
             android:name=".CreateEntry"
             android:label="@string/title_activity_create_entry"

@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -32,8 +33,9 @@ import java.util.ArrayList;
 public class ViewEntry extends AppCompatActivity {
 
 	private Entry mEntry;
-	private EntryProperty mEntryProperty;
+	private EntryProperty mEntryProperty = new EntryProperty();
 	private SharedPreferences sp;
+	private int mWebViewId;
 	private boolean resultSet = false;
 
 	private void applyTheme(){
@@ -47,6 +49,14 @@ public class ViewEntry extends AppCompatActivity {
 	private void backPressed(){
 		if(!resultSet)
 			setResult( ResultCodes.OK );
+
+		mEntryProperty.setScrollPosition( ( (WebView) findViewById( mWebViewId ) ).getScrollY() );
+		try {
+			mEntry.saveProperties( mEntryProperty );
+		} catch (Exception e) {
+			Utils.getErrorDialog( e, this ).show();
+			return;
+		}
 		finish();
 	}
 
@@ -153,9 +163,8 @@ public class ViewEntry extends AppCompatActivity {
 		super.onCreate( savedInstanceState );
 		Intent intent = getIntent();
 		mEntry = MainData.getEntryWithId( intent.getStringExtra( "id" ) );
-		EntryProperty entryProperty = new EntryProperty();
 		try{
-			entryProperty = new XMLParser().parseEntryProperties( mEntry.getId() );
+			mEntryProperty = new XMLParser().parseEntryProperties( mEntry.getId() );
 		}catch (Exception e){
 			Utils.getErrorDialog( e, this );
 		}
@@ -164,14 +173,17 @@ public class ViewEntry extends AppCompatActivity {
 		sp = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
 
 		WebView webView = new WebView( this );
+		mWebViewId = View.generateViewId();
+		webView.setId( mWebViewId );
 		WebSettings settings = webView.getSettings();
 		settings.setAllowFileAccessFromFileURLs( true );
 		settings.setAllowFileAccess( true );
 		settings.setJavaScriptCanOpenWindowsAutomatically( false );
-		settings.setDefaultFontSize( entryProperty.textSize );
+		settings.setDefaultFontSize( mEntryProperty.textSize );
 		//webView.setBackgroundColor( entryProperty.getBgColor() );
 		webView.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT ) );
 		webView.loadUrl( "file://" + mEntry.getPathDir() + "text.html" );
+		webView.setScrollY( mEntryProperty.getScrollPosition() );
 		setContentView( webView );
 	}
 }

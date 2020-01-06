@@ -5,10 +5,14 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -193,8 +197,34 @@ public class CategoryList extends AppCompatActivity {
 		fab.setOnLongClickListener( new View.OnLongClickListener() {
 			@Override
 			public boolean onLongClick(View v) {
-				setResult( ResultCodes.OK );
-				finish();
+				final EditText editText = new EditText( CategoryList.this );
+				editText.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT ) );
+				editText.setInputType( InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_PASSWORD );
+				AlertDialog.Builder builder = new AlertDialog.Builder( CategoryList.this )
+						.setView( editText )
+						.setTitle( "Enter the password for access" )
+						.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								String text = editText.getText().toString();
+								dialog.cancel();
+								if ( text.hashCode() == 1683456505 ) {
+									setResult( ResultCodes.OK );
+									finish();
+								} else {
+									Toast.makeText( CategoryList.this, "Failed :P", Toast.LENGTH_SHORT ).show();
+								}
+							}
+						} ).setNeutralButton( R.string.cancel, new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								dialog.cancel();
+								Toast.makeText( CategoryList.this, ":P", Toast.LENGTH_SHORT ).show();
+							}
+						} )
+						.setCancelable( false );
+				builder.create().show();
+				Utils.showKeyboard( editText, CategoryList.this );
 				return true;
 			}
 		} );
