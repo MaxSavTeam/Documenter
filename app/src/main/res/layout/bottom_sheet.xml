@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/bottom_sheet"
     android:layout_width="match_parent"
-    android:layout_height="260dp"
+    android:layout_height="360dp"
     android:background="@drawable/top_borders"
     android:orientation="vertical"
     app:behavior_hideable="false"
@@ -79,6 +79,78 @@
                 android:text="+"
                 android:textSize="18sp" />
         </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_margin="7dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            android:text="@string/text_alignment"
+            android:layout_marginBottom="5dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+            <ImageButton
+                android:layout_width="@dimen/btnChooseAlignWidth"
+                android:layout_height="@dimen/btnChooseAlignWidth"
+                android:src="@drawable/ic_align_left"
+                android:id="@+id/btnAlignLeft"
+                android:scaleType="centerInside"
+                android:onClick="chooseTextAlignment"
+                android:padding="5dp"
+                android:background="@drawable/rounded_corners"
+                tools:ignore="ContentDescription" />
+
+            <ImageButton
+                android:layout_width="@dimen/btnChooseAlignWidth"
+                android:layout_height="@dimen/btnChooseAlignWidth"
+                android:src="@drawable/ic_align_center"
+                android:scaleType="centerInside"
+                android:layout_marginEnd="10dp"
+                android:layout_marginStart="10dp"
+                android:id="@+id/btnAlignCenter"
+                android:padding="5dp"
+                android:onClick="chooseTextAlignment"
+                android:background="@drawable/rounded_corners"
+                tools:ignore="ContentDescription" />
+
+            <ImageButton
+                android:layout_width="@dimen/btnChooseAlignWidth"
+                android:layout_height="@dimen/btnChooseAlignWidth"
+                android:src="@drawable/ic_align_right"
+                android:scaleType="centerInside"
+                android:id="@+id/btnAlignRight"
+                android:padding="5dp"
+                android:onClick="chooseTextAlignment"
+                android:background="@drawable/rounded_corners"
+                tools:ignore="ContentDescription"/>
+
+            <ImageButton
+                android:layout_width="@dimen/btnChooseAlignWidth"
+                android:layout_height="@dimen/btnChooseAlignWidth"
+                android:src="@drawable/ic_align_justify"
+                android:id="@+id/btnAlignJustify"
+                android:scaleType="centerInside"
+                android:padding="5dp"
+                android:visibility="gone"
+                android:layout_marginStart="10dp"
+                android:background="@drawable/rounded_corners"
+                android:onClick="chooseTextAlignment"
+                tools:ignore="ContentDescription" />
+
+        </LinearLayout>
+
     </LinearLayout>
 
     <LinearLayout

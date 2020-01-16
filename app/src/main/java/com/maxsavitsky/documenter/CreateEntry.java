@@ -3,14 +3,18 @@ package com.maxsavitsky.documenter;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Html;
+import android.text.Layout;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -190,6 +194,23 @@ public class CreateEntry extends AppCompatActivity {
 
 		btnTextColorPicker.setBackgroundTintList( ColorStateList.valueOf( mEntryProperty.getTextColor() ) );
 		editText.setTextColor( mEntryProperty.getTextColor() );
+
+		ImageButton imageButton;
+		if(mEntryProperty.getTextAlignment() == Gravity.CENTER_HORIZONTAL)
+			imageButton = findViewById( R.id.btnAlignCenter );
+		else if(mEntryProperty.getTextAlignment() == Gravity.START)
+			imageButton = findViewById( R.id.btnAlignLeft );
+		else
+			imageButton = findViewById( R.id.btnAlignRight );
+
+		/*if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ){
+			findViewById( R.id.btnAlignJustify ).setVisibility( View.VISIBLE );
+			if(mEntryProperty.getTextAlignment() == Layout.JUSTIFICATION_MODE_INTER_WORD){
+				imageButton = findViewById( R.id.btnAlignJustify );
+			}
+		}*/
+
+		chooseTextAlignment( imageButton );
 	}
 
 	public void plusTextSize(View view){
@@ -251,7 +272,44 @@ public class CreateEntry extends AppCompatActivity {
 		}
 	}
 
+	private void resetAlignmentButtons(){
+		ImageButton btn;
+		int[] btnIds = new int[]{R.id.btnAlignLeft, R.id.btnAlignCenter, R.id.btnAlignRight, R.id.btnAlignJustify};
+		for(int id : btnIds){
+			btn = findViewById( id );
+			btn.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
+		}
+	}
 
+	public void chooseTextAlignment(View v){
+		resetAlignmentButtons();
+		v.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( R.color.btnClicked ) ) );
+
+		EditText editText = findViewById( R.id.edittextEntry );
+		if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ){
+			editText.setJustificationMode( Layout.JUSTIFICATION_MODE_NONE );
+		}
+		int alignment = Gravity.START;
+		if(v.getId() == R.id.btnAlignCenter){
+			alignment = Gravity.CENTER_HORIZONTAL;
+		}else if(v.getId() == R.id.btnAlignRight){
+			alignment = Gravity.END;
+		}else{
+			if(v.getId() == R.id.btnAlignJustify) {
+				if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ) {
+					editText.setJustificationMode( Layout.JUSTIFICATION_MODE_INTER_WORD );
+					editText.setGravity( Gravity.NO_GRAVITY );
+					editText.setTextAlignment( View.TEXT_ALIGNMENT_INHERIT );
+					alignment = Layout.JUSTIFICATION_MODE_INTER_WORD;
+					Toast.makeText( this, "Done", Toast.LENGTH_SHORT ).show();
+				}
+			}
+		}
+		if(v.getId() != R.id.btnAlignJustify)
+			editText.setGravity( alignment );
+
+		mEntryProperty.setTextAlignment( alignment );
+	}
 
 	View.OnClickListener saveEntry = new View.OnClickListener() {
 		@Override

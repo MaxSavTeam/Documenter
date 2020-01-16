@@ -7,4 +7,5 @@
     <color name="floatingButtonDefaultColor">#FF6D00</color>
     <color name="black">#000</color>
     <color name="white">#FFFFFF</color>
+    <color name="btnClicked">#C8C8C8</color>
 </resources>

@@ -1,6 +1,7 @@
 package com.maxsavitsky.documenter.datatypes;
 
 import android.graphics.Color;
+import android.view.Gravity;
 
 import androidx.annotation.NonNull;
 
@@ -12,11 +13,15 @@ public class EntryProperty {
 
 	private int mScrollPosition = 0;
 
-	public EntryProperty(int textSize, int bgColor, int textColor, int scrollPosition) {
-		this.textSize = textSize;
-		this.bgColor = bgColor;
-		this.textColor = textColor;
-		mScrollPosition = scrollPosition;
+	private int mTextAlignment = Gravity.START;
+
+	public int getTextAlignment() {
+		return mTextAlignment;
+	}
+
+	public void setTextAlignment(int textAlignment) {
+		mTextAlignment = textAlignment;
+
 	}
 
 	public EntryProperty(EntryProperty property) {
@@ -24,6 +29,7 @@ public class EntryProperty {
 		this.bgColor = property.getBgColor();
 		this.textColor = property.getTextColor();
 		mScrollPosition = property.getScrollPosition();
+		mTextAlignment = property.getTextAlignment();
 	}
 
 	public int getScrollPosition() {
@@ -79,6 +85,8 @@ public class EntryProperty {
 		if ( getBgColor() != that.getBgColor() ) {
 			return false;
 		}
+		if( getTextAlignment() != that.getTextAlignment() )
+			return false;
 		return getTextColor() == that.getTextColor();
 	}
 
@@ -93,8 +101,8 @@ public class EntryProperty {
 	@NonNull
 	@Override
 	public String toString() {
-		return Integer.toString( bgColor ) + "\n" +
-				Integer.toString( textColor ) + "\n" +
+		return bgColor + "\n" +
+				textColor + "\n" +
 				textSize + "\n" +
 				mScrollPosition;
 	}

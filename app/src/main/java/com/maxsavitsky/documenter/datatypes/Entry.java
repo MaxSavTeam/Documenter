@@ -1,5 +1,8 @@
 package com.maxsavitsky.documenter.datatypes;
 
+import android.text.Layout;
+import android.view.Gravity;
+
 import androidx.annotation.NonNull;
 
 import com.maxsavitsky.documenter.utils.Utils;
@@ -86,9 +89,20 @@ public class Entry extends Type {
 			file.createNewFile();
 		FileWriter fr = new FileWriter( file );
 		fr.write( Utils.htmlHeader );
+		String alignment;
+		if(property.getTextAlignment() == Gravity.START ){
+			alignment = "left";
+		}else if(property.getTextAlignment() == Gravity.CENTER_HORIZONTAL){
+			alignment = "center";
+		}else if(property.getTextAlignment() == Layout.JUSTIFICATION_MODE_INTER_WORD ){
+			alignment = "justify";
+		}else{
+			alignment = "right";
+		}
 		fr.append( "<html>\n" )
-				.append( "\t<body bgcolor=\"" ).append( "#" ).append( Integer.toHexString( property.getBgColor() ).substring( 2 ) ).append( "\" >\n" )
-				//.append( "<body>\n" )
+				.append( "\t<body bgcolor=\"" ).append( "#" ).append( Integer.toHexString( property.getBgColor() ).substring( 2 ) ).append( "\" " )
+				.append( "align=\"" ).append( alignment ).append( "\"" )
+				.append( " >\n" )
 				.append( "\t\t<font color=\"" ).append( "#" ).append( Integer.toHexString( property.getTextColor() ).substring( 2 ) ).append( "\">" )
 				.append( text ).append( "</font>" )
 				.append( "\n\t</body>" )
@@ -114,6 +128,7 @@ public class Entry extends Type {
 				.append( "\t<bgColor value=\"" ).append( String.format( Locale.ROOT, "%d", entryProperty.getBgColor() ) ).append( "\" />\n" )
 				.append( "\t<textColor value=\"" ).append( String.format( Locale.ROOT, "%d", entryProperty.getTextColor() ) ).append( "\" />\n" )
 				.append( "\t<scrollPosition value=\"" ).append( String.format( Locale.ROOT, "%d", entryProperty.getScrollPosition() ) ).append( "\" />\n" )
+				.append( "\t<textAlignment value=\"" ).append( String.format( Locale.ROOT, "%d", entryProperty.getTextAlignment() ) ).append( "\" />\n" )
 				.append( "</properties>" );
 
 		fr.flush();

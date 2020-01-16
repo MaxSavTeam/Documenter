@@ -4,4 +4,5 @@
     <dimen name="textSizeButtonControlsWidth">55dp</dimen>
     <dimen name="bgColorPickerWidth">40dp</dimen>
     <dimen name="backLayoutWidth">42dp</dimen>
+    <dimen name="btnChooseAlignWidth">55dp</dimen>
 </resources>

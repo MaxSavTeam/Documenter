@@ -10,7 +10,7 @@
 
     <application
         android:allowBackup="false"
-        android:icon="@drawable/documenter"
+        android:icon="@drawable/documenter_icon"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"

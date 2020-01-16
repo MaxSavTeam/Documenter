@@ -16,7 +16,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Stack;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -193,7 +192,7 @@ public class XMLParser {
 			}
 		}
 	}
-	Stack<String> xmlElements = new Stack<>();
+
 	private EntryProperty mEntryProperty = new EntryProperty();
 
 	public EntryProperty parseEntryProperties(String entryId) throws IOException, SAXException {
@@ -217,6 +216,9 @@ public class XMLParser {
 					break;
 				case "scrollPosition":
 					mEntryProperty.setScrollPosition( Integer.parseInt( attributes.getValue( "value" ) ) );
+					break;
+				case "textAlignment":
+					mEntryProperty.setTextAlignment( Integer.parseInt( attributes.getValue( "value" ) ) );
 					break;
 			}
 		}
