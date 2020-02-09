@@ -3,18 +3,27 @@ package com.maxsavitsky.documenter;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.Html;
 import android.text.Layout;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.AbsoluteSizeSpan;
+import android.text.style.ForegroundColorSpan;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,6 +34,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.maxsavitsky.documenter.datatypes.Document;
 import com.maxsavitsky.documenter.datatypes.Entry;
@@ -33,6 +43,7 @@ import com.maxsavitsky.documenter.datatypes.Info;
 import com.maxsavitsky.documenter.datatypes.MainData;
 import com.maxsavitsky.documenter.utils.ResultCodes;
 import com.maxsavitsky.documenter.utils.Utils;
+import com.maxsavitsky.documenter.widget.TextEditor;
 import com.maxsavitsky.documenter.xml.XMLParser;
 
 import java.io.File;
@@ -49,6 +60,33 @@ public class CreateEntry extends AppCompatActivity {
 	private Entry mEntry;
 	private String title = "Create new entry";
 	private EntryProperty mEntryProperty;
+	private TextEditor mTextEditor;
+	private Button btnBgColorPicker, btnTextColorPicker;
+	private BottomSheetBehavior mBottomSheetLayout;
+	private ArrayList<ChangeEntry> mHistory = new ArrayList<>();
+	private int mHistoryIterator = -1;
+	private Menu mMenu;
+	private final int UNDO_MENU_INDEX = 0;
+	private final int REDO_MENU_INDEX = 1;
+	private Editable mStartEditable = new Editable.Factory().newEditable( "" );
+
+	private static class ChangeEntry{
+		private SpannableString mSpannableString;
+		private int mCursorPosition;
+
+		public ChangeEntry(SpannableString spannableString, int cursorPosition) {
+			mSpannableString = spannableString;
+			mCursorPosition = cursorPosition;
+		}
+
+		public SpannableString getSpannableString() {
+			return mSpannableString;
+		}
+
+		public int getCursorPosition() {
+			return mCursorPosition;
+		}
+	}
 
 
 	private void applyTheme(){
@@ -65,7 +103,12 @@ public class CreateEntry extends AppCompatActivity {
 
 	private void backPressed(){
 		String t = ( (EditText) findViewById( R.id.edittextEntry ) ).getText().toString();
-		if ( !t.isEmpty() && ( !type.equals( "edit" ) || !mEntryProperty.equals( mEntry.getProperty() ) ) ) {
+		if ( !t.isEmpty() &&
+				( !type.equals( "edit" )
+						|| !mEntryProperty.equals( mEntry.getProperty() )
+						|| !mStartEditable.equals( mTextEditor.getEditableText() )
+				)
+		) {
 			AlertDialog.Builder builder = new AlertDialog.Builder( this )
 					.setTitle( R.string.confirmation )
 					.setMessage( R.string.create_entry_exit_mes ).setCancelable( false )
@@ -94,6 +137,20 @@ public class CreateEntry extends AppCompatActivity {
 	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 		if(item.getItemId() == android.R.id.home){
 			backPressed();
+		}else if(item.getItemId() == R.id.item_undo){
+			mTextEditor.setTextW( mHistory.get( --mHistoryIterator ).getSpannableString() );
+			mTextEditor.setSelection( mHistory.get( mHistoryIterator ).getCursorPosition() );
+			if(mHistoryIterator == 0){
+				disableThisMenuItem( UNDO_MENU_INDEX );
+			}
+			enableThisMenuItem( REDO_MENU_INDEX );
+		}else if(item.getItemId() == R.id.item_redo){
+			mTextEditor.setTextW( mHistory.get( ++mHistoryIterator ).getSpannableString() );
+			mTextEditor.setSelection( mHistory.get( mHistoryIterator ).getCursorPosition() );
+			if(mHistoryIterator == mHistory.size() - 1){
+				disableThisMenuItem( REDO_MENU_INDEX );
+			}
+			enableThisMenuItem( UNDO_MENU_INDEX );
 		}
 		return super.onOptionsItemSelected( item );
 	}
@@ -111,8 +168,14 @@ public class CreateEntry extends AppCompatActivity {
 		setSupportActionBar( toolbar );
 
 		applyTheme();
+
+		btnBgColorPicker = findViewById( R.id.btnBgColorPicker );
+		btnTextColorPicker = findViewById( R.id.btnTextColorPicker );
+
 		type = getIntent().getStringExtra( "type" );
 		mEntryProperty = new EntryProperty();
+		mTextEditor = findViewById( R.id.edittextEntry );
+		mTextEditor.setListener( mOnSelectionChanges );
 		if ( type != null && type.equals( "edit" ) ) {
 			mEntry = MainData.getEntryWithId( getIntent().getStringExtra( "id" ) );
 			try {
@@ -123,77 +186,200 @@ public class CreateEntry extends AppCompatActivity {
 			mEntry.setProperty( new EntryProperty( mEntryProperty ) );
 			title = "Edit entry text";
 			applyTheme();
-			EditText editText = findViewById( R.id.edittextEntry );
+
 			try {
-				editText.setText( Html.fromHtml( mEntry.loadText() ) );
+				mTextEditor.setTextW( new SpannableString(  Html.fromHtml( mEntry.loadText() ) ) );
+				mStartEditable = mTextEditor.getEditableText();
 			}catch (Exception e){
 				e.printStackTrace();
 				Utils.getErrorDialog( e, this ).show();
-				return;
+				//return;
 			}
 		}else{
 			mDocument = MainData.getDocumentWithId( getIntent().getStringExtra( "id" ) );
 		}
+
 		setEditTextSize();
 		FloatingActionButton fab = findViewById( R.id.fabSaveEntry );
 		fab.setOnClickListener( saveEntry );
+		Utils.showKeyboard( mTextEditor, this );
 
-		Utils.showKeyboard( (EditText) findViewById( R.id.edittextEntry ), this );
+		View llBottomSheet = findViewById( R.id.bottom_sheet );
+		mBottomSheetLayout = BottomSheetBehavior.from( llBottomSheet );
+
+		LinearLayout peek = findViewById( R.id.layoutBottomSheetCeil );
+		peek.setOnClickListener( new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if(mBottomSheetLayout.getState() == BottomSheetBehavior.STATE_COLLAPSED)
+					mBottomSheetLayout.setState( BottomSheetBehavior.STATE_EXPANDED );
+				else
+					mBottomSheetLayout.setState( BottomSheetBehavior.STATE_COLLAPSED );
+			}
+		} );
 	}
+
+	private void enableThisMenuItem(int i){
+		mMenu.getItem( i ).setEnabled( true );
+		mMenu.getItem( i ).setIcon( i == UNDO_MENU_INDEX ? R.drawable.ic_undo : R.drawable.ic_redo );
+		//invalidateOptionsMenu();
+	}
+
+	private void disableThisMenuItem(int i){
+		mMenu.getItem( i ).setEnabled( false );
+		mMenu.getItem( i ).setIcon( i == UNDO_MENU_INDEX ? R.drawable.ic_disabled_undo : R.drawable.ic_disabled_redo );
+		//invalidateOptionsMenu();
+	}
+
+
+	private void saveTextChange(){
+		SpannableString spannableString = new SpannableString( mTextEditor.getText() );
+		int pos = mTextEditor.getSelectionEnd();
+		if(mHistoryIterator != mHistory.size() - 1) {
+			ArrayList<ChangeEntry> historyCopy = new ArrayList<>();
+			for (int i = mHistoryIterator; i < mHistory.size(); i++) {
+				historyCopy.add( mHistory.get( i ) );
+			}
+			mHistory.clear();
+			mHistory.addAll( historyCopy );
+		}
+		enableThisMenuItem( UNDO_MENU_INDEX );
+		disableThisMenuItem( REDO_MENU_INDEX );
+		mHistory.add( new ChangeEntry( spannableString, pos ) );
+		mHistoryIterator = mHistory.size() - 1;
+	}
+
+	private void setBtnTextColorPickerBackground(){
+		ForegroundColorSpan[] foregroundColorSpans = mTextEditor.getText().getSpans( 0, mTextEditor.getText().length(), ForegroundColorSpan.class);
+		btnTextColorPicker.setBackgroundTintList( ColorStateList.valueOf(
+				foregroundColorSpans.length != 0 ? foregroundColorSpans[ foregroundColorSpans.length-1 ].getForegroundColor() : mTextEditor.getCurrentTextColor() ) );
+	}
+
+	TextEditor.OnSelectionChanges mOnSelectionChanges = new TextEditor.OnSelectionChanges() {
+		@Override
+		public void onTextSelected(int start, int end) {
+			Editable s = mTextEditor.getText();
+			ForegroundColorSpan[] foregroundColorSpans = s.getSpans( start, end, ForegroundColorSpan.class );
+			if(foregroundColorSpans.length != 0){
+				mTextColor = foregroundColorSpans[foregroundColorSpans.length-1].getForegroundColor();
+			}else{
+				mTextColor = Color.WHITE;
+			}
+			mSelectionBounds = new int[]{start, end};
+			btnTextColorPicker.setBackgroundTintList( ColorStateList.valueOf( mTextColor ) );
+			btnTextColorPicker.setOnClickListener( onClickOnSelectColorOfTextSegment );
+		}
+
+		@Override
+		public void onTextSelectionBreak(int newSelectionPosition) {
+			btnTextColorPicker.setOnClickListener( btnTextOnAllColor );
+			if(newSelectionPosition != -100) {
+				if ( mTextEditor.getText() == null || mTextEditor.getText().length() == 0 ) {
+					return;
+				}
+			}
+			setBtnTextColorPickerBackground();
+		}
+
+		@Override
+		public void onTextChanged() {
+			runOnUiThread( new Runnable() {
+				@Override
+				public void run() {
+					saveTextChange();
+				}
+			} );
+		}
+	};
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate( R.menu.create_entry_menu, menu );
+		mMenu = menu;
+		disableThisMenuItem( UNDO_MENU_INDEX );
+		disableThisMenuItem( REDO_MENU_INDEX );
+		return super.onCreateOptionsMenu( menu );
+	}
+
+	private View.OnClickListener btnBgColorPickerDefaultClickListener = new View.OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			new AmbilWarnaDialog( CreateEntry.this, mEntryProperty.getBgColor(), new AmbilWarnaDialog.OnAmbilWarnaListener() {
+				@Override
+				public void onCancel(AmbilWarnaDialog dialog) {
+
+				}
+
+				@Override
+				public void onOk(AmbilWarnaDialog dialog, int color) {
+					btnBgColorPicker.setBackgroundTintList( ColorStateList.valueOf( color ) );
+					//btnBgColorPicker.setBackground( getDrawable( R.drawable.btn_picker_borders ) );
+					mTextEditor.setBackgroundColor( color );
+					mEntryProperty.setBgColor( color );
+					//Toast.makeText( CreateEntry.this, Integer.toString( color ), Toast.LENGTH_SHORT ).show();
+				}
+			} ).show();
+		}
+	};
+	private int mTextColor;
+	private int[] mSelectionBounds;
+	private View.OnClickListener onClickOnSelectColorOfTextSegment = new View.OnClickListener() {
+		@Override
+		public void onClick(View v) {
+
+			android.app.AlertDialog alertDialog = new AmbilWarnaDialog( CreateEntry.this, mTextColor, new AmbilWarnaDialog.OnAmbilWarnaListener() {
+				@Override
+				public void onCancel(AmbilWarnaDialog dialog) {
+
+				}
+
+				@Override
+				public void onOk(AmbilWarnaDialog dialog, int color) {
+					Editable s = mTextEditor.getText();
+					s.setSpan( new ForegroundColorSpan( color ), mSelectionBounds[0], mSelectionBounds[1], Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+					runOnUiThread( new Runnable() {
+						@Override
+						public void run() {
+							saveTextChange();
+						}
+					} );
+				}
+			} ).getDialog();
+			alertDialog.setTitle( R.string.set_text_color_of_selected_segment );
+			alertDialog.show();
+		}
+	};
+
+	private View.OnClickListener btnTextOnAllColor = new View.OnClickListener() {
+		@Override
+		public void onClick(View v) {
+
+			android.app.AlertDialog alertDialog = new AmbilWarnaDialog( CreateEntry.this, btnTextColorPicker.getBackgroundTintList().getDefaultColor(), new AmbilWarnaDialog.OnAmbilWarnaListener() {
+				@Override
+				public void onCancel(AmbilWarnaDialog dialog) {
+
+				}
+
+				@Override
+				public void onOk(AmbilWarnaDialog dialog, int color) {
+					mTextEditor.getText().setSpan( new ForegroundColorSpan( color ), 0, mTextEditor.getText().length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+					btnTextColorPicker.setBackgroundTintList( ColorStateList.valueOf( color ) );
+				}
+			} ).getDialog();
+			alertDialog.setTitle( R.string.set_text_color_of_all_text );
+			alertDialog.show();
+		}
+	};
 
 	@Override
 	protected void onPostCreate(@Nullable Bundle savedInstanceState) {
 		super.onPostCreate( savedInstanceState );
-		final Button btnBgColorPicker = findViewById( R.id.btnBgColorPicker );
-		final EditText editText = findViewById( R.id.edittextEntry );
-		btnBgColorPicker.setOnClickListener( new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				new AmbilWarnaDialog( CreateEntry.this, mEntryProperty.getBgColor(), new AmbilWarnaDialog.OnAmbilWarnaListener() {
-					@Override
-					public void onCancel(AmbilWarnaDialog dialog) {
-
-					}
-
-					@Override
-					public void onOk(AmbilWarnaDialog dialog, int color) {
-						btnBgColorPicker.setBackgroundTintList( ColorStateList.valueOf( color ) );
-						//btnBgColorPicker.setBackground( getDrawable( R.drawable.btn_picker_borders ) );
-						editText.setBackgroundColor( color );
-						mEntryProperty.setBgColor( color );
-						//Toast.makeText( CreateEntry.this, Integer.toString( color ), Toast.LENGTH_SHORT ).show();
-					}
-				} ).show();
-			}
-		} );
-
-		final Button btnTextColorPicker = findViewById( R.id.btnTextColorPicker );
-		btnTextColorPicker.setOnClickListener( new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				new AmbilWarnaDialog( CreateEntry.this, mEntryProperty.getTextColor(), new AmbilWarnaDialog.OnAmbilWarnaListener() {
-					@Override
-					public void onCancel(AmbilWarnaDialog dialog) {
-
-					}
-
-					@Override
-					public void onOk(AmbilWarnaDialog dialog, int color) {
-						btnTextColorPicker.setBackgroundTintList( ColorStateList.valueOf( color ) );
-						//btnBgColorPicker.setBackground( getDrawable( R.drawable.btn_picker_borders ) );
-						editText.setTextColor( color );
-						mEntryProperty.setTextColor( color );
-						//Toast.makeText( CreateEntry.this, Integer.toString( color ), Toast.LENGTH_SHORT ).show();
-					}
-				} ).show();
-			}
-		} );
+		btnBgColorPicker.setOnClickListener( btnBgColorPickerDefaultClickListener );
+		setBtnTextColorPickerBackground();
+		btnTextColorPicker.setOnClickListener( btnTextOnAllColor );
 
 		btnBgColorPicker.setBackgroundTintList( ColorStateList.valueOf( mEntryProperty.getBgColor() ) );
-		editText.setBackgroundColor( mEntryProperty.getBgColor() );
-
-		btnTextColorPicker.setBackgroundTintList( ColorStateList.valueOf( mEntryProperty.getTextColor() ) );
-		editText.setTextColor( mEntryProperty.getTextColor() );
+		mTextEditor.setBackgroundColor( mEntryProperty.getBgColor() );
 
 		ImageButton imageButton;
 		if(mEntryProperty.getTextAlignment() == Gravity.CENTER_HORIZONTAL)
@@ -202,13 +388,6 @@ public class CreateEntry extends AppCompatActivity {
 			imageButton = findViewById( R.id.btnAlignLeft );
 		else
 			imageButton = findViewById( R.id.btnAlignRight );
-
-		/*if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ){
-			findViewById( R.id.btnAlignJustify ).setVisibility( View.VISIBLE );
-			if(mEntryProperty.getTextAlignment() == Layout.JUSTIFICATION_MODE_INTER_WORD){
-				imageButton = findViewById( R.id.btnAlignJustify );
-			}
-		}*/
 
 		chooseTextAlignment( imageButton );
 	}
@@ -226,12 +405,15 @@ public class CreateEntry extends AppCompatActivity {
 	}
 
 	private void setEditTextSize(){
-		((EditText) findViewById( R.id.edittextEntry )).setTextSize( TypedValue.COMPLEX_UNIT_SP, (float) mEntryProperty.textSize );
+		/*((EditText) findViewById( R.id.edittextEntry )).setTextSize( TypedValue.COMPLEX_UNIT_SP, (float) mEntryProperty.textSize );*/
 		TextView t = findViewById( R.id.textViewTextSize );
 		t.setText( String.format( Locale.ROOT, "%d", mEntryProperty.textSize ) );
+
+		mTextEditor.getText().setSpan( new AbsoluteSizeSpan( (int) TypedValue.applyDimension( TypedValue.COMPLEX_UNIT_SP, mEntryProperty.textSize, getResources().getDisplayMetrics() ) ),
+				0, mTextEditor.getText().length(), Spanned.SPAN_INCLUSIVE_INCLUSIVE);
 	}
 
-	private void createEntry(String name, String text){
+	private void createEntry(String name, Spannable text){
 		String id = Utils.generateUniqueId() + "_ent";
 		mEntry = new Entry( id, name );
 		ArrayList<Entry> entries = MainData.getEntriesList();
@@ -255,6 +437,8 @@ public class CreateEntry extends AppCompatActivity {
 		}catch (Exception e){
 			Utils.getErrorDialog( e, this ).show();
 		}
+		//Toast.makeText( this, Html.escapeHtml( text ), Toast.LENGTH_LONG ).show();
+		//Toast.makeText( this, Html.fromHtml( Html.escapeHtml( text ) ), Toast.LENGTH_LONG ).show();
 		try {
 			FileWriter fr = new FileWriter( file, false );
 			fr.write( Utils.xmlHeader + "<documents>\n</documents>" );
@@ -311,63 +495,70 @@ public class CreateEntry extends AppCompatActivity {
 		mEntryProperty.setTextAlignment( alignment );
 	}
 
+	private void saveEntry(){
+		Editable e = mTextEditor.getText();
+		if(e == null)
+			return;
+		String text = e.toString();
+		if(type.equals( "create" )) {
+			if ( text.length() != 0 ) {
+				AlertDialog alertDialog;
+				final EditText name = new EditText( CreateEntry.this );
+				name.setId( View.NO_ID );
+				name.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT ) );
+				name.requestFocus();
+				AlertDialog.Builder builder = new AlertDialog.Builder( CreateEntry.this )
+						.setView( name )
+						.setTitle( R.string.enter_name )
+						.setMessage( R.string.name_yours_minds )
+						.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								dialog.cancel();
+								String n = name.getText().toString();
+								createEntry( n, mTextEditor.getText() );
+							}
+						} )
+						.setNegativeButton( R.string.cancel, new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								dialog.cancel();
+							}
+						} ).setCancelable( false );
+
+				alertDialog = builder.create();
+				alertDialog.setOnShowListener( new DialogInterface.OnShowListener() {
+					@Override
+					public void onShow(DialogInterface dialog) {
+						Utils.showKeyboard( name, CreateEntry.this );
+					}
+				} );
+				alertDialog.show();
+			} else {
+				mTextEditor.requestFocus();
+			}
+		}else if(type.equals( "edit" )){
+			if(text.length() != 0){
+				try {
+					mEntry.saveProperties( mEntryProperty );
+					mEntry.saveText( mTextEditor.getText(), mEntryProperty );
+					setResult( ResultCodes.REOPEN, new Intent(  ).putExtra( "id", mEntry.getId() ) );
+				}catch (Exception ex){
+					Toast.makeText( CreateEntry.this, "edit text\n\n" + ex.toString(), Toast.LENGTH_LONG ).show();
+					ex.printStackTrace();
+					Utils.getErrorDialog( ex, CreateEntry.this ).show();
+					return;
+				}
+				_finishActivity();
+			}
+		}
+	}
+
 	View.OnClickListener saveEntry = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
-			final EditText editText = findViewById( R.id.edittextEntry );
-			if(type.equals( "create" )) {
-				if ( editText.getText().length() != 0 ) {
-					AlertDialog alertDialog;
-					final EditText name = new EditText( CreateEntry.this );
-					name.setId( View.NO_ID );
-					name.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT ) );
-					name.requestFocus();
-					AlertDialog.Builder builder = new AlertDialog.Builder( CreateEntry.this )
-							.setView( name )
-							.setTitle( R.string.enter_name )
-							.setMessage( R.string.name_yours_minds )
-							.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
-								@Override
-								public void onClick(DialogInterface dialog, int which) {
-									dialog.cancel();
-									String n = name.getText().toString();
-									createEntry( n, editText.getText().toString() );
-								}
-							} )
-							.setNegativeButton( R.string.cancel, new DialogInterface.OnClickListener() {
-								@Override
-								public void onClick(DialogInterface dialog, int which) {
-									dialog.cancel();
-								}
-							} ).setCancelable( false );
-
-					alertDialog = builder.create();
-					alertDialog.setOnShowListener( new DialogInterface.OnShowListener() {
-						@Override
-						public void onShow(DialogInterface dialog) {
-							Utils.showKeyboard( name, CreateEntry.this );
-						}
-					} );
-					alertDialog.show();
-				} else {
-					editText.requestFocus();
-				}
-			}else if(type.equals( "edit" )){
-				String text = editText.getText().toString();
-				if(!text.isEmpty()){
-					try {
-						mEntry.saveProperties( mEntryProperty );
-						mEntry.saveText( text, mEntryProperty );
-						setResult( ResultCodes.REOPEN, new Intent(  ).putExtra( "id", mEntry.getId() ) );
-					}catch (Exception e){
-						Toast.makeText( CreateEntry.this, "edit text\n\n" + e.toString(), Toast.LENGTH_LONG ).show();
-						e.printStackTrace();
-						Utils.getErrorDialog( e, CreateEntry.this ).show();
-						return;
-					}
-					_finishActivity();
-				}
-			}
+			mTextEditor.clearComposingText();
+			saveEntry();
 		}
 	};
 

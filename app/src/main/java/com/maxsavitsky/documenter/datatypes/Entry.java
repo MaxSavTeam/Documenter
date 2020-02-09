@@ -1,6 +1,8 @@
 package com.maxsavitsky.documenter.datatypes;
 
+import android.text.Html;
 import android.text.Layout;
+import android.text.Spannable;
 import android.view.Gravity;
 
 import androidx.annotation.NonNull;
@@ -82,8 +84,8 @@ public class Entry extends Type {
 		return pathDir;
 	}
 
-	public void saveText(String text, EntryProperty property) throws Exception {
-		text = text.replaceAll( "\n", "<br>" );
+	public void saveText(Spannable text, EntryProperty property) throws Exception {
+		//text = text.replaceAll( "\n", "<br>" );
 		File file = new File( pathDir + "text.html" );
 		if(!file.exists())
 			file.createNewFile();
@@ -99,18 +101,17 @@ public class Entry extends Type {
 		}else{
 			alignment = "right";
 		}
+		String htmlText = Html.toHtml( text );
 		fr.append( "<html>\n" )
 				.append( "\t<body bgcolor=\"" ).append( "#" ).append( Integer.toHexString( property.getBgColor() ).substring( 2 ) ).append( "\" " )
-				.append( "align=\"" ).append( alignment ).append( "\"" )
-				.append( " >\n" )
-				.append( "\t\t<font color=\"" ).append( "#" ).append( Integer.toHexString( property.getTextColor() ).substring( 2 ) ).append( "\">" )
-				.append( text ).append( "</font>" )
+				.append( "align=\"" ).append( alignment ).append( "\">\n" )
+				.append( htmlText )
 				.append( "\n\t</body>" )
 				.append( "\n</html>" );
 		fr.flush();
 
 		fr = new FileWriter( pathDir + "text" );
-		fr.write( text );
+		fr.write( htmlText );
 		fr.flush();
 		fr.close();
 	}
@@ -141,7 +142,6 @@ public class Entry extends Type {
 		while(fr.ready()){
 			text = String.format( "%s%c", text, (char)fr.read() );
 		}
-
 		return text;
 	}
 

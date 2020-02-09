@@ -1,20 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <EditText
-        android:id="@+id/edittextEntry"
-        android:layout_marginBottom="@dimen/peekHeight"
+    <!--LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:ems="10"
-        android:gravity="start|top"
-        android:hint="@string/enter_your_minds_here"
-        android:inputType="textMultiLine"
-        android:textSize="22sp" />
+        android:layout_marginBottom="@dimen/peekHeight"
+        android:orientation="vertical"-->
+
+        <com.maxsavitsky.documenter.widget.TextEditor
+            android:id="@+id/edittextEntry"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@null"
+            android:ems="10"
+            android:gravity="start|top"
+            android:hint="@string/enter_your_minds_here"
+            android:textSize="22sp"
+
+            android:inputType="textNoSuggestions"/>
+
 </LinearLayout>

@@ -24,8 +24,8 @@ android {
         applicationId "com.maxsavitsky.documenter"
         minSdkVersion 23
         targetSdkVersion 29
-        versionCode 6
-        versionName '0.0.6.alpha'
+        versionCode 7
+        versionName '0.1'
         buildConfigField "String", "COMPILATION_DATE", "\"${getDate()}\""
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -56,8 +56,8 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'com.google.android.material:material:1.0.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
-    implementation 'androidx.navigation:navigation-fragment:2.1.0'
-    implementation 'androidx.navigation:navigation-ui:2.1.0'
+    implementation 'androidx.navigation:navigation-fragment:2.2.0'
+    implementation 'androidx.navigation:navigation-ui:2.2.0'
     implementation 'org.jetbrains:annotations-java5:15.0'
     implementation 'com.android.support:design:29.0.0'
     implementation 'com.github.yukuku:ambilwarna:2.0.1'

@@ -13,6 +13,10 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.maxsavitsky.documenter.utils.Utils;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+
 public class ErrorHandlerActivity extends AppCompatActivity {
 	String path;
 
@@ -43,6 +47,35 @@ public class ErrorHandlerActivity extends AppCompatActivity {
 					}
 				} );
 
+		builder.create().show();
+	}
+
+	public void viewReport(View v){
+		FileReader fr = null;
+		String mes = "";
+		try{
+			fr  = new FileReader( new File(path) );
+			while(fr.ready()){
+				mes = String.format( "%s%c", mes, (char) fr.read() );
+			}
+			fr.close();
+		}catch (Exception e){
+			try {
+				if(fr != null)
+					fr.close();
+			}catch (IOException io){
+				//ignore
+			}
+			return;
+		}
+		AlertDialog.Builder builder = new AlertDialog.Builder( this )
+				.setCancelable( false )
+				.setNeutralButton( "OK", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.cancel();
+					}
+				} ).setMessage( mes );
 		builder.create().show();
 	}
 

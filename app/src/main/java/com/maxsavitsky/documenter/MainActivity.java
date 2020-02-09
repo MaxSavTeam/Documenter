@@ -6,8 +6,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -54,10 +56,38 @@ public class MainActivity extends AppCompatActivity {
 		viewCategoryList( null );
 	}
 
+	private long getUsedMemory(){
+		Runtime runtime =  Runtime.getRuntime();
+		return runtime.totalMemory() - runtime.freeMemory();
+	}
+
+	public void getUsedMemory(View v){
+		Toast.makeText( this, Long.toString( getUsedMemory() / (1024 * 1024) ) + " MB", Toast.LENGTH_SHORT ).show();
+	}
+
 	private void initialize() throws Exception {
 		MainData.readAllCategories();
 		MainData.readAllDocuments();
 		MainData.readAllEntries();
+	}
+
+	public void reinitialize(View v){
+		MainData.clearAll();
+
+		try{
+			initialize();
+
+			Toast.makeText( this, "Successful\nUsed RAM: " + getUsedMemory() / (1024*1024) + "MB", Toast.LENGTH_SHORT ).show();
+		}catch (Exception e){
+			Utils.getErrorDialog( e, this ).show();
+		}
+	}
+
+	public void clearRam(View v){
+		MainData.clearAll();
+		System.gc();
+		int MB = 1024 * 1024;
+		Toast.makeText( this, "Memory cleared\nRAM usage now: " + (getUsedMemory() / MB) + "MB", Toast.LENGTH_SHORT ).show();
 	}
 
 	public void viewCategoryList(View v){
@@ -71,6 +101,7 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	public void uncaughtException(@NonNull Thread t, @NonNull final Throwable e) {
+		e.printStackTrace();
 		PackageInfo mPackageInfo = null;
 		try {
 			mPackageInfo = getPackageManager().getPackageInfo( getPackageName(), 0 );
@@ -96,6 +127,11 @@ public class MainActivity extends AppCompatActivity {
 				.append( "Thread name: " ).append( t.getName() ).append( "\n" )
 				.append( "Thread id: " ).append( t.getId() ).append( "\n" )
 				.append( "Thread state: " ).append( t.getState() ).append( "\n" )
+				.append( "Manufacturer: " ).append( Build.MANUFACTURER ).append( "\n" )
+				.append( "Model: " ).append( Build.MODEL ).append( "\n" )
+				.append( "Brand: " ).append( Build.BRAND ).append( "\n" )
+				.append( "Android Version: " ).append( Build.VERSION.RELEASE ).append( "\n" )
+				.append( "Android SDK: " ).append( Build.VERSION.SDK_INT ).append( "\n" )
 				.append( "Version name: " ).append( mPackageInfo.versionName ).append( "\n" )
 				.append( "Version code: " ).append( mPackageInfo.versionCode ).append( "\n" );
 		printStackTrace( e, report );
@@ -115,9 +151,8 @@ public class MainActivity extends AppCompatActivity {
 				.addFlags( Intent.FLAG_ACTIVITY_NEW_TASK )
 				.putExtra( "path", file.getAbsolutePath() );
 		PendingIntent pendingIntent = PendingIntent.getActivity( this, 0, intent, PendingIntent.FLAG_ONE_SHOT );
-		alarmManager.set( AlarmManager.RTC, System.currentTimeMillis() + 500, pendingIntent );
+		alarmManager.set( AlarmManager.RTC, System.currentTimeMillis() + 100, pendingIntent );
 		finish();
-		System.exit( 2 );
 	}
 
 	private void printStackTrace(Throwable t, StringBuilder builder){

@@ -13,8 +13,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 public class MainData {
 
 	// START Categories
@@ -24,6 +22,17 @@ public class MainData {
 
 	public static ArrayList<Category> getCategoriesList() {
 		return sCategoriesList;
+	}
+
+	public static void clearAll(){
+		sCategoriesList.clear();
+		sCategoryMap.clear();
+
+		sDocumentsList.clear();
+		sDocumentMap.clear();
+
+		sEntriesList.clear();
+		sEntryMap.clear();
 	}
 
 	public static void setCategoriesList(ArrayList<Category> categoriesList) {
