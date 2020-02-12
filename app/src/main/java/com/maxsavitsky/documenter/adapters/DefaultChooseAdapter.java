@@ -12,7 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.maxsavitsky.documenter.R;
-import com.maxsavitsky.documenter.datatypes.Type;
+import com.maxsavitsky.documenter.data.types.Type;
 
 import java.util.ArrayList;
 

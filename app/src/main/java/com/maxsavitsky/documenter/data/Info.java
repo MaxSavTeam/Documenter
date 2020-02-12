@@ -1,4 +1,4 @@
-package com.maxsavitsky.documenter.datatypes;
+package com.maxsavitsky.documenter.data;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

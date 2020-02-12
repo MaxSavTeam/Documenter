@@ -5,12 +5,14 @@
     android:id="@+id/bottom_sheet"
     android:layout_width="match_parent"
     android:layout_height="370dp"
-    android:background="@drawable/top_borders"
+    android:background="?attr/bottom_sheet_style"
     android:orientation="vertical"
     app:behavior_hideable="false"
     app:behavior_peekHeight="@dimen/peekHeight"
     app:layout_behavior="@string/bottom_sheet_behavior"
-    tools:context=".CreateEntry">
+    tools:context=".CreateEntry"
+    android:layout_marginStart="5dp"
+    android:layout_marginEnd="5dp">
 
     <LinearLayout
         android:id="@+id/layoutBottomSheetCeil"
@@ -23,7 +25,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/tools"
-            android:textColor="@color/black"
+            android:textColor="?textColor"
             android:textSize="24sp"
             android:textStyle="bold" />
 
@@ -31,6 +33,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/swipe_up"
+            android:textColor="@android:color/secondary_text_dark"
             android:textSize="12sp" />
     </LinearLayout>
 
@@ -39,7 +42,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:layout_margin="10dp"
-        android:background="@color/white"
         android:gravity="center"
         android:orientation="vertical">
 
@@ -47,7 +49,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/text_size"
-            android:textColor="@color/black"
+            android:textColor="?textColor"
             android:textSize="18sp" />
 
         <LinearLayout
@@ -62,13 +64,14 @@
                 android:layout_height="@dimen/textSizeButtonControlsWidth"
                 android:onClick="minusTextSize"
                 android:text="-"
+                android:textColor="?textColor"
                 android:textSize="18sp" />
 
             <TextView
                 android:id="@+id/textViewTextSize"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/black"
+                android:textColor="?textColor"
                 android:textSize="22sp" />
 
             <Button
@@ -78,6 +81,7 @@
                 android:layout_height="@dimen/textSizeButtonControlsWidth"
                 android:onClick="plusTextSize"
                 android:text="+"
+                android:textColor="?textColor"
                 android:textSize="18sp" />
         </LinearLayout>
     </LinearLayout>
@@ -94,7 +98,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="5dp"
             android:text="@string/text_alignment"
-            android:textColor="@color/black"
+            android:textColor="?textColor"
             android:textSize="18sp" />
 
         <LinearLayout
@@ -173,13 +177,13 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="@string/background_color"
-                android:textColor="@color/black"
+                android:textColor="?textColor"
                 android:textSize="18sp" />
 
             <LinearLayout
                 android:layout_width="@dimen/backLayoutWidth"
                 android:layout_height="@dimen/backLayoutWidth"
-                android:background="@color/black"
+                android:background="?textColor"
                 android:gravity="center"
                 android:orientation="horizontal">
 
@@ -205,13 +209,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/text_color"
-                android:textColor="@color/black"
+                android:textColor="?textColor"
                 android:textSize="18sp" />
 
             <LinearLayout
                 android:layout_width="@dimen/backLayoutWidth"
                 android:layout_height="@dimen/backLayoutWidth"
-                android:background="@color/black"
+                android:background="?textColor"
                 android:gravity="center"
                 android:orientation="horizontal">
 

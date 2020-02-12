@@ -13,10 +13,10 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 
 import com.maxsavitsky.documenter.R;
-import com.maxsavitsky.documenter.datatypes.Category;
-import com.maxsavitsky.documenter.datatypes.Document;
-import com.maxsavitsky.documenter.datatypes.Entry;
-import com.maxsavitsky.documenter.datatypes.MainData;
+import com.maxsavitsky.documenter.data.types.Category;
+import com.maxsavitsky.documenter.data.types.Document;
+import com.maxsavitsky.documenter.data.types.Entry;
+import com.maxsavitsky.documenter.data.MainData;
 
 import java.io.File;
 import java.io.FileWriter;

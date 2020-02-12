@@ -1,12 +1,11 @@
 package com.maxsavitsky.documenter.xml;
 
-import com.maxsavitsky.documenter.datatypes.Document;
-import com.maxsavitsky.documenter.datatypes.Entry;
-import com.maxsavitsky.documenter.datatypes.MainData;
+import com.maxsavitsky.documenter.data.types.Document;
+import com.maxsavitsky.documenter.data.types.Entry;
+import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.utils.Utils;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.DocumentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 

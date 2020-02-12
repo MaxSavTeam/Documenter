@@ -19,9 +19,9 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 
-import com.maxsavitsky.documenter.datatypes.Entry;
-import com.maxsavitsky.documenter.datatypes.EntryProperty;
-import com.maxsavitsky.documenter.datatypes.MainData;
+import com.maxsavitsky.documenter.data.types.Entry;
+import com.maxsavitsky.documenter.data.types.EntryProperty;
+import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.utils.RequestCodes;
 import com.maxsavitsky.documenter.utils.ResultCodes;
 import com.maxsavitsky.documenter.utils.Utils;

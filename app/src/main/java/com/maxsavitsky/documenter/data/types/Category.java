@@ -1,8 +1,9 @@
-package com.maxsavitsky.documenter.datatypes;
+package com.maxsavitsky.documenter.data.types;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
+import com.maxsavitsky.documenter.data.Info;
+import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.ParseSeparate;
 

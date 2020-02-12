@@ -1,5 +1,8 @@
-package com.maxsavitsky.documenter.datatypes;
+package com.maxsavitsky.documenter.data;
 
+import com.maxsavitsky.documenter.data.types.Category;
+import com.maxsavitsky.documenter.data.types.Document;
+import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.ParseSeparate;
 import com.maxsavitsky.documenter.xml.XMLParser;

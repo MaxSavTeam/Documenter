@@ -1,18 +1,15 @@
-package com.maxsavitsky.documenter.datatypes;
+package com.maxsavitsky.documenter.data.types;
 
 import androidx.annotation.NonNull;
 
+import com.maxsavitsky.documenter.data.Info;
+import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.ParseSeparate;
-import com.maxsavitsky.documenter.xml.XMLParser;
 
 import org.jetbrains.annotations.NotNull;
 import org.xml.sax.Attributes;
-import org.xml.sax.Parser;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
 import java.io.File;

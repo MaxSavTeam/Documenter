@@ -1,4 +1,4 @@
-package com.maxsavitsky.documenter.datatypes;
+package com.maxsavitsky.documenter.data.types;
 
 import android.graphics.Color;
 import android.view.Gravity;

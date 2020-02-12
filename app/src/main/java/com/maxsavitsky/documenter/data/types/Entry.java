@@ -1,4 +1,4 @@
-package com.maxsavitsky.documenter.datatypes;
+package com.maxsavitsky.documenter.data.types;
 
 import android.text.Html;
 import android.text.Layout;
@@ -7,6 +7,8 @@ import android.view.Gravity;
 
 import androidx.annotation.NonNull;
 
+import com.maxsavitsky.documenter.data.Info;
+import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.ParseSeparate;
 
@@ -165,7 +167,7 @@ public class Entry extends Type {
 
 	public void addDocumentToIncluded(String documentId) throws Exception {
 		ArrayList<Document> documents = getDocumentsInWhichIncludedThisEntry();
-		documents.add(MainData.getDocumentWithId( documentId ));
+		documents.add( MainData.getDocumentWithId( documentId ));
 		saveInWhichDocumentsIncludedThisEntry( documents );
 	}
 

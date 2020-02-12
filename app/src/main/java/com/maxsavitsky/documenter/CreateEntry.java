@@ -7,6 +7,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.Html;
 import android.text.Layout;
@@ -37,11 +38,11 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.maxsavitsky.documenter.datatypes.Document;
-import com.maxsavitsky.documenter.datatypes.Entry;
-import com.maxsavitsky.documenter.datatypes.EntryProperty;
-import com.maxsavitsky.documenter.datatypes.Info;
-import com.maxsavitsky.documenter.datatypes.MainData;
+import com.maxsavitsky.documenter.data.types.Document;
+import com.maxsavitsky.documenter.data.types.Entry;
+import com.maxsavitsky.documenter.data.types.EntryProperty;
+import com.maxsavitsky.documenter.data.Info;
+import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.utils.ResultCodes;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.widget.TextEditor;
@@ -70,6 +71,7 @@ public class CreateEntry extends ThemeActivity {
 	private final int UNDO_MENU_INDEX = 0;
 	private final int REDO_MENU_INDEX = 1;
 	private Editable mStartEditable = new Editable.Factory().newEditable( "" );
+	private boolean mDarkTheme;
 
 	private static class ChangeEntry{
 		private SpannableString mSpannableString;
@@ -99,6 +101,15 @@ public class CreateEntry extends ThemeActivity {
 		if(actionBar != null){
 			Utils.applyDefaultActionBarStyle(actionBar);
 			actionBar.setTitle( title );
+		}
+		mDarkTheme = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() ).getBoolean( "dark_header", false );
+		if(mDarkTheme) {
+			ImageButton btn = findViewById( R.id.btnAlignLeft );
+			btn.setImageDrawable( getDrawable( R.drawable.ic_align_left_white ) );
+			btn = findViewById( R.id.btnAlignCenter );
+			btn.setImageDrawable( getDrawable( R.drawable.ic_align_center_white ) );
+			btn = findViewById( R.id.btnAlignRight );
+			btn.setImageDrawable( getDrawable( R.drawable.ic_align_right_white ) );
 		}
 	}
 
@@ -575,7 +586,10 @@ public class CreateEntry extends ThemeActivity {
 
 	public void chooseTextAlignment(View v){
 		resetAlignmentButtons();
-		v.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( R.color.btnClicked ) ) );
+		if(mDarkTheme)
+			v.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( R.color.gray ) ) );
+		else
+			v.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( R.color.btnClicked ) ) );
 
 		EditText editText = findViewById( R.id.edittextEntry );
 		if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ){

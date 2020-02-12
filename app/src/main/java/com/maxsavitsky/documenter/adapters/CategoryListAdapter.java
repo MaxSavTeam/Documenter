@@ -9,9 +9,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.maxsavitsky.documenter.CategoryList;
 import com.maxsavitsky.documenter.R;
-import com.maxsavitsky.documenter.datatypes.Category;
+import com.maxsavitsky.documenter.data.types.Category;
 
 import java.util.ArrayList;
 
