@@ -19,7 +19,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -36,7 +35,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-public class CategoryList extends AppCompatActivity {
+public class CategoryList extends ThemeActivity {
 	private ArrayList<Category> mCategories;
 	private int mSortOrder = 1; //1 - по возрастанию; -1 - по убыванию
 	private SharedPreferences sp;
@@ -79,7 +78,7 @@ public class CategoryList extends AppCompatActivity {
 				startActivityForResult( intent, RequestCodes.SETTINGS );
 				break;
 			case R.id.item_main_choose_sort_mode:
-				AlertDialog.Builder builder = new AlertDialog.Builder( this )
+				AlertDialog.Builder builder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
 						.setTitle( R.string.choose_sort_mode )
 						.setCancelable( false )
 						.setSingleChoiceItems( R.array.sort_modes, sp.getInt( "sort_categories", 0 ), new DialogInterface.OnClickListener() {

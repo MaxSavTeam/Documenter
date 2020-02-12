@@ -6,8 +6,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.text.Html;
-import android.view.DisplayCutout;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,7 +21,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -44,7 +41,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DocumentList extends AppCompatActivity {
+public class DocumentList extends ThemeActivity {
 	private ArrayList<Document> mDocuments;
 	private Category mCategory;
 	private View decorView;
@@ -137,7 +134,7 @@ public class DocumentList extends AppCompatActivity {
 				backPressed();
 				break;
 			case R.id.item_delete:
-				AlertDialog.Builder deletionBuilder = new AlertDialog.Builder( this )
+				AlertDialog.Builder deletionBuilder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
 						.setMessage( R.string.delete_cofirmation_text )
 						.setTitle( R.string.confirmation )
 						.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
@@ -167,11 +164,12 @@ public class DocumentList extends AppCompatActivity {
 				break;
 			case R.id.menu_edit_name:
 				AlertDialog alertDialog;
-				AlertDialog.Builder builder = new AlertDialog.Builder(this).setTitle("Edit category name").setMessage("Edit category name here");
+				AlertDialog.Builder builder = new AlertDialog.Builder(this, super.mAlertDialogStyle).setTitle("Edit category name").setMessage("Edit category name here");
 				//View view = new View(this);
 				final EditText editText = new EditText(this);
 				editText.setText(mCategory.getName());
 				editText.append("");
+				editText.setTextColor( getResources().getColor( super.mEditTextDefaultColor ) );
 				editText.requestFocus();
 				ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 				editText.setLayoutParams(layoutParams);
@@ -204,8 +202,9 @@ public class DocumentList extends AppCompatActivity {
 				AlertDialog chooseSortType;
 				String[] items = getResources().getStringArray( R.array.sort_modes );
 				int pos = sp.getInt( "sort_documents", 0 );
-				builder = new AlertDialog.Builder( this )
-					.setTitle( R.string.choose_sort_mode ).setSingleChoiceItems( items, pos, new DialogInterface.OnClickListener() {
+				builder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
+					.setTitle( R.string.choose_sort_mode )
+						.setSingleChoiceItems( items, pos, new DialogInterface.OnClickListener() {
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
 							sp.edit().putInt( "sort_documents", which ).apply();

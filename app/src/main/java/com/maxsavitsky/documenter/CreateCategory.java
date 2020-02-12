@@ -7,11 +7,9 @@ import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -28,7 +26,7 @@ import com.maxsavitsky.documenter.utils.Utils;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class CreateCategory extends AppCompatActivity {
+public class CreateCategory extends ThemeActivity {
 
 	private ArrayList<Document> documentsToIncludeInThisCategory = new ArrayList<>();
 

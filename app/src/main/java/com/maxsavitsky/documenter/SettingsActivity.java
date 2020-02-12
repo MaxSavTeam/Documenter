@@ -2,17 +2,22 @@ package com.maxsavitsky.documenter;
 
 import android.Manifest;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CompoundButton;
+import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
 import com.maxsavitsky.documenter.utils.ResultCodes;
@@ -21,18 +26,21 @@ import com.maxsavitsky.documenter.utils.Utils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Locale;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-public class SettingsActivity extends AppCompatActivity {
+public class SettingsActivity extends ThemeActivity {
 
 	private void applyTheme() {
 		ActionBar actionBar = getSupportActionBar();
 		if ( actionBar != null ) {
 			Utils.applyDefaultActionBarStyle( actionBar );
+			actionBar.setTitle( R.string.settings );
 		}
 	}
 
@@ -52,19 +60,62 @@ public class SettingsActivity extends AppCompatActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
 		super.onCreate( savedInstanceState );
 		setContentView( R.layout.activity_settings );
 
+		Toolbar toolbar = findViewById( R.id.toolbar );
+		setSupportActionBar( toolbar );
+
 		applyTheme();
+
+		(( TextView ) findViewById( R.id.txtVersion )).setText( String.format( Locale.ROOT, "Version: %s\nBuild: %d", BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE ) );
+
+
+		final Switch sw = findViewById( R.id.swDarkHeader );
+		sw.setChecked( sp.getBoolean( "dark_header", false ) );
+		sw.setOnCheckedChangeListener( new CompoundButton.OnCheckedChangeListener() {
+			@Override
+			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+				sw.setChecked( isChecked );
+				sp.edit().putBoolean( "dark_header", isChecked ).apply();
+				final AlertDialog.Builder builder = new AlertDialog.Builder( SettingsActivity.this, SettingsActivity.super.mAlertDialogStyle )
+						.setMessage( "Need to restart app" )
+						.setCancelable( false )
+						.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								dialog.cancel();
+								setResult( ResultCodes.RESTART_APP );
+								finish();
+							}
+						} );
+
+				runOnUiThread( new Runnable() {
+					@Override
+					public void run() {
+						builder.create().show();
+					}
+				} );
+			}
+		} );
 	}
 
 	private String readFile(File file) {
 		try {
 			String s = "";
-			FileReader fileReader = new FileReader( file );
-			while ( fileReader.ready() ) {
-				s = String.format( "%s%c", s, (char) fileReader.read() );
+			FileInputStream fileInputStream = new FileInputStream(file);
+			byte[] buffer = new byte[1024];
+			int len;
+			while((len = fileInputStream.read(buffer)) != -1){
+				if(len < 1024){
+					buffer = Arrays.copyOf(buffer, len);
+				}
+
+				s = String.format( "%s%s", s, new String(buffer, StandardCharsets.UTF_8 ) );
 			}
+			fileInputStream.close();
 			return s;
 		} catch (Exception e) {
 			Utils.getErrorDialog( e, this ).show();
@@ -80,11 +131,10 @@ public class SettingsActivity extends AppCompatActivity {
 		if ( path.isDirectory() ) {
 			if ( fileName.endsWith( "/" ) ) {
 				out.putNextEntry( new ZipEntry( fileName ) );
-				out.closeEntry();
 			} else {
 				out.putNextEntry( new ZipEntry( fileName + "/" ) );
-				out.closeEntry();
 			}
+			out.closeEntry();
 
 			File[] children = path.listFiles();
 			for (File child : children) {

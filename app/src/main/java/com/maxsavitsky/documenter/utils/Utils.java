@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.graphics.drawable.ColorDrawable;
 import android.text.Html;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -225,7 +224,11 @@ public class Utils {
 			actionBar.setDisplayHomeAsUpEnabled(true);
 			actionBar.setHomeAsUpIndicator( R.drawable.ic_arrow_back_white_32dp);
 			actionBar.setHomeButtonEnabled(true);
-			actionBar.setBackgroundDrawable( new ColorDrawable( getContext().getResources().getColor( R.color.colorPrimary ) ) );
+			/*if( PreferenceManager.getDefaultSharedPreferences( getContext().getApplicationContext() ).getBoolean( "dark_header", false ) ){
+				actionBar.setBackgroundDrawable( new ColorDrawable( getContext().getResources().getColor( R.color.black ) ) );
+			}else {
+				actionBar.setBackgroundDrawable( new ColorDrawable( getContext().getResources().getColor( R.color.colorPrimary ) ) );
+			}*/
 		}
 	}
 

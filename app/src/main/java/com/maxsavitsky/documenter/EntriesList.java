@@ -5,27 +5,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.maxsavitsky.documenter.adapters.DefaultChooseAdapter;
-import com.maxsavitsky.documenter.datatypes.Document;
-import com.maxsavitsky.documenter.datatypes.Entry;
-import com.maxsavitsky.documenter.datatypes.MainData;
-import com.maxsavitsky.documenter.datatypes.Type;
-import com.maxsavitsky.documenter.utils.RequestCodes;
-import com.maxsavitsky.documenter.utils.ResultCodes;
-import com.maxsavitsky.documenter.utils.Utils;
-import com.maxsavitsky.documenter.xml.ParseSeparate;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -38,13 +17,31 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.maxsavitsky.documenter.adapters.DefaultChooseAdapter;
+import com.maxsavitsky.documenter.datatypes.Document;
+import com.maxsavitsky.documenter.datatypes.Entry;
+import com.maxsavitsky.documenter.datatypes.MainData;
+import com.maxsavitsky.documenter.utils.RequestCodes;
+import com.maxsavitsky.documenter.utils.ResultCodes;
+import com.maxsavitsky.documenter.utils.Utils;
+import com.maxsavitsky.documenter.xml.ParseSeparate;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
-public class EntriesList extends AppCompatActivity {
+public class EntriesList extends ThemeActivity {
 	private Document mDocument;
 	private ArrayList<Entry> mEntries;
 	private int mSortOrder = 1;
@@ -61,6 +58,8 @@ public class EntriesList extends AppCompatActivity {
 	private Comparator<Entry> mEntryComparator = new Comparator<Entry>() {
 		@Override
 		public int compare(Entry o1, Entry o2) {
+			if(o1 == null || o2 == null)
+				return 0;
 			if(sp.getInt( "sort_entries", 0 ) == 0)
 				return o1.getName().compareToIgnoreCase( o2.getName() ) * mSortOrder;
 			else{
@@ -175,7 +174,7 @@ public class EntriesList extends AppCompatActivity {
 				chooserBuilder.create().show();
 				break;
 			case R.id.item_delete_document:
-				AlertDialog.Builder deletionBuilder = new AlertDialog.Builder( this )
+				AlertDialog.Builder deletionBuilder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
 						.setMessage( R.string.delete_cofirmation_text )
 						.setTitle( R.string.confirmation )
 						.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
@@ -209,6 +208,7 @@ public class EntriesList extends AppCompatActivity {
 				editText.setText( mDocument.getName() );
 				editText.append( "" );
 				editText.requestFocus();
+				editText.setTextColor( getResources().getColor( super.mEditTextDefaultColor ) );
 				ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT );
 				editText.setLayoutParams( layoutParams );
 				builder.setView( editText ).setPositiveButton( "OK", new DialogInterface.OnClickListener() {

@@ -46,9 +46,9 @@
         android:text="clear ram" />
 
     <Button
-        android:id="@+id/btnGetUsedRam"
+        android:id="@+id/btnGetRamInfo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:onClick="getUsedMemory"
-        android:text="get used ram" />
+        android:text="get ram info" />
 </LinearLayout>

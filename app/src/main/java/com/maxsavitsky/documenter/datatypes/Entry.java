@@ -11,10 +11,12 @@ import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.ParseSeparate;
 
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Locale;
 
 public class Entry extends Type {
@@ -136,12 +138,28 @@ public class Entry extends Type {
 		fr.close();
 	}
 
-	public String loadText() throws Exception{
+	/*public String loadText() throws Exception{
 		String text = "";
 		FileReader fr = new FileReader( pathDir + "text" );
 		while(fr.ready()){
 			text = String.format( "%s%c", text, (char)fr.read() );
 		}
+		return text;
+	}*/
+
+	public String loadText() throws IOException{
+		String text = "";
+		FileInputStream fileInputStream = new FileInputStream( pathDir + "text" );
+		byte[] buffer = new byte[1024];
+		int c;
+		while(((c = fileInputStream.read(buffer))) != -1){
+			if(c < 1024){
+				buffer = Arrays.copyOf(buffer, c);
+			}
+
+			text = String.format( "%s%s", text, new String( buffer, StandardCharsets.UTF_8 ) );
+		}
+		fileInputStream.close();
 		return text;
 	}
 

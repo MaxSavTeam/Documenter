@@ -2,6 +2,8 @@ package com.maxsavitsky.documenter.widget;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.text.Spannable;
+import android.text.Spanned;
 import android.util.AttributeSet;
 
 import androidx.appcompat.widget.AppCompatEditText;
@@ -34,9 +36,19 @@ public class TextEditor extends AppCompatEditText {
 		void onTextChanged();
 	}
 
-	public void setTextW(CharSequence text){
+	public void setTextW(Spannable text){
 		mIgnoreChanges = true;
-		super.setText( text );
+		super.setText( text, BufferType.SPANNABLE );
+	}
+
+	public void appendW(Spannable text){
+		mIgnoreChanges = true;
+		super.append( text );
+	}
+
+	public void appendW(Spanned text){
+		mIgnoreChanges = true;
+		super.append( text );
 	}
 
 	@Override

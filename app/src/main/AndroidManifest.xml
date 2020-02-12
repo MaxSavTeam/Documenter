@@ -12,11 +12,16 @@
         android:allowBackup="false"
         android:icon="@drawable/documenter_icon"
         android:label="@string/app_name"
+        android:resizeableActivity="false"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:resizeableActivity="false"
         android:theme="@style/AppTheme"
         tools:targetApi="n">
+        <activity
+            android:name=".ViewEntryActivity"
+            android:label="@string/title_activity_view_entry"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity android:name=".ThemeActivity" />
         <activity android:name=".SettingsActivity" />
         <activity
             android:name=".ErrorHandlerActivity"
@@ -26,7 +31,9 @@
             android:label="@string/title_activity_create_entry"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize" />
-        <activity android:name=".ViewEntry" />
+        <activity
+            android:name=".ViewEntry"
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
         <activity
             android:name=".EntriesList"
             android:label="@string/title_activity_entries_list"

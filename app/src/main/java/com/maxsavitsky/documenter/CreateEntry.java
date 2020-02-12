@@ -1,5 +1,6 @@
 package com.maxsavitsky.documenter;
 
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
@@ -14,6 +15,7 @@ import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.AbsoluteSizeSpan;
 import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.Menu;
@@ -31,7 +33,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
@@ -54,7 +55,7 @@ import java.util.Locale;
 
 import yuku.ambilwarna.AmbilWarnaDialog;
 
-public class CreateEntry extends AppCompatActivity {
+public class CreateEntry extends ThemeActivity {
 	private Document mDocument;
 	private String type;
 	private Entry mEntry;
@@ -88,6 +89,10 @@ public class CreateEntry extends AppCompatActivity {
 		}
 	}
 
+	private interface OnLoadedTextListener{
+		void loaded(Spannable spannable, String originalText);
+		void exceptionOccurred(Exception e);
+	}
 
 	private void applyTheme(){
 		ActionBar actionBar = getSupportActionBar();
@@ -102,17 +107,22 @@ public class CreateEntry extends AppCompatActivity {
 	}
 
 	private void backPressed(){
-		String t = ( (EditText) findViewById( R.id.edittextEntry ) ).getText().toString();
+		if(mTextEditor.getText() == null && mStartEditable == null) {
+			setResult( ResultCodes.OK );
+			_finishActivity();
+			return;
+		}
+		String t = mTextEditor.getText().toString();
 		if ( !t.isEmpty() &&
 				( !type.equals( "edit" )
 						|| !mEntryProperty.equals( mEntry.getProperty() )
 						|| !mStartEditable.equals( mTextEditor.getEditableText() )
 				)
 		) {
-			AlertDialog.Builder builder = new AlertDialog.Builder( this )
+			AlertDialog.Builder builder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
 					.setTitle( R.string.confirmation )
 					.setMessage( R.string.create_entry_exit_mes ).setCancelable( false )
-					.setNeutralButton( R.string.cancel, new DialogInterface.OnClickListener() {
+					.setNegativeButton( R.string.cancel, new DialogInterface.OnClickListener() {
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
 							dialog.cancel();
@@ -123,6 +133,12 @@ public class CreateEntry extends AppCompatActivity {
 						public void onClick(DialogInterface dialog, int which) {
 							setResult( ResultCodes.OK );
 							_finishActivity();
+						}
+					} ).setNeutralButton( R.string.save_and_exit, new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							dialog.cancel();
+							saveEntry();
 						}
 					} );
 
@@ -138,8 +154,11 @@ public class CreateEntry extends AppCompatActivity {
 		if(item.getItemId() == android.R.id.home){
 			backPressed();
 		}else if(item.getItemId() == R.id.item_undo){
-			mTextEditor.setTextW( mHistory.get( --mHistoryIterator ).getSpannableString() );
-			mTextEditor.setSelection( mHistory.get( mHistoryIterator ).getCursorPosition() );
+			ChangeEntry changeEntry = mHistory.get( --mHistoryIterator );
+			mTextEditor.setTextW( changeEntry.getSpannableString() );
+			if(changeEntry.getCursorPosition() > mTextEditor.length())
+				changeEntry.mCursorPosition = mTextEditor.length();
+			mTextEditor.setSelection( changeEntry.getCursorPosition() );
 			if(mHistoryIterator == 0){
 				disableThisMenuItem( UNDO_MENU_INDEX );
 			}
@@ -159,6 +178,9 @@ public class CreateEntry extends AppCompatActivity {
 	public void onBackPressed() {
 		backPressed();
 	}
+
+	ProgressDialog mProgressDialogOnTextLoad;
+	private long mStartLoadTextTime;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -188,8 +210,29 @@ public class CreateEntry extends AppCompatActivity {
 			applyTheme();
 
 			try {
-				mTextEditor.setTextW( new SpannableString(  Html.fromHtml( mEntry.loadText() ) ) );
-				mStartEditable = mTextEditor.getEditableText();
+				mProgressDialogOnTextLoad = new ProgressDialog( this );
+				mProgressDialogOnTextLoad.setTitle( "Loading..." );
+				mProgressDialogOnTextLoad.setMessage( "We're loading your entry..." );
+				mProgressDialogOnTextLoad.setCancelable( false );
+				mProgressDialogOnTextLoad.show();
+				new Thread( new Runnable() {
+					@Override
+					public void run() {
+						String loadedText;
+						mStartLoadTextTime = System.currentTimeMillis();
+						Log.v("TextLoader", "Start");
+						try {
+							loadedText = mEntry.loadText();
+						}catch (final Exception e){
+							mOnLoadedTextListener.exceptionOccurred( e );
+							Log.v( "TextLoader", "exception = " + e.toString() );
+							return;
+						}
+						Log.v("TextLoader", "Text loaded");
+						Spannable spannable = (Spannable) Html.fromHtml( loadedText );
+						mOnLoadedTextListener.loaded( spannable, loadedText );
+					}
+				} ).start();
 			}catch (Exception e){
 				e.printStackTrace();
 				Utils.getErrorDialog( e, this ).show();
@@ -217,7 +260,68 @@ public class CreateEntry extends AppCompatActivity {
 					mBottomSheetLayout.setState( BottomSheetBehavior.STATE_COLLAPSED );
 			}
 		} );
+
 	}
+
+	private  void setTextInEditor(String text, Spannable spannable){
+		AbsoluteSizeSpan[] absoluteSizeSpans = mTextEditor.getText().getSpans( 0, mTextEditor.getText().length(), AbsoluteSizeSpan.class );
+		if(absoluteSizeSpans.length > 0){
+			for(AbsoluteSizeSpan a : absoluteSizeSpans) {
+				mTextEditor.getText().removeSpan( a );
+			}
+		}
+
+		String[] splitStrings = text.split( "\n" );
+
+		//ArrayList<SpannableString> spannableStrings = split( new SpannableString( spannable ), "\n" );
+		for (String s : splitStrings) {
+			Spanned fromHtml  = Html.fromHtml( s );
+			/*if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+				fromHtml = Html.fromHtml(s, Html.FROM_HTML_MODE_COMPACT);
+			}else{
+				fromHtml = Html.fromHtml( s );
+			}*/
+			mTextEditor.appendW( fromHtml );
+			/*if(i != splitStrings.length - 1){
+				mTextEditor.appendW( Html.fromHtml( "<br>" ) );
+			}*/
+		}
+	}
+
+	private OnLoadedTextListener mOnLoadedTextListener = new OnLoadedTextListener() {
+		@Override
+		public void loaded(final Spannable spannable, final String originalText) {
+			double seconds = (System.currentTimeMillis() - mStartLoadTextTime) / 1000.0;
+			Log.v( "TextLoader", "mOnLoadedTextListener.loaded called. Seconds = " + seconds );
+
+			runOnUiThread( new Runnable() {
+				@Override
+				public void run() {
+					setTextInEditor( originalText, spannable );
+					mTextEditor.setScrollY( mEntryProperty.getScrollPosition() );
+					mStartEditable = mTextEditor.getText();
+					mProgressDialogOnTextLoad.cancel();
+					final double end = System.currentTimeMillis();
+					final double seconds = (end - mStartLoadTextTime) / 1000;
+					Log.v( "TextLoader", "runOnUiCalled" );
+					//Toast.makeText( CreateEntry.this, "Text loaded after " + seconds + " seconds", Toast.LENGTH_LONG ).show();
+				}
+			} );
+		}
+
+		@Override
+		public void exceptionOccurred(final Exception e) {
+			runOnUiThread( new Runnable() {
+				@Override
+				public void run() {
+					mProgressDialogOnTextLoad.cancel();
+					double end = System.currentTimeMillis();
+					//Toast.makeText( CreateEntry.this, (end - mStartLoadTextTime) / 1000 + " seconds passed", Toast.LENGTH_LONG ).show();
+					Utils.getErrorDialog( e, CreateEntry.this ).show();
+				}
+			} );
+		}
+	};
 
 	private void enableThisMenuItem(int i){
 		mMenu.getItem( i ).setEnabled( true );
@@ -246,6 +350,9 @@ public class CreateEntry extends AppCompatActivity {
 		enableThisMenuItem( UNDO_MENU_INDEX );
 		disableThisMenuItem( REDO_MENU_INDEX );
 		mHistory.add( new ChangeEntry( spannableString, pos ) );
+		while(mHistory.size() > 100){
+			mHistory.remove( 0 );
+		}
 		mHistoryIterator = mHistory.size() - 1;
 	}
 
@@ -409,8 +516,9 @@ public class CreateEntry extends AppCompatActivity {
 		TextView t = findViewById( R.id.textViewTextSize );
 		t.setText( String.format( Locale.ROOT, "%d", mEntryProperty.textSize ) );
 
-		mTextEditor.getText().setSpan( new AbsoluteSizeSpan( (int) TypedValue.applyDimension( TypedValue.COMPLEX_UNIT_SP, mEntryProperty.textSize, getResources().getDisplayMetrics() ) ),
-				0, mTextEditor.getText().length(), Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+		/*mTextEditor.getText().setSpan( new AbsoluteSizeSpan( (int) TypedValue.applyDimension( TypedValue.COMPLEX_UNIT_SP, mEntryProperty.textSize, getResources().getDisplayMetrics() ) ),
+				0, mTextEditor.getText().length(), Spanned.SPAN_INCLUSIVE_INCLUSIVE);*/
+		mTextEditor.setTextSize( TypedValue.COMPLEX_UNIT_SP,  mEntryProperty.textSize );
 	}
 
 	private void createEntry(String name, Spannable text){
@@ -500,6 +608,12 @@ public class CreateEntry extends AppCompatActivity {
 		if(e == null)
 			return;
 		String text = e.toString();
+		while(e.length() > 0 && (e.charAt( 0 ) == ' ' || e.charAt( 0 ) == '\n')){
+			e.delete( 0, 1 );
+		}
+		while(e.length() > 0 && (e.charAt( e.length()-1 ) == ' ' || e.charAt( e.length() - 1 ) == '\n')){
+			e.delete( e.length()-1, e.length() );
+		}
 		if(type.equals( "create" )) {
 			if ( text.length() != 0 ) {
 				AlertDialog alertDialog;

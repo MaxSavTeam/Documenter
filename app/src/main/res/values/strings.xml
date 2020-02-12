@@ -55,4 +55,14 @@
     <string name="redo">Redo</string>
     <string name="set_text_color_of_selected_segment">Select text color of selected segment</string>
     <string name="set_text_color_of_all_text">Select text color of all text</string>
+    <string name="save_and_exit">Save and exit</string>
+    <string name="title_activity_view_entry">MainActivity</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+
+    <string name="hello_first_fragment">Hello first fragment</string>
+    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
 </resources>

@@ -7,6 +7,10 @@ android {
     signingConfigs {
         release {
             def verfile = file('keystore.properties')
+            storeFile file('Z:\\signing\\documenter.jks')
+            storePassword 'HCX4usGhGg3OT2tvwmr9'
+            keyPassword '2x86ZeliZd3Sdvc7kZbU'
+            keyAlias 'key0'
             if (verfile.canRead()) {
                 Properties properties = new Properties();
                 properties.load(new FileInputStream(verfile))
@@ -24,8 +28,8 @@ android {
         applicationId "com.maxsavitsky.documenter"
         minSdkVersion 23
         targetSdkVersion 29
-        versionCode 7
-        versionName '0.1'
+        versionCode 9
+        versionName '0.2'
         buildConfigField "String", "COMPILATION_DATE", "\"${getDate()}\""
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -35,6 +39,7 @@ android {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
         debug {
             debuggable true
@@ -54,10 +59,10 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'com.google.android.material:material:1.1.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
-    implementation 'androidx.navigation:navigation-fragment:2.2.0'
-    implementation 'androidx.navigation:navigation-ui:2.2.0'
+    implementation 'androidx.navigation:navigation-fragment:2.2.1'
+    implementation 'androidx.navigation:navigation-ui:2.2.1'
     implementation 'org.jetbrains:annotations-java5:15.0'
     implementation 'com.android.support:design:29.0.0'
     implementation 'com.github.yukuku:ambilwarna:2.0.1'

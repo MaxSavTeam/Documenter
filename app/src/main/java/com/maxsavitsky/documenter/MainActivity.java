@@ -13,7 +13,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.maxsavitsky.documenter.datatypes.MainData;
@@ -29,23 +28,27 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends ThemeActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		Toolbar toolbar = findViewById(R.id.toolbar);
-		setSupportActionBar(toolbar);
-
-		Utils.setContext(this);
-
 		Thread.setDefaultUncaughtExceptionHandler( new Thread.UncaughtExceptionHandler() {
 			@Override
 			public void uncaughtException(@NonNull Thread t, @NonNull Throwable e) {
 				MainActivity.this.uncaughtException( t, e );
 			}
 		} );
+		try {
+			Toolbar toolbar = findViewById( R.id.toolbar );
+			setSupportActionBar( toolbar );
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+
+		Utils.setContext(this);
+
 
 		try {
 			initialize();
@@ -61,8 +64,16 @@ public class MainActivity extends AppCompatActivity {
 		return runtime.totalMemory() - runtime.freeMemory();
 	}
 
+	private String getMemoryInfo(){
+		Runtime runtime = Runtime.getRuntime();
+		final double MB = 1024 * 1024;
+		return "Total memory: " + (runtime.totalMemory() / MB) + " MB\n" +
+				"Free memory: " + (runtime.freeMemory() / MB) + " MB\n" +
+				"Used memory: " + (getUsedMemory() / MB) + " MB";
+	}
+
 	public void getUsedMemory(View v){
-		Toast.makeText( this, Long.toString( getUsedMemory() / (1024 * 1024) ) + " MB", Toast.LENGTH_SHORT ).show();
+		Toast.makeText( this, getMemoryInfo(), Toast.LENGTH_LONG ).show();
 	}
 
 	private void initialize() throws Exception {
@@ -77,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
 		try{
 			initialize();
 
-			Toast.makeText( this, "Successful\nUsed RAM: " + getUsedMemory() / (1024*1024) + "MB", Toast.LENGTH_SHORT ).show();
+			Toast.makeText( this, "Successful\n\n" + getMemoryInfo(), Toast.LENGTH_SHORT ).show();
 		}catch (Exception e){
 			Utils.getErrorDialog( e, this ).show();
 		}
@@ -87,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
 		MainData.clearAll();
 		System.gc();
 		int MB = 1024 * 1024;
-		Toast.makeText( this, "Memory cleared\nRAM usage now: " + (getUsedMemory() / MB) + "MB", Toast.LENGTH_SHORT ).show();
+		Toast.makeText( this, "Memory cleared\n\n" + getMemoryInfo(), Toast.LENGTH_SHORT ).show();
 	}
 
 	public void viewCategoryList(View v){
@@ -176,6 +187,12 @@ public class MainActivity extends AppCompatActivity {
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+		/*if(requestCode == RequestCodes.CATEGORY_LIST){
+			if(resultCode == ResultCodes.RESTART_ACTIVITY){
+				viewCategoryList( null );
+			}
+			return;
+		}*/
 		if(requestCode == RequestCodes.CATEGORY_LIST ){
 			if(resultCode == ResultCodes.EXIT ){
 				finishAndRemoveTask();
