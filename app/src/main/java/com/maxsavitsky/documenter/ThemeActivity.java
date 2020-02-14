@@ -9,7 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 public class ThemeActivity extends AppCompatActivity {
 	public int mAlertDialogStyle = R.style.AlertDialogDark;
 
-	public int mEditTextDefaultColor = R.color.black;
+	public int mEditTextColor = R.color.black;
 
 	// only for themes
 	@Override
@@ -17,14 +17,14 @@ public class ThemeActivity extends AppCompatActivity {
 		super.onCreate( savedInstanceState );
 
 		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-		if(sharedPreferences.getBoolean( "dark_header", false )){
+		if(sharedPreferences.getBoolean( "dark_theme", false )){
 			setTheme( R.style.AppTheme_Dark );
 			mAlertDialogStyle = R.style.AlertDialogDark;
-			mEditTextDefaultColor = R.color.white;
+			mEditTextColor = R.color.white;
 		}else{
 			setTheme( R.style.AppTheme );
 			mAlertDialogStyle = R.style.Theme_AppCompat_Light_Dialog;
-			mEditTextDefaultColor = R.color.black;
+			mEditTextColor = R.color.black;
 		}
 	}
 }

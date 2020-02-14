@@ -27,9 +27,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.maxsavitsky.documenter.adapters.DefaultChooseAdapter;
+import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Category;
 import com.maxsavitsky.documenter.data.types.Document;
-import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.utils.RequestCodes;
 import com.maxsavitsky.documenter.utils.ResultCodes;
 import com.maxsavitsky.documenter.utils.Utils;
@@ -169,7 +169,7 @@ public class DocumentList extends ThemeActivity {
 				final EditText editText = new EditText(this);
 				editText.setText(mCategory.getName());
 				editText.append("");
-				editText.setTextColor( getResources().getColor( super.mEditTextDefaultColor ) );
+				editText.setTextColor( getResources().getColor( super.mEditTextColor ) );
 				editText.requestFocus();
 				ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 				editText.setLayoutParams(layoutParams);

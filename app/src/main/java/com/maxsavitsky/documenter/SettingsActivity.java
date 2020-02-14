@@ -73,13 +73,13 @@ public class SettingsActivity extends ThemeActivity {
 		(( TextView ) findViewById( R.id.txtVersion )).setText( String.format( Locale.ROOT, "Version: %s\nBuild: %d", BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE ) );
 
 
-		final Switch sw = findViewById( R.id.swDarkHeader );
-		sw.setChecked( sp.getBoolean( "dark_header", false ) );
-		sw.setOnCheckedChangeListener( new CompoundButton.OnCheckedChangeListener() {
+		final Switch swDarkHeader = findViewById( R.id.swDarkHeader );
+		swDarkHeader.setChecked( sp.getBoolean( "dark_theme", false ) );
+		swDarkHeader.setOnClickListener( new View.OnClickListener() {
 			@Override
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				sw.setChecked( isChecked );
-				sp.edit().putBoolean( "dark_header", isChecked ).apply();
+			public void onClick(View v){
+				final boolean isChecked = swDarkHeader.isChecked();
+				sp.edit().putBoolean( "dark_theme", isChecked ).apply();
 				final AlertDialog.Builder builder = new AlertDialog.Builder( SettingsActivity.this, SettingsActivity.super.mAlertDialogStyle )
 						.setMessage( "Need to restart app" )
 						.setCancelable( false )
@@ -90,6 +90,13 @@ public class SettingsActivity extends ThemeActivity {
 								setResult( ResultCodes.RESTART_APP );
 								finish();
 							}
+						} ).setNegativeButton( R.string.cancel, new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								dialog.cancel();
+								sp.edit().putBoolean( "dark_theme", !isChecked ).apply();
+								swDarkHeader.setChecked( !isChecked );
+							}
 						} );
 
 				runOnUiThread( new Runnable() {
@@ -98,6 +105,15 @@ public class SettingsActivity extends ThemeActivity {
 						builder.create().show();
 					}
 				} );
+			}
+		} );
+
+		Switch swKeepScreenOn = findViewById( R.id.swKeepScreenOn );
+		swKeepScreenOn.setChecked( sp.getBoolean( "keep_screen_on", true ) );
+		swKeepScreenOn.setOnCheckedChangeListener( new CompoundButton.OnCheckedChangeListener() {
+			@Override
+			public void onCheckedChanged(CompoundButton buttonView, final boolean isChecked) {
+				sp.edit().putBoolean( "keep_screen_on", isChecked ).apply();
 			}
 		} );
 	}

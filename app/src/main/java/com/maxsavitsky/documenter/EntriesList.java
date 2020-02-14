@@ -27,9 +27,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.maxsavitsky.documenter.adapters.DefaultChooseAdapter;
+import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.data.types.Entry;
-import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.utils.RequestCodes;
 import com.maxsavitsky.documenter.utils.ResultCodes;
 import com.maxsavitsky.documenter.utils.Utils;
@@ -208,7 +208,7 @@ public class EntriesList extends ThemeActivity {
 				editText.setText( mDocument.getName() );
 				editText.append( "" );
 				editText.requestFocus();
-				editText.setTextColor( getResources().getColor( super.mEditTextDefaultColor ) );
+				editText.setTextColor( getResources().getColor( super.mEditTextColor ) );
 				ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT );
 				editText.setLayoutParams( layoutParams );
 				builder.setView( editText ).setPositiveButton( "OK", new DialogInterface.OnClickListener() {

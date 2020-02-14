@@ -64,4 +64,6 @@
     <string name="previous">Previous</string>
     <string name="color_history">Color history</string>
     <string name="set_background_color">Set background color</string>
+    <string name="keep_screen_on">Keep screen on</string>
+    <string name="dark_theme">Dark theme</string>
 </resources>

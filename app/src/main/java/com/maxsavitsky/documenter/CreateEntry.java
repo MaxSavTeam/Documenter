@@ -104,7 +104,7 @@ public class CreateEntry extends ThemeActivity {
 			Utils.applyDefaultActionBarStyle(actionBar);
 			actionBar.setTitle( title );
 		}
-		mDarkTheme = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() ).getBoolean( "dark_header", false );
+		mDarkTheme = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() ).getBoolean( "dark_theme", false );
 		if(mDarkTheme) {
 			ImageButton btn = findViewById( R.id.btnAlignLeft );
 			btn.setImageDrawable( getDrawable( R.drawable.ic_align_left_white ) );
@@ -706,7 +706,8 @@ public class CreateEntry extends ThemeActivity {
 				name.setId( View.NO_ID );
 				name.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT ) );
 				name.requestFocus();
-				AlertDialog.Builder builder = new AlertDialog.Builder( CreateEntry.this )
+				name.setTextColor( CreateEntry.super.mEditTextColor );
+				AlertDialog.Builder builder = new AlertDialog.Builder( CreateEntry.this, CreateEntry.super.mAlertDialogStyle )
 						.setView( name )
 						.setTitle( R.string.enter_name )
 						.setMessage( R.string.name_yours_minds )

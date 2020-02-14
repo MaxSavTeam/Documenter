@@ -5,7 +5,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/btnCreateBackup"
         style="@style/Widget.AppCompat.Button.Colored"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -15,10 +15,10 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.36" />
+        app:layout_constraintVertical_bias="0.20999998" />
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/btnRestoreFromBackup"
         style="@style/Widget.AppCompat.Button.Colored"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -27,22 +27,37 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button"
+        app:layout_constraintTop_toBottomOf="@id/btnCreateBackup"
         app:layout_constraintVertical_bias="0.23000002" />
 
     <Switch
         android:id="@+id/swDarkHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Dark theme"
+        android:text="@string/dark_theme"
 
         android:textColor="?attr/textColor"
         android:textSize="18sp"
+        android:thumbTint="?colorAccent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button2"
+        app:layout_constraintTop_toBottomOf="@id/btnRestoreFromBackup"
         app:layout_constraintVertical_bias="0.26" />
+
+    <Switch
+        android:id="@+id/swKeepScreenOn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/keep_screen_on"
+        android:textColor="?textColor"
+        android:textSize="18sp"
+        android:thumbTint="?colorAccent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/swDarkHeader"
+        app:layout_constraintVertical_bias="0.32" />
 
     <TextView
         android:id="@+id/txtVersion"

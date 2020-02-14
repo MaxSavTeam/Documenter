@@ -13,10 +13,10 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 
 import com.maxsavitsky.documenter.R;
+import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Category;
 import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.data.types.Entry;
-import com.maxsavitsky.documenter.data.MainData;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -224,11 +224,6 @@ public class Utils {
 			actionBar.setDisplayHomeAsUpEnabled(true);
 			actionBar.setHomeAsUpIndicator( R.drawable.ic_arrow_back_white_32dp);
 			actionBar.setHomeButtonEnabled(true);
-			/*if( PreferenceManager.getDefaultSharedPreferences( getContext().getApplicationContext() ).getBoolean( "dark_header", false ) ){
-				actionBar.setBackgroundDrawable( new ColorDrawable( getContext().getResources().getColor( R.color.black ) ) );
-			}else {
-				actionBar.setBackgroundDrawable( new ColorDrawable( getContext().getResources().getColor( R.color.colorPrimary ) ) );
-			}*/
 		}
 	}
 
