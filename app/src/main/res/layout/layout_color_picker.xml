@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <com.flask.colorpicker.ColorPickerView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/color_picker"
+            app:alphaSlider="true"
+            app:density="12"
+            app:lightnessSlider="true"
+            app:wheelType="CIRCLE"
+            app:lightnessSliderView="@+id/v_lightness_slider"
+            app:alphaSliderView="@+id/v_alpha_slider"/>
+
+        <com.flask.colorpicker.slider.LightnessSlider
+            android:id="@+id/v_lightness_slider"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            />
+
+        <com.flask.colorpicker.slider.AlphaSlider
+            android:id="@+id/v_alpha_slider"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:id="@+id/layoutColorsHistory"
+        android:layout_marginTop="15dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:text="@string/color_history"
+            android:textColor="?textColor"
+            android:layout_marginStart="10dp"
+            android:layout_marginBottom="3dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="1"
+            android:layout_marginStart="7dp"
+            android:layout_marginEnd="7dp">
+
+            <Button
+                android:id="@+id/btnColorHistory1"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:background="@drawable/button_rounded_corners"
+                android:layout_marginEnd="@dimen/btns_color_history_margin_end"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.2" />
+
+            <Button
+                android:id="@+id/btnColorHistory2"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:background="@drawable/button_rounded_corners"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/btns_color_history_margin_end"
+                android:layout_weight="0.2" />
+
+            <Button
+                android:id="@+id/btnColorHistory3"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:background="@drawable/button_rounded_corners"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/btns_color_history_margin_end"
+                android:layout_weight="0.2" />
+
+            <Button
+                android:id="@+id/btnColorHistory4"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:background="@drawable/button_rounded_corners"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/btns_color_history_margin_end"
+                android:layout_weight="0.2" />
+
+            <Button
+                android:id="@+id/btnColorHistory5"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:background="@drawable/button_rounded_corners"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.2" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+
+</LinearLayout>

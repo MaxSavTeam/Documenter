@@ -3,6 +3,7 @@ package com.maxsavitsky.documenter;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Build;
@@ -36,13 +37,14 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 
+import com.flask.colorpicker.ColorPickerView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.maxsavitsky.documenter.data.Info;
+import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.data.types.EntryProperty;
-import com.maxsavitsky.documenter.data.Info;
-import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.utils.ResultCodes;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.widget.TextEditor;
@@ -53,8 +55,6 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
-
-import yuku.ambilwarna.AmbilWarnaDialog;
 
 public class CreateEntry extends ThemeActivity {
 	private Document mDocument;
@@ -72,6 +72,8 @@ public class CreateEntry extends ThemeActivity {
 	private final int REDO_MENU_INDEX = 1;
 	private Editable mStartEditable = new Editable.Factory().newEditable( "" );
 	private boolean mDarkTheme;
+	private SharedPreferences sp;
+	private ArrayList<Integer> mColorHistory = new ArrayList<>();
 
 	private static class ChangeEntry{
 		private SpannableString mSpannableString;
@@ -202,6 +204,8 @@ public class CreateEntry extends ThemeActivity {
 
 		applyTheme();
 
+		sp = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
+
 		btnBgColorPicker = findViewById( R.id.btnBgColorPicker );
 		btnTextColorPicker = findViewById( R.id.btnTextColorPicker );
 
@@ -253,6 +257,8 @@ public class CreateEntry extends ThemeActivity {
 			mDocument = MainData.getDocumentWithId( getIntent().getStringExtra( "id" ) );
 		}
 
+		readColorHistory();
+
 		setEditTextSize();
 		FloatingActionButton fab = findViewById( R.id.fabSaveEntry );
 		fab.setOnClickListener( saveEntry );
@@ -272,6 +278,38 @@ public class CreateEntry extends ThemeActivity {
 			}
 		} );
 
+	}
+
+	private void readColorHistory(){
+		String history = sp.getString( "color_history", null );
+		if(history != null){
+			int i = 0;
+			while(i < history.length()){
+				String entry = "";
+				while(history.charAt( i ) != ';'){
+					entry = String.format( "%s%c", entry, history.charAt( i ) );
+					i++;
+				}
+				mColorHistory.add( Integer.parseInt( entry ) );
+				i++;
+			}
+		}
+	}
+
+	private void addColorToHistory(int color){
+		if(mColorHistory.size() == 5){
+			mColorHistory.remove( 0 );
+		}
+		mColorHistory.add( color );
+		saveColorHistory();
+	}
+
+	private void saveColorHistory(){
+		String save = "";
+		for(Integer i : mColorHistory){
+			save = String.format( "%s%s;", save, i );
+		}
+		sp.edit().putString( "color_history", save ).apply();
 	}
 
 	private  void setTextInEditor(String text, Spannable spannable){
@@ -422,69 +460,102 @@ public class CreateEntry extends ThemeActivity {
 	private View.OnClickListener btnBgColorPickerDefaultClickListener = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
-			new AmbilWarnaDialog( CreateEntry.this, mEntryProperty.getBgColor(), new AmbilWarnaDialog.OnAmbilWarnaListener() {
+			View.OnClickListener whatToDo = new View.OnClickListener() {
 				@Override
-				public void onCancel(AmbilWarnaDialog dialog) {
-
-				}
-
-				@Override
-				public void onOk(AmbilWarnaDialog dialog, int color) {
-					btnBgColorPicker.setBackgroundTintList( ColorStateList.valueOf( color ) );
+				public void onClick(View v) {
+					btnBgColorPicker.setBackgroundTintList( ColorStateList.valueOf( mTextColor ) );
 					//btnBgColorPicker.setBackground( getDrawable( R.drawable.btn_picker_borders ) );
-					mTextEditor.setBackgroundColor( color );
-					mEntryProperty.setBgColor( color );
-					//Toast.makeText( CreateEntry.this, Integer.toString( color ), Toast.LENGTH_SHORT ).show();
+					mTextEditor.setBackgroundColor( mSelectedColor );
+					mEntryProperty.setBgColor( mSelectedColor );
 				}
-			} ).show();
+			};
+			AlertDialog alertDialog = getColorPickerDialog( R.string.set_background_color, mEntryProperty.getBgColor(), whatToDo );
+			alertDialog.show();
 		}
 	};
+
 	private int mTextColor;
 	private int[] mSelectionBounds;
 	private View.OnClickListener onClickOnSelectColorOfTextSegment = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
-
-			android.app.AlertDialog alertDialog = new AmbilWarnaDialog( CreateEntry.this, mTextColor, new AmbilWarnaDialog.OnAmbilWarnaListener() {
+			View.OnClickListener onClickListener = new View.OnClickListener() {
 				@Override
-				public void onCancel(AmbilWarnaDialog dialog) {
-
-				}
-
-				@Override
-				public void onOk(AmbilWarnaDialog dialog, int color) {
+				public void onClick(View v) {
 					Editable s = mTextEditor.getText();
-					s.setSpan( new ForegroundColorSpan( color ), mSelectionBounds[0], mSelectionBounds[1], Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-					runOnUiThread( new Runnable() {
-						@Override
-						public void run() {
-							saveTextChange();
-						}
-					} );
+					s.setSpan( new ForegroundColorSpan( mSelectedColor ), mSelectionBounds[0], mSelectionBounds[1], Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+					mTextColor = mSelectedColor;
 				}
-			} ).getDialog();
-			alertDialog.setTitle( R.string.set_text_color_of_selected_segment );
+			};
+			AlertDialog alertDialog = getColorPickerDialog( R.string.set_text_color_of_selected_segment, mTextColor, onClickListener );
 			alertDialog.show();
 		}
 	};
 
+	private AlertDialog getColorPickerDialog(int title, int defColor, final View.OnClickListener whatToDo){
+		View layout = getLayoutInflater().inflate( R.layout.layout_color_picker, null );
+		final ColorPickerView colorPickerView = layout.findViewById( R.id.color_picker );
+		colorPickerView.setColor( defColor, true );
+		final AlertDialog.Builder builder = new AlertDialog.Builder(CreateEntry.this)
+				.setTitle( title )
+				.setView( layout )
+				.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						mSelectedColor = colorPickerView.getSelectedColor();
+						addColorToHistory( mTextColor );
+						whatToDo.onClick( null );
+						dialog.cancel();
+					}
+				} ).setNegativeButton( R.string.cancel, new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.cancel();
+			}
+		} );
+		final AlertDialog alertDialog = builder.create();
+		if(mColorHistory.size() == 0){
+			layout.findViewById( R.id.layoutColorsHistory ).setVisibility( View.GONE );
+		}else{
+			int[] btnIds = new int[]{R.id.btnColorHistory1, R.id.btnColorHistory2, R.id.btnColorHistory3, R.id.btnColorHistory4, R.id.btnColorHistory5};
+			for(int i = 0; i < btnIds.length; i++){
+				int id = btnIds[i];
+				Button btn = layout.findViewById(id);
+				if(i >= mColorHistory.size()){
+					btn.setVisibility( View.INVISIBLE );
+				}else{
+					btn.setBackgroundTintList( ColorStateList.valueOf( mColorHistory.get( i ) ) );
+					btn.setTag( mColorHistory.get( i ) );
+					btn.setOnClickListener( new View.OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							alertDialog.cancel();
+							mSelectedColor = (int) v.getTag();
+							whatToDo.onClick(null);
+						}
+					} );
+				}
+			}
+		}
+
+		return alertDialog;
+	}
+
+	private int mSelectedColor;
+
 	private View.OnClickListener btnTextOnAllColor = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
-
-			android.app.AlertDialog alertDialog = new AmbilWarnaDialog( CreateEntry.this, btnTextColorPicker.getBackgroundTintList().getDefaultColor(), new AmbilWarnaDialog.OnAmbilWarnaListener() {
-				@Override
-				public void onCancel(AmbilWarnaDialog dialog) {
-
-				}
-
-				@Override
-				public void onOk(AmbilWarnaDialog dialog, int color) {
-					mTextEditor.getText().setSpan( new ForegroundColorSpan( color ), 0, mTextEditor.getText().length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-					btnTextColorPicker.setBackgroundTintList( ColorStateList.valueOf( color ) );
-				}
-			} ).getDialog();
-			alertDialog.setTitle( R.string.set_text_color_of_all_text );
+			AlertDialog alertDialog = getColorPickerDialog( R.string.set_text_color_of_all_text,
+					btnTextColorPicker.getBackgroundTintList().getDefaultColor(),
+					new View.OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							mTextEditor.getText().setSpan( new ForegroundColorSpan( mSelectedColor ), 0, mTextEditor.getText().length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+							btnTextColorPicker.setBackgroundTintList( ColorStateList.valueOf( mSelectedColor ) );
+							mTextColor = mSelectedColor;
+						}
+					} );
 			alertDialog.show();
 		}
 	};

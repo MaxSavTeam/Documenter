@@ -7,10 +7,6 @@ android {
     signingConfigs {
         release {
             def verfile = file('keystore.properties')
-            storeFile file('Z:\\signing\\documenter.jks')
-            storePassword 'HCX4usGhGg3OT2tvwmr9'
-            keyPassword '2x86ZeliZd3Sdvc7kZbU'
-            keyAlias 'key0'
             if (verfile.canRead()) {
                 Properties properties = new Properties();
                 properties.load(new FileInputStream(verfile))
@@ -25,11 +21,11 @@ android {
     buildToolsVersion "29.0.2"
 
     defaultConfig {
-        applicationId "com.maxsavitsky.documenter"
+        applicationId "com.maxsavitsky.documenter.alpha"
         minSdkVersion 23
         targetSdkVersion 29
-        versionCode 9
-        versionName '0.2'
+        versionCode 10
+        versionName '0.2.1'
         buildConfigField "String", "COMPILATION_DATE", "\"${getDate()}\""
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -39,11 +35,11 @@ android {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.release
+            //signingConfig signingConfigs.release
         }
         debug {
             debuggable true
-            applicationIdSuffix ".alpha"
+            //applicationIdSuffix ".alpha"
         }
     }
 
@@ -57,6 +53,7 @@ static String getDate() {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation files('libs/quadflask.colorpicker.aar')
 
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'com.google.android.material:material:1.1.0'
