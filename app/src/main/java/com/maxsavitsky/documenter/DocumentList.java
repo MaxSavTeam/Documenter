@@ -150,7 +150,6 @@ public class DocumentList extends ThemeActivity {
 									}
 								} catch (Exception e) {
 									e.printStackTrace();
-									Toast.makeText( DocumentList.this, "onOptionsItemSelected", Toast.LENGTH_LONG ).show();
 									Utils.getErrorDialog( e, DocumentList.this ).show();
 								}
 							}
@@ -164,7 +163,9 @@ public class DocumentList extends ThemeActivity {
 				break;
 			case R.id.menu_edit_name:
 				AlertDialog alertDialog;
-				AlertDialog.Builder builder = new AlertDialog.Builder(this, super.mAlertDialogStyle).setTitle("Edit category name").setMessage("Edit category name here");
+				AlertDialog.Builder builder = new AlertDialog.Builder(this, super.mAlertDialogStyle)
+						.setTitle("Edit category name")
+						.setMessage("Edit category name here");
 				//View view = new View(this);
 				final EditText editText = new EditText(this);
 				editText.setText(mCategory.getName());
