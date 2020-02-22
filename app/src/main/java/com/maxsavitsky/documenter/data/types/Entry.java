@@ -12,8 +12,10 @@ import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.ParseSeparate;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -140,14 +142,16 @@ public class Entry extends Type {
 		fr.close();
 	}
 
-	/*public String loadText() throws Exception{
-		String text = "";
-		FileReader fr = new FileReader( pathDir + "text" );
-		while(fr.ready()){
-			text = String.format( "%s%c", text, (char)fr.read() );
+	public ArrayList<String> loadTextLines() throws IOException{
+		BufferedReader br = new BufferedReader( new FileReader( new File( pathDir + "text" ) ) );
+		String line;
+		ArrayList<String> strings = new ArrayList<>();
+		while(((line = br.readLine())) != null){
+			strings.add( line );
 		}
-		return text;
-	}*/
+
+		return strings;
+	}
 
 	public String loadText() throws IOException{
 		String text = "";
