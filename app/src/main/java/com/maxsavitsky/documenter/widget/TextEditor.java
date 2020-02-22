@@ -36,17 +36,12 @@ public class TextEditor extends AppCompatEditText {
 		void onTextChanged();
 	}
 
-	public void setTextW(Spannable text){
+	public void setTextW(CharSequence text){
 		mIgnoreChanges = true;
 		super.setText( text, BufferType.SPANNABLE );
 	}
 
-	public void appendW(Spannable text){
-		mIgnoreChanges = true;
-		super.append( text );
-	}
-
-	public void appendW(Spanned text){
+	public void appendW(CharSequence text){
 		mIgnoreChanges = true;
 		super.append( text );
 	}

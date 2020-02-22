@@ -483,6 +483,46 @@ public class CreateEntry extends ThemeActivity {
 				@Override
 				public void onClick(View v) {
 					Editable s = mTextEditor.getText();
+					ForegroundColorSpan[] spans = s.getSpans( mSelectionBounds[0], mSelectionBounds[1], ForegroundColorSpan.class );
+					class SpanEntry{
+						private ForegroundColorSpan mSpan;
+						private int st, end;
+
+						public SpanEntry(ForegroundColorSpan span, int st, int end) {
+							mSpan = span;
+							this.st = st;
+							this.end = end;
+						}
+
+						public ForegroundColorSpan getSpan() {
+							return mSpan;
+						}
+
+						public int getSt() {
+							return st;
+						}
+
+						public int getEnd() {
+							return end;
+						}
+					}
+					ArrayList<SpanEntry> spansToApply = new ArrayList<>();
+					int selSt = mSelectionBounds[0];
+					int selEnd = mSelectionBounds[1];
+					for(ForegroundColorSpan span : spans){
+						int st = s.getSpanStart( span );
+						int end = s.getSpanEnd( span );
+						if(st < selSt){
+							spansToApply.add( new SpanEntry( new ForegroundColorSpan( span.getForegroundColor() ), st, selSt-1 ) );
+						}
+						if(end > selEnd){
+							spansToApply.add( new SpanEntry( new ForegroundColorSpan( span.getForegroundColor() ), selEnd + 1, end ) );
+						}
+						s.removeSpan( span );
+					}
+					for(SpanEntry entry : spansToApply){
+						s.setSpan( entry.getSpan(), entry.getSt(), entry.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+					}
 					s.setSpan( new ForegroundColorSpan( mSelectedColor ), mSelectionBounds[0], mSelectionBounds[1], Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 					mTextColor = mSelectedColor;
 				}
