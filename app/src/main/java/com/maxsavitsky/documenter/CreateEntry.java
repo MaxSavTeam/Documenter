@@ -746,7 +746,7 @@ public class CreateEntry extends ThemeActivity {
 				name.setId( View.NO_ID );
 				name.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT ) );
 				name.requestFocus();
-				name.setTextColor( CreateEntry.super.mEditTextColor );
+				name.setTextColor( getResources().getColor( CreateEntry.super.mEditTextColor ) );
 				AlertDialog.Builder builder = new AlertDialog.Builder( CreateEntry.this, CreateEntry.super.mAlertDialogStyle )
 						.setView( name )
 						.setTitle( R.string.enter_name )
