@@ -513,10 +513,10 @@ public class CreateEntry extends ThemeActivity {
 						int st = s.getSpanStart( span );
 						int end = s.getSpanEnd( span );
 						if(st < selSt){
-							spansToApply.add( new SpanEntry( new ForegroundColorSpan( span.getForegroundColor() ), st, selSt-1 ) );
+							spansToApply.add( new SpanEntry( new ForegroundColorSpan( span.getForegroundColor() ), st, selSt ) );
 						}
 						if(end > selEnd){
-							spansToApply.add( new SpanEntry( new ForegroundColorSpan( span.getForegroundColor() ), selEnd + 1, end ) );
+							spansToApply.add( new SpanEntry( new ForegroundColorSpan( span.getForegroundColor() ), selEnd, end ) );
 						}
 						s.removeSpan( span );
 					}
