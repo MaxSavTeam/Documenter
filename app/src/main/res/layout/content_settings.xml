@@ -1,69 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <Button
-        android:id="@+id/btnCreateBackup"
-        style="@style/Widget.AppCompat.Button.Colored"
+    <LinearLayout
+        android:id="@+id/backupLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="initialBackup"
-        android:text="@string/create_backup"
+        android:gravity="center"
+        android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.20999998" />
+        app:layout_constraintTop_toTopOf="parent">
 
-    <Button
-        android:id="@+id/btnRestoreFromBackup"
-        style="@style/Widget.AppCompat.Button.Colored"
+        <TextView
+            android:id="@+id/lblBackup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:text="@string/backup"
+            android:textColor="?textColor"
+            android:textSize="18sp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnCreateBackup"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="initialBackup"
+                android:text="@string/create" />
+
+            <Button
+                android:id="@+id/btnRestoreFromBackup"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="initialUnpack"
+                android:text="@string/restore" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/settingsSwitchesLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="initialUnpack"
-        android:text="@string/restore_from_backup"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btnCreateBackup"
-        app:layout_constraintVertical_bias="0.23000002" />
+        app:layout_constraintTop_toBottomOf="@+id/backupLayout"
+        app:layout_constraintVertical_bias="0.0">
 
-    <Switch
-        android:id="@+id/swDarkHeader"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/dark_theme"
+        <Switch
+            android:id="@+id/swDarkTheme"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/dark_theme"
+            android:layout_marginBottom="7dp"
+            android:textColor="?attr/textColor"
+            android:textSize="18sp"
+            android:thumbTint="?colorAccent" />
 
-        android:textColor="?attr/textColor"
-        android:textSize="18sp"
-        android:thumbTint="?colorAccent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btnRestoreFromBackup"
-        app:layout_constraintVertical_bias="0.26" />
-
-    <Switch
-        android:id="@+id/swKeepScreenOn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/keep_screen_on"
-        android:textColor="?textColor"
-        android:textSize="18sp"
-        android:thumbTint="?colorAccent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/swDarkHeader"
-        app:layout_constraintVertical_bias="0.32" />
+        <Switch
+            android:id="@+id/swKeepScreenOn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/keep_screen_on"
+            android:textColor="?textColor"
+            android:textSize="18sp"
+            android:thumbTint="?colorAccent" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/txtVersion"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="?textColor"
+        android:gravity="center"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

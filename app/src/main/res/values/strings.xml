@@ -57,4 +57,7 @@
     <string name="set_background_color">Set background color</string>
     <string name="keep_screen_on">Keep screen on</string>
     <string name="dark_theme">Dark theme</string>
+    <string name="backup">Backup</string>
+    <string name="create">Create</string>
+    <string name="restore">Restore</string>
 </resources>

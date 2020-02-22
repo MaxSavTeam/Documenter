@@ -73,7 +73,7 @@ public class SettingsActivity extends ThemeActivity {
 		(( TextView ) findViewById( R.id.txtVersion )).setText( String.format( Locale.ROOT, "Version: %s\nBuild: %d", BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE ) );
 
 
-		final Switch swDarkHeader = findViewById( R.id.swDarkHeader );
+		final Switch swDarkHeader = findViewById( R.id.swDarkTheme );
 		swDarkHeader.setChecked( sp.getBoolean( "dark_theme", false ) );
 		swDarkHeader.setOnClickListener( new View.OnClickListener() {
 			@Override
