@@ -135,7 +135,7 @@ public class DocumentList extends ThemeActivity {
 				break;
 			case R.id.item_delete:
 				AlertDialog.Builder deletionBuilder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
-						.setMessage( R.string.delete_cofirmation_text )
+						.setMessage( R.string.delete_confirmation_text )
 						.setTitle( R.string.confirmation )
 						.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
 							@Override

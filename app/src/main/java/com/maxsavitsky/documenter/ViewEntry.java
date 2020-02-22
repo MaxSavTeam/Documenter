@@ -106,7 +106,7 @@ public class ViewEntry extends ThemeActivity {
 			changeNameDialog.show();
 		}else if(item.getItemId() == R.id.item_delete_entry){
 			AlertDialog.Builder deletionBuilder = new AlertDialog.Builder( this )
-					.setMessage( R.string.delete_cofirmation_text )
+					.setMessage( R.string.delete_confirmation_text )
 					.setTitle( R.string.confirmation )
 					.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
 						@Override
