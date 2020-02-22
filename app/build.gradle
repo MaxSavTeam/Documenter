@@ -24,8 +24,8 @@ android {
         applicationId "com.maxsavitsky.documenter"
         minSdkVersion 23
         targetSdkVersion 29
-        versionCode 10
-        versionName '0.2.1'
+        versionCode 11
+        versionName '0.3'
         buildConfigField "String", "COMPILATION_DATE", "\"${getDate()}\""
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
