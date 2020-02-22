@@ -543,7 +543,7 @@ public class CreateEntry extends ThemeActivity {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						mSelectedColor = colorPickerView.getSelectedColor();
-						addColorToHistory( mTextColor );
+						addColorToHistory( mSelectedColor );
 						whatToDo.onClick( null );
 						dialog.cancel();
 					}
@@ -557,7 +557,7 @@ public class CreateEntry extends ThemeActivity {
 		if(mColorHistory.size() == 0){
 			layout.findViewById( R.id.layoutColorsHistory ).setVisibility( View.GONE );
 		}else{
-			int[] btnIds = new int[]{R.id.btnColorHistory1, R.id.btnColorHistory2, R.id.btnColorHistory3, R.id.btnColorHistory4, R.id.btnColorHistory5};
+			int[] btnIds = new int[]{ R.id.btnColorHistory5, R.id.btnColorHistory4, R.id.btnColorHistory3, R.id.btnColorHistory2, R.id.btnColorHistory1 };
 			for(int i = 0; i < btnIds.length; i++){
 				int id = btnIds[i];
 				Button btn = layout.findViewById(id);
