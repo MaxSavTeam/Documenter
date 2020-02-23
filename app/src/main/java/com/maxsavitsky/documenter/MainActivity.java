@@ -8,6 +8,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.View;
 import android.widget.Toast;
 
@@ -24,6 +25,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -49,6 +51,7 @@ public class MainActivity extends ThemeActivity {
 
 		Utils.setContext(this);
 
+		deleteInstalledApks();
 
 		try {
 			initialize();
@@ -57,6 +60,18 @@ public class MainActivity extends ThemeActivity {
 			return;
 		}
 		viewCategoryList( null );
+	}
+
+	private void deleteInstalledApks(){
+		File file = new File( Environment.getExternalStorageDirectory().getPath() + "/.documenter" );
+		if(file.exists()){
+			File[] files = file.listFiles();
+			for(File subFile : files){
+				subFile.delete();
+			}
+
+			file.delete();
+		}
 	}
 
 	private long getUsedMemory(){
@@ -187,19 +202,12 @@ public class MainActivity extends ThemeActivity {
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-		/*if(requestCode == RequestCodes.CATEGORY_LIST){
-			if(resultCode == ResultCodes.RESTART_ACTIVITY){
-				viewCategoryList( null );
-			}
-			return;
-		}*/
 		if(requestCode == RequestCodes.CATEGORY_LIST ){
 			if(resultCode == ResultCodes.EXIT ){
 				finishAndRemoveTask();
 			}
 			if(resultCode == ResultCodes.RESTART_ACTIVITY ){
-				Intent intent = new Intent( this, CategoryList.class );
-				startActivityForResult( intent, RequestCodes.CATEGORY_LIST );
+				viewCategoryList( null );
 			}
 		}
 		if ( resultCode == ResultCodes.RESTART_APP ) {

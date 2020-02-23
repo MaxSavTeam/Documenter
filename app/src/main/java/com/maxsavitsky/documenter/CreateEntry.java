@@ -429,11 +429,6 @@ public class CreateEntry extends ThemeActivity {
 		@Override
 		public void onTextSelectionBreak(int newSelectionPosition) {
 			btnTextColorPicker.setOnClickListener( btnTextOnAllColor );
-			if(newSelectionPosition != -100) {
-				if ( mTextEditor.getText() == null || mTextEditor.getText().length() == 0 ) {
-					return;
-				}
-			}
 			setBtnTextColorPickerBackground();
 		}
 
@@ -586,12 +581,17 @@ public class CreateEntry extends ThemeActivity {
 	private View.OnClickListener btnTextOnAllColor = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
+			final Editable e = mTextEditor.getText();
+			final ForegroundColorSpan[] spans = e.getSpans( 0, e.length(), ForegroundColorSpan.class );
 			AlertDialog alertDialog = getColorPickerDialog( R.string.set_text_color_of_all_text,
-					btnTextColorPicker.getBackgroundTintList().getDefaultColor(),
+					(spans.length > 0 ? spans[0].getForegroundColor() : Color.BLACK),
 					new View.OnClickListener() {
 						@Override
 						public void onClick(View v) {
-							mTextEditor.getText().setSpan( new ForegroundColorSpan( mSelectedColor ), 0, mTextEditor.getText().length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+							for(ForegroundColorSpan span : spans){
+								e.removeSpan( span );
+							}
+							e.setSpan( new ForegroundColorSpan( mSelectedColor ), 0, mTextEditor.getText().length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 							btnTextColorPicker.setBackgroundTintList( ColorStateList.valueOf( mSelectedColor ) );
 							mTextColor = mSelectedColor;
 						}

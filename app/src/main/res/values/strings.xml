@@ -1,4 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="resources_url" translatable="false">https://res.maxsav.team</string>
+
     <string name="app_name">Documenter Preview</string>
     <string name="title_activity_create_category">Create Category</string>
     <string name="title_activity_category_list">CategoryList</string>
@@ -44,6 +46,7 @@
     <string name="file_not_found">File not found</string>
     <string name="create_entry_exit_mes">Do you really want to leave? All changes made will not be saved.</string>
     <string name="yes">Yes</string>
+    <string name="no">No</string>
     <string name="text_alignment">Text alignment</string>
     <string name="view_report">View report</string>
     <string name="undo">Undo</string>
@@ -60,4 +63,9 @@
     <string name="backup">Backup</string>
     <string name="create">Create</string>
     <string name="restore">Restore</string>
+    <string name="checking_for_updates">Checking for updates…</string>
+    <string name="update_available">Update available</string>
+    <string name="would_you_like_to_download_and_install">Would you like to download and install?</string>
+    <string name="check_for_updates">Check for updates</string>
+    <string name="app_is_up_to_date">App is up to date</string>
 </resources>

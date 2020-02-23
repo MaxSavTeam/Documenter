@@ -1,6 +1,7 @@
 package com.maxsavitsky.documenter;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -20,6 +21,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
+import com.maxsavitsky.documenter.utils.ApkInstaller;
 import com.maxsavitsky.documenter.utils.ResultCodes;
 import com.maxsavitsky.documenter.utils.Utils;
 
@@ -27,6 +29,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Locale;
@@ -117,6 +121,172 @@ public class SettingsActivity extends ThemeActivity {
 			}
 		} );
 	}
+
+	private interface ICheckForUpdatesResult{
+		void checkDone(int versionCode, String downloadUrl);
+		void installerDownloaded(File file);
+	}
+
+	ProgressDialog mCheckUpdatesDialog;
+
+	public void checkForUpdates(View v){
+		mCheckUpdatesDialog = new ProgressDialog(this);
+		mCheckUpdatesDialog.setMessage( getResources().getString( R.string.checking_for_updates ) );
+		mCheckUpdatesDialog.setCancelable( false );
+		mCheckUpdatesDialog.show();
+		try {
+			final URL url = new URL( getResources().getString( R.string.resources_url ) + "/apk/documenter/version" );
+
+			new Thread( new Runnable() {
+				@Override
+				public void run() {
+					try {
+						final InputStream inputStream = url.openConnection().getInputStream();
+						String data = "";
+						int b = inputStream.read();
+						while(b != -1){
+							data = String.format( "%s%c", data, (char) b );
+							b = inputStream.read();
+						}
+
+						inputStream.close();
+
+						int versionCode = 0;
+						int i = 0;
+						while(data.charAt( i ) != ';'){
+							versionCode *= 10;
+							versionCode += Integer.parseInt( Character.toString( data.charAt( i ) ) );
+							i++;
+						}
+						i++;
+						String downloadUrl = "";
+						while(data.charAt( i ) != ';'){
+							downloadUrl = String.format( "%s%c", downloadUrl, data.charAt( i ) );
+							i++;
+						}
+						mCheckUpdatesDialog.cancel();
+						mCheckForUpdatesResult.checkDone( versionCode, downloadUrl );
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			} ).start();
+		} catch (Exception malformedException ){
+			mCheckUpdatesDialog.cancel();
+			malformedException.printStackTrace();
+			Utils.getErrorDialog( malformedException, this ).show();
+		}
+	}
+
+	private Thread downloadThread;
+	ProgressDialog mDownloadPd;
+
+	private void download(final String dUrl){
+		try {
+			int s = dUrl.length();
+			while ( dUrl.charAt( s - 1 ) != '/' ) {
+				s--;
+			}
+			final String name = dUrl.substring( s );
+			File file = new File( Environment.getExternalStorageDirectory().getAbsolutePath() + "/.documenter" );
+			if(!file.exists())
+				file.mkdir();
+
+			file = new File( file.getPath() + "/" + name );
+			file.createNewFile();
+
+			mDownloadPd = new ProgressDialog(SettingsActivity.this);
+			mDownloadPd.setMessage( "Downloading..." );
+			mDownloadPd.setCancelable( false );
+			mDownloadPd.setButton( ProgressDialog.BUTTON_NEGATIVE, getResources().getString( R.string.cancel ), new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(final DialogInterface dialog, int which) {
+					downloadThread.interrupt();
+					runOnUiThread( new Runnable() {
+						@Override
+						public void run() {
+							dialog.cancel();
+						}
+					} );
+				}
+			} );
+
+			final File finalFile = file;
+			mDownloadPd.show();
+			downloadThread = new Thread( new Runnable() {
+				@Override
+				public void run() {
+
+					try {
+						final InputStream in = new URL(dUrl).openStream();
+						final FileOutputStream os = new FileOutputStream( finalFile );
+						byte[] buffer = new byte[ 1024 ];
+						int count;
+						while ( ( count = in.read( buffer, 0, 1024 ) ) != -1 && !Thread.currentThread().isInterrupted() ) {
+							os.write( buffer, 0, count );
+						}
+						in.close();
+						os.close();
+						mCheckForUpdatesResult.installerDownloaded( finalFile );
+					}catch (Exception e){
+						e.printStackTrace();
+					}
+				}
+			} );
+			downloadThread.start();
+		}catch (IOException e){
+			e.printStackTrace();
+			Utils.getErrorDialog( e, this ).show();
+		}
+	}
+
+	private void install(File file){
+		mDownloadPd.cancel();
+		ApkInstaller.installApk( this, file );
+	}
+
+	private ICheckForUpdatesResult mCheckForUpdatesResult = new ICheckForUpdatesResult() {
+		@Override
+		public void checkDone(int versionCode, final String downloadUrl) {
+			if(versionCode > BuildConfig.VERSION_CODE) {
+				runOnUiThread( new Runnable() {
+					@Override
+					public void run() {
+						AlertDialog.Builder builder = new AlertDialog.Builder( SettingsActivity.this, SettingsActivity.super.mAlertDialogStyle );
+						builder.setTitle( R.string.update_available )
+								.setCancelable( false )
+								.setMessage( R.string.would_you_like_to_download_and_install )
+								.setPositiveButton( R.string.yes, new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog, int which) {
+										download( downloadUrl );
+										dialog.cancel();
+									}
+								} )
+								.setNegativeButton( R.string.no, new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog, int which) {
+										dialog.cancel();
+									}
+								} );
+						builder.create().show();
+					}
+				} );
+			}else{
+				runOnUiThread( new Runnable() {
+					@Override
+					public void run() {
+						Toast.makeText( SettingsActivity.this, R.string.app_is_up_to_date, Toast.LENGTH_LONG ).show();
+					}
+				} );
+			}
+		}
+
+		@Override
+		public void installerDownloaded(File file) {
+			install( file );
+		}
+	};
 
 	private String readFile(File file) {
 		try {
@@ -281,24 +451,6 @@ public class SettingsActivity extends ThemeActivity {
 			Utils.getErrorDialog( e, this ).show();
 		}
 	}
-
-	/*private void createBackup(){
-		File dir = Utils.getExternalStoragePath();
-		File outputFile = new File( Environment.getExternalStorageDirectory().getPath() + "/documenter_backup.zip" );
-		ZipFile zipFile = new ZipFile( outputFile );
-		File[] children = dir.listFiles();
-		try {
-			for (File file : children) {
-				if ( file.isDirectory() ) {
-					zipFile.addFolder( file );
-				} else {
-					zipFile.addFile( file );
-				}
-			}
-		}catch (Exception e){
-			Utils.getErrorDialog( e, this ).show();
-		}
-	}*/
 
 	@Override
 	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {

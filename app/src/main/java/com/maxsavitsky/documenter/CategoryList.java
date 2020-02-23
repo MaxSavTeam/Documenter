@@ -172,6 +172,9 @@ public class CategoryList extends ThemeActivity {
 		if(resultCode == ResultCodes.NEED_TO_REFRESH){
 			setupRecyclerView();
 		}
+		if(resultCode == ResultCodes.EXIT){
+			onMyBackPressed();
+		}
 		super.onActivityResult( requestCode, resultCode, data );
 	}
 
