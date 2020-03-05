@@ -18,15 +18,6 @@ import java.util.Map;
 
 public class MainData {
 
-	// START Categories
-	private static Map<String, Category> sCategoryMap = new HashMap<>();
-
-	private static ArrayList<Category> sCategoriesList = new ArrayList<>();
-
-	public static ArrayList<Category> getCategoriesList() {
-		return sCategoriesList;
-	}
-
 	public static void clearAll(){
 		sCategoriesList.clear();
 		sCategoryMap.clear();
@@ -36,6 +27,15 @@ public class MainData {
 
 		sEntriesList.clear();
 		sEntryMap.clear();
+	}
+	// START Categories
+
+	private static Map<String, Category> sCategoryMap = new HashMap<>();
+
+	private static ArrayList<Category> sCategoriesList = new ArrayList<>();
+
+	public static ArrayList<Category> getCategoriesList() {
+		return sCategoriesList;
 	}
 
 	public static void setCategoriesList(ArrayList<Category> categoriesList) {
@@ -48,13 +48,8 @@ public class MainData {
 
 	public static ArrayList<Document> getDocumentsFromThisCategory(String id) throws Exception {
 		ArrayList<Document> documents;
-		try {
-			documents = ParseSeparate.parseCategoryWithId( id );
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new Exception( e.toString() );
-			//return new ArrayList<>(  );
-		}
+		documents = ParseSeparate.parseCategoryWithId( id );
+
 		return documents;
 	}
 

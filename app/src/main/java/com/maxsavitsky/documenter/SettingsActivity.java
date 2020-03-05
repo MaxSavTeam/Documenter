@@ -40,6 +40,8 @@ import java.util.zip.ZipOutputStream;
 
 public class SettingsActivity extends ThemeActivity {
 
+	private boolean mMemoryAccessGranted = false;
+
 	private void applyTheme() {
 		ActionBar actionBar = getSupportActionBar();
 		if ( actionBar != null ) {
@@ -129,6 +131,12 @@ public class SettingsActivity extends ThemeActivity {
 
 	ProgressDialog mCheckUpdatesDialog;
 
+	private boolean isMemoryAccessGranted(){
+		boolean write = ContextCompat.checkSelfPermission( this, Manifest.permission.WRITE_EXTERNAL_STORAGE ) == PackageManager.PERMISSION_GRANTED;
+		boolean read = ContextCompat.checkSelfPermission( this, Manifest.permission.READ_EXTERNAL_STORAGE ) == PackageManager.PERMISSION_GRANTED;
+		return write && read;
+	}
+
 	public void checkForUpdates(View v){
 		mCheckUpdatesDialog = new ProgressDialog(this);
 		mCheckUpdatesDialog.setMessage( getResources().getString( R.string.checking_for_updates ) );
@@ -180,8 +188,17 @@ public class SettingsActivity extends ThemeActivity {
 
 	private Thread downloadThread;
 	ProgressDialog mDownloadPd;
+	String tempDownloadUrl;
 
 	private void download(final String dUrl){
+		if(!mMemoryAccessGranted ){
+			if(!isMemoryAccessGranted()) {
+				tempDownloadUrl = dUrl;
+				requestPermissions( new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE }, 1 );
+				return;
+			}
+		}
+		mMemoryAccessGranted = false;
 		try {
 			int s = dUrl.length();
 			while ( dUrl.charAt( s - 1 ) != '/' ) {
@@ -465,6 +482,15 @@ public class SettingsActivity extends ThemeActivity {
 				unpack();
 			} else {
 				Toast.makeText( this, "Denied", Toast.LENGTH_SHORT ).show();
+			}
+		}
+		if(requestCode == 1){
+			if ( grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED && grantResults[ 1 ] == PackageManager.PERMISSION_GRANTED ){
+				mMemoryAccessGranted = true;
+				download( tempDownloadUrl );
+				tempDownloadUrl = null;
+			}else{
+				Toast.makeText( this, "Permission denied", Toast.LENGTH_SHORT ).show();
 			}
 		}
 	}

@@ -4,8 +4,10 @@
     <dimen name="textSizeButtonControlsWidth">55dp</dimen>
     <dimen name="bgColorPickerWidth">37dp</dimen>
     <dimen name="backLayoutWidth">39dp</dimen>
-    <dimen name="btnChooseAlignWidth">55dp</dimen>
+    <dimen name="btnTextUtilsWidth">55dp</dimen>
     <dimen name="mainActivityButtonsMargin">30dp</dimen>
+    <dimen name="btn_text_style_width">50dp</dimen>
 
+    <dimen name="btn_style_margin_top_bottom">7dp</dimen>
     <dimen name="btns_color_history_margin_end">5dp</dimen>
 </resources>

@@ -1,7 +1,11 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="resources_url" translatable="false">https://res.maxsav.team</string>
 
-    <string name="app_name">Documenter Preview</string>
+    <string name="app_name">Documenter</string>
+
+    <string name="plus" translatable="false">+</string>
+    <string name="minus" translatable="false">-</string>
+
     <string name="title_activity_create_category">Create Category</string>
     <string name="title_activity_category_list">CategoryList</string>
     <string name="title_activity_create_documents">CreateDocuments</string>
@@ -9,6 +13,7 @@
     <string name="title_activity_entries_list">Entries List</string>
     <string name="edit_documents_list">Edit documents list</string>
     <string name="edit_category_name">Edit category name</string>
+
     <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>
     <string name="apply">Apply</string>
