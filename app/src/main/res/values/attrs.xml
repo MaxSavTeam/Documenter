@@ -6,4 +6,5 @@
     <attr name="bold_button_src" format="reference" />
     <attr name="italic_button_src" format="reference" />
     <attr name="underline_button_src" format="reference" />
+    <attr name="strike_button_src" format="reference" />
 </resources>

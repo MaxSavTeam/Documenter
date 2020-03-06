@@ -20,6 +20,7 @@ import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.AbsoluteSizeSpan;
 import android.text.style.ForegroundColorSpan;
+import android.text.style.StrikethroughSpan;
 import android.text.style.StyleSpan;
 import android.text.style.UnderlineSpan;
 import android.util.Log;
@@ -69,7 +70,7 @@ public class CreateEntry extends ThemeActivity {
 	private EntryProperty mEntryProperty;
 	private TextEditor mTextEditor;
 	private Button btnBgColorPicker, btnTextColorPicker;
-	private ImageButton btnBold, btnItalic, btnUnderline;
+	private ImageButton btnBold, btnItalic, btnUnderline, btnStrike;
 	private BottomSheetBehavior mBottomSheetLayout;
 	private ArrayList<ChangeEntry> mHistory = new ArrayList<>();
 	private int mHistoryIterator = -1;
@@ -103,6 +104,7 @@ public class CreateEntry extends ThemeActivity {
 		private ForegroundColorSpan mSpan;
 		private StyleSpan mStyleSpan;
 		private UnderlineSpan mUnderlineSpan;
+		private StrikethroughSpan mStrikethroughSpan;
 		private int st, end;
 
 		public SpanEntry(ForegroundColorSpan span, int st, int end) {
@@ -121,6 +123,16 @@ public class CreateEntry extends ThemeActivity {
 			mUnderlineSpan = underlineSpan;
 			this.st = st;
 			this.end = end;
+		}
+
+		public SpanEntry(StrikethroughSpan strikethroughSpan, int st, int end) {
+			mStrikethroughSpan = strikethroughSpan;
+			this.st = st;
+			this.end = end;
+		}
+
+		public StrikethroughSpan getStrikethroughSpan() {
+			return mStrikethroughSpan;
 		}
 
 		public UnderlineSpan getUnderlineSpan() {
@@ -264,6 +276,7 @@ public class CreateEntry extends ThemeActivity {
 		btnBold = findViewById( R.id.btnBold );
 		btnItalic = findViewById( R.id.btnItalic );
 		btnUnderline = findViewById( R.id.btnUnderline );
+		btnStrike = findViewById( R.id.btnStrike );
 
 		type = getIntent().getStringExtra( "type" );
 		mEntryProperty = new EntryProperty();
@@ -478,6 +491,7 @@ public class CreateEntry extends ThemeActivity {
 			btnBold.setOnClickListener(onTextAppearanceClick);
 			btnItalic.setOnClickListener(onTextAppearanceClick);
 			btnUnderline.setOnClickListener( onUnderlineBtnClick );
+			btnStrike.setOnClickListener( onStrikeBtnClick );
 		}
 
 		@Override
@@ -486,10 +500,12 @@ public class CreateEntry extends ThemeActivity {
 			btnBold.setOnClickListener( null );
 			btnItalic.setOnClickListener( null );
 			btnUnderline.setOnClickListener( null );
+			btnStrike.setOnClickListener( null );
 			setBtnTextColorPickerBackground();
 			btnBold.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
 			btnItalic.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
 			btnUnderline.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
+			btnStrike.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
 		}
 
 		@Override
@@ -512,6 +528,7 @@ public class CreateEntry extends ThemeActivity {
 		boolean isBoldThere = false;
 		boolean isItalicThere = false;
 		boolean isUnderlineThere = (e.getSpans( selS, selE, UnderlineSpan.class ).length != 0);
+		boolean isStrikeThere = (e.getSpans( selS, selE, StrikethroughSpan.class ).length != 0);
 		for(StyleSpan s : ss){
 			if(s.getStyle() == Typeface.BOLD)
 				isBoldThere = true;
@@ -536,9 +553,16 @@ public class CreateEntry extends ThemeActivity {
 		if(isUnderlineThere){
 			btnUnderline.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( R.color.btnClicked ) ) );
 		}else{
-			btnItalic.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
+			btnUnderline.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
 		}
 		btnUnderline.setTag(isUnderlineThere);
+
+		btnStrike.setTag( isStrikeThere );
+		if(isStrikeThere){
+			btnStrike.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( R.color.btnClicked ) ) );
+		}else{
+			btnStrike.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
+		}
 	}
 
 	private View.OnClickListener onUnderlineBtnClick = new View.OnClickListener() {
@@ -571,6 +595,43 @@ public class CreateEntry extends ThemeActivity {
 			v.setTag( !isUnderline );
 			if(!isUnderline){ // apply
 				s.setSpan( new UnderlineSpan(), selSt, selEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+				v.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( R.color.btnClicked ) ) );
+			}else{ //delete
+				v.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
+			}
+		}
+	};
+
+	private View.OnClickListener onStrikeBtnClick = new View.OnClickListener(){
+		@Override
+		public void onClick(View v) {
+			Editable s = mTextEditor.getText();
+			if(s == null)
+				return;
+
+			int selSt = mSelectionBounds[0];
+			int selEnd = mSelectionBounds[1];
+			boolean isStrike = (boolean) v.getTag();
+			StrikethroughSpan[] spans = s.getSpans( selSt, selEnd, StrikethroughSpan.class );
+			ArrayList<SpanEntry> spansToApply = new ArrayList<>();
+			for(StrikethroughSpan span : spans){
+				int st = s.getSpanStart( span );
+				int end = s.getSpanEnd( span );
+				if(st < selSt){
+					spansToApply.add( new SpanEntry( new StrikethroughSpan(), st, selSt ) );
+				}
+				if(end > selEnd){
+					spansToApply.add( new SpanEntry( new StrikethroughSpan(), selEnd, end ) );
+				}
+				s.removeSpan( span );
+			}
+			for(SpanEntry e : spansToApply){
+				s.setSpan( e.getStrikethroughSpan(), e.getSt(), e.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+			}
+
+			v.setTag( !isStrike );
+			if(!isStrike){ // apply
+				s.setSpan( new StrikethroughSpan(), selSt, selEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 				v.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( R.color.btnClicked ) ) );
 			}else{ //delete
 				v.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
