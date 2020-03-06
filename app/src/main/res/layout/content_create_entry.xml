@@ -6,23 +6,24 @@
     android:orientation="vertical"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <!--LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginBottom="@dimen/peekHeight"
-        android:orientation="vertical"-->
+        android:layout_height="match_parent">
 
-    <com.maxsavitsky.documenter.widget.TextEditor
-        android:id="@+id/edittextEntry"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@null"
-        android:ems="10"
-        android:gravity="start|top"
-        android:hint="@string/enter_your_minds_here"
-        android:inputType="textMultiLine"
-        android:scrollbars="vertical"
-        android:textIsSelectable="true"
-        android:textSize="22sp" />
+        <com.maxsavitsky.documenter.widget.TextEditor
+            android:id="@+id/edittextEntry"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="@dimen/peekHeight"
+            android:background="@null"
+            android:ems="10"
+            android:gravity="start|top"
+            android:hint="@string/enter_your_minds_here"
+            android:inputType="textMultiLine"
+            android:scrollbars="vertical"
+            android:textIsSelectable="true"
+            android:textSize="22sp" />
+
+    </ScrollView>
 
 </LinearLayout>
