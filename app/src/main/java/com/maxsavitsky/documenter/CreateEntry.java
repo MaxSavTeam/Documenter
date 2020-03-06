@@ -706,6 +706,7 @@ public class CreateEntry extends ThemeActivity {
 					btnBgColorPicker.setBackgroundTintList( ColorStateList.valueOf( mSelectedColor ) );
 					//btnBgColorPicker.setBackground( getDrawable( R.drawable.btn_picker_borders ) );
 					mTextEditor.setBackgroundColor( mSelectedColor );
+					getWindow().getDecorView().setBackgroundColor( mSelectedColor );
 					mEntryProperty.setBgColor( mSelectedColor );
 				}
 			};
@@ -764,6 +765,32 @@ public class CreateEntry extends ThemeActivity {
 		}
 	};
 
+	private void initializeColorButtons(final View layout, final View.OnClickListener clickListener, final AlertDialog alertDialog){
+		int[] btnIds = new int[]{ R.id.btnColorHistory5, R.id.btnColorHistory4, R.id.btnColorHistory3, R.id.btnColorHistory2, R.id.btnColorHistory1 };
+		for(int i = 0; i < btnIds.length; i++){
+			int id = btnIds[i];
+			Button btn = layout.findViewById(id);
+			//btn.setTag( 1, i );
+			if(i >= mColorHistory.size()){
+				btn.setVisibility( View.INVISIBLE );
+			}else{
+				btn.setBackgroundTintList( ColorStateList.valueOf( mColorHistory.get( i ) ) );
+				btn.setTag( mColorHistory.get( i ) );
+				btn.setOnClickListener( clickListener );
+				/*btn.setOnLongClickListener( new View.OnLongClickListener() {
+					@Override
+					public boolean onLongClick(View v) {
+						int tag = (int) v.getTag(1);
+						mColorHistory.remove( tag );
+						alertDialog.cancel();
+						Toast.makeText( CreateEntry.this, "Entry was deleted from history", Toast.LENGTH_SHORT ).show();
+						return true;
+					}
+				} );*/
+			}
+		}
+	}
+
 	private AlertDialog getColorPickerDialog(int title, int defColor, final View.OnClickListener whatToDo){
 		View layout = getLayoutInflater().inflate( R.layout.layout_color_picker, null );
 		final ColorPickerView colorPickerView = layout.findViewById( R.id.color_picker );
@@ -789,25 +816,14 @@ public class CreateEntry extends ThemeActivity {
 		if(mColorHistory.size() == 0){
 			layout.findViewById( R.id.layoutColorsHistory ).setVisibility( View.GONE );
 		}else{
-			int[] btnIds = new int[]{ R.id.btnColorHistory5, R.id.btnColorHistory4, R.id.btnColorHistory3, R.id.btnColorHistory2, R.id.btnColorHistory1 };
-			for(int i = 0; i < btnIds.length; i++){
-				int id = btnIds[i];
-				Button btn = layout.findViewById(id);
-				if(i >= mColorHistory.size()){
-					btn.setVisibility( View.INVISIBLE );
-				}else{
-					btn.setBackgroundTintList( ColorStateList.valueOf( mColorHistory.get( i ) ) );
-					btn.setTag( mColorHistory.get( i ) );
-					btn.setOnClickListener( new View.OnClickListener() {
-						@Override
-						public void onClick(View v) {
-							alertDialog.cancel();
-							mSelectedColor = (int) v.getTag();
-							whatToDo.onClick(null);
-						}
-					} );
+			initializeColorButtons( layout, new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					alertDialog.cancel();
+					mSelectedColor = (int) v.getTag();
+					whatToDo.onClick(null);
 				}
-			}
+			}, alertDialog );
 		}
 
 		return alertDialog;
@@ -845,6 +861,7 @@ public class CreateEntry extends ThemeActivity {
 
 		btnBgColorPicker.setBackgroundTintList( ColorStateList.valueOf( mEntryProperty.getBgColor() ) );
 		mTextEditor.setBackgroundColor( mEntryProperty.getBgColor() );
+		getWindow().getDecorView().setBackgroundColor( mEntryProperty.getBgColor() );
 
 		ImageButton imageButton;
 		if(mEntryProperty.getTextAlignment() == Gravity.CENTER_HORIZONTAL)

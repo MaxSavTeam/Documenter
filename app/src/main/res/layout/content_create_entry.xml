@@ -8,13 +8,14 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_marginBottom="@dimen/peekHeight">
 
         <com.maxsavitsky.documenter.widget.TextEditor
             android:id="@+id/edittextEntry"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginBottom="@dimen/peekHeight"
+
             android:background="@null"
             android:ems="10"
             android:gravity="start|top"
