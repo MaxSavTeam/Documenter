@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/bottom_sheet"
     android:layout_width="match_parent"
-    android:layout_height="250dp"
+    android:layout_height="500dp"
     android:background="?attr/bottom_sheet_style"
     android:orientation="vertical"
     app:behavior_hideable="false"
@@ -170,28 +170,52 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="@dimen/btn_style_margin_top_bottom"
+                android:orientation="vertical"
                 android:layout_marginBottom="@dimen/btn_style_margin_top_bottom"
                 android:gravity="center">
-                <ImageButton
-                    android:layout_width="@dimen/btn_text_style_width"
-                    android:layout_height="@dimen/btn_text_style_width"
-                    android:id="@+id/btnBold"
-                    android:scaleType="centerInside"
-                    android:backgroundTint="@android:color/transparent"
-                    android:src="?attr/bold_button_src"
-                    tools:ignore="ContentDescription"
-                    android:layout_marginEnd="5dp"/>
 
-                <ImageButton
-                    android:layout_width="@dimen/btn_text_style_width"
-                    android:layout_height="@dimen/btn_text_style_width"
-                    android:id="@+id/btnItalic"
-                    android:scaleType="centerInside"
-                    android:src="?attr/italic_button_src"
-                    android:backgroundTint="@android:color/transparent"
-                    tools:ignore="ContentDescription" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="?attr/textColor"
+                    android:text="@string/font"
+                    android:textSize="18sp"
+                    android:layout_marginBottom="5dp"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+                    <ImageButton
+                        android:layout_width="@dimen/btn_text_style_width"
+                        android:layout_height="@dimen/btn_text_style_width"
+                        android:id="@+id/btnBold"
+                        android:scaleType="centerInside"
+                        android:backgroundTint="@android:color/transparent"
+                        android:src="?attr/bold_button_src"
+                        tools:ignore="ContentDescription"
+                        android:layout_marginEnd="5dp"/>
+
+                    <ImageButton
+                        android:layout_width="@dimen/btn_text_style_width"
+                        android:layout_height="@dimen/btn_text_style_width"
+                        android:id="@+id/btnItalic"
+                        android:scaleType="centerInside"
+                        android:src="?attr/italic_button_src"
+                        android:backgroundTint="@android:color/transparent"
+                        tools:ignore="ContentDescription"
+                        android:layout_marginEnd="5dp"/>
+
+                    <ImageButton
+                        android:layout_width="@dimen/btn_text_style_width"
+                        android:layout_height="@dimen/btn_text_style_width"
+                        android:id="@+id/btnUnderline"
+                        android:scaleType="centerInside"
+                        android:backgroundTint="@android:color/transparent"
+                        android:src="?attr/underline_button_src"
+                        tools:ignore="ContentDescription"/>
+                </LinearLayout>
             </LinearLayout>
 
             <LinearLayout

@@ -21,6 +21,7 @@ import android.text.Spanned;
 import android.text.style.AbsoluteSizeSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
+import android.text.style.UnderlineSpan;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -68,7 +69,7 @@ public class CreateEntry extends ThemeActivity {
 	private EntryProperty mEntryProperty;
 	private TextEditor mTextEditor;
 	private Button btnBgColorPicker, btnTextColorPicker;
-	private ImageButton btnBold, btnItalic;
+	private ImageButton btnBold, btnItalic, btnUnderline;
 	private BottomSheetBehavior mBottomSheetLayout;
 	private ArrayList<ChangeEntry> mHistory = new ArrayList<>();
 	private int mHistoryIterator = -1;
@@ -101,6 +102,7 @@ public class CreateEntry extends ThemeActivity {
 	private static class SpanEntry{
 		private ForegroundColorSpan mSpan;
 		private StyleSpan mStyleSpan;
+		private UnderlineSpan mUnderlineSpan;
 		private int st, end;
 
 		public SpanEntry(ForegroundColorSpan span, int st, int end) {
@@ -113,6 +115,16 @@ public class CreateEntry extends ThemeActivity {
 			mStyleSpan = styleSpan;
 			this.st = st;
 			this.end = end;
+		}
+
+		public SpanEntry(UnderlineSpan underlineSpan, int st, int end) {
+			mUnderlineSpan = underlineSpan;
+			this.st = st;
+			this.end = end;
+		}
+
+		public UnderlineSpan getUnderlineSpan() {
+			return mUnderlineSpan;
 		}
 
 		public StyleSpan getStyleSpan() {
@@ -251,6 +263,7 @@ public class CreateEntry extends ThemeActivity {
 
 		btnBold = findViewById( R.id.btnBold );
 		btnItalic = findViewById( R.id.btnItalic );
+		btnUnderline = findViewById( R.id.btnUnderline );
 
 		type = getIntent().getStringExtra( "type" );
 		mEntryProperty = new EntryProperty();
@@ -386,7 +399,7 @@ public class CreateEntry extends ThemeActivity {
 					mProgressDialogOnTextLoad.cancel();
 					final double end = System.currentTimeMillis();
 					final double seconds = (end - mStartLoadTextTime) / 1000;
-					Log.v( "TextLoader", "runOnUiCalled" );
+					Log.v("Text loader", "Text loaded after " + seconds);
 					//Toast.makeText( CreateEntry.this, "Text loaded after " + seconds + " seconds", Toast.LENGTH_LONG ).show();
 				}
 			} );
@@ -464,15 +477,19 @@ public class CreateEntry extends ThemeActivity {
 			applyStyleBtnState( start, end );
 			btnBold.setOnClickListener(onTextAppearanceClick);
 			btnItalic.setOnClickListener(onTextAppearanceClick);
+			btnUnderline.setOnClickListener( onUnderlineBtnClick );
 		}
 
 		@Override
 		public void onTextSelectionBreak(int newSelectionPosition) {
 			btnTextColorPicker.setOnClickListener( btnTextOnAllColor );
 			btnBold.setOnClickListener( null );
+			btnItalic.setOnClickListener( null );
+			btnUnderline.setOnClickListener( null );
 			setBtnTextColorPickerBackground();
 			btnBold.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
 			btnItalic.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
+			btnUnderline.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
 		}
 
 		@Override
@@ -494,6 +511,7 @@ public class CreateEntry extends ThemeActivity {
 		StyleSpan[] ss = e.getSpans( selS, selE, StyleSpan.class );
 		boolean isBoldThere = false;
 		boolean isItalicThere = false;
+		boolean isUnderlineThere = (e.getSpans( selS, selE, UnderlineSpan.class ).length != 0);
 		for(StyleSpan s : ss){
 			if(s.getStyle() == Typeface.BOLD)
 				isBoldThere = true;
@@ -503,20 +521,62 @@ public class CreateEntry extends ThemeActivity {
 		}
 		if(isBoldThere){
 			btnBold.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( R.color.btnClicked ) ) );
-			btnBold.setTag( true );
 		}else{
-			btnBold.setTag( false );
 			btnBold.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
 		}
+		btnBold.setTag( isBoldThere );
 
 		if(isItalicThere){
 			btnItalic.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( R.color.btnClicked ) ) );
-			btnItalic.setTag( true );
 		}else{
-			btnItalic.setTag( false );
 			btnItalic.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
 		}
+		btnItalic.setTag( isItalicThere );
+
+		if(isUnderlineThere){
+			btnUnderline.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( R.color.btnClicked ) ) );
+		}else{
+			btnItalic.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
+		}
+		btnUnderline.setTag(isUnderlineThere);
 	}
+
+	private View.OnClickListener onUnderlineBtnClick = new View.OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			Editable s = mTextEditor.getText();
+			if(s == null)
+				return;
+
+			int selSt = mSelectionBounds[0];
+			int selEnd = mSelectionBounds[1];
+			boolean isUnderline = (boolean) v.getTag();
+			UnderlineSpan[] spans = s.getSpans( selSt, selEnd, UnderlineSpan.class );
+			ArrayList<SpanEntry> spansToApply = new ArrayList<>();
+			for(UnderlineSpan span : spans){
+				int st = s.getSpanStart( span );
+				int end = s.getSpanEnd( span );
+				if(st < selSt){
+					spansToApply.add( new SpanEntry( new UnderlineSpan(), st, selSt ) );
+				}
+				if(end > selEnd){
+					spansToApply.add( new SpanEntry( new UnderlineSpan(), selEnd, end ) );
+				}
+				s.removeSpan( span );
+			}
+			for(SpanEntry e : spansToApply){
+				s.setSpan( e.getUnderlineSpan(), e.getSt(), e.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+			}
+
+			v.setTag( !isUnderline );
+			if(!isUnderline){ // apply
+				s.setSpan( new UnderlineSpan(), selSt, selEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+				v.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( R.color.btnClicked ) ) );
+			}else{ //delete
+				v.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
+			}
+		}
+	};
 
 	private View.OnClickListener onTextAppearanceClick = new View.OnClickListener() {
 		@Override

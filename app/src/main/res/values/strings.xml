@@ -46,7 +46,7 @@
     <string name="error_has_occurred">An error has occurred.</string>
     <string name="send_report">Send report</string>
     <string name="please">Please</string>
-    <string name="seng_report_dialog_mes">It seems that an error has occurred and it is our fault. You can make your invaluable contribution to improving the application by sending us a file with a description of the error. &lt;br&gt;&lt;b&gt;We will immediately begin work on the bugs.&lt;/b&gt; &lt;br&gt; And if you still describe the problem and where and how it happened, then you have no price.&lt;br&gt;&lt;br&gt;Thank you for using our application and all the best!</string>
+    <string name="send_report_dialog_mes">It seems that an error has occurred and it is our fault. You can make your invaluable contribution to improving the application by sending us a file with a description of the error. &lt;br&gt;&lt;b&gt;We will immediately begin work on the bugs.&lt;/b&gt; &lt;br&gt; And if you still describe the problem and where and how it happened, then you have no price.&lt;br&gt;&lt;br&gt;Thank you for using our application and all the best!</string>
     <string name="successful">Successful</string>
     <string name="file_not_found">File not found</string>
     <string name="create_entry_exit_mes">Do you really want to leave? All changes made will not be saved.</string>
@@ -73,4 +73,5 @@
     <string name="would_you_like_to_download_and_install">Would you like to download and install?</string>
     <string name="check_for_updates">Check for updates</string>
     <string name="app_is_up_to_date">App is up to date</string>
+    <string name="font">Font</string>
 </resources>

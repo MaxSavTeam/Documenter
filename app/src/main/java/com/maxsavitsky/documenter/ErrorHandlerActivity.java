@@ -38,7 +38,7 @@ public class ErrorHandlerActivity extends AppCompatActivity {
 
 		AlertDialog.Builder builder = new AlertDialog.Builder( this )
 				.setTitle( R.string.please )
-				.setMessage( Html.fromHtml( getResources().getString( R.string.seng_report_dialog_mes ) ) )
+				.setMessage( Html.fromHtml( getResources().getString( R.string.send_report_dialog_mes ) ) )
 				.setCancelable( false ).setPositiveButton( "OK", new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {

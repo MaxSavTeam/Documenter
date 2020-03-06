@@ -13,7 +13,7 @@
         <item name="bottom_sheet_style">@drawable/top_borders</item>
         <item name="bold_button_src">@drawable/ic_bold_black</item>
         <item name="italic_button_src">@drawable/ic_italic_black</item>
-
+        <item name="underline_button_src">@drawable/ic_underline_black</item>
     </style>
 
     <style name="AppTheme.Dark">
@@ -29,6 +29,7 @@
         <item name="bottom_sheet_style">@drawable/top_borders_dark</item>
         <item name="bold_button_src">@drawable/ic_bold_white</item>
         <item name="italic_button_src">@drawable/ic_italic_white</item>
+        <item name="underline_button_src">@drawable/ic_underline_white</item>
     </style>
 
     <style name="AlertDialogDark" parent="Theme.AppCompat.Light.Dialog">
