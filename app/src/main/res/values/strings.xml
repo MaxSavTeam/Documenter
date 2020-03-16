@@ -76,4 +76,6 @@
     <string name="font">Font</string>
     <string name="remember_last_pos">Remember last position</string>
     <string name="parameters">Parameters</string>
+    <string name="you_will_not_pass">You will not pass!</string>
+    <string name="warning_when_memory_denied">Without access to memory, the application cannot work. Press "Request" and allow access, please</string>
 </resources>

@@ -1,8 +1,11 @@
 package com.maxsavitsky.documenter;
 
+import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.InputType;
@@ -20,6 +23,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -27,10 +31,15 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.maxsavitsky.documenter.adapters.CategoryListAdapter;
 import com.maxsavitsky.documenter.data.types.Category;
 import com.maxsavitsky.documenter.data.MainData;
+import com.maxsavitsky.documenter.utils.ApkInstaller;
 import com.maxsavitsky.documenter.utils.RequestCodes;
 import com.maxsavitsky.documenter.utils.ResultCodes;
+import com.maxsavitsky.documenter.utils.UpdatesChecker;
+import com.maxsavitsky.documenter.utils.UpdatesDownloader;
 import com.maxsavitsky.documenter.utils.Utils;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -178,6 +187,84 @@ public class CategoryList extends ThemeActivity {
 		super.onActivityResult( requestCode, resultCode, data );
 	}
 
+	private UpdatesChecker.CheckResults mCheckResults = new UpdatesChecker.CheckResults() {
+		@Override
+		public void noUpdates(UpdatesChecker.VersionInfo versionInfo) {
+
+		}
+
+		@Override
+		public void updateAvailable(final UpdatesChecker.VersionInfo versionInfo) {
+			runOnUiThread( new Runnable() {
+				@Override
+				public void run() {
+					AlertDialog.Builder builder = new AlertDialog.Builder( CategoryList.this, CategoryList.super.mAlertDialogStyle );
+					builder.setTitle( R.string.update_available )
+							.setCancelable( false )
+							.setMessage( R.string.would_you_like_to_download_and_install )
+							.setPositiveButton( R.string.yes, new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									download( versionInfo );
+									dialog.cancel();
+								}
+							} )
+							.setNegativeButton( R.string.no, new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									dialog.cancel();
+								}
+							} );
+					builder.create().show();
+				}
+			} );
+		}
+
+		@Override
+		public void downloaded(File path, UpdatesChecker.VersionInfo versionInfo) {
+			if(mDownloadPd != null)
+				mDownloadPd.dismiss();
+
+			ApkInstaller.installApk( CategoryList.this, path );
+		}
+
+		@Override
+		public void exceptionOccurred(IOException e) {
+
+		}
+	};
+
+
+	private ProgressDialog mDownloadPd = null;
+	private Thread downloadThread;
+
+	private void download(UpdatesChecker.VersionInfo versionInfo){
+		final UpdatesDownloader downloader = new UpdatesDownloader( versionInfo, mCheckResults );
+		mDownloadPd = new ProgressDialog(this);
+		mDownloadPd.setMessage( "Downloading..." );
+		mDownloadPd.setCancelable( false );
+		mDownloadPd.setButton( ProgressDialog.BUTTON_NEGATIVE, getResources().getString( R.string.cancel ), new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(final DialogInterface dialog, int which) {
+				downloadThread.interrupt();
+				runOnUiThread( new Runnable() {
+					@Override
+					public void run() {
+						dialog.cancel();
+					}
+				} );
+			}
+		} );
+		mDownloadPd.show();
+		downloadThread = new Thread( new Runnable() {
+			@Override
+			public void run() {
+				downloader.download();
+			}
+		} );
+		downloadThread.start();
+	}
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -232,6 +319,46 @@ public class CategoryList extends ThemeActivity {
 			}
 		} );
 
-		setupRecyclerView();
+
+		if(!isMemoryAccessGranted()){
+			requestPermissions( new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE }, 1 );
+		}else {
+			setupRecyclerView();
+			final UpdatesChecker checker = new UpdatesChecker( this, mCheckResults );
+			new Thread( new Runnable() {
+				@Override
+				public void run() {
+					checker.runCheck();
+				}
+			} ).start();
+		}
+	}
+
+	private boolean isMemoryAccessGranted(){
+		boolean write = ContextCompat.checkSelfPermission( this, Manifest.permission.WRITE_EXTERNAL_STORAGE ) == PackageManager.PERMISSION_GRANTED;
+		boolean read = ContextCompat.checkSelfPermission( this, Manifest.permission.READ_EXTERNAL_STORAGE ) == PackageManager.PERMISSION_GRANTED;
+		return write && read;
+	}
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+		if(requestCode == 1){
+			if(grantResults[0] != PackageManager.PERMISSION_GRANTED || grantResults[1] != PackageManager.PERMISSION_GRANTED){
+				AlertDialog.Builder builder = new AlertDialog.Builder( this )
+						.setTitle( getResources().getString( R.string.you_will_not_pass ) )
+						.setMessage( R.string.warning_when_memory_denied )
+						.setCancelable( false )
+						.setNeutralButton( "Request", new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								dialog.cancel();
+								requestPermissions( new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE }, 1 );
+							}
+						} );
+				builder.create().show();
+			}else{
+				setupRecyclerView();
+			}
+		}
 	}
 }

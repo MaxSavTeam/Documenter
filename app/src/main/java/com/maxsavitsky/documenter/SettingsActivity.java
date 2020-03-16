@@ -127,11 +127,6 @@ public class SettingsActivity extends ThemeActivity {
 		} );
 	}
 
-	private interface ICheckForUpdatesResult{
-		void checkDone(int versionCode, String downloadUrl);
-		void installerDownloaded(File file);
-	}
-
 	ProgressDialog mCheckUpdatesDialog = null;
 
 	private boolean isMemoryAccessGranted(){
@@ -184,6 +179,8 @@ public class SettingsActivity extends ThemeActivity {
 
 		@Override
 		public void downloaded(File path, UpdatesChecker.VersionInfo versionInfo) {
+			if(mDownloadPd != null)
+				mDownloadPd.dismiss();
 			ApkInstaller.installApk( SettingsActivity.this, path );
 		}
 
@@ -261,23 +258,6 @@ public class SettingsActivity extends ThemeActivity {
 		} );
 		downloadThread.start();
 	}
-
-	private void install(File file){
-		mDownloadPd.cancel();
-		ApkInstaller.installApk( this, file );
-	}
-
-	private ICheckForUpdatesResult mCheckForUpdatesResult = new ICheckForUpdatesResult() {
-		@Override
-		public void checkDone(int versionCode, final String downloadUrl) {
-
-		}
-
-		@Override
-		public void installerDownloaded(File file) {
-			install( file );
-		}
-	};
 
 	private String readFile(File file) {
 		try {

@@ -40,13 +40,16 @@ public class UpdatesDownloader {
 			os = new FileOutputStream( file );
 			byte[] buffer = new byte[ 1024 ];
 			int count;
-			while ( ( count = in.read( buffer, 0, 1024 ) ) != -1 && !Thread.currentThread().isInterrupted() ) {
+			while ( ( count = in.read( buffer, 0, 1024 ) ) != -1 ) {
 				os.write( buffer, 0, count );
+				if(Thread.currentThread().isInterrupted()){
+					in.close();
+					os.close();
+					return;
+				}
 			}
 			in.close();
 			os.close();
-			if ( Thread.currentThread().isInterrupted() )
-				return;
 
 			mCheckResults.downloaded( file, mVersionInfo );
 
