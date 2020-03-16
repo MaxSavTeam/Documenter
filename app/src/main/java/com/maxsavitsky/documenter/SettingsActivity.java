@@ -11,7 +11,6 @@ import android.preference.PreferenceManager;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CompoundButton;
-import android.widget.OverScroller;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,8 +31,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Locale;
@@ -127,7 +124,7 @@ public class SettingsActivity extends ThemeActivity {
 		} );
 	}
 
-	ProgressDialog mCheckUpdatesDialog = null;
+	private ProgressDialog mCheckUpdatesDialog = null;
 
 	private boolean isMemoryAccessGranted(){
 		boolean write = ContextCompat.checkSelfPermission( this, Manifest.permission.WRITE_EXTERNAL_STORAGE ) == PackageManager.PERMISSION_GRANTED;
@@ -162,7 +159,7 @@ public class SettingsActivity extends ThemeActivity {
 							.setPositiveButton( R.string.yes, new DialogInterface.OnClickListener() {
 								@Override
 								public void onClick(DialogInterface dialog, int which) {
-									download( versionInfo.getDownloadUrl(), versionInfo );
+									download( versionInfo );
 									dialog.cancel();
 								}
 							} )
@@ -219,14 +216,12 @@ public class SettingsActivity extends ThemeActivity {
 	}
 
 	private Thread downloadThread;
-	ProgressDialog mDownloadPd = null;
-	String tempDownloadUrl;
+	private ProgressDialog mDownloadPd = null;
 	private UpdatesChecker.VersionInfo tempVersionInfo;
 
-	private void download(final String dUrl, UpdatesChecker.VersionInfo versionInfo){
+	private void download(UpdatesChecker.VersionInfo versionInfo){
 		if(!mMemoryAccessGranted ){
 			if(!isMemoryAccessGranted()) {
-				tempDownloadUrl = dUrl;
 				tempVersionInfo = versionInfo;
 				requestPermissions( new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE }, 1 );
 				return;
@@ -441,8 +436,7 @@ public class SettingsActivity extends ThemeActivity {
 		if(requestCode == 1){
 			if ( grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED && grantResults[ 1 ] == PackageManager.PERMISSION_GRANTED ){
 				mMemoryAccessGranted = true;
-				download( tempDownloadUrl, tempVersionInfo );
-				tempDownloadUrl = null;
+				download( tempVersionInfo );
 				tempVersionInfo = null;
 			}else{
 				Toast.makeText( this, "Permission denied", Toast.LENGTH_SHORT ).show();
