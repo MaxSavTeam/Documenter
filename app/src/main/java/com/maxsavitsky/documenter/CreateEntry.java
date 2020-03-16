@@ -288,6 +288,8 @@ public class CreateEntry extends ThemeActivity {
 				Utils.getErrorDialog( e, this ).show();
 			}
 			mEntry.setProperties( new Entry.Properties( mProperties ) );
+			mDefaultTextColor = mProperties.getDefaultTextColor();
+			mTextEditor.setTextColor( mDefaultTextColor );
 			title = "Edit entry text";
 			applyTheme();
 
@@ -467,6 +469,7 @@ public class CreateEntry extends ThemeActivity {
 		ForegroundColorSpan[] foregroundColorSpans = mTextEditor.getText().getSpans( 0, mTextEditor.getText().length(), ForegroundColorSpan.class);
 		btnTextColorPicker.setBackgroundTintList( ColorStateList.valueOf(
 				foregroundColorSpans.length != 0 ? foregroundColorSpans[ foregroundColorSpans.length-1 ].getForegroundColor() : mTextEditor.getCurrentTextColor() ) );
+
 	}
 
 	TextEditor.OnSelectionChanges mOnSelectionChanges = new TextEditor.OnSelectionChanges() {
@@ -507,13 +510,15 @@ public class CreateEntry extends ThemeActivity {
 		}
 
 		@Override
-		public void onTextChanged() {
-			runOnUiThread( new Runnable() {
-				@Override
-				public void run() {
-					saveTextChange();
-				}
-			} );
+		public void onTextChanged(CharSequence text, final int start, final int lengthBefore, final int lengthAfter) {
+			if(lengthAfter > lengthBefore){
+				int len = lengthAfter - lengthBefore;
+				Editable e = mTextEditor.getText();
+				if(e == null)
+					return;
+
+				e.setSpan( new ForegroundColorSpan( mDefaultTextColor ), start, start + len - 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+			}
 		}
 	};
 
@@ -828,6 +833,7 @@ public class CreateEntry extends ThemeActivity {
 	}
 
 	private int mSelectedColor;
+	private int mDefaultTextColor = Color.BLACK;
 
 	private View.OnClickListener btnTextOnAllColor = new View.OnClickListener() {
 		@Override
@@ -844,6 +850,10 @@ public class CreateEntry extends ThemeActivity {
 							}
 							e.setSpan( new ForegroundColorSpan( mSelectedColor ), 0, mTextEditor.getText().length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 							btnTextColorPicker.setBackgroundTintList( ColorStateList.valueOf( mSelectedColor ) );
+							mTextEditor.setTextColor( mSelectedColor );
+
+							mDefaultTextColor = mSelectedColor;
+							mProperties.setDefaultTextColor( mSelectedColor );
 						}
 					} );
 			alertDialog.show();

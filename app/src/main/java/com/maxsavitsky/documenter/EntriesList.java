@@ -35,6 +35,9 @@ import com.maxsavitsky.documenter.utils.ResultCodes;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.ParseSeparate;
 
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -141,6 +144,13 @@ public class EntriesList extends ThemeActivity {
 		} );
 
 		setupRecyclerView();
+
+		try{
+			mDocument.readProperties();
+		} catch (SAXException | IOException e) {
+			e.printStackTrace();
+			Utils.getErrorDialog( e, this ).show();
+		}
 	}
 
 	@Override
@@ -351,6 +361,29 @@ public class EntriesList extends ThemeActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate( R.menu.document_menu, menu );
+		getMenuInflater().inflate( R.menu.common_menu, menu );
+
+		MenuItem item = menu.findItem(R.id.item_common_remember_pos);
+		item.setChecked( mDocument.getProperties().isSaveLastPos() );
+		item.setOnMenuItemClickListener( new MenuItem.OnMenuItemClickListener() {
+			@Override
+			public boolean onMenuItemClick(MenuItem item) {
+				boolean isChecked = !item.isChecked();
+				item.setChecked( isChecked );
+				try{
+					mDocument.applySaveLastPosState( isChecked );
+				} catch (SAXException | IOException e) {
+					e.printStackTrace();
+					runOnUiThread( new Runnable() {
+						@Override
+						public void run() {
+							Utils.getErrorDialog( e, EntriesList.this ).show();
+						}
+					} );
+				}
+				return true;
+			}
+		} );
 		return super.onCreateOptionsMenu( menu );
 	}
 

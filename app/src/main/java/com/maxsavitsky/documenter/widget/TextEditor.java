@@ -2,8 +2,6 @@ package com.maxsavitsky.documenter.widget;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.text.Spannable;
-import android.text.Spanned;
 import android.util.AttributeSet;
 
 import androidx.appcompat.widget.AppCompatEditText;
@@ -33,7 +31,7 @@ public class TextEditor extends AppCompatEditText {
 	public interface OnSelectionChanges {
 		void onTextSelected(int start, int end);
 		void onTextSelectionBreak(int newSelectionPosition);
-		void onTextChanged();
+		void onTextChanged(CharSequence text, int start, int lengthBefore, int lengthAfter);
 	}
 
 	public void setTextW(CharSequence text){
@@ -64,7 +62,7 @@ public class TextEditor extends AppCompatEditText {
 	protected void onTextChanged(CharSequence text, int start, int lengthBefore, int lengthAfter) {
 		super.onTextChanged( text, start, lengthBefore, lengthAfter );
 		if(listener != null && !mIgnoreChanges) {
-			listener.onTextChanged();
+			listener.onTextChanged( text, start, lengthBefore, lengthAfter);
 		}
 		mIgnoreChanges = false;
 	}

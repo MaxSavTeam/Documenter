@@ -145,6 +145,7 @@ public class Entry extends Type {
 				.append( "\t<scrollPosition value=\"" ).append( formatInt( mProperties.getScrollPosition() ) ).append( "\" />\n" )
 				.append( "\t<textAlignment value=\"" ).append( formatInt( mProperties.getTextAlignment() ) ).append( "\" />\n" )
 				.append( "\t<saveLastPos value=\"" ).append( Boolean.toString( mProperties.isSaveLastPos() ) ).append( "\" />\n" )
+				.append( "\t<defaultColor value=\"" ).append( formatInt( mProperties.getDefaultTextColor() ) ).append( "\" />\n" )
 				.append( "</properties>" );
 		fr.flush();
 		fr.close();
@@ -263,6 +264,16 @@ public class Entry extends Type {
 
 		private boolean mSaveLastPos = true;
 
+		private int mDefaultTextColor = Color.BLACK;
+
+		public int getDefaultTextColor() {
+			return mDefaultTextColor;
+		}
+
+		public void setDefaultTextColor(int defaultTextColor) {
+			mDefaultTextColor = defaultTextColor;
+		}
+
 		public boolean isSaveLastPos() {
 			return mSaveLastPos;
 		}
@@ -286,6 +297,7 @@ public class Entry extends Type {
 			mScrollPosition = properties.getScrollPosition();
 			mTextAlignment = properties.getTextAlignment();
 			this.mSaveLastPos = properties.isSaveLastPos();
+			this.mDefaultTextColor = properties.getDefaultTextColor();
 		}
 
 		public int getScrollPosition() {

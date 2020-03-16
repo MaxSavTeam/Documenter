@@ -269,6 +269,8 @@ public class XMLParser {
 				case "saveLastPos":
 					mEntryProperties.setSaveLastPos( Boolean.parseBoolean( attributes.getValue( "value" ) ) );
 					break;
+				case "defaultColor":
+					mEntryProperties.setDefaultTextColor( Integer.parseInt( attributes.getValue( "value" ) ) );
 			}
 		}
 	}

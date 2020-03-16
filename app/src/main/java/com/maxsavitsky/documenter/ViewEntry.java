@@ -165,7 +165,6 @@ public class ViewEntry extends ThemeActivity {
 		getMenuInflater().inflate( R.menu.common_menu, menu );
 		MenuItem item = menu.findItem(R.id.item_common_remember_pos);
 		item.setChecked( mEntry.getProperties().isSaveLastPos() );
-		Toast.makeText( this, Boolean.toString( mEntry.getProperties().isSaveLastPos() ), Toast.LENGTH_SHORT ).show();
 		item.setOnMenuItemClickListener( new MenuItem.OnMenuItemClickListener() {
 			@Override
 			public boolean onMenuItemClick(MenuItem item) {
