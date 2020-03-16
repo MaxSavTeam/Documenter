@@ -11,6 +11,7 @@ import android.preference.PreferenceManager;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CompoundButton;
+import android.widget.OverScroller;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,6 +24,8 @@ import androidx.core.content.ContextCompat;
 
 import com.maxsavitsky.documenter.utils.ApkInstaller;
 import com.maxsavitsky.documenter.utils.ResultCodes;
+import com.maxsavitsky.documenter.utils.UpdatesChecker;
+import com.maxsavitsky.documenter.utils.UpdatesDownloader;
 import com.maxsavitsky.documenter.utils.Utils;
 
 import java.io.File;
@@ -129,7 +132,7 @@ public class SettingsActivity extends ThemeActivity {
 		void installerDownloaded(File file);
 	}
 
-	ProgressDialog mCheckUpdatesDialog;
+	ProgressDialog mCheckUpdatesDialog = null;
 
 	private boolean isMemoryAccessGranted(){
 		boolean write = ContextCompat.checkSelfPermission( this, Manifest.permission.WRITE_EXTERNAL_STORAGE ) == PackageManager.PERMISSION_GRANTED;
@@ -137,124 +140,126 @@ public class SettingsActivity extends ThemeActivity {
 		return write && read;
 	}
 
+	private UpdatesChecker.CheckResults mCheckResults = new UpdatesChecker.CheckResults() {
+		@Override
+		public void noUpdates(UpdatesChecker.VersionInfo versionInfo) {
+			runOnUiThread( new Runnable() {
+				@Override
+				public void run() {
+					if(mCheckUpdatesDialog != null)
+						mCheckUpdatesDialog.dismiss();
+					Toast.makeText( SettingsActivity.this, R.string.app_is_up_to_date, Toast.LENGTH_LONG ).show();
+				}
+			} );
+		}
+
+		@Override
+		public void updateAvailable(final UpdatesChecker.VersionInfo versionInfo) {
+			runOnUiThread( new Runnable() {
+				@Override
+				public void run() {
+					if(mCheckUpdatesDialog != null)
+						mCheckUpdatesDialog.dismiss();
+					AlertDialog.Builder builder = new AlertDialog.Builder( SettingsActivity.this, SettingsActivity.super.mAlertDialogStyle );
+					builder.setTitle( R.string.update_available )
+							.setCancelable( false )
+							.setMessage( R.string.would_you_like_to_download_and_install )
+							.setPositiveButton( R.string.yes, new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									download( versionInfo.getDownloadUrl(), versionInfo );
+									dialog.cancel();
+								}
+							} )
+							.setNegativeButton( R.string.no, new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									dialog.cancel();
+								}
+							} );
+					builder.create().show();
+				}
+			} );
+		}
+
+		@Override
+		public void downloaded(File path, UpdatesChecker.VersionInfo versionInfo) {
+			ApkInstaller.installApk( SettingsActivity.this, path );
+		}
+
+		@Override
+		public void exceptionOccurred(final IOException e) {
+			runOnUiThread( new Runnable() {
+				@Override
+				public void run() {
+					runOnUiThread( new Runnable() {
+						@Override
+						public void run() {
+							if(mCheckUpdatesDialog != null)
+								mCheckUpdatesDialog.dismiss();
+							if(mDownloadPd != null)
+								mDownloadPd.dismiss();
+							Utils.getErrorDialog( e, SettingsActivity.this ).show();
+						}
+					} );
+				}
+			} );
+		}
+	};
+
 	public void checkForUpdates(View v){
 		mCheckUpdatesDialog = new ProgressDialog(this);
 		mCheckUpdatesDialog.setMessage( getResources().getString( R.string.checking_for_updates ) );
 		mCheckUpdatesDialog.setCancelable( false );
 		mCheckUpdatesDialog.show();
-		try {
-			final URL url = new URL( getResources().getString( R.string.resources_url ) + "/apk/documenter/version" );
-
-			new Thread( new Runnable() {
-				@Override
-				public void run() {
-					try {
-						final InputStream inputStream = url.openConnection().getInputStream();
-						String data = "";
-						int b = inputStream.read();
-						while(b != -1){
-							data = String.format( "%s%c", data, (char) b );
-							b = inputStream.read();
-						}
-
-						inputStream.close();
-
-						int versionCode = 0;
-						int i = 0;
-						while(data.charAt( i ) != ';'){
-							versionCode *= 10;
-							versionCode += Integer.parseInt( Character.toString( data.charAt( i ) ) );
-							i++;
-						}
-						i++;
-						String downloadUrl = "";
-						while(data.charAt( i ) != ';'){
-							downloadUrl = String.format( "%s%c", downloadUrl, data.charAt( i ) );
-							i++;
-						}
-						mCheckUpdatesDialog.cancel();
-						mCheckForUpdatesResult.checkDone( versionCode, downloadUrl );
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-			} ).start();
-		} catch (Exception malformedException ){
-			mCheckUpdatesDialog.cancel();
-			malformedException.printStackTrace();
-			Utils.getErrorDialog( malformedException, this ).show();
-		}
+		final UpdatesChecker checker = new UpdatesChecker( this, mCheckResults );
+		new Thread( new Runnable() {
+			@Override
+			public void run() {
+				checker.runCheck();
+			}
+		} ).start();
 	}
 
 	private Thread downloadThread;
-	ProgressDialog mDownloadPd;
+	ProgressDialog mDownloadPd = null;
 	String tempDownloadUrl;
+	private UpdatesChecker.VersionInfo tempVersionInfo;
 
-	private void download(final String dUrl){
+	private void download(final String dUrl, UpdatesChecker.VersionInfo versionInfo){
 		if(!mMemoryAccessGranted ){
 			if(!isMemoryAccessGranted()) {
 				tempDownloadUrl = dUrl;
+				tempVersionInfo = versionInfo;
 				requestPermissions( new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE }, 1 );
 				return;
 			}
 		}
 		mMemoryAccessGranted = false;
-		try {
-			int s = dUrl.length();
-			while ( dUrl.charAt( s - 1 ) != '/' ) {
-				s--;
-			}
-			final String name = dUrl.substring( s );
-			File file = new File( Environment.getExternalStorageDirectory().getAbsolutePath() + "/.documenter" );
-			if(!file.exists())
-				file.mkdir();
-
-			file = new File( file.getPath() + "/" + name );
-			file.createNewFile();
-
-			mDownloadPd = new ProgressDialog(SettingsActivity.this);
-			mDownloadPd.setMessage( "Downloading..." );
-			mDownloadPd.setCancelable( false );
-			mDownloadPd.setButton( ProgressDialog.BUTTON_NEGATIVE, getResources().getString( R.string.cancel ), new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(final DialogInterface dialog, int which) {
-					downloadThread.interrupt();
-					runOnUiThread( new Runnable() {
-						@Override
-						public void run() {
-							dialog.cancel();
-						}
-					} );
-				}
-			} );
-
-			final File finalFile = file;
-			mDownloadPd.show();
-			downloadThread = new Thread( new Runnable() {
-				@Override
-				public void run() {
-
-					try {
-						final InputStream in = new URL(dUrl).openStream();
-						final FileOutputStream os = new FileOutputStream( finalFile );
-						byte[] buffer = new byte[ 1024 ];
-						int count;
-						while ( ( count = in.read( buffer, 0, 1024 ) ) != -1 && !Thread.currentThread().isInterrupted() ) {
-							os.write( buffer, 0, count );
-						}
-						in.close();
-						os.close();
-						mCheckForUpdatesResult.installerDownloaded( finalFile );
-					}catch (Exception e){
-						e.printStackTrace();
+		final UpdatesDownloader downloader = new UpdatesDownloader( versionInfo, mCheckResults );
+		mDownloadPd = new ProgressDialog(SettingsActivity.this);
+		mDownloadPd.setMessage( "Downloading..." );
+		mDownloadPd.setCancelable( false );
+		mDownloadPd.setButton( ProgressDialog.BUTTON_NEGATIVE, getResources().getString( R.string.cancel ), new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(final DialogInterface dialog, int which) {
+				downloadThread.interrupt();
+				runOnUiThread( new Runnable() {
+					@Override
+					public void run() {
+						dialog.cancel();
 					}
-				}
-			} );
-			downloadThread.start();
-		}catch (IOException e){
-			e.printStackTrace();
-			Utils.getErrorDialog( e, this ).show();
-		}
+				} );
+			}
+		} );
+		mDownloadPd.show();
+		downloadThread = new Thread( new Runnable() {
+			@Override
+			public void run() {
+				downloader.download();
+			}
+		} );
+		downloadThread.start();
 	}
 
 	private void install(File file){
@@ -265,38 +270,7 @@ public class SettingsActivity extends ThemeActivity {
 	private ICheckForUpdatesResult mCheckForUpdatesResult = new ICheckForUpdatesResult() {
 		@Override
 		public void checkDone(int versionCode, final String downloadUrl) {
-			if(versionCode > BuildConfig.VERSION_CODE) {
-				runOnUiThread( new Runnable() {
-					@Override
-					public void run() {
-						AlertDialog.Builder builder = new AlertDialog.Builder( SettingsActivity.this, SettingsActivity.super.mAlertDialogStyle );
-						builder.setTitle( R.string.update_available )
-								.setCancelable( false )
-								.setMessage( R.string.would_you_like_to_download_and_install )
-								.setPositiveButton( R.string.yes, new DialogInterface.OnClickListener() {
-									@Override
-									public void onClick(DialogInterface dialog, int which) {
-										download( downloadUrl );
-										dialog.cancel();
-									}
-								} )
-								.setNegativeButton( R.string.no, new DialogInterface.OnClickListener() {
-									@Override
-									public void onClick(DialogInterface dialog, int which) {
-										dialog.cancel();
-									}
-								} );
-						builder.create().show();
-					}
-				} );
-			}else{
-				runOnUiThread( new Runnable() {
-					@Override
-					public void run() {
-						Toast.makeText( SettingsActivity.this, R.string.app_is_up_to_date, Toast.LENGTH_LONG ).show();
-					}
-				} );
-			}
+
 		}
 
 		@Override
@@ -487,8 +461,9 @@ public class SettingsActivity extends ThemeActivity {
 		if(requestCode == 1){
 			if ( grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED && grantResults[ 1 ] == PackageManager.PERMISSION_GRANTED ){
 				mMemoryAccessGranted = true;
-				download( tempDownloadUrl );
+				download( tempDownloadUrl, tempVersionInfo );
 				tempDownloadUrl = null;
+				tempVersionInfo = null;
 			}else{
 				Toast.makeText( this, "Permission denied", Toast.LENGTH_SHORT ).show();
 			}
