@@ -17,12 +17,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
+        android:name=".MyApplication"
         tools:targetApi="n">
         <activity android:name=".ThemeActivity" />
         <activity android:name=".SettingsActivity" />
-        <activity
-            android:name=".ErrorHandlerActivity"
-            android:process=":report_process" />
+        <activity android:name=".ErrorHandlerActivity" />
         <activity
             android:name=".CreateEntry"
             android:label="@string/title_activity_create_entry"

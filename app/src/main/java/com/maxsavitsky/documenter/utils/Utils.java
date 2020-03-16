@@ -238,9 +238,9 @@ public class Utils {
 	@SuppressLint("DefaultLocale")
 	public static String getStackTrace(StackTraceElement[] stackTraceElements){
 		String msg = "";
-
-		for(int i = 0; i < Math.min( 5, stackTraceElements.length ); i++){
-			msg = String.format( "%s%d. %s<br>", msg, 5 - i, stackTraceElements[i]);
+		int limit = Math.min( 10, stackTraceElements.length );
+		for(int i = 0; i < limit; i++){
+			msg = String.format( "%s%d. %s<br>", msg, limit - i, stackTraceElements[i]);
 		}
 
 		return msg;

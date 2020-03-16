@@ -1,16 +1,21 @@
 package com.maxsavitsky.documenter.data.types;
 
+import android.graphics.Color;
 import android.text.Html;
 import android.text.Layout;
 import android.text.Spannable;
 import android.view.Gravity;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.maxsavitsky.documenter.data.Info;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.ParseSeparate;
+import com.maxsavitsky.documenter.xml.XMLParser;
+
+import org.xml.sax.SAXException;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -27,14 +32,14 @@ public class Entry extends Type {
 
 	private String id, name, pathDir;
 	private Info mInfo;
-	private EntryProperty mProperty;
+	private Properties mProperties;
 
-	public EntryProperty getProperty() {
-		return mProperty;
+	public Properties getProperties() {
+		return mProperties;
 	}
 
-	public void setProperty(EntryProperty property) {
-		mProperty = property;
+	public void setProperties(Properties properties) {
+		mProperties = properties;
 	}
 
 	public Entry(String id, String name) {
@@ -90,7 +95,7 @@ public class Entry extends Type {
 		return pathDir;
 	}
 
-	public void saveText(Spannable text, EntryProperty property) throws Exception {
+	public void saveText(Spannable text, Properties properties) throws Exception {
 		//text = text.replaceAll( "\n", "<br>" );
 		File file = new File( pathDir + "text.html" );
 		if(!file.exists())
@@ -98,18 +103,18 @@ public class Entry extends Type {
 		FileWriter fr = new FileWriter( file );
 		fr.write( Utils.htmlHeader );
 		String alignment;
-		if(property.getTextAlignment() == Gravity.START ){
+		if( properties.getTextAlignment() == Gravity.START ){
 			alignment = "left";
-		}else if(property.getTextAlignment() == Gravity.CENTER_HORIZONTAL){
+		}else if( properties.getTextAlignment() == Gravity.CENTER_HORIZONTAL){
 			alignment = "center";
-		}else if(property.getTextAlignment() == Layout.JUSTIFICATION_MODE_INTER_WORD ){
+		}else if( properties.getTextAlignment() == Layout.JUSTIFICATION_MODE_INTER_WORD ){
 			alignment = "justify";
 		}else{
 			alignment = "right";
 		}
 		String htmlText = Html.toHtml( text );
 		fr.append( "<html>\n" )
-				.append( "\t<body bgcolor=\"" ).append( "#" ).append( Integer.toHexString( property.getBgColor() ).substring( 2 ) ).append( "\" " )
+				.append( "\t<body bgcolor=\"" ).append( "#" ).append( Integer.toHexString( properties.getBgColor() ).substring( 2 ) ).append( "\" " )
 				.append( "align=\"" ).append( alignment ).append( "\">\n" )
 				.append( htmlText )
 				.append( "\n\t</body>" )
@@ -122,24 +127,45 @@ public class Entry extends Type {
 		fr.close();
 	}
 
-	public void saveProperties(EntryProperty entryProperty) throws Exception {
-		File file = new File( getPathDir() + "properties.xml" );
+	private String formatInt(int x){
+		return String.format( Locale.ROOT, "%d", x );
+	}
+
+	public void saveProperties() throws IOException {
+		File file = new File( Utils.getExternalStoragePath().getPath() + "/entries/" + id + "/properties.xml" );
 		if ( !file.exists() ) {
 			file.createNewFile();
 		}
-		FileWriter fr = null;
-		fr = new FileWriter( file, false );
-		fr.write( Utils.xmlHeader );
+		FileWriter fr = new FileWriter( file );
+		fr.write( Utils.xmlHeader);
 		fr.append( "<properties>\n" )
-				.append( "\t<textSize value=\"" ).append( String.format( Locale.ROOT, "%d", entryProperty.textSize ) ).append( "\" />\n" )
-				.append( "\t<bgColor value=\"" ).append( String.format( Locale.ROOT, "%d", entryProperty.getBgColor() ) ).append( "\" />\n" )
-				.append( "\t<textColor value=\"" ).append( String.format( Locale.ROOT, "%d", entryProperty.getTextColor() ) ).append( "\" />\n" )
-				.append( "\t<scrollPosition value=\"" ).append( String.format( Locale.ROOT, "%d", entryProperty.getScrollPosition() ) ).append( "\" />\n" )
-				.append( "\t<textAlignment value=\"" ).append( String.format( Locale.ROOT, "%d", entryProperty.getTextAlignment() ) ).append( "\" />\n" )
+				.append("\t<textSize value=\"" ).append( formatInt( mProperties.textSize ) ).append( "\" />\n" )
+				.append( "\t<bgColor value=\"" ).append( formatInt( mProperties.getBgColor() ) ).append( "\" />\n" )
+				.append( "\t<textColor value=\"" ).append( formatInt( mProperties.getTextColor() ) ).append( "\" />\n" )
+				.append( "\t<scrollPosition value=\"" ).append( formatInt( mProperties.getScrollPosition() ) ).append( "\" />\n" )
+				.append( "\t<textAlignment value=\"" ).append( formatInt( mProperties.getTextAlignment() ) ).append( "\" />\n" )
+				.append( "\t<saveLastPos value=\"" ).append( Boolean.toString( mProperties.isSaveLastPos() ) ).append( "\" />\n" )
 				.append( "</properties>" );
-
 		fr.flush();
 		fr.close();
+	}
+
+	public Entry.Properties readProperties() throws IOException {
+		this.mProperties = new XMLParser().parseEntryProperties( id );
+		return mProperties;
+	}
+
+	public void saveProperties(Properties properties) throws IOException{
+		mProperties = new Properties( properties );
+		saveProperties();
+	}
+
+	public void applySaveLastPos(boolean state) throws IOException {
+		if( mProperties == null){
+			mProperties = new XMLParser().parseEntryProperties( id );
+		}
+		mProperties.setSaveLastPos( state );
+		saveProperties();
 	}
 
 	public ArrayList<String> loadTextLines() throws IOException{
@@ -223,5 +249,128 @@ public class Entry extends Type {
 	@Override
 	public String toString() {
 		return "id=\"" + getId() + "\" name=\"" + getName() + "\"";
+	}
+
+	public static class Properties {
+		public int textSize;
+		private int bgColor = Color.WHITE;
+
+		private int textColor = Color.BLACK;
+
+		private int mScrollPosition = 0;
+
+		private int mTextAlignment = Gravity.START;
+
+		private boolean mSaveLastPos = true;
+
+		public boolean isSaveLastPos() {
+			return mSaveLastPos;
+		}
+
+		public void setSaveLastPos(boolean saveLastPos) {
+			Properties.this.mSaveLastPos = saveLastPos;
+		}
+
+		public int getTextAlignment() {
+			return mTextAlignment;
+		}
+
+		public void setTextAlignment(int textAlignment) {
+			mTextAlignment = textAlignment;
+		}
+
+		public Properties(Properties properties) {
+			this.textSize = properties.getTextSize();
+			this.bgColor = properties.getBgColor();
+			this.textColor = properties.getTextColor();
+			mScrollPosition = properties.getScrollPosition();
+			mTextAlignment = properties.getTextAlignment();
+			this.mSaveLastPos = properties.isSaveLastPos();
+		}
+
+		public int getScrollPosition() {
+			return mScrollPosition;
+		}
+
+		public void setScrollPosition(int scrollPosition) {
+			this.mScrollPosition = scrollPosition;
+		}
+
+		public int getTextColor() {
+			return textColor;
+		}
+
+		public void setTextColor(int textColor) {
+			this.textColor = textColor;
+		}
+
+		public int getBgColor() {
+			return bgColor;
+		}
+
+		public void setBgColor(int bgColor) {
+			this.bgColor = bgColor;
+		}
+
+		public Properties() {
+			this.textSize = 22;
+		}
+
+		public int getTextSize() {
+			return textSize;
+		}
+
+		public void setTextSize(int textSize) {
+			this.textSize = textSize;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if ( this == o ) {
+				return true;
+			}
+			if ( o == null || getClass() != o.getClass() ) {
+				return false;
+			}
+
+			Properties that = (Properties) o;
+
+			if ( textSize != that.textSize ) {
+				return false;
+			}
+			if ( bgColor != that.bgColor ) {
+				return false;
+			}
+			if ( textColor != that.textColor ) {
+				return false;
+			}
+			if ( mScrollPosition != that.mScrollPosition ) {
+				return false;
+			}
+			if ( mTextAlignment != that.mTextAlignment ) {
+				return false;
+			}
+			return mSaveLastPos == that.mSaveLastPos;
+		}
+
+		@Override
+		public int hashCode() {
+			int result = textSize;
+			result = 31 * result + bgColor;
+			result = 31 * result + textColor;
+			result = 31 * result + mScrollPosition;
+			result = 31 * result + mTextAlignment;
+			result = 31 * result + ( mSaveLastPos ? 1 : 0 );
+			return result;
+		}
+
+		@NonNull
+		@Override
+		public String toString() {
+			return bgColor + "\n" +
+					textColor + "\n" +
+					textSize + "\n" +
+					mScrollPosition;
+		}
 	}
 }

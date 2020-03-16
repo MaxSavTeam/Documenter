@@ -49,6 +49,14 @@
         android:id="@+id/btnGetRamInfo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/mainActivityButtonsMargin"
         android:onClick="getUsedMemory"
         android:text="get ram info" />
+
+    <Button
+        android:id="@+id/btnClearAllBugReports"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="clearAllTraces"
+        android:text="clear all bug reports" />
 </LinearLayout>

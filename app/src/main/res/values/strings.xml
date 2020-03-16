@@ -74,4 +74,6 @@
     <string name="check_for_updates">Check for updates</string>
     <string name="app_is_up_to_date">App is up to date</string>
     <string name="font">Font</string>
+    <string name="remember_last_pos">Remember last position</string>
+    <string name="parameters">Parameters</string>
 </resources>

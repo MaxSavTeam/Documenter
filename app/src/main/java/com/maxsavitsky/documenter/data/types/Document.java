@@ -1,11 +1,14 @@
 package com.maxsavitsky.documenter.data.types;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.maxsavitsky.documenter.data.Info;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.ParseSeparate;
+import com.maxsavitsky.documenter.xml.XMLParser;
 
 import org.jetbrains.annotations.NotNull;
 import org.xml.sax.Attributes;
@@ -17,14 +20,16 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 public class Document extends Type implements Comparable{
 	private String id, name;
 	private String pathDir;
+	private Properties mProperties;
 
-	private ArrayList<Entry> mEntries = new ArrayList<>();
+	private ArrayList<Entry> mEntries = null;
 	private Info mInfo = new Info();
 
 	public Document(String id, String name){
@@ -69,13 +74,33 @@ public class Document extends Type implements Comparable{
 		FileWriter fr = new FileWriter( file, false );
 		fr.write( Utils.xmlHeader );
 		fr.append( "<info>\n" );
-		fr.append( "<timestamp value=\"" + Integer.toString( info.getTimeStamp() ) + "\" />" );
+		fr.append( "\t<timestamp value=\"" + Integer.toString( info.getTimeStamp() ) + "\" />" );
 		fr.append( "</info>" );
 		fr.flush();
 		fr.close();
 	}
 
+	public void applySaveLastPosState(boolean state) throws IOException, SAXException {
+		for(Entry entry : getEntries()){
+			entry.applySaveLastPos( state );
+		}
+
+		if(mProperties == null) {
+			mProperties = new XMLParser().parseDocumentProperties( id );
+		}
+		mProperties.setSaveLastPos( state );
+		saveProperties();
+	}
+
 	public ArrayList<Entry> getEntries() {
+		if(mEntries == null){
+			try {
+				mEntries = ParseSeparate.parseDocumentWithId( getId() );
+			} catch (ParserConfigurationException | SAXException | IOException e) {
+				e.printStackTrace();
+				Log.e( "Document " + getId(), e.toString() );
+			}
+		}
 		return mEntries;
 	}
 
@@ -83,15 +108,6 @@ public class Document extends Type implements Comparable{
 		mEntries = ParseSeparate.parseDocumentWithId( id );
 		mEntries.add(entry);
 		Utils.saveDocumentEntries( id, mEntries );
-		/*FileWriter fr = new FileWriter( pathDir + "/" + id + ".xml" );
-		fr.write( Utils.xmlHeader );
-		fr.append( "<entries>\n" );
-		for(Entry entry1 : mEntries){
-			fr.append( "<entry id=\"" + entry1.getId() + "\" />\n" );
-		}
-		fr.append( "</entries>" );
-		fr.flush();
-		fr.close();*/
 	}
 
 	public void removeEntry(Entry entry) throws Exception{
@@ -173,5 +189,42 @@ public class Document extends Type implements Comparable{
 	@Override
 	public String toString() {
 		return "id=\"" + this.id + "\" name=\"" + this.name + "\"";
+	}
+
+	public Properties readProperties() throws IOException, SAXException {
+		this.mProperties = new XMLParser().parseDocumentProperties( id );
+		return mProperties;
+	}
+
+	public Properties getProperties() {
+		return mProperties;
+	}
+
+	public void saveProperties() throws IOException {
+		File file = new File(Utils.getExternalStoragePath().getPath() + "/documents/" + id + "/properties.xml");
+		if(!file.exists())
+			file.createNewFile();
+
+		FileWriter fw = new FileWriter(file);
+		fw.write( Utils.xmlHeader );
+		fw.append( "<properties>\n" )
+				.append( "\t<saveLastPos value=\"" ).append( Boolean.toString( mProperties.isSaveLastPos() ) ).append( "\" /> \n" )
+				.append( "</properties>" );
+		fw.flush();
+		fw.close();
+	}
+
+	public static class Properties{
+		private boolean mSaveLastPos = true;
+
+		public Properties() {}
+
+		public boolean isSaveLastPos() {
+			return mSaveLastPos;
+		}
+
+		public void setSaveLastPos(boolean saveLastPos) {
+			mSaveLastPos = saveLastPos;
+		}
 	}
 }

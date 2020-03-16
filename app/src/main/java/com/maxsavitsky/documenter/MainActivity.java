@@ -1,19 +1,29 @@
 package com.maxsavitsky.documenter;
 
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.PersistableBundle;
+import android.os.StrictMode;
+import android.text.Html;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 
 import com.maxsavitsky.documenter.data.MainData;
@@ -22,6 +32,7 @@ import com.maxsavitsky.documenter.utils.ResultCodes;
 import com.maxsavitsky.documenter.utils.Utils;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -31,17 +42,17 @@ import java.util.Date;
 import java.util.Locale;
 
 public class MainActivity extends ThemeActivity {
+	private Thread.UncaughtExceptionHandler defaultHandler;
+	private File mStackTraceFile;
+	private boolean isAfterCrash = false;
+	private String path;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		Thread.setDefaultUncaughtExceptionHandler( new Thread.UncaughtExceptionHandler() {
-			@Override
-			public void uncaughtException(@NonNull Thread t, @NonNull Throwable e) {
-				MainActivity.this.uncaughtException( t, e );
-			}
-		} );
+		defaultHandler = Thread.getDefaultUncaughtExceptionHandler();
+		Thread.setDefaultUncaughtExceptionHandler( new MyExceptionHandler( this ) );
 		try {
 			Toolbar toolbar = findViewById( R.id.toolbar );
 			setSupportActionBar( toolbar );
@@ -53,13 +64,113 @@ public class MainActivity extends ThemeActivity {
 
 		deleteInstalledApks();
 
-		try {
-			initialize();
-		}catch (Exception e){
-			Utils.getErrorDialog( e, this ).show();
-			return;
+		Intent startIntent = getIntent();
+		if(startIntent.getBooleanExtra( "crash", false )){
+			path = startIntent.getStringExtra( "path" );
+			setContentView( R.layout.activity_errhandler );
+			getSupportActionBar().setTitle( "Documenter bug report" );
+			preparationAfterCrash();
+		}else{
+			try {
+				initialize();
+			}catch (Exception e){
+				Utils.getErrorDialog( e, this ).show();
+				return;
+			}
+			viewCategoryList( null );
 		}
-		viewCategoryList( null );
+
+	}
+
+	private void preparationAfterCrash(){
+		findViewById( R.id.btnErrSendReport ).setOnClickListener( new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				sendLog();
+			}
+		} );
+		findViewById( R.id.btnErrViewReport ).setOnClickListener( new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				FileReader fr = null;
+				String mes = "";
+				try{
+					fr  = new FileReader( new File(path) );
+					while(fr.ready()){
+						mes = String.format( "%s%c", mes, (char) fr.read() );
+					}
+					fr.close();
+				}catch (Exception e){
+					try {
+						if(fr != null)
+							fr.close();
+					}catch (IOException io){
+						//ignore
+					}
+					return;
+				}
+				AlertDialog.Builder builder = new AlertDialog.Builder( MainActivity.this )
+						.setCancelable( false )
+						.setNeutralButton( "OK", new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								dialog.cancel();
+							}
+						} ).setMessage( mes );
+				builder.create().show();
+			}
+		} );
+
+		findViewById( R.id.btnErrRestartApp ).setOnClickListener( new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				restartApp();
+			}
+		} );
+		AlertDialog.Builder builder = new AlertDialog.Builder( this )
+				.setTitle( R.string.please )
+				.setMessage( Html.fromHtml( getResources().getString( R.string.send_report_dialog_mes ) ) )
+				.setCancelable( false ).setPositiveButton( "OK", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.cancel();
+						sendLog();
+					}
+				} );
+
+		builder.create().show();
+	}
+
+	private void sendLog() {
+		Intent newIntent = new Intent( Intent.ACTION_SEND );
+		newIntent.setType( "message/rfc822" );
+		newIntent.putExtra( Intent.EXTRA_EMAIL, new String[]{ "maxsavhelp@gmail.com" } );
+		newIntent.putExtra( Intent.EXTRA_SUBJECT, "Error in documenter" );
+		newIntent.putExtra( Intent.EXTRA_STREAM, Uri.parse( "file://" + path ) );
+		newIntent.putExtra( Intent.EXTRA_TEXT, "Log file attached." );
+		StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+		StrictMode.setVmPolicy( builder.build() );
+		try {
+			//startActivity( Intent.createChooser( newIntent, "Choose" ) );
+			startActivity( newIntent );
+		} catch (Exception e) {
+			Utils.getErrorDialog( e, this ).show();
+			e.printStackTrace();
+		}
+	}
+
+	public void clearAllTraces(View v){
+		File file = new File( Utils.getExternalStoragePath().getPath() + "/stacktraces/" );
+		if(file.exists()){
+			int count = 0;
+			File[] files = file.listFiles();
+			for(File subFile : files){
+				subFile.delete();
+				count++;
+			}
+			file.delete();
+			Toast.makeText( this, "Deleted " + count + " files", Toast.LENGTH_SHORT ).show();
+		}
 	}
 
 	private void deleteInstalledApks(){
@@ -122,76 +233,7 @@ public class MainActivity extends ThemeActivity {
 	}
 
 	public void makeError(View v){
-		int x = 0;
-		BigDecimal ans = BigDecimal.ONE.divide( BigDecimal.valueOf( 3 ) );
-	}
-
-	public void uncaughtException(@NonNull Thread t, @NonNull final Throwable e) {
-		e.printStackTrace();
-		PackageInfo mPackageInfo = null;
-		try {
-			mPackageInfo = getPackageManager().getPackageInfo( getPackageName(), 0 );
-		} catch (PackageManager.NameNotFoundException ex) {
-			ex.printStackTrace();
-		}
-
-		File file = new File( Utils.getExternalStoragePath().getPath() + "/stacktraces/" );
-		if(!file.exists())
-			file.mkdir();
-		Date date = new Date( System.currentTimeMillis() );
-		SimpleDateFormat simpleDateFormat = new SimpleDateFormat( "dd.MM.yyyy HH:mm:ss", Locale.ROOT );
-		SimpleDateFormat fileFormatter = new SimpleDateFormat( "dd-MM-yyyy_HH:mm:ss", Locale.ROOT );
-		String formattedDate = fileFormatter.format( date );
-		file = new File( file.getPath() + "/stacktrace-" + formattedDate + ".trace" );
-
-		try {
-			file.createNewFile();
-		}catch (IOException ignored){
-		}
-		StringBuilder report = new StringBuilder(  );
-		report.append( "Time: " ).append( simpleDateFormat.format( date ) ).append( "\n" )
-				.append( "Thread name: " ).append( t.getName() ).append( "\n" )
-				.append( "Thread id: " ).append( t.getId() ).append( "\n" )
-				.append( "Thread state: " ).append( t.getState() ).append( "\n" )
-				.append( "Manufacturer: " ).append( Build.MANUFACTURER ).append( "\n" )
-				.append( "Model: " ).append( Build.MODEL ).append( "\n" )
-				.append( "Brand: " ).append( Build.BRAND ).append( "\n" )
-				.append( "Android Version: " ).append( Build.VERSION.RELEASE ).append( "\n" )
-				.append( "Android SDK: " ).append( Build.VERSION.SDK_INT ).append( "\n" )
-				.append( "Version name: " ).append( mPackageInfo.versionName ).append( "\n" )
-				.append( "Version code: " ).append( mPackageInfo.versionCode ).append( "\n" );
-		printStackTrace( e, report );
-		report.append( "Caused by:\n" );
-		for(StackTraceElement element : e.getCause().getStackTrace()){
-			report.append( "\tat " ).append( element.toString() ).append( "\n" );
-		}
-		try {
-			FileWriter fr = new FileWriter( file, false );
-			fr.write( report.toString() );
-			fr.flush();;
-			fr.close();
-		}catch (Exception ignored){
-		}
-		AlarmManager alarmManager = (AlarmManager) getSystemService( Context.ALARM_SERVICE );
-		Intent intent = new Intent( this, ErrorHandlerActivity.class )
-				.addFlags( Intent.FLAG_ACTIVITY_NEW_TASK )
-				.putExtra( "path", file.getAbsolutePath() );
-		PendingIntent pendingIntent = PendingIntent.getActivity( this, 0, intent, PendingIntent.FLAG_ONE_SHOT );
-		alarmManager.set( AlarmManager.RTC, System.currentTimeMillis() + 100, pendingIntent );
-		finish();
-	}
-
-	private void printStackTrace(Throwable t, StringBuilder builder){
-		if(t == null)
-			return;
-		StackTraceElement[] stackTraceElements = t.getStackTrace();
-		builder
-				.append( "Exception: " ).append( t.getClass().getName() ).append( "\n" )
-				.append( "Message: " ).append( t.getMessage() ).append( "\n" )
-				.append( "Stacktrace:\n" );
-		for(StackTraceElement stackTraceElement : stackTraceElements){
-			builder.append( "\t" ).append( stackTraceElement.toString() ).append( "\n" );
-		}
+		throw new NullPointerException( "Test exception" );
 	}
 
 	private void restartApp() {

@@ -3,7 +3,6 @@ package com.maxsavitsky.documenter.xml;
 import com.maxsavitsky.documenter.data.types.Category;
 import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.data.types.Entry;
-import com.maxsavitsky.documenter.data.types.EntryProperty;
 import com.maxsavitsky.documenter.data.Info;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.utils.Utils;
@@ -81,6 +80,27 @@ public class XMLParser {
 		}
 	}
 
+	private Category.Properties mCategoryProperties = new Category.Properties();
+
+	public Category.Properties parseCategoryProperties(String id) throws IOException, SAXException {
+		File path = new File( Utils.getExternalStoragePath().getPath() + "/categories/" + id + "/properties.xml" );
+		if(!path.exists()){
+			return new Category.Properties();
+		}
+		mSAXParser.parse( path, new CategoryPropertyHandler() );
+
+		return mCategoryProperties;
+	}
+
+	private class CategoryPropertyHandler extends DefaultHandler{
+		@Override
+		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+			if(qName.equals( "saveLastPos" )){
+				mCategoryProperties.setSaveLastPos( Boolean.parseBoolean( attributes.getValue( "value" ) ) );
+			}
+		}
+	}
+
 	public ArrayList<Category> parseCategoriesInWhichIncludedDocumentWithId(String id) throws Exception {
 		File path = new File(Utils.getExternalStoragePath().getPath() + "/documents/" + id + "/included_in.xml");
 		XMLCategoriesWithDocumentHandler handler = new XMLCategoriesWithDocumentHandler();
@@ -142,13 +162,34 @@ public class XMLParser {
 		return mDocuments;
 	}
 
-	class XMLDocumentsHandler extends DefaultHandler{
+	private class XMLDocumentsHandler extends DefaultHandler{
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 			if(qName.equals("document")){
 				String id = attributes.getValue("id");
 				String name = attributes.getValue("name");
 				mDocuments.add(new Document(id, name));
+			}
+		}
+	}
+
+	private Document.Properties mDocumentProperties = new Document.Properties();
+
+	public Document.Properties parseDocumentProperties(String id) throws IOException, SAXException {
+		File file = new File( Utils.getExternalStoragePath().getPath() + "/entries/" + id + "/properties.xml" );
+		if(!file.exists())
+			return new Document.Properties();
+
+		mSAXParser.parse( file, new DocumentPropertiesHandler() );
+
+		return mDocumentProperties;
+	}
+
+	private class DocumentPropertiesHandler extends DefaultHandler{
+		@Override
+		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+			if(qName.equals( "saveLastPos" )){
+				mDocumentProperties.setSaveLastPos( Boolean.parseBoolean( attributes.getValue("value") ) );
 			}
 		}
 	}
@@ -193,12 +234,17 @@ public class XMLParser {
 		}
 	}
 
-	private EntryProperty mEntryProperty = new EntryProperty();
+	private Entry.Properties mEntryProperties = new Entry.Properties();
 
-	public EntryProperty parseEntryProperties(String entryId) throws IOException, SAXException {
+	public Entry.Properties parseEntryProperties(String entryId) throws IOException {
 		File file = new File( MainData.getEntryWithId( entryId ).getPathDir() + "properties.xml" );
-		mSAXParser.parse( file, new PropertyHandler() );
-		return mEntryProperty;
+		try {
+			mSAXParser.parse( file, new PropertyHandler() );
+		}catch (SAXException e){
+			e.printStackTrace();
+			return new Entry.Properties();
+		}
+		return mEntryProperties;
 	}
 
 	class PropertyHandler extends DefaultHandler{
@@ -206,19 +252,22 @@ public class XMLParser {
 		public void startElement(String uri, String localName, String qName, Attributes attributes) {
 			switch ( qName ) {
 				case "textSize":
-					mEntryProperty.setTextSize( Integer.parseInt( attributes.getValue( "value" ) ) );
+					mEntryProperties.setTextSize( Integer.parseInt( attributes.getValue( "value" ) ) );
 					break;
 				case "bgColor":
-					mEntryProperty.setBgColor( Integer.parseInt( attributes.getValue( "value" ) ) );
+					mEntryProperties.setBgColor( Integer.parseInt( attributes.getValue( "value" ) ) );
 					break;
 				case "textColor":
-					mEntryProperty.setTextColor( Integer.parseInt( attributes.getValue( "value" ) ) );
+					mEntryProperties.setTextColor( Integer.parseInt( attributes.getValue( "value" ) ) );
 					break;
 				case "scrollPosition":
-					mEntryProperty.setScrollPosition( Integer.parseInt( attributes.getValue( "value" ) ) );
+					mEntryProperties.setScrollPosition( Integer.parseInt( attributes.getValue( "value" ) ) );
 					break;
 				case "textAlignment":
-					mEntryProperty.setTextAlignment( Integer.parseInt( attributes.getValue( "value" ) ) );
+					mEntryProperties.setTextAlignment( Integer.parseInt( attributes.getValue( "value" ) ) );
+					break;
+				case "saveLastPos":
+					mEntryProperties.setSaveLastPos( Boolean.parseBoolean( attributes.getValue( "value" ) ) );
 					break;
 			}
 		}

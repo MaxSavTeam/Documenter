@@ -35,6 +35,9 @@ import com.maxsavitsky.documenter.utils.ResultCodes;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.ParseSeparate;
 
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -44,14 +47,12 @@ import java.util.Map;
 public class DocumentList extends ThemeActivity {
 	private ArrayList<Document> mDocuments;
 	private Category mCategory;
-	private View decorView;
 	private SharedPreferences sp;
 	private Map<String, Document> mDocumentMap = new HashMap<>(  );
 	private Map<String, Document> documentsToInclude = new HashMap<>();
 	private ArrayList<String> documentsWhichWillBeExcluded = new ArrayList<>();
 	private int mSortOrder = 1; // 1 - по возрастанию; -1 -
 	private String[] orders = {"Descending order",  "", "Ascending order" };
-	private Menu mMenu;
 
 	private void applyTheme(){
 		ActionBar actionBar = getSupportActionBar();
@@ -341,7 +342,28 @@ public class DocumentList extends ThemeActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.category_menu, menu);
-		mMenu = menu;
+		getMenuInflater().inflate(R.menu.common_menu, menu);
+		MenuItem m = menu.findItem( R.id.item_common_remember_pos );
+		m.setChecked( mCategory.getProperties().isSaveLastPos() );
+		m.setOnMenuItemClickListener( new MenuItem.OnMenuItemClickListener() {
+			@Override
+			public boolean onMenuItemClick(MenuItem item) {
+				boolean isChecked = !item.isChecked();
+				item.setChecked( isChecked );
+				try {
+					mCategory.applySaveLastPos( isChecked );
+				} catch (final IOException | SAXException e) {
+					e.printStackTrace();
+					runOnUiThread( new Runnable() {
+						@Override
+						public void run() {
+							Utils.getErrorDialog( e, DocumentList.this ).show();
+						}
+					} );
+				}
+				return true;
+			}
+		} );
 		return super.onCreateOptionsMenu(menu);
 	}
 
@@ -374,6 +396,13 @@ public class DocumentList extends ThemeActivity {
 				startActivityForResult(new Intent(DocumentList.this, CreateDocument.class).putExtra("parent_id", mCategory.getId()), RequestCodes.CREATE_DOCUMENT );
 			}
 		});
+
+		try {
+			mCategory.readProperties();
+		} catch (IOException | SAXException e) {
+			e.printStackTrace();
+			Utils.getErrorDialog( e, this ).show();
+		}
 	}
 
 	@Override

@@ -1,24 +1,34 @@
 package com.maxsavitsky.documenter.data.types;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.maxsavitsky.documenter.data.Info;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.ParseSeparate;
+import com.maxsavitsky.documenter.xml.XMLParser;
+
+import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import javax.xml.parsers.ParserConfigurationException;
+
 public class Category extends Type {
 	private String mId;
 	private String mName;
+	private Properties mProperties;
 
-	private ArrayList<Document> mDocuments = new ArrayList<>();
+	private ArrayList<Document> mDocuments = null;
 
 	private Info mInfo = new Info();
+
+	protected Category(){}
 
 	public Info getInfo() {
 		return mInfo;
@@ -53,6 +63,14 @@ public class Category extends Type {
 	}
 
 	public ArrayList<Document> getDocuments() {
+		if(mDocuments == null){
+			try {
+				mDocuments = ParseSeparate.parseCategoryWithId( getId() );
+			} catch (ParserConfigurationException | SAXException | IOException e) {
+				e.printStackTrace();
+				Log.v("Category " + getId(), e.toString());
+			}
+		}
 		return mDocuments;
 	}
 
@@ -106,5 +124,50 @@ public class Category extends Type {
 	@Override
 	public String toString() {
 		return "id=\"" + getId() + "\" name=\"" + getName() + "\"";
+	}
+
+	public Properties readProperties() throws IOException, SAXException {
+		this.mProperties = new XMLParser().parseCategoryProperties( getId() );
+		return this.mProperties;
+	}
+
+	public Properties getProperties() {
+		return mProperties;
+	}
+
+	public void applySaveLastPos(boolean state) throws IOException, SAXException {
+		mProperties.setSaveLastPos( state );
+		saveProperties();
+		for(Document document : getDocuments()){
+			document.applySaveLastPosState( state );
+		}
+	}
+
+	public void saveProperties() throws IOException {
+		File path = new File( Utils.getExternalStoragePath().getPath() + "/categories/" + getId() + "/properties.xml" );
+		if(!path.exists())
+			path.createNewFile();
+		FileWriter fw = new FileWriter( path );
+		fw.write( Utils.xmlHeader );
+		fw.append( "<properties>\n" );
+		fw.append( "\t<saveLastPos value=\"" ).append( Boolean.toString( this.mProperties.isSaveLastPos() ) ).append( "\" />\n" );
+		fw.append( "</properties>" );
+		fw.flush();
+		fw.close();
+	}
+
+	public static class Properties{
+		private boolean mSaveLastPos = true;
+
+		public Properties() {
+		}
+
+		public boolean isSaveLastPos() {
+			return mSaveLastPos;
+		}
+
+		public void setSaveLastPos(boolean saveLastPos) {
+			mSaveLastPos = saveLastPos;
+		}
 	}
 }

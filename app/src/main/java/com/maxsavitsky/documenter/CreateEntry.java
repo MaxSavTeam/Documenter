@@ -8,7 +8,6 @@ import android.content.pm.ActivityInfo;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -50,7 +49,6 @@ import com.maxsavitsky.documenter.data.Info;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.data.types.Entry;
-import com.maxsavitsky.documenter.data.types.EntryProperty;
 import com.maxsavitsky.documenter.utils.ResultCodes;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.widget.TextEditor;
@@ -67,7 +65,7 @@ public class CreateEntry extends ThemeActivity {
 	private String type;
 	private Entry mEntry;
 	private String title = "Create new entry";
-	private EntryProperty mEntryProperty;
+	private Entry.Properties mProperties;
 	private TextEditor mTextEditor;
 	private Button btnBgColorPicker, btnTextColorPicker;
 	private ImageButton btnBold, btnItalic, btnUnderline, btnStrike;
@@ -191,7 +189,7 @@ public class CreateEntry extends ThemeActivity {
 		String t = mTextEditor.getText().toString();
 		if ( !t.isEmpty() &&
 				( !type.equals( "edit" )
-						|| !mEntryProperty.equals( mEntry.getProperty() )
+						|| !mProperties.equals( mEntry.getProperties() )
 						|| !mStartEditable.equals( mTextEditor.getEditableText() )
 				)
 		) {
@@ -279,17 +277,17 @@ public class CreateEntry extends ThemeActivity {
 		btnStrike = findViewById( R.id.btnStrike );
 
 		type = getIntent().getStringExtra( "type" );
-		mEntryProperty = new EntryProperty();
+		mProperties = new Entry.Properties();
 		mTextEditor = findViewById( R.id.edittextEntry );
 		mTextEditor.setListener( mOnSelectionChanges );
 		if ( type != null && type.equals( "edit" ) ) {
 			mEntry = MainData.getEntryWithId( getIntent().getStringExtra( "id" ) );
 			try {
-				mEntryProperty = new XMLParser().parseEntryProperties( mEntry.getId() );
+				mProperties = new XMLParser().parseEntryProperties( mEntry.getId() );
 			}catch (Exception e){
 				Utils.getErrorDialog( e, this ).show();
 			}
-			mEntry.setProperty( new EntryProperty( mEntryProperty ) );
+			mEntry.setProperties( new Entry.Properties( mProperties ) );
 			title = "Edit entry text";
 			applyTheme();
 
@@ -407,7 +405,7 @@ public class CreateEntry extends ThemeActivity {
 				@Override
 				public void run() {
 					setTextInEditor( originalText );
-					mTextEditor.setScrollY( mEntryProperty.getScrollPosition() );
+					mTextEditor.setScrollY( mProperties.getScrollPosition() );
 					mStartEditable = mTextEditor.getText();
 					mProgressDialogOnTextLoad.cancel();
 					final double end = System.currentTimeMillis();
@@ -707,10 +705,10 @@ public class CreateEntry extends ThemeActivity {
 					//btnBgColorPicker.setBackground( getDrawable( R.drawable.btn_picker_borders ) );
 					mTextEditor.setBackgroundColor( mSelectedColor );
 					getWindow().getDecorView().setBackgroundColor( mSelectedColor );
-					mEntryProperty.setBgColor( mSelectedColor );
+					mProperties.setBgColor( mSelectedColor );
 				}
 			};
-			AlertDialog alertDialog = getColorPickerDialog( R.string.set_background_color, mEntryProperty.getBgColor(), whatToDo );
+			AlertDialog alertDialog = getColorPickerDialog( R.string.set_background_color, mProperties.getBgColor(), whatToDo );
 			alertDialog.show();
 		}
 	};
@@ -859,14 +857,14 @@ public class CreateEntry extends ThemeActivity {
 		setBtnTextColorPickerBackground();
 		btnTextColorPicker.setOnClickListener( btnTextOnAllColor );
 
-		btnBgColorPicker.setBackgroundTintList( ColorStateList.valueOf( mEntryProperty.getBgColor() ) );
-		mTextEditor.setBackgroundColor( mEntryProperty.getBgColor() );
-		getWindow().getDecorView().setBackgroundColor( mEntryProperty.getBgColor() );
+		btnBgColorPicker.setBackgroundTintList( ColorStateList.valueOf( mProperties.getBgColor() ) );
+		mTextEditor.setBackgroundColor( mProperties.getBgColor() );
+		getWindow().getDecorView().setBackgroundColor( mProperties.getBgColor() );
 
 		ImageButton imageButton;
-		if(mEntryProperty.getTextAlignment() == Gravity.CENTER_HORIZONTAL)
+		if( mProperties.getTextAlignment() == Gravity.CENTER_HORIZONTAL)
 			imageButton = findViewById( R.id.btnAlignCenter );
-		else if(mEntryProperty.getTextAlignment() == Gravity.START)
+		else if( mProperties.getTextAlignment() == Gravity.START)
 			imageButton = findViewById( R.id.btnAlignLeft );
 		else
 			imageButton = findViewById( R.id.btnAlignRight );
@@ -875,25 +873,25 @@ public class CreateEntry extends ThemeActivity {
 	}
 
 	public void plusTextSize(View view){
-		if(mEntryProperty.textSize < 45)
-			mEntryProperty.textSize++;
+		if( mProperties.textSize < 45)
+			mProperties.textSize++;
 		setEditTextSize();
 	}
 
 	public void minusTextSize(View view){
-		if(mEntryProperty.textSize > 15)
-			mEntryProperty.textSize--;
+		if( mProperties.textSize > 15)
+			mProperties.textSize--;
 		setEditTextSize();
 	}
 
 	private void setEditTextSize(){
 		/*((EditText) findViewById( R.id.edittextEntry )).setTextSize( TypedValue.COMPLEX_UNIT_SP, (float) mEntryProperty.textSize );*/
 		TextView t = findViewById( R.id.textViewTextSize );
-		t.setText( String.format( Locale.ROOT, "%d", mEntryProperty.textSize ) );
+		t.setText( String.format( Locale.ROOT, "%d", mProperties.textSize ) );
 
 		/*mTextEditor.getText().setSpan( new AbsoluteSizeSpan( (int) TypedValue.applyDimension( TypedValue.COMPLEX_UNIT_SP, mEntryProperty.textSize, getResources().getDisplayMetrics() ) ),
 				0, mTextEditor.getText().length(), Spanned.SPAN_INCLUSIVE_INCLUSIVE);*/
-		mTextEditor.setTextSize( TypedValue.COMPLEX_UNIT_SP,  mEntryProperty.textSize );
+		mTextEditor.setTextSize( TypedValue.COMPLEX_UNIT_SP,  mProperties.textSize );
 	}
 
 	private void createEntry(String name, Spannable text){
@@ -909,7 +907,8 @@ public class CreateEntry extends ThemeActivity {
 		file = new File( Utils.getExternalStoragePath().getPath() + "/entries/" + id );
 		file.mkdir();
 		try {
-			mEntry.saveProperties( mEntryProperty );
+			mEntry.setProperties( mProperties );
+			mEntry.saveProperties();
 		}catch (Exception e){
 			Utils.getErrorDialog( e, this ).show();
 			return;
@@ -928,7 +927,7 @@ public class CreateEntry extends ThemeActivity {
 			fr.flush();
 			fr.close();
 			mEntry.addDocumentToIncluded( mDocument.getId() );
-			mEntry.saveText( text, mEntryProperty );
+			mEntry.saveText( text, mProperties );
 			mEntry.setAndSaveInfo( new Info( (int) new Date().getTime() ) );
 			mDocument.addEntry( mEntry );
 			setResult( ResultCodes.REOPEN, new Intent().putExtra( "id", id ) );
@@ -978,7 +977,7 @@ public class CreateEntry extends ThemeActivity {
 		if(v.getId() != R.id.btnAlignJustify)
 			editText.setGravity( alignment );
 
-		mEntryProperty.setTextAlignment( alignment );
+		mProperties.setTextAlignment( alignment );
 	}
 
 	private void saveEntry(){
@@ -1033,8 +1032,8 @@ public class CreateEntry extends ThemeActivity {
 		}else if(type.equals( "edit" )){
 			if(text.length() != 0){
 				try {
-					mEntry.saveProperties( mEntryProperty );
-					mEntry.saveText( mTextEditor.getText(), mEntryProperty );
+					mEntry.saveProperties( mProperties );
+					mEntry.saveText( mTextEditor.getText(), mProperties );
 					setResult( ResultCodes.REOPEN, new Intent(  ).putExtra( "id", mEntry.getId() ) );
 				}catch (Exception ex){
 					Toast.makeText( CreateEntry.this, "edit text\n\n" + ex.toString(), Toast.LENGTH_LONG ).show();

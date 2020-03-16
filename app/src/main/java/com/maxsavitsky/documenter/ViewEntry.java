@@ -22,18 +22,19 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Entry;
-import com.maxsavitsky.documenter.data.types.EntryProperty;
 import com.maxsavitsky.documenter.utils.RequestCodes;
 import com.maxsavitsky.documenter.utils.ResultCodes;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.XMLParser;
 
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class ViewEntry extends ThemeActivity {
 
 	private Entry mEntry;
-	private EntryProperty mEntryProperty = new EntryProperty();
 	private SharedPreferences sp;
 	private int mWebViewId;
 	private boolean resultSet = false;
@@ -50,9 +51,9 @@ public class ViewEntry extends ThemeActivity {
 		if(!resultSet)
 			setResult( ResultCodes.OK );
 
-		mEntryProperty.setScrollPosition( ( (WebView) findViewById( mWebViewId ) ).getScrollY() );
+		mEntry.getProperties().setScrollPosition( ( (WebView) findViewById( mWebViewId ) ).getScrollY() );
 		try {
-			mEntry.saveProperties( mEntryProperty );
+			mEntry.saveProperties( mEntry.getProperties() );
 		} catch (Exception e) {
 			Utils.getErrorDialog( e, this ).show();
 			return;
@@ -133,9 +134,9 @@ public class ViewEntry extends ThemeActivity {
 					} ).setCancelable( false );
 			deletionBuilder.create().show();
 		}else if(item.getItemId() == R.id.item_edit_entry_text){
-			mEntryProperty.setScrollPosition( ((WebView) findViewById( mWebViewId )).getScrollY() );
+			mEntry.getProperties().setScrollPosition( ((WebView) findViewById( mWebViewId )).getScrollY() );
 			try {
-				mEntry.saveProperties( mEntryProperty );
+				mEntry.saveProperties( mEntry.getProperties() );
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -161,6 +162,30 @@ public class ViewEntry extends ThemeActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate( R.menu.entry_menu, menu );
+		getMenuInflater().inflate( R.menu.common_menu, menu );
+		MenuItem item = menu.findItem(R.id.item_common_remember_pos);
+		item.setChecked( mEntry.getProperties().isSaveLastPos() );
+		Toast.makeText( this, Boolean.toString( mEntry.getProperties().isSaveLastPos() ), Toast.LENGTH_SHORT ).show();
+		item.setOnMenuItemClickListener( new MenuItem.OnMenuItemClickListener() {
+			@Override
+			public boolean onMenuItemClick(MenuItem item) {
+				boolean isChecked = !item.isChecked();
+				item.setChecked( isChecked );
+				try{
+					mEntry.applySaveLastPos( isChecked );
+				} catch (final IOException e) {
+					e.printStackTrace();
+					runOnUiThread( new Runnable() {
+						@Override
+						public void run() {
+							Utils.getErrorDialog( e, ViewEntry.this ).show();
+						}
+					} );
+				}
+
+				return true;
+			}
+		} );
 		return super.onCreateOptionsMenu( menu );
 	}
 
@@ -187,9 +212,9 @@ public class ViewEntry extends ThemeActivity {
 		Intent intent = getIntent();
 		mEntry = MainData.getEntryWithId( intent.getStringExtra( "id" ) );
 		try{
-			mEntryProperty = new XMLParser().parseEntryProperties( mEntry.getId() );
+			mEntry.readProperties();
 		}catch (Exception e){
-			Utils.getErrorDialog( e, this );
+			Utils.getErrorDialog( e, this ).show();
 		}
 		applyTheme();
 
@@ -201,10 +226,12 @@ public class ViewEntry extends ThemeActivity {
 		settings.setAllowFileAccessFromFileURLs( true );
 		settings.setAllowFileAccess( true );
 		settings.setJavaScriptCanOpenWindowsAutomatically( false );
-		settings.setDefaultFontSize( mEntryProperty.textSize );
+		settings.setDefaultFontSize( mEntry.getProperties().textSize );
 		//webView.setBackgroundColor( entryProperty.getBgColor() );
 		webView.loadUrl( "file://" + mEntry.getPathDir() + "text.html" );
-		webView.setScrollY( mEntryProperty.getScrollPosition() );
-		webView.requestLayout();
+		if( mEntry.getProperties().isSaveLastPos())
+			webView.setScrollY( mEntry.getProperties().getScrollPosition() );
+		else
+			webView.setScrollY( 0 );
 	}
 }
