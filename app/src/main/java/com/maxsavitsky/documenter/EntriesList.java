@@ -125,6 +125,8 @@ public class EntriesList extends ThemeActivity {
 		final Intent intent = getIntent ();
 		mDocument = MainData.getDocumentWithId( intent.getStringExtra ( "id" ) );
 		try {
+			mDocument.readProperties();
+			invalidateOptionsMenu();
 			mEntries = ParseSeparate.parseDocumentWithId( mDocument.getId() );
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -145,12 +147,6 @@ public class EntriesList extends ThemeActivity {
 
 		setupRecyclerView();
 
-		try{
-			mDocument.readProperties();
-		} catch (SAXException | IOException e) {
-			e.printStackTrace();
-			Utils.getErrorDialog( e, this ).show();
-		}
 	}
 
 	@Override
@@ -361,7 +357,7 @@ public class EntriesList extends ThemeActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate( R.menu.document_menu, menu );
-		getMenuInflater().inflate( R.menu.common_menu, menu );
+		/*getMenuInflater().inflate( R.menu.common_menu, menu );
 
 		MenuItem item = menu.findItem(R.id.item_common_remember_pos);
 		item.setChecked( mDocument.getProperties().isSaveLastPos() );
@@ -383,7 +379,7 @@ public class EntriesList extends ThemeActivity {
 				}
 				return true;
 			}
-		} );
+		} );*/
 		return super.onCreateOptionsMenu( menu );
 	}
 

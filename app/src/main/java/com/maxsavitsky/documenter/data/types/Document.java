@@ -27,7 +27,7 @@ import javax.xml.parsers.SAXParserFactory;
 public class Document extends Type implements Comparable{
 	private String id, name;
 	private String pathDir;
-	private Properties mProperties;
+	private Document.Properties mProperties;
 
 	private ArrayList<Entry> mEntries = null;
 	private Info mInfo = new Info();

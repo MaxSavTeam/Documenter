@@ -136,9 +136,9 @@ public class Entry extends Type {
 		if ( !file.exists() ) {
 			file.createNewFile();
 		}
-		FileWriter fr = new FileWriter( file );
-		fr.write( Utils.xmlHeader);
-		fr.append( "<properties>\n" )
+		FileWriter fw = new FileWriter( file );
+		fw.write( Utils.xmlHeader);
+		fw.append( "<properties>\n" )
 				.append("\t<textSize value=\"" ).append( formatInt( mProperties.textSize ) ).append( "\" />\n" )
 				.append( "\t<bgColor value=\"" ).append( formatInt( mProperties.getBgColor() ) ).append( "\" />\n" )
 				.append( "\t<textColor value=\"" ).append( formatInt( mProperties.getTextColor() ) ).append( "\" />\n" )
@@ -147,8 +147,8 @@ public class Entry extends Type {
 				.append( "\t<saveLastPos value=\"" ).append( Boolean.toString( mProperties.isSaveLastPos() ) ).append( "\" />\n" )
 				.append( "\t<defaultColor value=\"" ).append( formatInt( mProperties.getDefaultTextColor() ) ).append( "\" />\n" )
 				.append( "</properties>" );
-		fr.flush();
-		fr.close();
+		fw.flush();
+		fw.close();
 	}
 
 	public Entry.Properties readProperties() throws IOException {
