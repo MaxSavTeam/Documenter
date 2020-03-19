@@ -25,9 +25,6 @@ import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.utils.RequestCodes;
 import com.maxsavitsky.documenter.utils.ResultCodes;
 import com.maxsavitsky.documenter.utils.Utils;
-import com.maxsavitsky.documenter.xml.XMLParser;
-
-import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -140,7 +137,7 @@ public class ViewEntry extends ThemeActivity {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			Intent intent = new Intent( this, CreateEntry.class );
+			Intent intent = new Intent( this, EntryEditor.class );
 			intent.putExtra( "type", "edit" );
 			intent.putExtra( "id", mEntry.getId() );
 			startActivityForResult( intent, RequestCodes.EDIT_ENTRY );

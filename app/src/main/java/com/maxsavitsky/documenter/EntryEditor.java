@@ -60,7 +60,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
-public class CreateEntry extends ThemeActivity {
+public class EntryEditor extends ThemeActivity {
 	private Document mDocument;
 	private String type;
 	private Entry mEntry;
@@ -426,7 +426,7 @@ public class CreateEntry extends ThemeActivity {
 					mProgressDialogOnTextLoad.cancel();
 					double end = System.currentTimeMillis();
 					//Toast.makeText( CreateEntry.this, (end - mStartLoadTextTime) / 1000 + " seconds passed", Toast.LENGTH_LONG ).show();
-					Utils.getErrorDialog( e, CreateEntry.this ).show();
+					Utils.getErrorDialog( e, EntryEditor.this ).show();
 				}
 			} );
 		}
@@ -798,7 +798,7 @@ public class CreateEntry extends ThemeActivity {
 		View layout = getLayoutInflater().inflate( R.layout.layout_color_picker, null );
 		final ColorPickerView colorPickerView = layout.findViewById( R.id.color_picker );
 		colorPickerView.setColor( defColor, true );
-		final AlertDialog.Builder builder = new AlertDialog.Builder(CreateEntry.this)
+		final AlertDialog.Builder builder = new AlertDialog.Builder( EntryEditor.this)
 				.setTitle( title )
 				.setView( layout )
 				.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
@@ -1004,12 +1004,12 @@ public class CreateEntry extends ThemeActivity {
 		if(type.equals( "create" )) {
 			if ( text.length() != 0 ) {
 				AlertDialog alertDialog;
-				final EditText name = new EditText( CreateEntry.this );
+				final EditText name = new EditText( EntryEditor.this );
 				name.setId( View.NO_ID );
 				name.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT ) );
 				name.requestFocus();
-				name.setTextColor( getResources().getColor( CreateEntry.super.mEditTextColor ) );
-				AlertDialog.Builder builder = new AlertDialog.Builder( CreateEntry.this, CreateEntry.super.mAlertDialogStyle )
+				name.setTextColor( getResources().getColor( EntryEditor.super.mEditTextColor ) );
+				AlertDialog.Builder builder = new AlertDialog.Builder( EntryEditor.this, EntryEditor.super.mAlertDialogStyle )
 						.setView( name )
 						.setTitle( R.string.enter_name )
 						.setMessage( R.string.name_yours_minds )
@@ -1032,7 +1032,7 @@ public class CreateEntry extends ThemeActivity {
 				alertDialog.setOnShowListener( new DialogInterface.OnShowListener() {
 					@Override
 					public void onShow(DialogInterface dialog) {
-						Utils.showKeyboard( name, CreateEntry.this );
+						Utils.showKeyboard( name, EntryEditor.this );
 					}
 				} );
 				alertDialog.show();
@@ -1046,9 +1046,9 @@ public class CreateEntry extends ThemeActivity {
 					mEntry.saveText( mTextEditor.getText(), mProperties );
 					setResult( ResultCodes.REOPEN, new Intent(  ).putExtra( "id", mEntry.getId() ) );
 				}catch (Exception ex){
-					Toast.makeText( CreateEntry.this, "edit text\n\n" + ex.toString(), Toast.LENGTH_LONG ).show();
+					Toast.makeText( EntryEditor.this, "edit text\n\n" + ex.toString(), Toast.LENGTH_LONG ).show();
 					ex.printStackTrace();
-					Utils.getErrorDialog( ex, CreateEntry.this ).show();
+					Utils.getErrorDialog( ex, EntryEditor.this ).show();
 					return;
 				}
 				_finishActivity();

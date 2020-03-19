@@ -35,9 +35,6 @@ import com.maxsavitsky.documenter.utils.ResultCodes;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.ParseSeparate;
 
-import org.xml.sax.SAXException;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -138,7 +135,7 @@ public class EntriesList extends ThemeActivity {
 		fab.setOnClickListener( new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				Intent intent1 = new Intent( EntriesList.this, CreateEntry.class );
+				Intent intent1 = new Intent( EntriesList.this, EntryEditor.class );
 				intent1.putExtra( "id", mDocument.getId() );
 				intent1.putExtra( "type", "create" );
 				startActivityForResult( intent1, RequestCodes.CREATE_ENTRY );

@@ -23,7 +23,7 @@
         <activity android:name=".SettingsActivity" />
         <activity android:name=".ErrorHandlerActivity" />
         <activity
-            android:name=".CreateEntry"
+            android:name=".EntryEditor"
             android:label="@string/title_activity_create_entry"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize" />

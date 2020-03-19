@@ -103,7 +103,7 @@ public class UpdatesChecker {
 		InputStream inputStream = null;
 		try {
 			String data = "";
-			url = new URL( mContext.getResources().getString( R.string.resources_url ) + "/apk/documenter/versionTest" );
+			url = new URL( mContext.getResources().getString( R.string.resources_url ) + "/apk/documenter/version" );
 			inputStream = url.openConnection().getInputStream();
 			int b = inputStream.read();
 			while ( b != -1 && !mThread.isInterrupted() ) {
