@@ -60,5 +60,4 @@ dependencies {
     implementation 'org.jetbrains:annotations-java5:15.0'
     implementation 'com.android.support:design:29.0.0'
     implementation files('libs/quadflask.colorpicker.aar')
-    implementation 'com.github.dhaval2404:imagepicker:1.6'
 }

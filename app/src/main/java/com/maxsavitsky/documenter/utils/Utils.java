@@ -219,6 +219,21 @@ public class Utils {
 		return id;
 	}
 
+	public static File getTempFolder(){
+		return new File( getExternalStoragePath().getPath() + "/temp" );
+	}
+
+	public static File getEntryImagesMediaFolder(String id){
+		if(MainData.isExists( id )){
+			return MainData.getEntryWithId( id ).getImagesMediaFolder();
+		}else{
+			File tempFile = getTempFolder();
+			if(!tempFile.exists())
+				tempFile.mkdirs();
+			return tempFile;
+		}
+	}
+
 	public static void applyDefaultActionBarStyle(ActionBar actionBar){
 		if(actionBar != null){
 			actionBar.setDisplayHomeAsUpEnabled(true);

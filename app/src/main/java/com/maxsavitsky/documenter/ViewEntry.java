@@ -1,17 +1,26 @@
 package com.maxsavitsky.documenter;
 
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.Image;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.Html;
+import android.text.SpannableString;
+import android.text.style.ClickableSpan;
+import android.text.style.ImageSpan;
+import android.text.style.URLSpan;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -24,6 +33,7 @@ import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.codes.Results;
+import com.maxsavitsky.documenter.utils.HtmlImageLoader;
 import com.maxsavitsky.documenter.utils.Utils;
 
 import java.io.IOException;
@@ -48,7 +58,7 @@ public class ViewEntry extends ThemeActivity {
 		if(!resultSet)
 			setResult( Results.OK );
 
-		mEntry.getProperties().setScrollPosition( ( (WebView) findViewById( mWebViewId ) ).getScrollY() );
+		//mEntry.getProperties().setScrollPosition( ( (WebView) findViewById( mWebViewId ) ).getScrollY() );
 		try {
 			mEntry.saveProperties( mEntry.getProperties() );
 		} catch (Exception e) {
@@ -131,7 +141,7 @@ public class ViewEntry extends ThemeActivity {
 					} ).setCancelable( false );
 			deletionBuilder.create().show();
 		}else if(item.getItemId() == R.id.item_edit_entry_text){
-			mEntry.getProperties().setScrollPosition( ((WebView) findViewById( mWebViewId )).getScrollY() );
+			//mEntry.getProperties().setScrollPosition( ((WebView) findViewById( mWebViewId )).getScrollY() );
 			try {
 				mEntry.saveProperties( mEntry.getProperties() );
 			} catch (Exception e) {
@@ -199,6 +209,36 @@ public class ViewEntry extends ThemeActivity {
 		getWindow().clearFlags( WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 	}
 
+	private ProgressDialog mProgressDialog;
+
+	private interface TextLoaderCallback{
+		void loaded(ArrayList<String> strings);
+		void exceptionOccurred(Exception e);
+	}
+
+	private TextLoaderCallback mCallback = new TextLoaderCallback() {
+		@Override
+		public void loaded(final ArrayList<String> strings) {
+			runOnUiThread( new Runnable() {
+				@Override
+				public void run() {
+					TextView t = findViewById( R.id.textViewContent );
+					t.setText( "" );
+					for(String s : strings){
+						SpannableString spannableString = new SpannableString( Html.fromHtml(s, new HtmlImageLoader( ViewEntry.this ), null ) );
+						t.append( spannableString );
+					}
+					mProgressDialog.dismiss();
+				}
+			} );
+		}
+
+		@Override
+		public void exceptionOccurred(Exception e) {
+			Utils.getErrorDialog( e, ViewEntry.this ).show();
+		}
+	};
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate( savedInstanceState );
@@ -216,18 +256,53 @@ public class ViewEntry extends ThemeActivity {
 
 		sp = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
 
-		WebView webView = findViewById( R.id.webView );
+		TextView textView = findViewById(R.id.textViewContent);
+		textView.setTextSize( TypedValue.COMPLEX_UNIT_DIP, mEntry.getProperties().getTextSize() );
+		textView.setTextColor( mEntry.getProperties().getDefaultTextColor() );
+		getWindow().getDecorView().setBackgroundColor( mEntry.getProperties().getBgColor() );
+		final Thread loadThread = new Thread( new Runnable() {
+			@Override
+			public void run() {
+				try {
+					ArrayList<String> array = mEntry.loadTextLines();
+					mCallback.loaded( array );
+				} catch (IOException e) {
+					e.printStackTrace();
+					mCallback.exceptionOccurred( e );
+				}
+			}
+		} );
+		mProgressDialog = new ProgressDialog(this);
+		mProgressDialog.setTitle( R.string.loading );
+		mProgressDialog.setMessage( getResources().getString( R.string.entry_is_loading ) );
+		mProgressDialog.setCancelable( false );
+		mProgressDialog.setButton( ProgressDialog.BUTTON_NEUTRAL,
+				getResources().getString( R.string.cancel ),
+				new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						loadThread.interrupt();
+						dialog.cancel();
+						backPressed();
+					}
+				} );
+		mProgressDialog.show();
+		loadThread.start();
+
+		/*WebView webView = findViewById( R.id.webView );
 		mWebViewId = R.id.webView;
 		WebSettings settings = webView.getSettings();
 		settings.setAllowFileAccessFromFileURLs( true );
 		settings.setAllowFileAccess( true );
 		settings.setJavaScriptCanOpenWindowsAutomatically( false );
-		settings.setDefaultFontSize( mEntry.getProperties().textSize );
+		//settings.setUseWideViewPort( true );
+		//settings.setLoadWithOverviewMode(true);
 		//webView.setBackgroundColor( entryProperty.getBgColor() );
+		settings.setDefaultFontSize( mEntry.getProperties().textSize );
 		webView.loadUrl( "file://" + mEntry.getPathDir() + "text.html" );
 		if( mEntry.getProperties().isSaveLastPos())
 			webView.setScrollY( mEntry.getProperties().getScrollPosition() );
 		else
-			webView.setScrollY( 0 );
+			webView.setScrollY( 0 );*/
 	}
 }

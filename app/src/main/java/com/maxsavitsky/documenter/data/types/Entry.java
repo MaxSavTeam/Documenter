@@ -156,6 +156,17 @@ public class Entry extends Type {
 		return mProperties;
 	}
 
+	public void checkMediaDir(){
+		File file = new File( Utils.getExternalStoragePath().getPath() + "/entries/" + id + "/media/images" );
+		if(!file.exists())
+			file.mkdirs();
+	}
+
+	public File getImagesMediaFolder(){
+		checkMediaDir();
+		return new File( Utils.getExternalStoragePath().getPath() + "/entries/" + id + "/media/images" );
+	}
+
 	public void saveProperties(Properties properties) throws IOException{
 		mProperties = new Properties( properties );
 		saveProperties();
@@ -174,6 +185,8 @@ public class Entry extends Type {
 		String line;
 		ArrayList<String> strings = new ArrayList<>();
 		while(((line = br.readLine())) != null){
+			if(Thread.currentThread().isInterrupted())
+				break;
 			strings.add( line );
 		}
 

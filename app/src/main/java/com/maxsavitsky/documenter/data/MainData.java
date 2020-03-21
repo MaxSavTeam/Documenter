@@ -243,6 +243,10 @@ public class MainData {
 		}
 	}
 
+	public static boolean isExists(String id){
+		return sEntryMap.containsKey( id ) || sDocumentMap.containsKey( id ) || sCategoryMap.containsKey( id );
+	}
+
 	public static void readAllEntries() throws IOException, SAXException {
 		XMLParser xmlParser = new XMLParser();
 		setEntriesList( xmlParser.parseEntries() );

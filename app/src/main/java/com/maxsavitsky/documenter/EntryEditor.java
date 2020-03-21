@@ -1,24 +1,39 @@
 package com.maxsavitsky.documenter;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.PictureDrawable;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.Html;
 import android.text.Layout;
+import android.text.SpanWatcher;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.Spanned;
+import android.text.style.AbsoluteSizeSpan;
+import android.text.style.DynamicDrawableSpan;
 import android.text.style.ForegroundColorSpan;
+import android.text.style.ImageSpan;
 import android.text.style.StrikethroughSpan;
 import android.text.style.StyleSpan;
 import android.text.style.UnderlineSpan;
@@ -45,6 +60,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 
 import com.flask.colorpicker.ColorPickerView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
@@ -55,21 +71,28 @@ import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.utils.ChangeEntry;
 import com.maxsavitsky.documenter.codes.Results;
+import com.maxsavitsky.documenter.utils.HtmlImageLoader;
 import com.maxsavitsky.documenter.utils.SpanEntry;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.widget.TextEditor;
 import com.maxsavitsky.documenter.xml.XMLParser;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
+
+import static com.maxsavitsky.documenter.codes.Requests.*;
 
 public class EntryEditor extends ThemeActivity {
 	private Document mDocument;
 	private String type;
 	private Entry mEntry;
+	private String mId;
 	private String title = "Create new entry";
 	private Entry.Properties mProperties;
 	private TextEditor mTextEditor;
@@ -85,6 +108,7 @@ public class EntryEditor extends ThemeActivity {
 	private boolean mDarkTheme;
 	private SharedPreferences sp;
 	private ArrayList<Integer> mColorHistory = new ArrayList<>();
+	private ArrayList<File> mMediaToMove = new ArrayList<>();
 
 	private interface OnLoadedTextListener{
 		void loaded(Spannable spannable, String originalText);
@@ -288,6 +312,7 @@ public class EntryEditor extends ThemeActivity {
 			}catch (Exception e){
 				Utils.getErrorDialog( e, this ).show();
 			}
+			mId = mEntry.getId();
 			mEntry.setProperties( new Entry.Properties( mProperties ) );
 			mDefaultTextColor = mProperties.getDefaultTextColor();
 			mTextEditor.setTextColor( mDefaultTextColor );
@@ -325,6 +350,7 @@ public class EntryEditor extends ThemeActivity {
 			}
 		}else{
 			mDocument = MainData.getDocumentWithId( getIntent().getStringExtra( "id" ) );
+			mId = Utils.generateUniqueId() + "_ent";
 			title = getResources().getString( R.string.create_new_entry );
 			hideUpButton();
 		}
@@ -411,6 +437,8 @@ public class EntryEditor extends ThemeActivity {
 		sp.edit().putString( "color_history", save ).apply();
 	}
 
+
+
 	private void setTextInEditor(String text){
 		Editable e = mTextEditor.getText();
 		if(e != null)
@@ -419,7 +447,7 @@ public class EntryEditor extends ThemeActivity {
 		String[] splitStrings = text.split( "\n" );
 
 		for (String s : splitStrings) {
-			Spanned fromHtml  = Html.fromHtml( s );
+			Spanned fromHtml  = Html.fromHtml( s, new HtmlImageLoader(this), null );
 			mTextEditor.appendW( fromHtml );
 		}
 	}
@@ -457,13 +485,109 @@ public class EntryEditor extends ThemeActivity {
 				@Override
 				public void run() {
 					mProgressDialogOnTextLoad.cancel();
-					double end = System.currentTimeMillis();
-					//Toast.makeText( CreateEntry.this, (end - mStartLoadTextTime) / 1000 + " seconds passed", Toast.LENGTH_LONG ).show();
 					Utils.getErrorDialog( e, EntryEditor.this ).show();
 				}
 			} );
 		}
 	};
+
+	public void pickImages(View v){
+		if(!isReadMemoryAccess()){
+			AlertDialog.Builder builder = new AlertDialog.Builder( this );
+			builder.setTitle( R.string.warning )
+					.setMessage( R.string.image_picker_warning_memory_not_accessed )
+					.setCancelable( true )
+					.setPositiveButton( R.string.request, new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							requestPermissions( new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 100 );
+						}
+					} )
+					.create()
+					.show();
+			return;
+		}
+		Intent picker = new Intent(Intent.ACTION_GET_CONTENT);
+		picker.setType( "image/jpeg" );
+		startActivityForResult( picker, PICK_IMAGE );
+	}
+
+	private boolean isReadMemoryAccess(){
+		return ContextCompat.checkSelfPermission( this, Manifest.permission.READ_EXTERNAL_STORAGE ) == PackageManager.PERMISSION_GRANTED;
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+		super.onActivityResult( requestCode, resultCode, data );
+		if(requestCode == PICK_IMAGE){
+			if(resultCode == Activity.RESULT_OK){
+				if(data == null){
+					Toast.makeText( this, "Data is null", Toast.LENGTH_SHORT ).show();
+					return;
+				}
+				Uri uri = data.getData();
+				if(uri == null){
+					Toast.makeText( this, "Some error occurred", Toast.LENGTH_SHORT ).show();
+					return;
+				}
+				InputStream in = null;
+				try {
+					in = getContentResolver().openInputStream( uri );
+					if(in == null){
+						Toast.makeText( this, "Some problems with reading", Toast.LENGTH_SHORT ).show();
+						return;
+					}
+					File file = Utils.getEntryImagesMediaFolder( mId );
+					file = new File(file.getPath() + "/" + Utils.generateUniqueId() + ".jpg");
+					if(!MainData.isExists( mId ))
+						mMediaToMove.add( file );
+					FileOutputStream fos = new FileOutputStream(file);
+					int len = 0;
+					byte[] buffer = new byte[1024];
+					while((len = in.read( buffer )) != -1){
+						fos.write( buffer, 0, len );
+					}
+					fos.close();
+					in.close();
+
+					setImageAtSelBounds( Uri.fromFile(file), file );
+				} catch (IOException | NullPointerException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	private Point getScreenSize(){
+		WindowManager windowManager = (WindowManager) getSystemService( Context.WINDOW_SERVICE );
+		Display d = windowManager.getDefaultDisplay();
+		Point p = new Point();
+		d.getSize( p );
+		return p;
+	}
+
+	private void setImageAtSelBounds(Uri uri, File file){
+		Editable e = mTextEditor.getText();
+		if(e == null)
+			return;
+		Bitmap b = BitmapFactory.decodeFile( file.getPath() );
+		Point size = getScreenSize();
+		Drawable d = new BitmapDrawable(b);
+		if(b.getWidth() > size.x){
+			int w = b.getWidth();
+			int h = b.getHeight();
+			int w1 = size.x;
+			int h1 = (w1 * h) / w;
+			d.setBounds( 0, 0, w1, h1 );
+		}else{
+			d.setBounds( 0, 0, b.getWidth(), b.getHeight() );
+		}
+		ImageSpan imageSpan = new ImageSpan(d, file.getPath());
+
+		int s = mSelectionBounds[0];
+		e.insert( s, "\n \n" );
+		e.setSpan( imageSpan, s+1, s + 2, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+	}
 
 	private void enableThisMenuItem(int i){
 		if(mMenu == null)
@@ -937,18 +1061,22 @@ public class EntryEditor extends ThemeActivity {
 	}
 
 	private void setEditTextSize(){
-		/*((EditText) findViewById( R.id.edittextEntry )).setTextSize( TypedValue.COMPLEX_UNIT_SP, (float) mEntryProperty.textSize );*/
 		TextView t = findViewById( R.id.textViewTextSize );
 		t.setText( String.format( Locale.ROOT, "%d", mProperties.textSize ) );
+		Editable e = mTextEditor.getText();
+		if(e == null)
+			return;
 
-		/*mTextEditor.getText().setSpan( new AbsoluteSizeSpan( (int) TypedValue.applyDimension( TypedValue.COMPLEX_UNIT_SP, mEntryProperty.textSize, getResources().getDisplayMetrics() ) ),
-				0, mTextEditor.getText().length(), Spanned.SPAN_INCLUSIVE_INCLUSIVE);*/
-		mTextEditor.setTextSize( TypedValue.COMPLEX_UNIT_SP,  mProperties.textSize );
+		AbsoluteSizeSpan absoluteSizeSpan = new AbsoluteSizeSpan( mProperties.getTextSize(), true );
+		AbsoluteSizeSpan[] spans = e.getSpans( 0, e.length(), AbsoluteSizeSpan.class );
+		for(AbsoluteSizeSpan span : spans){
+			e.removeSpan( span );
+		}
+		e.setSpan( absoluteSizeSpan, 0, e.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 	}
 
 	private void createEntry(String name, Spannable text){
-		String id = Utils.generateUniqueId() + "_ent";
-		mEntry = new Entry( id, name );
+		mEntry = new Entry( mId, name );
 		ArrayList<Entry> entries = MainData.getEntriesList();
 		entries.add( mEntry );
 		MainData.setEntriesList( entries );
@@ -956,7 +1084,7 @@ public class EntryEditor extends ThemeActivity {
 		File file = new File( Utils.getExternalStoragePath().getPath() + "/entries" );
 		if(!file.exists())
 			file.mkdir();
-		file = new File( Utils.getExternalStoragePath().getPath() + "/entries/" + id );
+		file = new File( Utils.getExternalStoragePath().getPath() + "/entries/" + mId );
 		file.mkdir();
 		try {
 			mEntry.setProperties( mProperties );
@@ -982,7 +1110,7 @@ public class EntryEditor extends ThemeActivity {
 			mEntry.saveText( text, mProperties );
 			mEntry.setAndSaveInfo( new Info( (int) new Date().getTime() ) );
 			mDocument.addEntry( mEntry );
-			setResult( Results.REOPEN, new Intent().putExtra( "id", id ) );
+			setResult( Results.REOPEN, new Intent().putExtra( "id", mId ) );
 			finish();
 		}catch (Exception e){
 			Utils.getErrorDialog( e, this ).show();
@@ -1038,10 +1166,16 @@ public class EntryEditor extends ThemeActivity {
 			return;
 		String text = e.toString();
 		while(e.length() > 0 && (e.charAt( 0 ) == ' ' || e.charAt( 0 ) == '\n')){
-			e.delete( 0, 1 );
+			if(e.getSpans( 0, 1, ImageSpan.class ).length == 0)
+				e.delete( 0, 1 );
+			else
+				break;
 		}
 		while(e.length() > 0 && (e.charAt( e.length()-1 ) == ' ' || e.charAt( e.length() - 1 ) == '\n')){
-			e.delete( e.length()-1, e.length() );
+			if(e.getSpans( e.length()-1, e.length(), ImageSpan.class ).length == 0)
+				e.delete( e.length()-1, e.length() );
+			else
+				break;
 		}
 		if(type.equals( "create" )) {
 			if ( text.length() != 0 ) {
@@ -1088,7 +1222,6 @@ public class EntryEditor extends ThemeActivity {
 					mEntry.saveText( mTextEditor.getText(), mProperties );
 					setResult( Results.REOPEN, new Intent(  ).putExtra( "id", mEntry.getId() ) );
 				}catch (Exception ex){
-					Toast.makeText( EntryEditor.this, "edit text\n\n" + ex.toString(), Toast.LENGTH_LONG ).show();
 					ex.printStackTrace();
 					Utils.getErrorDialog( ex, EntryEditor.this ).show();
 					return;
