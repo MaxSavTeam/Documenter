@@ -21,7 +21,7 @@ import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.data.Info;
 import com.maxsavitsky.documenter.data.MainData;
-import com.maxsavitsky.documenter.utils.ResultCodes;
+import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.ParseSeparate;
 
@@ -43,7 +43,7 @@ public class CreateDocument extends ThemeActivity {
 	@Override
 	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 		if(item.getItemId() == android.R.id.home){
-			setResult( ResultCodes.OK );
+			setResult( Results.OK );
 			finish();
 		}
 		return super.onOptionsItemSelected(item);
@@ -160,7 +160,7 @@ public class CreateDocument extends ThemeActivity {
 				}
 
 				Utils.saveDocumentEntries( id, mEntriesToInclude );
-				setResult( ResultCodes.NEED_TO_REFRESH );
+				setResult( Results.NEED_TO_REFRESH );
 				finish();
 			}else{
 				editText.requestFocus();

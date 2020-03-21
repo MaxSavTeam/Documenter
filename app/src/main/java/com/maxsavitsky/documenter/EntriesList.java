@@ -30,8 +30,8 @@ import com.maxsavitsky.documenter.adapters.DefaultChooseAdapter;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.data.types.Entry;
-import com.maxsavitsky.documenter.utils.RequestCodes;
-import com.maxsavitsky.documenter.utils.ResultCodes;
+import com.maxsavitsky.documenter.codes.Requests;
+import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.ParseSeparate;
 
@@ -108,7 +108,7 @@ public class EntriesList extends ThemeActivity {
 			Intent intent = new Intent( EntriesList.this, ViewEntry.class );
 			String id = ((TextView) v.findViewById( R.id.lblHiddenCategoryId )).getText().toString();
 			intent.putExtra( "id",  id);
-			startActivityForResult( intent, RequestCodes.VIEW_ENTRY );
+			startActivityForResult( intent, Requests.VIEW_ENTRY );
 		}
 	};
 
@@ -138,7 +138,7 @@ public class EntriesList extends ThemeActivity {
 				Intent intent1 = new Intent( EntriesList.this, EntryEditor.class );
 				intent1.putExtra( "id", mDocument.getId() );
 				intent1.putExtra( "type", "create" );
-				startActivityForResult( intent1, RequestCodes.CREATE_ENTRY );
+				startActivityForResult( intent1, Requests.CREATE_ENTRY );
 			}
 		} );
 
@@ -186,7 +186,7 @@ public class EntriesList extends ThemeActivity {
 								dialog.cancel();
 								try {
 									if ( MainData.finallyDeleteDocumentWithId( mDocument.getId() ) ) {
-										setResult( ResultCodes.NEED_TO_REFRESH );
+										setResult( Results.NEED_TO_REFRESH );
 										finish();
 									} else {
 										Toast.makeText(EntriesList.this, "Failed", Toast.LENGTH_SHORT).show();
@@ -226,7 +226,7 @@ public class EntriesList extends ThemeActivity {
 							applyTheme();
 							MainData.setDocumentsList( documents );
 							Utils.saveDocumentsList( documents );
-							setResult( ResultCodes.NEED_TO_REFRESH );
+							setResult( Results.NEED_TO_REFRESH );
 						}
 					}
 				} ).setNegativeButton( getResources().getString( R.string.cancel ), new DialogInterface.OnClickListener() {
@@ -252,7 +252,7 @@ public class EntriesList extends ThemeActivity {
 	}
 
 	private void restartActivity(){
-		setResult( ResultCodes.RESTART_ACTIVITY, new Intent(  ).putExtra( "id", mDocument.getId() ) );
+		setResult( Results.RESTART_ACTIVITY, new Intent(  ).putExtra( "id", mDocument.getId() ) );
 		finish();
 	}
 
@@ -337,15 +337,15 @@ public class EntriesList extends ThemeActivity {
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-		if(resultCode == ResultCodes.NEED_TO_REFRESH)
+		if(resultCode == Results.NEED_TO_REFRESH)
 			setupRecyclerView();
-		if(requestCode == RequestCodes.VIEW_ENTRY || requestCode == RequestCodes.CREATE_ENTRY){
-			if(resultCode == ResultCodes.REOPEN){
+		if(requestCode == Requests.VIEW_ENTRY || requestCode == Requests.CREATE_ENTRY){
+			if(resultCode == Results.REOPEN){
 				setupRecyclerView();
 				Intent intent = new Intent( this, ViewEntry.class );
 				if(data != null)
 					intent.putExtras( data );
-				startActivityForResult( intent, RequestCodes.VIEW_ENTRY );
+				startActivityForResult( intent, Requests.VIEW_ENTRY );
 			}
 		}
 		super.onActivityResult( requestCode, resultCode, data );

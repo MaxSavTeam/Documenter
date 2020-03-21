@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.ActivityInfo;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Point;
@@ -55,7 +54,7 @@ import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.utils.ChangeEntry;
-import com.maxsavitsky.documenter.utils.ResultCodes;
+import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.utils.SpanEntry;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.widget.TextEditor;
@@ -115,7 +114,7 @@ public class EntryEditor extends ThemeActivity {
 
 	private void backPressed(){
 		if(mTextEditor.getText() == null && mStartEditable == null) {
-			setResult( ResultCodes.OK );
+			setResult( Results.OK );
 			_finishActivity();
 			return;
 		}
@@ -138,7 +137,7 @@ public class EntryEditor extends ThemeActivity {
 					.setPositiveButton( R.string.yes, new DialogInterface.OnClickListener() {
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
-							setResult( ResultCodes.OK );
+							setResult( Results.OK );
 							_finishActivity();
 						}
 					} ).setNeutralButton( R.string.save_and_exit, new DialogInterface.OnClickListener() {
@@ -151,7 +150,7 @@ public class EntryEditor extends ThemeActivity {
 
 			builder.create().show();
 		} else {
-			setResult( ResultCodes.OK );
+			setResult( Results.OK );
 			_finishActivity();
 		}
 	}
@@ -983,7 +982,7 @@ public class EntryEditor extends ThemeActivity {
 			mEntry.saveText( text, mProperties );
 			mEntry.setAndSaveInfo( new Info( (int) new Date().getTime() ) );
 			mDocument.addEntry( mEntry );
-			setResult( ResultCodes.REOPEN, new Intent().putExtra( "id", id ) );
+			setResult( Results.REOPEN, new Intent().putExtra( "id", id ) );
 			finish();
 		}catch (Exception e){
 			Utils.getErrorDialog( e, this ).show();
@@ -1087,7 +1086,7 @@ public class EntryEditor extends ThemeActivity {
 				try {
 					mEntry.saveProperties( mProperties );
 					mEntry.saveText( mTextEditor.getText(), mProperties );
-					setResult( ResultCodes.REOPEN, new Intent(  ).putExtra( "id", mEntry.getId() ) );
+					setResult( Results.REOPEN, new Intent(  ).putExtra( "id", mEntry.getId() ) );
 				}catch (Exception ex){
 					Toast.makeText( EntryEditor.this, "edit text\n\n" + ex.toString(), Toast.LENGTH_LONG ).show();
 					ex.printStackTrace();

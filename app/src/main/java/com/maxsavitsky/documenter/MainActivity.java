@@ -1,45 +1,27 @@
 package com.maxsavitsky.documenter;
 
-import android.app.Activity;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.PersistableBundle;
 import android.os.StrictMode;
 import android.text.Html;
-import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 
 import com.maxsavitsky.documenter.data.MainData;
-import com.maxsavitsky.documenter.utils.RequestCodes;
-import com.maxsavitsky.documenter.utils.ResultCodes;
+import com.maxsavitsky.documenter.codes.Requests;
+import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.utils.Utils;
 
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 
 public class MainActivity extends ThemeActivity {
 	private Thread.UncaughtExceptionHandler defaultHandler;
@@ -229,7 +211,7 @@ public class MainActivity extends ThemeActivity {
 
 	public void viewCategoryList(View v){
 		Intent intent = new Intent(this, CategoryList.class);
-		startActivityForResult( intent, RequestCodes.CATEGORY_LIST );
+		startActivityForResult( intent, Requests.CATEGORY_LIST );
 	}
 
 	public void makeError(View v){
@@ -244,15 +226,15 @@ public class MainActivity extends ThemeActivity {
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-		if(requestCode == RequestCodes.CATEGORY_LIST ){
-			if(resultCode == ResultCodes.EXIT ){
+		if(requestCode == Requests.CATEGORY_LIST ){
+			if(resultCode == Results.EXIT ){
 				finishAndRemoveTask();
 			}
-			if(resultCode == ResultCodes.RESTART_ACTIVITY ){
+			if(resultCode == Results.RESTART_ACTIVITY ){
 				viewCategoryList( null );
 			}
 		}
-		if ( resultCode == ResultCodes.RESTART_APP ) {
+		if ( resultCode == Results.RESTART_APP ) {
 			restartApp();
 		}
 		super.onActivityResult( requestCode, resultCode, data );

@@ -22,8 +22,8 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Entry;
-import com.maxsavitsky.documenter.utils.RequestCodes;
-import com.maxsavitsky.documenter.utils.ResultCodes;
+import com.maxsavitsky.documenter.codes.Requests;
+import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.utils.Utils;
 
 import java.io.IOException;
@@ -46,7 +46,7 @@ public class ViewEntry extends ThemeActivity {
 
 	private void backPressed(){
 		if(!resultSet)
-			setResult( ResultCodes.OK );
+			setResult( Results.OK );
 
 		mEntry.getProperties().setScrollPosition( ( (WebView) findViewById( mWebViewId ) ).getScrollY() );
 		try {
@@ -89,7 +89,7 @@ public class ViewEntry extends ThemeActivity {
 								MainData.setEntriesList( entries );
 								Utils.saveEntriesList( entries );
 								applyTheme();
-								setResult( ResultCodes.NEED_TO_REFRESH );
+								setResult( Results.NEED_TO_REFRESH );
 								resultSet = true;
 							}
 						}
@@ -112,7 +112,7 @@ public class ViewEntry extends ThemeActivity {
 							dialog.cancel();
 							try {
 								if ( MainData.finallyDeleteEntryWithId( mEntry.getId() ) ) {
-									setResult( ResultCodes.NEED_TO_REFRESH );
+									setResult( Results.NEED_TO_REFRESH );
 									finish();
 								} else {
 									Toast.makeText(ViewEntry.this, "Failed", Toast.LENGTH_SHORT).show();
@@ -140,15 +140,15 @@ public class ViewEntry extends ThemeActivity {
 			Intent intent = new Intent( this, EntryEditor.class );
 			intent.putExtra( "type", "edit" );
 			intent.putExtra( "id", mEntry.getId() );
-			startActivityForResult( intent, RequestCodes.EDIT_ENTRY );
+			startActivityForResult( intent, Requests.EDIT_ENTRY );
 		}
 		return super.onOptionsItemSelected( item );
 	}
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-		if(requestCode == RequestCodes.EDIT_ENTRY){
-			if(resultCode == ResultCodes.REOPEN){
+		if(requestCode == Requests.EDIT_ENTRY){
+			if(resultCode == Results.REOPEN){
 				setResult( resultCode, data );
 				finish();
 			}

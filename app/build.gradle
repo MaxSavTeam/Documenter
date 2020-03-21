@@ -59,6 +59,6 @@ dependencies {
     implementation 'androidx.navigation:navigation-ui:2.2.1'
     implementation 'org.jetbrains:annotations-java5:15.0'
     implementation 'com.android.support:design:29.0.0'
-    implementation 'com.github.yukuku:ambilwarna:2.0.1'
     implementation files('libs/quadflask.colorpicker.aar')
+    implementation 'com.github.dhaval2404:imagepicker:1.6'
 }

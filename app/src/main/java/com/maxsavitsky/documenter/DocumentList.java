@@ -30,8 +30,8 @@ import com.maxsavitsky.documenter.adapters.DefaultChooseAdapter;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Category;
 import com.maxsavitsky.documenter.data.types.Document;
-import com.maxsavitsky.documenter.utils.RequestCodes;
-import com.maxsavitsky.documenter.utils.ResultCodes;
+import com.maxsavitsky.documenter.codes.Requests;
+import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.ParseSeparate;
 
@@ -116,7 +116,7 @@ public class DocumentList extends ThemeActivity {
 			TextView t = v.findViewById(R.id.lblHiddenCategoryId);
 			String id = t.getText().toString();
 			intent.putExtra("id", id);
-			startActivityForResult(intent, RequestCodes.ENTRIES_LIST );
+			startActivityForResult(intent, Requests.ENTRIES_LIST );
 		}
 	};
 
@@ -144,7 +144,7 @@ public class DocumentList extends ThemeActivity {
 								dialog.cancel();
 								try {
 									if ( MainData.finallyDeleteCategoryWithId( mCategory.getId() ) ) {
-										setResult( ResultCodes.NEED_TO_REFRESH );
+										setResult( Results.NEED_TO_REFRESH );
 										finish();
 									} else {
 										Toast.makeText(DocumentList.this, "Failed", Toast.LENGTH_SHORT).show();
@@ -187,7 +187,7 @@ public class DocumentList extends ThemeActivity {
 							categories.add(mCategory);
 							MainData.setCategoriesList(categories);
 							Utils.saveCategoriesList(categories);
-							setResult( ResultCodes.NEED_TO_REFRESH );
+							setResult( Results.NEED_TO_REFRESH );
 						}
 						dialog.cancel();
 					}
@@ -233,7 +233,7 @@ public class DocumentList extends ThemeActivity {
 	}
 
 	private void restartActivity() {
-		setResult( ResultCodes.RESTART_ACTIVITY, new Intent().putExtra( "id", mCategory.getId() ) );
+		setResult( Results.RESTART_ACTIVITY, new Intent().putExtra( "id", mCategory.getId() ) );
 		this.finish();
 	}
 
@@ -393,7 +393,7 @@ public class DocumentList extends ThemeActivity {
 		fab.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				startActivityForResult(new Intent(DocumentList.this, CreateDocument.class).putExtra("parent_id", mCategory.getId()), RequestCodes.CREATE_DOCUMENT );
+				startActivityForResult(new Intent(DocumentList.this, CreateDocument.class).putExtra("parent_id", mCategory.getId()), Requests.CREATE_DOCUMENT );
 			}
 		});
 
@@ -407,14 +407,14 @@ public class DocumentList extends ThemeActivity {
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-		if(resultCode == ResultCodes.NEED_TO_REFRESH){
+		if(resultCode == Results.NEED_TO_REFRESH){
 			setupRecyclerView();
 		}
-		if(requestCode == RequestCodes.ENTRIES_LIST){
-			if(resultCode == ResultCodes.RESTART_ACTIVITY){
+		if(requestCode == Requests.ENTRIES_LIST){
+			if(resultCode == Results.RESTART_ACTIVITY){
 				Intent intent = new Intent( this, EntriesList.class );
 				intent.putExtra( "id", data.getStringExtra( "id" ) );
-				startActivityForResult( intent, RequestCodes.ENTRIES_LIST );
+				startActivityForResult( intent, Requests.ENTRIES_LIST );
 			}
 		}
 		super.onActivityResult( requestCode, resultCode, data );

@@ -32,8 +32,8 @@ import com.maxsavitsky.documenter.adapters.CategoryListAdapter;
 import com.maxsavitsky.documenter.data.types.Category;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.utils.ApkInstaller;
-import com.maxsavitsky.documenter.utils.RequestCodes;
-import com.maxsavitsky.documenter.utils.ResultCodes;
+import com.maxsavitsky.documenter.codes.Requests;
+import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.utils.UpdatesChecker;
 import com.maxsavitsky.documenter.utils.UpdatesDownloader;
 import com.maxsavitsky.documenter.utils.Utils;
@@ -59,7 +59,7 @@ public class CategoryList extends ThemeActivity {
 	}
 
 	private void onMyBackPressed(){
-		setResult( ResultCodes.EXIT );
+		setResult( Results.EXIT );
 		finish();
 	}
 
@@ -84,7 +84,7 @@ public class CategoryList extends ThemeActivity {
 				break;
 			case R.id.item_settings:
 				Intent intent = new Intent( this, SettingsActivity.class );
-				startActivityForResult( intent, RequestCodes.SETTINGS );
+				startActivityForResult( intent, Requests.SETTINGS );
 				break;
 			case R.id.item_main_choose_sort_mode:
 				AlertDialog.Builder builder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
@@ -159,29 +159,29 @@ public class CategoryList extends ThemeActivity {
 			String id = t.getText().toString();
 			intent.putExtra("category_uid", id);
 			//startActivity(intent);
-			startActivityForResult( intent, RequestCodes.DOCUMENT_LIST );
+			startActivityForResult( intent, Requests.DOCUMENT_LIST );
 		}
 	};
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-		if(requestCode == RequestCodes.DOCUMENT_LIST ){
-			if(resultCode == ResultCodes.RESTART_ACTIVITY ){
+		if(requestCode == Requests.DOCUMENT_LIST ){
+			if(resultCode == Results.RESTART_ACTIVITY ){
 				Intent intent = new Intent( this, DocumentList.class );
 				if ( data != null ) {
 					intent.putExtra( "category_uid", data.getStringExtra( "id" ) );
 				}
-				startActivityForResult( intent, RequestCodes.DOCUMENT_LIST );
+				startActivityForResult( intent, Requests.DOCUMENT_LIST );
 			}
 		}
-		if ( resultCode == ResultCodes.RESTART_APP ) {
+		if ( resultCode == Results.RESTART_APP ) {
 			setResult( resultCode );
 			finishActivity();
 		}
-		if(resultCode == ResultCodes.NEED_TO_REFRESH){
+		if(resultCode == Results.NEED_TO_REFRESH){
 			setupRecyclerView();
 		}
-		if(resultCode == ResultCodes.EXIT){
+		if(resultCode == Results.EXIT){
 			onMyBackPressed();
 		}
 		super.onActivityResult( requestCode, resultCode, data );
@@ -280,7 +280,7 @@ public class CategoryList extends ThemeActivity {
 			@Override
 			public void onClick(View view) {
 				Intent intent = new Intent( CategoryList.this, CreateCategory.class );
-				startActivityForResult( intent, RequestCodes.CREATE_CATEGORY );
+				startActivityForResult( intent, Requests.CREATE_CATEGORY );
 			}
 		});
 
@@ -299,7 +299,7 @@ public class CategoryList extends ThemeActivity {
 								String text = editText.getText().toString();
 								dialog.cancel();
 								if ( text.hashCode() == 1683456505 ) {
-									setResult( ResultCodes.OK );
+									setResult( Results.OK );
 									finish();
 								} else {
 									Toast.makeText( CategoryList.this, "Failed :P", Toast.LENGTH_SHORT ).show();

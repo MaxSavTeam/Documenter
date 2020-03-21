@@ -1,6 +1,6 @@
-package com.maxsavitsky.documenter.utils;
+package com.maxsavitsky.documenter.codes;
 
-public class ResultCodes {
+public class Results {
 	// 2xx
 	public static final int OK = 201;
 	public static final int RESTART_ACTIVITY = 202;

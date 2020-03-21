@@ -20,7 +20,7 @@ import com.maxsavitsky.documenter.data.types.Category;
 import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.data.Info;
 import com.maxsavitsky.documenter.data.MainData;
-import com.maxsavitsky.documenter.utils.ResultCodes;
+import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.utils.Utils;
 
 import java.util.ArrayList;
@@ -113,7 +113,7 @@ public class CreateCategory extends ThemeActivity {
 
 				pd.dismiss();
 
-				setResult( ResultCodes.NEED_TO_REFRESH );
+				setResult( Results.NEED_TO_REFRESH );
 				finish();
 			}else{
 				editText.requestFocus();

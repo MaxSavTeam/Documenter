@@ -1,6 +1,6 @@
-package com.maxsavitsky.documenter.utils;
+package com.maxsavitsky.documenter.codes;
 
-public class RequestCodes {
+public class Requests {
 	// 1xx
 	public static final int CATEGORY_LIST = 101;
 	public static final int DOCUMENT_LIST = 102;

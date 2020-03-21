@@ -22,7 +22,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
 import com.maxsavitsky.documenter.utils.ApkInstaller;
-import com.maxsavitsky.documenter.utils.ResultCodes;
+import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.utils.UpdatesChecker;
 import com.maxsavitsky.documenter.utils.UpdatesDownloader;
 import com.maxsavitsky.documenter.utils.Utils;
@@ -52,7 +52,7 @@ public class SettingsActivity extends ThemeActivity {
 
 	@Override
 	public void onBackPressed() {
-		setResult( ResultCodes.OK );
+		setResult( Results.OK );
 		finish();
 	}
 
@@ -93,7 +93,7 @@ public class SettingsActivity extends ThemeActivity {
 							@Override
 							public void onClick(DialogInterface dialog, int which) {
 								dialog.cancel();
-								setResult( ResultCodes.RESTART_APP );
+								setResult( Results.RESTART_APP );
 								finish();
 							}
 						} ).setNegativeButton( R.string.cancel, new DialogInterface.OnClickListener() {
@@ -339,7 +339,7 @@ public class SettingsActivity extends ThemeActivity {
 			zis.close();
 
 			Toast.makeText( this, R.string.successful, Toast.LENGTH_SHORT ).show();
-			setResult( ResultCodes.RESTART_APP );
+			setResult( Results.RESTART_APP );
 			finish();
 		} catch (Exception e) {
 			Utils.getErrorDialog( e, this ).show();
