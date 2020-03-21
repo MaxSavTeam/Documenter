@@ -78,4 +78,9 @@
     <string name="parameters">Parameters</string>
     <string name="you_will_not_pass">You will not pass!</string>
     <string name="warning_when_memory_denied">Without access to memory, the application cannot work. Press "Request" and allow access, please</string>
+    <string name="loading">Loading…</string>
+    <string name="entry_is_loading">Entry is loading…</string>
+    <string name="edit_entry">Edit entry</string>
+    <string name="create_new_entry">Create new entry</string>
+    <string name="pick_images">Pick images</string>
 </resources>

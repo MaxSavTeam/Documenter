@@ -1,12 +1,14 @@
 package com.maxsavitsky.documenter;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,22 +19,25 @@ import android.text.Layout;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.Spanned;
-import android.text.style.AbsoluteSizeSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StrikethroughSpan;
 import android.text.style.StyleSpan;
 import android.text.style.UnderlineSpan;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.animation.TranslateAnimation;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,7 +54,9 @@ import com.maxsavitsky.documenter.data.Info;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.data.types.Entry;
+import com.maxsavitsky.documenter.utils.ChangeEntry;
 import com.maxsavitsky.documenter.utils.ResultCodes;
+import com.maxsavitsky.documenter.utils.SpanEntry;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.widget.TextEditor;
 import com.maxsavitsky.documenter.xml.XMLParser;
@@ -79,80 +86,6 @@ public class EntryEditor extends ThemeActivity {
 	private boolean mDarkTheme;
 	private SharedPreferences sp;
 	private ArrayList<Integer> mColorHistory = new ArrayList<>();
-
-	private static class ChangeEntry{
-		private SpannableString mSpannableString;
-		private int mCursorPosition;
-
-		public ChangeEntry(SpannableString spannableString, int cursorPosition) {
-			mSpannableString = spannableString;
-			mCursorPosition = cursorPosition;
-		}
-
-		public SpannableString getSpannableString() {
-			return mSpannableString;
-		}
-
-		public int getCursorPosition() {
-			return mCursorPosition;
-		}
-	}
-
-	private static class SpanEntry{
-		private ForegroundColorSpan mSpan;
-		private StyleSpan mStyleSpan;
-		private UnderlineSpan mUnderlineSpan;
-		private StrikethroughSpan mStrikethroughSpan;
-		private int st, end;
-
-		public SpanEntry(ForegroundColorSpan span, int st, int end) {
-			mSpan = span;
-			this.st = st;
-			this.end = end;
-		}
-
-		public SpanEntry(StyleSpan styleSpan, int st, int end) {
-			mStyleSpan = styleSpan;
-			this.st = st;
-			this.end = end;
-		}
-
-		public SpanEntry(UnderlineSpan underlineSpan, int st, int end) {
-			mUnderlineSpan = underlineSpan;
-			this.st = st;
-			this.end = end;
-		}
-
-		public SpanEntry(StrikethroughSpan strikethroughSpan, int st, int end) {
-			mStrikethroughSpan = strikethroughSpan;
-			this.st = st;
-			this.end = end;
-		}
-
-		public StrikethroughSpan getStrikethroughSpan() {
-			return mStrikethroughSpan;
-		}
-
-		public UnderlineSpan getUnderlineSpan() {
-			return mUnderlineSpan;
-		}
-
-		public StyleSpan getStyleSpan() {
-			return mStyleSpan;
-		}
-
-		public ForegroundColorSpan getForegroundSpan() {
-			return mSpan;
-		}
-
-		public int getSt() {
-			return st;
-		}
-
-		public int getEnd() {
-			return end;
-		}
-	}
 
 	private interface OnLoadedTextListener{
 		void loaded(Spannable spannable, String originalText);
@@ -228,24 +161,94 @@ public class EntryEditor extends ThemeActivity {
 		if(item.getItemId() == android.R.id.home){
 			backPressed();
 		}else if(item.getItemId() == R.id.item_undo){
-			ChangeEntry changeEntry = mHistory.get( --mHistoryIterator );
+			/*ChangeEntry changeEntry = mHistory.get( --mHistoryIterator );
 			mTextEditor.setTextW( changeEntry.getSpannableString() );
 			if(changeEntry.getCursorPosition() > mTextEditor.length())
 				changeEntry.mCursorPosition = mTextEditor.length();
-			mTextEditor.setSelection( changeEntry.getCursorPosition() );
+			mTextEditor.setSelection( changeEntry.getCursorPosition() );*/
+			loadTextFromHistory( --mHistoryIterator );
 			if(mHistoryIterator == 0){
 				disableThisMenuItem( UNDO_MENU_INDEX );
 			}
 			enableThisMenuItem( REDO_MENU_INDEX );
 		}else if(item.getItemId() == R.id.item_redo){
-			mTextEditor.setTextW( mHistory.get( ++mHistoryIterator ).getSpannableString() );
-			mTextEditor.setSelection( mHistory.get( mHistoryIterator ).getCursorPosition() );
+			/*mTextEditor.setTextW( mHistory.get( ++mHistoryIterator ).getSpannableString() );
+			mTextEditor.setSelection( mHistory.get( mHistoryIterator ).getCursorPosition() );*/
+			loadTextFromHistory( ++mHistoryIterator );
 			if(mHistoryIterator == mHistory.size() - 1){
 				disableThisMenuItem( REDO_MENU_INDEX );
 			}
 			enableThisMenuItem( UNDO_MENU_INDEX );
 		}
 		return super.onOptionsItemSelected( item );
+	}
+
+	private void hideUpButton(){
+		FloatingActionButton fab = findViewById( R.id.fabUp );
+		TranslateAnimation translateAnimation = new TranslateAnimation(0, 500, 0, 0);
+		translateAnimation.setDuration( 600 );
+		translateAnimation.setFillAfter( true );
+		fab.startAnimation( translateAnimation );
+	}
+
+	private void showUpButton(){
+		FloatingActionButton fab = findViewById( R.id.fabUp );
+		TranslateAnimation translateAnimation = new TranslateAnimation(500, 0, 0, 0);
+		translateAnimation.setDuration( 600 );
+		translateAnimation.setFillAfter( true );
+		fab.startAnimation( translateAnimation );
+	}
+
+	private ProgressDialog mLoadFromHistoryDialog;
+
+	private void loadTextFromHistory(int historyIterator){
+		final ChangeEntry changeEntry = mHistory.get( historyIterator );
+		final String source = changeEntry.getText();
+		final int scrollY = mTextEditor.getScrollY();
+		final Editable s = mTextEditor.getText();
+		if(s != null)
+			s.clear();
+
+		mLoadFromHistoryDialog = new ProgressDialog( this );
+		mLoadFromHistoryDialog.setMessage( getResources().getString( R.string.loading ) );
+		mLoadFromHistoryDialog.setCancelable( false );
+		final OnLoadedTextListener listener = new OnLoadedTextListener() {
+			@Override
+			public void loaded(Spannable spannable, String originalText) {
+				if(changeEntry.getCursorPosition() > mTextEditor.getSelectionStart())
+					mTextEditor.setSelection( mTextEditor.getSelectionStart() );
+				else {
+					mTextEditor.setSelection( changeEntry.getCursorPosition() );
+				}
+				runOnUiThread( new Runnable() {
+					@Override
+					public void run() {
+						mLoadFromHistoryDialog.dismiss();
+					}
+				} );
+			}
+
+			@Override
+			public void exceptionOccurred(Exception e) {
+				mLoadFromHistoryDialog.dismiss();
+				if ( s != null ) s.clear();
+
+				Utils.getErrorDialog( e, EntryEditor.this ).show();
+			}
+		};
+		mLoadFromHistoryDialog.show();
+		new Thread( new Runnable() {
+			@Override
+			public void run() {
+				try {
+					setTextInEditor( source );
+					listener.loaded( null, null );
+				}catch (Exception e){
+					listener.exceptionOccurred( e );
+					e.printStackTrace();
+				}
+			}
+		} ).start();
 	}
 
 	@Override
@@ -255,16 +258,15 @@ public class EntryEditor extends ThemeActivity {
 
 	ProgressDialog mProgressDialogOnTextLoad;
 	private long mStartLoadTextTime;
+	private boolean scrolled = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate( savedInstanceState );
-		setRequestedOrientation( ActivityInfo.SCREEN_ORIENTATION_PORTRAIT );
+		//setRequestedOrientation( ActivityInfo.SCREEN_ORIENTATION_PORTRAIT );
 		setContentView( R.layout.activity_create_entry );
 		Toolbar toolbar = findViewById( R.id.toolbar );
 		setSupportActionBar( toolbar );
-
-		applyTheme();
 
 		sp = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
 
@@ -290,13 +292,13 @@ public class EntryEditor extends ThemeActivity {
 			mEntry.setProperties( new Entry.Properties( mProperties ) );
 			mDefaultTextColor = mProperties.getDefaultTextColor();
 			mTextEditor.setTextColor( mDefaultTextColor );
-			title = "Edit entry text";
-			applyTheme();
+			getWindow().getDecorView().setBackgroundColor( mProperties.getBgColor() );
+			title = getResources().getString( R.string.edit_entry );
 
 			try {
 				mProgressDialogOnTextLoad = new ProgressDialog( this );
-				mProgressDialogOnTextLoad.setTitle( "Loading..." );
-				mProgressDialogOnTextLoad.setMessage( "We're loading your entry..." );
+				mProgressDialogOnTextLoad.setTitle( R.string.loading );
+				mProgressDialogOnTextLoad.setMessage( getResources().getString( R.string.entry_is_loading ) );
 				mProgressDialogOnTextLoad.setCancelable( false );
 				mProgressDialogOnTextLoad.show();
 				new Thread( new Runnable() {
@@ -324,13 +326,42 @@ public class EntryEditor extends ThemeActivity {
 			}
 		}else{
 			mDocument = MainData.getDocumentWithId( getIntent().getStringExtra( "id" ) );
+			title = getResources().getString( R.string.create_new_entry );
+			hideUpButton();
 		}
-
+		invalidateOptionsMenu();
+		applyTheme();
+		findViewById( R.id.fabUp ).setOnClickListener( new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				ScrollView scrollView = findViewById( R.id.scrollView );
+				scrollView.smoothScrollTo( 0, 0 );
+			}
+		} );
 		readColorHistory();
+
+		(( ScrollView ) findViewById( R.id.scrollView )).setOnScrollChangeListener( new View.OnScrollChangeListener() {
+			@Override
+			public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+				if ( oldScrollY <= 5 && scrollY > 5 ) {
+					showUpButton();
+				} else if ( scrollY <= 5 ) {
+					hideUpButton();
+				}
+			}
+		} );
 
 		setEditTextSize();
 		FloatingActionButton fab = findViewById( R.id.fabSaveEntry );
 		fab.setOnClickListener( saveEntry );
+		fab.setOnLongClickListener( new View.OnLongClickListener() {
+			@Override
+			public boolean onLongClick(View v) {
+				if(mEntry != null)
+					Toast.makeText( EntryEditor.this, mEntry.getId(), Toast.LENGTH_SHORT ).show();
+				return true;
+			}
+		} );
 		Utils.showKeyboard( mTextEditor, this );
 
 		View llBottomSheet = findViewById( R.id.bottom_sheet );
@@ -381,13 +412,10 @@ public class EntryEditor extends ThemeActivity {
 		sp.edit().putString( "color_history", save ).apply();
 	}
 
-	private  void setTextInEditor(String text){
-		AbsoluteSizeSpan[] absoluteSizeSpans = mTextEditor.getText().getSpans( 0, mTextEditor.getText().length(), AbsoluteSizeSpan.class );
-		if(absoluteSizeSpans.length > 0){
-			for(AbsoluteSizeSpan a : absoluteSizeSpans) {
-				mTextEditor.getText().removeSpan( a );
-			}
-		}
+	private void setTextInEditor(String text){
+		Editable e = mTextEditor.getText();
+		if(e != null)
+			e.clear();
 
 		String[] splitStrings = text.split( "\n" );
 
@@ -413,7 +441,13 @@ public class EntryEditor extends ThemeActivity {
 					final double end = System.currentTimeMillis();
 					final double seconds = (end - mStartLoadTextTime) / 1000;
 					Log.v("Text loader", "Text loaded after " + seconds);
-					//Toast.makeText( CreateEntry.this, "Text loaded after " + seconds + " seconds", Toast.LENGTH_LONG ).show();
+					ScrollView scrollView = findViewById( R.id.scrollView );
+					WindowManager w = (WindowManager) getSystemService( Context.WINDOW_SERVICE );
+					Display d = w.getDefaultDisplay();
+					Point p = new Point();
+					d.getSize( p );
+					if(scrollView.getHeight() <= p.y)
+						hideUpButton();
 				}
 			} );
 		}
@@ -433,12 +467,16 @@ public class EntryEditor extends ThemeActivity {
 	};
 
 	private void enableThisMenuItem(int i){
+		if(mMenu == null)
+			return;
 		mMenu.getItem( i ).setEnabled( true );
 		mMenu.getItem( i ).setIcon( i == UNDO_MENU_INDEX ? R.drawable.ic_undo : R.drawable.ic_redo );
 		//invalidateOptionsMenu();
 	}
 
 	private void disableThisMenuItem(int i){
+		if(mMenu == null)
+			return;
 		mMenu.getItem( i ).setEnabled( false );
 		mMenu.getItem( i ).setIcon( i == UNDO_MENU_INDEX ? R.drawable.ic_disabled_undo : R.drawable.ic_disabled_redo );
 		//invalidateOptionsMenu();
@@ -458,7 +496,7 @@ public class EntryEditor extends ThemeActivity {
 		}
 		enableThisMenuItem( UNDO_MENU_INDEX );
 		disableThisMenuItem( REDO_MENU_INDEX );
-		mHistory.add( new ChangeEntry( spannableString, pos ) );
+		mHistory.add( new ChangeEntry( Html.toHtml( spannableString ), pos ) );
 		while(mHistory.size() > 100){
 			mHistory.remove( 0 );
 		}
@@ -507,6 +545,7 @@ public class EntryEditor extends ThemeActivity {
 			btnItalic.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
 			btnUnderline.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
 			btnStrike.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
+			mSelectionBounds = new int[]{newSelectionPosition, newSelectionPosition};
 		}
 
 		@Override
@@ -519,6 +558,7 @@ public class EntryEditor extends ThemeActivity {
 
 				e.setSpan( new ForegroundColorSpan( mDefaultTextColor ), start, start + len - 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 			}
+			saveTextChange();
 		}
 	};
 
@@ -592,7 +632,7 @@ public class EntryEditor extends ThemeActivity {
 				s.removeSpan( span );
 			}
 			for(SpanEntry e : spansToApply){
-				s.setSpan( e.getUnderlineSpan(), e.getSt(), e.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+				s.setSpan( e.getUnderlineSpan(), e.getStart(), e.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 			}
 
 			v.setTag( !isUnderline );
@@ -629,7 +669,7 @@ public class EntryEditor extends ThemeActivity {
 				s.removeSpan( span );
 			}
 			for(SpanEntry e : spansToApply){
-				s.setSpan( e.getStrikethroughSpan(), e.getSt(), e.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+				s.setSpan( e.getStrikethroughSpan(), e.getStart(), e.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 			}
 
 			v.setTag( !isStrike );
@@ -685,7 +725,7 @@ public class EntryEditor extends ThemeActivity {
 			}
 		}
 		for(SpanEntry spanEntry : spansToApply){
-			s.setSpan( spanEntry.getStyleSpan(), spanEntry.getSt(), spanEntry.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+			s.setSpan( spanEntry.getStyleSpan(), spanEntry.getStart(), spanEntry.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 		}
 		if(action.equals( "apply" ))
 			s.setSpan( new StyleSpan( typeface ), selSt, selEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
@@ -736,7 +776,7 @@ public class EntryEditor extends ThemeActivity {
 			s.removeSpan( span );
 		}
 		for(SpanEntry entry : spansToApply){
-			s.setSpan( entry.getForegroundSpan(), entry.getSt(), entry.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+			s.setSpan( entry.getForegroundSpan(), entry.getStart(), entry.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 		}
 		s.setSpan( new ForegroundColorSpan( color ), selSt, selEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 	}
@@ -839,6 +879,9 @@ public class EntryEditor extends ThemeActivity {
 		@Override
 		public void onClick(View v) {
 			final Editable e = mTextEditor.getText();
+			if(e == null)
+				return;
+
 			final ForegroundColorSpan[] spans = e.getSpans( 0, e.length(), ForegroundColorSpan.class );
 			AlertDialog alertDialog = getColorPickerDialog( R.string.set_text_color_of_all_text,
 					(spans.length > 0 ? spans[0].getForegroundColor() : Color.BLACK),
@@ -848,7 +891,7 @@ public class EntryEditor extends ThemeActivity {
 							for(ForegroundColorSpan span : spans){
 								e.removeSpan( span );
 							}
-							e.setSpan( new ForegroundColorSpan( mSelectedColor ), 0, mTextEditor.getText().length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+							e.setSpan( new ForegroundColorSpan( mSelectedColor ), 0, e.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 							btnTextColorPicker.setBackgroundTintList( ColorStateList.valueOf( mSelectedColor ) );
 							mTextEditor.setTextColor( mSelectedColor );
 

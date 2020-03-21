@@ -25,6 +25,17 @@
     <include layout="@layout/bottom_sheet" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabUp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        app:srcCompat="@drawable/ic_expand_less"
+        android:layout_gravity="end|bottom"
+        android:layout_marginEnd="16dp"
+        android:backgroundTint="@color/gray"
+        android:layout_marginBottom="90dp"/>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabSaveEntry"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
