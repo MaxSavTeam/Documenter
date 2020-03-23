@@ -21,10 +21,13 @@
     </com.google.android.material.appbar.AppBarLayout>
 
     <ScrollView
+        android:id="@+id/viewEntryScrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="?attr/actionBarSize"
-        android:id="@+id/viewEntryScrollView">
+        android:scrollIndicators="end|right"
+        android:scrollbarSize="@dimen/scrollbars_size"
+        android:scrollbarStyle="insideInset">
 
         <TextView
             android:id="@+id/textViewContent"
@@ -33,5 +36,16 @@
             android:layout_marginStart="5dp"
             android:layout_marginEnd="5dp" />
     </ScrollView>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_expand_less"
+        android:backgroundTint="@color/gray"
+        app:borderWidth="0dp"
+        android:id="@+id/fabUpView"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp" />
+
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

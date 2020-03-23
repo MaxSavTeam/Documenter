@@ -18,8 +18,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.animation.TranslateAnimation;
 import android.webkit.WebView;
 import android.widget.EditText;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,6 +31,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.codes.Requests;
@@ -43,8 +46,8 @@ public class ViewEntry extends ThemeActivity {
 
 	private Entry mEntry;
 	private SharedPreferences sp;
-	private int mWebViewId;
 	private boolean resultSet = false;
+	private ScrollView mScrollView;
 
 	private void applyTheme(){
 		ActionBar actionBar = getSupportActionBar();
@@ -58,7 +61,7 @@ public class ViewEntry extends ThemeActivity {
 		if(!resultSet)
 			setResult( Results.OK );
 
-		//mEntry.getProperties().setScrollPosition( ( (WebView) findViewById( mWebViewId ) ).getScrollY() );
+		mEntry.getProperties().setScrollPosition( mScrollView.getScrollY() );
 		try {
 			mEntry.saveProperties( mEntry.getProperties() );
 		} catch (Exception e) {
@@ -141,7 +144,7 @@ public class ViewEntry extends ThemeActivity {
 					} ).setCancelable( false );
 			deletionBuilder.create().show();
 		}else if(item.getItemId() == R.id.item_edit_entry_text){
-			//mEntry.getProperties().setScrollPosition( ((WebView) findViewById( mWebViewId )).getScrollY() );
+			mEntry.getProperties().setScrollPosition( mScrollView.getScrollY() );
 			try {
 				mEntry.saveProperties( mEntry.getProperties() );
 			} catch (Exception e) {
@@ -229,6 +232,14 @@ public class ViewEntry extends ThemeActivity {
 						t.append( spannableString );
 					}
 					mProgressDialog.dismiss();
+					if(mEntry.getProperties().isSaveLastPos()){
+						mScrollView.post( new Runnable() {
+							@Override
+							public void run() {
+								mScrollView.smoothScrollTo(0, mEntry.getProperties().getScrollPosition() );
+							}
+						} );
+					}
 				}
 			} );
 		}
@@ -238,6 +249,22 @@ public class ViewEntry extends ThemeActivity {
 			Utils.getErrorDialog( e, ViewEntry.this ).show();
 		}
 	};
+
+	private void hideUpButton(){
+		FloatingActionButton fab = findViewById( R.id.fabUpView );
+		TranslateAnimation translateAnimation = new TranslateAnimation(0, 500, 0, 0);
+		translateAnimation.setDuration( 600 );
+		translateAnimation.setFillAfter( true );
+		fab.startAnimation( translateAnimation );
+	}
+
+	private void showUpButton(){
+		FloatingActionButton fab = findViewById( R.id.fabUpView );
+		TranslateAnimation translateAnimation = new TranslateAnimation(500, 0, 0, 0);
+		translateAnimation.setDuration( 600 );
+		translateAnimation.setFillAfter( true );
+		fab.startAnimation( translateAnimation );
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -259,6 +286,25 @@ public class ViewEntry extends ThemeActivity {
 		TextView textView = findViewById(R.id.textViewContent);
 		textView.setTextSize( TypedValue.COMPLEX_UNIT_DIP, mEntry.getProperties().getTextSize() );
 		textView.setTextColor( mEntry.getProperties().getDefaultTextColor() );
+
+		mScrollView = findViewById( R.id.viewEntryScrollView );
+		mScrollView.setOnScrollChangeListener( new View.OnScrollChangeListener() {
+			@Override
+			public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+				if ( oldScrollY <= 5 && scrollY > 5 ) {
+					showUpButton();
+				} else if ( scrollY <= 5 ) {
+					hideUpButton();
+				}
+			}
+		} );
+		findViewById( R.id.fabUpView ).setOnClickListener( new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				mScrollView.smoothScrollTo( 0, 0 );
+			}
+		} );
+
 		getWindow().getDecorView().setBackgroundColor( mEntry.getProperties().getBgColor() );
 		final Thread loadThread = new Thread( new Runnable() {
 			@Override
@@ -288,21 +334,5 @@ public class ViewEntry extends ThemeActivity {
 				} );
 		mProgressDialog.show();
 		loadThread.start();
-
-		/*WebView webView = findViewById( R.id.webView );
-		mWebViewId = R.id.webView;
-		WebSettings settings = webView.getSettings();
-		settings.setAllowFileAccessFromFileURLs( true );
-		settings.setAllowFileAccess( true );
-		settings.setJavaScriptCanOpenWindowsAutomatically( false );
-		//settings.setUseWideViewPort( true );
-		//settings.setLoadWithOverviewMode(true);
-		//webView.setBackgroundColor( entryProperty.getBgColor() );
-		settings.setDefaultFontSize( mEntry.getProperties().textSize );
-		webView.loadUrl( "file://" + mEntry.getPathDir() + "text.html" );
-		if( mEntry.getProperties().isSaveLastPos())
-			webView.setScrollY( mEntry.getProperties().getScrollPosition() );
-		else
-			webView.setScrollY( 0 );*/
 	}
 }

@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -17,28 +16,23 @@ import android.graphics.Point;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.PictureDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.Html;
 import android.text.Layout;
-import android.text.SpanWatcher;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.AbsoluteSizeSpan;
-import android.text.style.DynamicDrawableSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.ImageSpan;
 import android.text.style.StrikethroughSpan;
 import android.text.style.StyleSpan;
 import android.text.style.UnderlineSpan;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.Menu;
@@ -83,9 +77,6 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.CopyOption;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -386,14 +377,6 @@ public class EntryEditor extends ThemeActivity {
 		setEditTextSize();
 		FloatingActionButton fab = findViewById( R.id.fabSaveEntry );
 		fab.setOnClickListener( saveEntry );
-		fab.setOnLongClickListener( new View.OnLongClickListener() {
-			@Override
-			public boolean onLongClick(View v) {
-				if(mEntry != null)
-					Toast.makeText( EntryEditor.this, mEntry.getId(), Toast.LENGTH_SHORT ).show();
-				return true;
-			}
-		} );
 		Utils.showKeyboard( mTextEditor, this );
 
 		View llBottomSheet = findViewById( R.id.bottom_sheet );
@@ -557,7 +540,7 @@ public class EntryEditor extends ThemeActivity {
 					fos.close();
 					in.close();
 
-					setImageAtSelBounds( Uri.fromFile(file), file );
+					setImageAtSelBounds( file );
 				} catch (IOException | NullPointerException e) {
 					e.printStackTrace();
 				}
@@ -573,10 +556,18 @@ public class EntryEditor extends ThemeActivity {
 		return p;
 	}
 
-	private void setImageAtSelBounds(Uri uri, File file){
+	private void setImageAtSelBounds(File file){
 		Editable e = mTextEditor.getText();
-		if(e == null)
-			return;
+		int s;
+		if(e == null) {
+			mTextEditor.setText( "\n \n" );
+			mSelectionBounds[0] = 0;
+			s = 0;
+			e = mTextEditor.getText();
+		}else{
+			s = mSelectionBounds[0];
+			e.insert( s, "\n \n" );
+		}
 		Bitmap b = BitmapFactory.decodeFile( file.getPath() );
 		Point size = getScreenSize();
 		Drawable d = new BitmapDrawable(b);
@@ -591,8 +582,6 @@ public class EntryEditor extends ThemeActivity {
 		}
 		ImageSpan imageSpan = new ImageSpan(d, file.getPath());
 
-		int s = mSelectionBounds[0];
-		e.insert( s, "\n \n" );
 		e.setSpan( imageSpan, s+1, s + 2, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 	}
 
