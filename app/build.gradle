@@ -20,6 +20,16 @@ android {
     compileSdkVersion 29
     buildToolsVersion "29.0.2"
 
+    def buildPropFile = file('build.properties')
+    def code = -1
+    if(buildPropFile.canRead()) {
+        Properties p = new Properties()
+        p.load(new FileInputStream(buildPropFile))
+        code = p['BUILD'].toInteger() + 1
+        p['BUILD'] = code.toString()
+        p.store(buildPropFile.newWriter(), null)
+    }
+
     defaultConfig {
         applicationId "com.maxsavitsky.documenter"
         minSdkVersion 23
@@ -27,8 +37,7 @@ android {
         versionCode 15
         versionName '0.5.1'
         buildConfigField "String", "COMPILATION_DATE", "\"${getDate()}\""
-
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField "int", "BUILD_CODE", "${code}"
     }
 
     buildTypes {

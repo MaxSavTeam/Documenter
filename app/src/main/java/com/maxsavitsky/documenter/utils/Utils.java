@@ -223,6 +223,16 @@ public class Utils {
 		return new File( getExternalStoragePath().getPath() + "/temp" );
 	}
 
+	public static void clearTempFolder(){
+		File file = getTempFolder();
+		File[] files = file.listFiles();
+		if(files != null && files.length > 0){
+			for(File child : files){
+				child.delete();
+			}
+		}
+	}
+
 	public static File getEntryImagesMediaFolder(String id){
 		if(MainData.isExists( id )){
 			return MainData.getEntryWithId( id ).getImagesMediaFolder();

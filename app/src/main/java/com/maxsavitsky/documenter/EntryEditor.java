@@ -78,13 +78,19 @@ import com.maxsavitsky.documenter.widget.TextEditor;
 import com.maxsavitsky.documenter.xml.XMLParser;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import static com.maxsavitsky.documenter.codes.Requests.*;
 
@@ -133,6 +139,7 @@ public class EntryEditor extends ThemeActivity {
 	}
 
 	private void _finishActivity(){
+		Utils.clearTempFolder();
 		finish();
 	}
 
@@ -664,18 +671,18 @@ public class EntryEditor extends ThemeActivity {
 			btnUnderline.setOnClickListener( null );
 			btnStrike.setOnClickListener( null );
 			setBtnTextColorPickerBackground();
-			btnBold.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
-			btnItalic.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
-			btnUnderline.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
-			btnStrike.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
+			btnBold.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
+			btnItalic.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
+			btnUnderline.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
+			btnStrike.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
 			mSelectionBounds = new int[]{newSelectionPosition, newSelectionPosition};
 		}
 
 		@Override
 		public void onTextChanged(CharSequence text, final int start, final int lengthBefore, final int lengthAfter) {
+			Editable e = mTextEditor.getText();
 			if(lengthAfter > lengthBefore){
 				int len = lengthAfter - lengthBefore;
-				Editable e = mTextEditor.getText();
 				if(e == null)
 					return;
 
@@ -703,31 +710,31 @@ public class EntryEditor extends ThemeActivity {
 				isItalicThere = true;
 		}
 		if(isBoldThere){
-			btnBold.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( R.color.btnClicked ) ) );
+			btnBold.setBackgroundTintList( ColorStateList.valueOf( getColor( R.color.btnClicked ) ) );
 		}else{
-			btnBold.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
+			btnBold.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
 		}
 		btnBold.setTag( isBoldThere );
 
 		if(isItalicThere){
-			btnItalic.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( R.color.btnClicked ) ) );
+			btnItalic.setBackgroundTintList( ColorStateList.valueOf( getColor( R.color.btnClicked ) ) );
 		}else{
-			btnItalic.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
+			btnItalic.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
 		}
 		btnItalic.setTag( isItalicThere );
 
 		if(isUnderlineThere){
-			btnUnderline.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( R.color.btnClicked ) ) );
+			btnUnderline.setBackgroundTintList( ColorStateList.valueOf( getColor( R.color.btnClicked ) ) );
 		}else{
-			btnUnderline.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
+			btnUnderline.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
 		}
 		btnUnderline.setTag(isUnderlineThere);
 
 		btnStrike.setTag( isStrikeThere );
 		if(isStrikeThere){
-			btnStrike.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( R.color.btnClicked ) ) );
+			btnStrike.setBackgroundTintList( ColorStateList.valueOf( getColor( R.color.btnClicked ) ) );
 		}else{
-			btnStrike.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
+			btnStrike.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
 		}
 	}
 
@@ -761,9 +768,9 @@ public class EntryEditor extends ThemeActivity {
 			v.setTag( !isUnderline );
 			if(!isUnderline){ // apply
 				s.setSpan( new UnderlineSpan(), selSt, selEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-				v.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( R.color.btnClicked ) ) );
+				v.setBackgroundTintList( ColorStateList.valueOf( getColor( R.color.btnClicked ) ) );
 			}else{ //delete
-				v.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
+				v.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
 			}
 		}
 	};
@@ -798,9 +805,9 @@ public class EntryEditor extends ThemeActivity {
 			v.setTag( !isStrike );
 			if(!isStrike){ // apply
 				s.setSpan( new StrikethroughSpan(), selSt, selEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-				v.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( R.color.btnClicked ) ) );
+				v.setBackgroundTintList( ColorStateList.valueOf( getColor( R.color.btnClicked ) ) );
 			}else{ //delete
-				v.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
+				v.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
 			}
 		}
 	};
@@ -815,11 +822,11 @@ public class EntryEditor extends ThemeActivity {
 			if( !( (boolean) v.getTag() ) ) {
 				applyTypeface( typeface, mSelectionBounds[ 0 ], mSelectionBounds[ 1 ], "apply" );
 				v.setTag( true );
-				v.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( R.color.btnClicked ) ) );
+				v.setBackgroundTintList( ColorStateList.valueOf( getColor( R.color.btnClicked ) ) );
 			}else{
 				applyTypeface( typeface, mSelectionBounds[0], mSelectionBounds[1], "delete" );
 				v.setTag( false );
-				v.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
+				v.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
 			}
 		}
 	};
@@ -1081,11 +1088,9 @@ public class EntryEditor extends ThemeActivity {
 		entries.add( mEntry );
 		MainData.setEntriesList( entries );
 		Utils.saveEntriesList( entries );
-		File file = new File( Utils.getExternalStoragePath().getPath() + "/entries" );
+		File file = new File( Utils.getExternalStoragePath().getPath() + "/entries/" + mId );
 		if(!file.exists())
-			file.mkdir();
-		file = new File( Utils.getExternalStoragePath().getPath() + "/entries/" + mId );
-		file.mkdir();
+			file.mkdirs();
 		try {
 			mEntry.setProperties( mProperties );
 			mEntry.saveProperties();
@@ -1099,9 +1104,10 @@ public class EntryEditor extends ThemeActivity {
 		}catch (Exception e){
 			Utils.getErrorDialog( e, this ).show();
 		}
-		//Toast.makeText( this, Html.escapeHtml( text ), Toast.LENGTH_LONG ).show();
-		//Toast.makeText( this, Html.fromHtml( Html.escapeHtml( text ) ), Toast.LENGTH_LONG ).show();
 		try {
+			copyTempFiles();
+			replaceTempImagesInSpans();
+			removeUnusedImages();
 			FileWriter fr = new FileWriter( file, false );
 			fr.write( Utils.xmlHeader + "<documents>\n</documents>" );
 			fr.flush();
@@ -1118,21 +1124,42 @@ public class EntryEditor extends ThemeActivity {
 		}
 	}
 
+	private Map<File, File> fileReplaceMap = new HashMap<>();
+
+	private void copyTempFiles() throws IOException{
+		for(File file : mMediaToMove){
+			File dest = new File( mEntry.getImagesMediaFolder().getPath() + "/" + file.getName() );
+			fileReplaceMap.put( file, dest );
+			FileInputStream fis = new FileInputStream(file);
+			FileOutputStream fos = new FileOutputStream(dest);
+			byte[] b = new byte[1024];
+			int len;
+			while((len = fis.read( b )) != -1){
+				fos.write( b, 0, len );
+			}
+			fis.close();
+			fos.close();
+
+			file.delete();
+		}
+		mMediaToMove.clear();
+	}
+
 	private void resetAlignmentButtons(){
 		ImageButton btn;
 		int[] btnIds = new int[]{R.id.btnAlignLeft, R.id.btnAlignCenter, R.id.btnAlignRight, R.id.btnAlignJustify};
 		for(int id : btnIds){
 			btn = findViewById( id );
-			btn.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( android.R.color.transparent ) ) );
+			btn.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
 		}
 	}
 
 	public void chooseTextAlignment(View v){
 		resetAlignmentButtons();
 		if(mDarkTheme)
-			v.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( R.color.gray ) ) );
+			v.setBackgroundTintList( ColorStateList.valueOf( getColor( R.color.gray ) ) );
 		else
-			v.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( R.color.btnClicked ) ) );
+			v.setBackgroundTintList( ColorStateList.valueOf( getColor( R.color.btnClicked ) ) );
 
 		EditText editText = findViewById( R.id.edittextEntry );
 		if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ){
@@ -1160,6 +1187,42 @@ public class EntryEditor extends ThemeActivity {
 		mProperties.setTextAlignment( alignment );
 	}
 
+	private void removeUnusedImages(){
+		Editable e = mTextEditor.getText();
+		if(e == null)
+			return;
+		Map<String, Boolean> usedResources = new HashMap<>();
+		for(ImageSpan span : e.getSpans( 0, e.length(), ImageSpan.class )){
+			File file = new File(span.getSource());
+			usedResources.put( file.getName(), true );
+		}
+		File file = Utils.getEntryImagesMediaFolder( mId );
+		File[] files = file.listFiles();
+		if(files == null)
+			return;
+		for(File f : files){
+			if(!usedResources.containsKey( f.getName() )){
+				f.delete();
+			}
+		}
+	}
+
+	private void replaceTempImagesInSpans(){
+		Editable e = mTextEditor.getText();
+		if(e == null)
+			return;
+		for(ImageSpan span : e.getSpans( 0, e.length(), ImageSpan.class )){
+			int st = e.getSpanStart( span );
+			int end = e.getSpanEnd( span );
+			int flags = e.getSpanFlags( span );
+			File old = new File(span.getSource());
+			File newFile = new File(Utils.getEntryImagesMediaFolder( mId ).getPath() + "/" + old.getName());
+			ImageSpan newSpan = new ImageSpan( span.getDrawable(), newFile.getPath() );
+			e.removeSpan( span );
+			e.setSpan( newSpan, st, end, flags );
+		}
+	}
+
 	private void saveEntry(){
 		Editable e = mTextEditor.getText();
 		if(e == null)
@@ -1180,12 +1243,12 @@ public class EntryEditor extends ThemeActivity {
 		if(type.equals( "create" )) {
 			if ( text.length() != 0 ) {
 				AlertDialog alertDialog;
-				final EditText name = new EditText( EntryEditor.this );
+				final EditText name = new EditText( this );
 				name.setId( View.NO_ID );
 				name.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT ) );
 				name.requestFocus();
-				name.setTextColor( getResources().getColor( EntryEditor.super.mEditTextColor ) );
-				AlertDialog.Builder builder = new AlertDialog.Builder( EntryEditor.this, EntryEditor.super.mAlertDialogStyle )
+				name.setTextColor( getColor( super.mEditTextColor ) );
+				AlertDialog.Builder builder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
 						.setView( name )
 						.setTitle( R.string.enter_name )
 						.setMessage( R.string.name_yours_minds )
@@ -1217,13 +1280,14 @@ public class EntryEditor extends ThemeActivity {
 			}
 		}else if(type.equals( "edit" )){
 			if(text.length() != 0){
+				removeUnusedImages();
 				try {
 					mEntry.saveProperties( mProperties );
 					mEntry.saveText( mTextEditor.getText(), mProperties );
 					setResult( Results.REOPEN, new Intent(  ).putExtra( "id", mEntry.getId() ) );
 				}catch (Exception ex){
 					ex.printStackTrace();
-					Utils.getErrorDialog( ex, EntryEditor.this ).show();
+					Utils.getErrorDialog( ex, this ).show();
 					return;
 				}
 				_finishActivity();
@@ -1238,5 +1302,4 @@ public class EntryEditor extends ThemeActivity {
 			saveEntry();
 		}
 	};
-
 }

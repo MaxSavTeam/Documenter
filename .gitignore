@@ -20,3 +20,4 @@
 /app/src/test/
 /app/google-services.json
 /app/keystore.properties
+/app/build.properties

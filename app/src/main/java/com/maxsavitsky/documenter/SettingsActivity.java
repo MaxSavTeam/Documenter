@@ -21,6 +21,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
+import com.maxsavitsky.documenter.BuildConfig;
 import com.maxsavitsky.documenter.utils.ApkInstaller;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.utils.UpdatesChecker;
@@ -76,8 +77,7 @@ public class SettingsActivity extends ThemeActivity {
 
 		applyTheme();
 
-		(( TextView ) findViewById( R.id.txtVersion )).setText( String.format( Locale.ROOT, "Version: %s\nBuild: %d", BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE ) );
-
+		(( TextView ) findViewById( R.id.txtVersion )).setText( String.format( Locale.ROOT, "Version: %s\nCode: %d Build: %d", BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE, BuildConfig.BUILD_CODE ) );
 
 		final Switch swDarkHeader = findViewById( R.id.swDarkTheme );
 		swDarkHeader.setChecked( sp.getBoolean( "dark_theme", false ) );

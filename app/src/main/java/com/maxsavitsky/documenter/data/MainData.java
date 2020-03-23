@@ -264,13 +264,20 @@ public class MainData {
 		removeEntryWithId( id );
 		Utils.saveEntriesList( getEntriesList() );
 
+		return deleteDir( file );
+	}
+
+	private static boolean deleteDir(File file){
 		File[] files = file.listFiles();
-		if(files == null)
-			return file.delete();
-		for(File subFile : files){
-			if(!subFile.delete())
-				return false;
+		if(files != null && files.length > 0) {
+			for (File subFile : files) {
+				if ( subFile.isDirectory() )
+					deleteDir( subFile );
+				else
+					subFile.delete();
+			}
 		}
+
 		return file.delete();
 	}
 }
