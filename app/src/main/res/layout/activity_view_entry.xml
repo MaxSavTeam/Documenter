@@ -41,6 +41,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/ic_expand_less"
+        android:scaleX="0"
+        android:scaleY="0"
         android:backgroundTint="@color/gray"
         app:borderWidth="0dp"
         android:id="@+id/fabUpView"

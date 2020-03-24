@@ -206,18 +206,12 @@ public class EntryEditor extends ThemeActivity {
 
 	private void hideUpButton(){
 		FloatingActionButton fab = findViewById( R.id.fabUp );
-		TranslateAnimation translateAnimation = new TranslateAnimation(0, 500, 0, 0);
-		translateAnimation.setDuration( 600 );
-		translateAnimation.setFillAfter( true );
-		fab.startAnimation( translateAnimation );
+		fab.animate().setDuration( 500 ).scaleX( 0 ).scaleY( 0 ).start();
 	}
 
 	private void showUpButton(){
 		FloatingActionButton fab = findViewById( R.id.fabUp );
-		TranslateAnimation translateAnimation = new TranslateAnimation(500, 0, 0, 0);
-		translateAnimation.setDuration( 600 );
-		translateAnimation.setFillAfter( true );
-		fab.startAnimation( translateAnimation );
+		fab.animate().setDuration( 500 ).scaleX( 1 ).scaleY( 1 ).start();
 	}
 
 	private ProgressDialog mLoadFromHistoryDialog;
@@ -366,9 +360,9 @@ public class EntryEditor extends ThemeActivity {
 		(( ScrollView ) findViewById( R.id.scrollView )).setOnScrollChangeListener( new View.OnScrollChangeListener() {
 			@Override
 			public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
-				if ( oldScrollY <= 5 && scrollY > 5 ) {
+				if ( oldScrollY > scrollY && scrollY > 5 ) {
 					showUpButton();
-				} else if ( scrollY <= 5 ) {
+				} else if ( scrollY <= 5 || oldScrollY < scrollY ) {
 					hideUpButton();
 				}
 			}

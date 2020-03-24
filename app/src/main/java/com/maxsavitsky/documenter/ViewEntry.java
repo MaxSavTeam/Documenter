@@ -4,22 +4,17 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.media.Image;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.Html;
 import android.text.SpannableString;
-import android.text.style.ClickableSpan;
-import android.text.style.ImageSpan;
-import android.text.style.URLSpan;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.view.animation.TranslateAnimation;
-import android.webkit.WebView;
+import android.view.animation.AnimationUtils;
 import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -252,18 +247,12 @@ public class ViewEntry extends ThemeActivity {
 
 	private void hideUpButton(){
 		FloatingActionButton fab = findViewById( R.id.fabUpView );
-		TranslateAnimation translateAnimation = new TranslateAnimation(0, 500, 0, 0);
-		translateAnimation.setDuration( 600 );
-		translateAnimation.setFillAfter( true );
-		fab.startAnimation( translateAnimation );
+		fab.animate().setDuration( 500 ).scaleX( 0 ).scaleY( 0 ).start();
 	}
 
 	private void showUpButton(){
 		FloatingActionButton fab = findViewById( R.id.fabUpView );
-		TranslateAnimation translateAnimation = new TranslateAnimation(500, 0, 0, 0);
-		translateAnimation.setDuration( 600 );
-		translateAnimation.setFillAfter( true );
-		fab.startAnimation( translateAnimation );
+		fab.animate().setDuration( 500 ).scaleX( 1 ).scaleY( 1 ).start();
 	}
 
 	@Override
@@ -291,9 +280,9 @@ public class ViewEntry extends ThemeActivity {
 		mScrollView.setOnScrollChangeListener( new View.OnScrollChangeListener() {
 			@Override
 			public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
-				if ( oldScrollY <= 5 && scrollY > 5 ) {
+				if ( oldScrollY > scrollY && scrollY > 5 ) {
 					showUpButton();
-				} else if ( scrollY <= 5 ) {
+				} else if ( scrollY <= 5 || oldScrollY < scrollY ) {
 					hideUpButton();
 				}
 			}
