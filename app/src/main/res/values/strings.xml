@@ -86,4 +86,6 @@
     <string name="image_picker_warning_memory_not_accessed">The function cannot work, because the application does not have access to memory. Click the "Request" button to access the application.</string>
     <string name="request">Request</string>
     <string name="warning">Warning</string>
+    <string name="documents_to_be_included_in_category">Documents to be included in the category</string>
+    <string name="entries_to_be_included_in_category">Entries to be included in the category</string>
 </resources>

@@ -44,15 +44,29 @@
                 app:layout_constraintVertical_bias="0.20999998" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerViewChooseDocuments"
+        <LinearLayout
+            android:id="@+id/layout_including"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_gravity="center"
             android:layout_weight="1"
-            android:scrollbars="vertical"
-            android:visibility="visible"
-            tools:listitem="@layout/check_box_list_item" />
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/textViewTypeToBeIncluded"
+                android:textColor="@android:color/secondary_text_dark"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerViewChooseDocuments"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:scrollbars="vertical"
+                android:visibility="visible"
+                tools:listitem="@layout/check_box_list_item" />
+        </LinearLayout>
 
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

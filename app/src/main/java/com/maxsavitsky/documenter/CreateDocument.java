@@ -69,12 +69,14 @@ public class CreateDocument extends ThemeActivity {
 	private void setupRecyclerView(){
 		final ArrayList<Entry> mEntries = MainData.getEntriesList();
 		if(mEntries.isEmpty()){
-			findViewById(R.id.recyclerViewChooseDocuments).setVisibility(View.GONE);
+			findViewById(R.id.layout_including).setVisibility(View.GONE);
 		}else{
 			RecyclerView rv = findViewById( R.id.recyclerViewChooseDocuments );
 			LinearLayoutManager layoutManager = new LinearLayoutManager( this );
 			layoutManager.setOrientation( RecyclerView.VERTICAL );
 			rv.setLayoutManager( layoutManager );
+			TextView t = findViewById( R.id.textViewTypeToBeIncluded );
+			t.setText( R.string.entries_to_be_included_in_category );
 
 			View.OnClickListener onItemClick = new View.OnClickListener() {
 				@Override

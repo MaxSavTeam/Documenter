@@ -58,6 +58,8 @@ public class CreateCategory extends ThemeActivity {
 
 		ArrayList<Document> documents = MainData.getDocumentsList();
 		RecyclerView rv = findViewById(R.id.recyclerViewChooseDocuments);
+		TextView t = findViewById( R.id.textViewTypeToBeIncluded );
+		t.setText( R.string.documents_to_be_included_in_category );
 		if(!documents.isEmpty()) {
 			LinearLayoutManager lay = new LinearLayoutManager(CreateCategory.this);
 			lay.setOrientation(RecyclerView.VERTICAL);
@@ -65,7 +67,7 @@ public class CreateCategory extends ThemeActivity {
 			DefaultChooseAdapter adapter = new DefaultChooseAdapter(documents, itemClicked, this);
 			rv.setAdapter(adapter);
 		}else{
-			rv.setVisibility(View.GONE);
+			findViewById( R.id.layout_including ).setVisibility(View.GONE);
 		}
 		EditText editText = findViewById(R.id.editTextTextPersonName);
 		Utils.showKeyboard( editText, this );
