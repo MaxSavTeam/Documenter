@@ -108,6 +108,10 @@ public class CreateDocument extends ThemeActivity {
 		public void onClick(View v) {
 			EditText editText = findViewById(R.id.editTextTextPersonName);
 			String name = editText.getText().toString();
+			if(!name.isEmpty() && name.trim().equals( "" )){
+				Toast.makeText( CreateDocument.this, R.string.invalid_name, Toast.LENGTH_SHORT ).show();
+				return;
+			}
 			if(!name.isEmpty()){
 				String id = Utils.generateUniqueId() + "_doc";
 
@@ -118,7 +122,6 @@ public class CreateDocument extends ThemeActivity {
 					//documents = MainData.getCategoryWithId( categoryId ).getDocuments();
 					documents = ParseSeparate.parseCategoryWithId( categoryId );
 				}catch (Exception e){
-					Toast.makeText( CreateDocument.this, "saveDocument", Toast.LENGTH_SHORT ).show();
 					Utils.getErrorDialog( e, CreateDocument.this ).show();
 					return;
 				}

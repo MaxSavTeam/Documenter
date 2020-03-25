@@ -1,15 +1,18 @@
 package com.maxsavitsky.documenter;
 
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -77,51 +80,82 @@ public class CreateCategory extends ThemeActivity {
 		@Override
 		public void onClick(View v) {
 			EditText editText = findViewById(R.id.editTextTextPersonName);
-			String name = editText.getText().toString();
-			if(!name.isEmpty()){
-				ProgressDialog pd = new ProgressDialog(CreateCategory.this);
-				pd.setCancelable(false);
-				pd.setMessage("We are saving new category");
-				pd.show();
-
-				String uid = Utils.generateUniqueId() + "_cat";
-
-				Category newCategory = new Category( uid, name );
-
-				ArrayList<Category> categories = MainData.getCategoriesList();
-				Info info = new Info();
-				info.setTimeStamp( (int) new Date().getTime() );
-				try {
-					newCategory.setAndSaveInfo( info );
-				} catch (Exception e) {
-					e.printStackTrace();
-					pd.dismiss();
-					//Toast.makeText( CreateCategory.this, "Failed\n\n" + e.toString(), Toast.LENGTH_LONG ).show();
-					Utils.getErrorDialog( e, CreateCategory.this ).show();
-					return;
-				}
-				categories.add(newCategory);
-
-				MainData.setCategoriesList(categories);
-				Utils.saveCategoriesList(categories);
-				try {
-					for(Document document : documentsToIncludeInThisCategory){
-						document.addCategoryToIncludedInXml( uid );
-					}
-					Utils.saveCategoryDocuments( uid, documentsToIncludeInThisCategory );
-				}catch (Exception e){
-					Utils.getErrorDialog( e, CreateCategory.this ).show();
-				}
-
-				pd.dismiss();
-
-				setResult( Results.NEED_TO_REFRESH );
-				finish();
+			final String name = editText.getText().toString();
+			if(!name.isEmpty() && name.trim().equals( "" )){
+				Toast.makeText( CreateCategory.this, R.string.invalid_name, Toast.LENGTH_SHORT ).show();
+				return;
+			}
+			if(Utils.isNameExist( name, "cat" )){
+				AlertDialog.Builder builder1 = new AlertDialog.Builder( CreateCategory.this )
+						.setTitle( R.string.warning )
+						.setMessage( getResources().getString( R.string.this_name_already_exist ) + "\n" +
+								getResources().getString( R.string.do_you_want_to_continue ))
+						.setPositiveButton( R.string.yes, new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								createCategory( name );
+								dialog.dismiss();
+							}
+						} )
+						.setNegativeButton( R.string.no, new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								dialog.dismiss();
+							}
+						} );
+				builder1.create().show();
 			}else{
-				editText.requestFocus();
+				createCategory( name );
 			}
 		}
 	};
+
+	private void createCategory(String name){
+		EditText editText = findViewById(R.id.editTextTextPersonName);
+		name = name.trim();
+		if(!name.isEmpty()){
+			ProgressDialog pd = new ProgressDialog(CreateCategory.this);
+			pd.setCancelable(false);
+			pd.setMessage("We are saving new category");
+			pd.show();
+
+			String uid = Utils.generateUniqueId() + "_cat";
+
+			Category newCategory = new Category( uid, name );
+
+			ArrayList<Category> categories = MainData.getCategoriesList();
+			Info info = new Info();
+			info.setTimeStamp( (int) new Date().getTime() );
+			try {
+				newCategory.setAndSaveInfo( info );
+			} catch (Exception e) {
+				e.printStackTrace();
+				pd.dismiss();
+				//Toast.makeText( CreateCategory.this, "Failed\n\n" + e.toString(), Toast.LENGTH_LONG ).show();
+				Utils.getErrorDialog( e, CreateCategory.this ).show();
+				return;
+			}
+			categories.add(newCategory);
+
+			MainData.setCategoriesList(categories);
+			Utils.saveCategoriesList(categories);
+			try {
+				for(Document document : documentsToIncludeInThisCategory){
+					document.addCategoryToIncludedInXml( uid );
+				}
+				Utils.saveCategoryDocuments( uid, documentsToIncludeInThisCategory );
+			}catch (Exception e){
+				Utils.getErrorDialog( e, CreateCategory.this ).show();
+			}
+
+			pd.dismiss();
+
+			setResult( Results.NEED_TO_REFRESH );
+			finish();
+		}else{
+			editText.requestFocus();
+		}
+	}
 
 	View.OnClickListener itemClicked = new View.OnClickListener() {
 		@Override

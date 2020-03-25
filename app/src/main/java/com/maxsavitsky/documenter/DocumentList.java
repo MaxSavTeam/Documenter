@@ -165,8 +165,7 @@ public class DocumentList extends ThemeActivity {
 			case R.id.menu_edit_name:
 				AlertDialog alertDialog;
 				AlertDialog.Builder builder = new AlertDialog.Builder(this, super.mAlertDialogStyle)
-						.setTitle("Edit category name")
-						.setMessage("Edit category name here");
+						.setTitle(R.string.edit_category_name);
 				//View view = new View(this);
 				final EditText editText = new EditText(this);
 				editText.setText(mCategory.getName());
@@ -179,7 +178,12 @@ public class DocumentList extends ThemeActivity {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						String text = editText.getText().toString();
+						text = text.trim();
 						if(!text.isEmpty() && !text.equals(mCategory.getName())){
+							if(Utils.isNameExist( text, "cat" )){
+								Toast.makeText( DocumentList.this, R.string.this_name_already_exist, Toast.LENGTH_SHORT ).show();
+								return;
+							}
 							MainData.removeCategoryWithId(mCategory.getId());
 							ArrayList<Category> categories = MainData.getCategoriesList();
 							mCategory = new Category(mCategory.getId(), text);
@@ -188,6 +192,8 @@ public class DocumentList extends ThemeActivity {
 							MainData.setCategoriesList(categories);
 							Utils.saveCategoriesList(categories);
 							setResult( Results.NEED_TO_REFRESH );
+						}else{
+							Toast.makeText( DocumentList.this, R.string.invalid_name, Toast.LENGTH_SHORT ).show();
 						}
 						dialog.cancel();
 					}

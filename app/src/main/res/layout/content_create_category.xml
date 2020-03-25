@@ -37,6 +37,7 @@
                 android:inputType="textPersonName"
                 android:textColor="?attr/textColor"
                 android:textSize="22sp"
+                android:maxLines="1"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

@@ -89,16 +89,23 @@ public class ViewEntry extends ThemeActivity {
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
 							String newName = editText.getText().toString();
-							if(!newName.isEmpty() && !newName.equals( mEntry.getName() )){
+							newName = newName.trim();
+							if ( !newName.isEmpty() && !newName.equals( mEntry.getName() ) ) {
+								if ( Utils.isNameExist( newName, "ent" ) ) {
+									Toast.makeText( ViewEntry.this, R.string.this_name_already_exist, Toast.LENGTH_SHORT ).show();
+									return;
+								}
 								MainData.removeEntryWithId( mEntry.getId() );
 								ArrayList<Entry> entries = MainData.getEntriesList();
-								mEntry = new Entry(mEntry.getId(), newName);
+								mEntry = new Entry( mEntry.getId(), newName );
 								entries.add( mEntry );
 								MainData.setEntriesList( entries );
 								Utils.saveEntriesList( entries );
 								applyTheme();
 								setResult( Results.NEED_TO_REFRESH );
 								resultSet = true;
+							} else {
+								Toast.makeText( ViewEntry.this, R.string.invalid_name, Toast.LENGTH_SHORT ).show();
 							}
 						}
 					} )

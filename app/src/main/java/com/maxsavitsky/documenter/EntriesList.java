@@ -76,7 +76,6 @@ public class EntriesList extends ThemeActivity {
 			mEntries = ParseSeparate.parseDocumentWithId( mDocument.getId() );
 		}catch (Exception e){
 			e.printStackTrace();
-			Toast.makeText( this, "setupRecyclerView EntriesList", Toast.LENGTH_LONG ).show();
 			Utils.getErrorDialog( e, this ).show();
 			return;
 		}
@@ -206,7 +205,7 @@ public class EntriesList extends ThemeActivity {
 				break;
 			case R.id.item_change_document_name:
 				AlertDialog alertDialog;
-				AlertDialog.Builder builder = new AlertDialog.Builder( this ).setTitle( "Edit document name" ).setMessage( "Edit document name here" );
+				AlertDialog.Builder builder = new AlertDialog.Builder( this ).setTitle( R.string.edit_document_name );
 				final EditText editText = new EditText( this );
 				editText.setText( mDocument.getName() );
 				editText.append( "" );
@@ -218,7 +217,12 @@ public class EntriesList extends ThemeActivity {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						String text = editText.getText().toString();
+						text = text.trim();
 						if ( !text.isEmpty() && !text.equals( mDocument.getName() ) ) {
+							if ( Utils.isNameExist( text, "doc" ) ) {
+								Toast.makeText( EntriesList.this, R.string.this_name_already_exist, Toast.LENGTH_SHORT ).show();
+								return;
+							}
 							ArrayList<Document> documents = MainData.getDocumentsList();
 							documents.remove( mDocument );
 							mDocument = new Document( mDocument.getId(), text );
@@ -227,6 +231,8 @@ public class EntriesList extends ThemeActivity {
 							MainData.setDocumentsList( documents );
 							Utils.saveDocumentsList( documents );
 							setResult( Results.NEED_TO_REFRESH );
+						} else {
+							Toast.makeText( EntriesList.this, R.string.invalid_name, Toast.LENGTH_SHORT ).show();
 						}
 					}
 				} ).setNegativeButton( getResources().getString( R.string.cancel ), new DialogInterface.OnClickListener() {

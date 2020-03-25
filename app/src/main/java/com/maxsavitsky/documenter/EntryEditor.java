@@ -1066,6 +1066,7 @@ public class EntryEditor extends ThemeActivity {
 	}
 
 	private void createEntry(String name, Spannable text){
+		mTextEditor.clearComposingText();
 		mEntry = new Entry( mId, name );
 		ArrayList<Entry> entries = MainData.getEntriesList();
 		entries.add( mEntry );
@@ -1231,6 +1232,7 @@ public class EntryEditor extends ThemeActivity {
 				name.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT ) );
 				name.requestFocus();
 				name.setTextColor( getColor( super.mEditTextColor ) );
+				name.setMaxLines( 1 );
 				AlertDialog.Builder builder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
 						.setView( name )
 						.setTitle( R.string.enter_name )
@@ -1239,8 +1241,33 @@ public class EntryEditor extends ThemeActivity {
 							@Override
 							public void onClick(DialogInterface dialog, int which) {
 								dialog.cancel();
-								String n = name.getText().toString();
-								createEntry( n, mTextEditor.getText() );
+								final String n = name.getText().toString();
+								if( n.isEmpty() || n.trim().equals( "" ) )
+									Toast.makeText( EntryEditor.this, R.string.invalid_name, Toast.LENGTH_SHORT ).show();
+								else{
+									if ( Utils.isNameExist( n, "ent" ) ) {
+										AlertDialog.Builder builder1 = new AlertDialog.Builder( EntryEditor.this )
+												.setTitle( R.string.warning )
+												.setMessage( getResources().getString( R.string.this_name_already_exist ) + "\n" +
+														getResources().getString( R.string.do_you_want_to_continue ))
+												.setPositiveButton( R.string.yes, new DialogInterface.OnClickListener() {
+													@Override
+													public void onClick(DialogInterface dialog, int which) {
+														createEntry( n, mTextEditor.getText() );
+														dialog.dismiss();
+													}
+												} )
+												.setNegativeButton( R.string.no, new DialogInterface.OnClickListener() {
+													@Override
+													public void onClick(DialogInterface dialog, int which) {
+														dialog.dismiss();
+													}
+												} );
+										builder1.create().show();
+									}else{
+										createEntry( n, mTextEditor.getText() );
+									}
+								}
 							}
 						} )
 						.setNegativeButton( R.string.cancel, new DialogInterface.OnClickListener() {

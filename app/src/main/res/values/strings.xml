@@ -88,4 +88,8 @@
     <string name="warning">Warning</string>
     <string name="documents_to_be_included_in_category">Documents to be included in the category</string>
     <string name="entries_to_be_included_in_category">Entries to be included in the category</string>
+    <string name="invalid_name">Invalid name</string>
+    <string name="this_name_already_exist">This name already exists</string>
+    <string name="do_you_want_to_continue">Do you want to continue?</string>
+    <string name="edit_name">Edit name</string>
 </resources>

@@ -17,6 +17,7 @@ import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Category;
 import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.data.types.Entry;
+import com.maxsavitsky.documenter.data.types.Type;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -44,6 +45,25 @@ public class Utils {
 
 	public static File getExternalStoragePath() {
 		return externalStoragePath;
+	}
+
+	/**
+	 * Check if category, document or entry exists
+	 *
+	 * @param type can be of three types: cat, doc or ent
+	 * */
+	public static boolean isNameExist(String name, String type){
+		name = name.trim();
+		ArrayList<? extends Type> categories = type.equals( "cat" ) ? MainData.getCategoriesList() :
+												(
+														type.equals( "doc" ) ? MainData.getDocumentsList() : MainData.getEntriesList()
+												);
+		for(Type category : categories){
+			if(name.equals( category.getName() ))
+				return true;
+		}
+
+		return false;
 	}
 
 	public static void saveCategoriesList(ArrayList<Category> categories){
