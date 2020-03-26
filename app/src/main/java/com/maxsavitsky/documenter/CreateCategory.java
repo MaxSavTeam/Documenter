@@ -114,10 +114,6 @@ public class CreateCategory extends ThemeActivity {
 		EditText editText = findViewById(R.id.editTextTextPersonName);
 		name = name.trim();
 		if(!name.isEmpty()){
-			ProgressDialog pd = new ProgressDialog(CreateCategory.this);
-			pd.setCancelable(false);
-			pd.setMessage("We are saving new category");
-			pd.show();
 
 			String uid = Utils.generateUniqueId() + "_cat";
 
@@ -130,7 +126,6 @@ public class CreateCategory extends ThemeActivity {
 				newCategory.setAndSaveInfo( info );
 			} catch (Exception e) {
 				e.printStackTrace();
-				pd.dismiss();
 				//Toast.makeText( CreateCategory.this, "Failed\n\n" + e.toString(), Toast.LENGTH_LONG ).show();
 				Utils.getErrorDialog( e, CreateCategory.this ).show();
 				return;
@@ -147,8 +142,6 @@ public class CreateCategory extends ThemeActivity {
 			}catch (Exception e){
 				Utils.getErrorDialog( e, CreateCategory.this ).show();
 			}
-
-			pd.dismiss();
 
 			setResult( Results.NEED_TO_REFRESH );
 			finish();

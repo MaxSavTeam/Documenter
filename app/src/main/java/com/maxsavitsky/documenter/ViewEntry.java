@@ -1,5 +1,6 @@
 package com.maxsavitsky.documenter;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -11,6 +12,7 @@ import android.text.SpannableString;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -262,6 +264,7 @@ public class ViewEntry extends ThemeActivity {
 		fab.animate().setDuration( 500 ).scaleX( 1 ).scaleY( 1 ).start();
 	}
 
+	@SuppressLint("ClickableViewAccessibility")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate( savedInstanceState );
@@ -294,6 +297,21 @@ public class ViewEntry extends ThemeActivity {
 				}
 			}
 		} );
+		/*mScrollView.setOnTouchListener( new View.OnTouchListener() {
+			@SuppressLint("ClickableViewAccessibility")
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				if(event.getAction() == MotionEvent.ACTION_DOWN ){
+					hideUpButton();
+					return true;
+				}else if(event.getAction() == MotionEvent.ACTION_UP){
+					showUpButton();
+					return true;
+				}
+
+				return false;
+			}
+		} );*/
 		findViewById( R.id.fabUpView ).setOnClickListener( new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
