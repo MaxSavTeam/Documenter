@@ -1,6 +1,8 @@
 package com.maxsavitsky.documenter.utils;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 
 import com.maxsavitsky.documenter.BuildConfig;
 import com.maxsavitsky.documenter.R;
@@ -92,7 +94,9 @@ public class UpdatesChecker {
 	private void check(String result){
 		VersionInfo info = VersionInfo.parseInfo( result );
 		if(info.getVersionCode() > BuildConfig.VERSION_CODE ){
-			mCheckResults.updateAvailable( info );
+			SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(mContext.getApplicationContext());
+			if(sp.getInt( "ignore_update", 0 ) != info.getVersionCode() )
+				mCheckResults.updateAvailable( info );
 		}else{
 			mCheckResults.noUpdates( info );
 		}

@@ -92,5 +92,6 @@
     <string name="this_name_already_exist">This name already exists</string>
     <string name="do_you_want_to_continue">Do you want to continue?</string>
     <string name="edit_name">Edit name</string>
-    <string name="saving">Saving...</string>
+    <string name="saving">Saving…</string>
+    <string name="ignore_this_update">Ignore this update</string>
 </resources>

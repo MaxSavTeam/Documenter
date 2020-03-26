@@ -214,6 +214,12 @@ public class CategoryList extends ThemeActivity {
 								public void onClick(DialogInterface dialog, int which) {
 									dialog.cancel();
 								}
+							} )
+							.setNeutralButton( R.string.ignore_this_update, new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									sp.edit().putInt( "ignore_update", versionInfo.getVersionCode() ).apply();
+								}
 							} );
 					builder.create().show();
 				}
