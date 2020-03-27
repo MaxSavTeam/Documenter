@@ -97,6 +97,9 @@
     <string name="title_activity_free_entries">Free Entries</string>
     <string name="delete_category__with_docs">Also delete all documents included ONLY in this category</string>
     <string name="delete_category__with_entries">Also delete entries that are included ONLY in deleted documents</string>
+    <string name="ui">UI</string>
+    <string name="updates">Updates</string>
+    <string name="automatically_check_for_updates">Automatically check for updates</string>
 
     <string name="delete_document__with_entries">Delete entries that are included ONLY in this document</string>
 </resources>

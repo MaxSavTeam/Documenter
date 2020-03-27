@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="start|top"
+    android:orientation="vertical"
+    android:layout_marginTop="?attr/actionBarSize"
+    android:padding="7dp"
+    tools:context=".SettingsActivity">
+
+    <LinearLayout
+        android:id="@+id/layoutBackup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bottom_border"
+        android:gravity="start"
+        android:orientation="vertical"
+        tools:ignore="RtlSymmetry">
+
+        <TextView
+            android:id="@+id/lblBackup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="@dimen/labels_margin_bottom"
+            android:text="@string/backup"
+            android:textColor="?textColor"
+            android:textSize="24sp" />
+
+        <Button
+            android:id="@+id/btnCreateBackup"
+            style="@style/Widget.AppCompat.Button.Borderless.Colored"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="start|center_vertical"
+            android:onClick="initialBackup"
+            android:text="@string/create_backup"
+            android:textSize="16sp" />
+
+        <Button
+            android:id="@+id/btnRestoreFromBackup"
+            style="@style/Widget.AppCompat.Button.Borderless.Colored"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:gravity="start|center_vertical"
+            android:onClick="initialUnpack"
+            android:text="@string/restore"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layoutUI"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bottom_border"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/lblUI"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/labels_margin_bottom"
+            android:layout_marginStart="@dimen/labels_margin"
+            android:layout_marginTop="@dimen/labels_margin"
+            android:text="@string/ui"
+            android:textColor="?textColor"
+            android:textSize="24sp" />
+
+        <Switch
+            android:id="@+id/swDarkTheme"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:text="@string/dark_theme"
+            android:textColor="?attr/textColor"
+            android:textSize="20sp"
+            android:thumbTint="?colorAccent" />
+
+        <Switch
+            android:id="@+id/swKeepScreenOn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="7dp"
+            android:text="@string/keep_screen_on"
+            android:textColor="?textColor"
+            android:textSize="20sp"
+            android:thumbTint="?colorAccent" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layoutUpdates"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bottom_border"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/lblUpdates"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/labels_margin"
+            android:layout_marginTop="@dimen/labels_margin"
+            android:layout_marginBottom="@dimen/labels_margin_bottom"
+            android:text="@string/updates"
+            android:textColor="?textColor"
+            android:textSize="24sp" />
+
+        <Button
+            android:id="@+id/btnCheckForUpdates"
+            style="@style/Widget.AppCompat.Button.Borderless.Colored"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="7dp"
+            android:gravity="start|center_vertical"
+            android:onClick="checkForUpdates"
+            android:text="@string/check_for_updates"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/settingsSwitchesLayout"
+            app:layout_constraintVertical_bias="0.050000012" />
+
+        <Switch
+            android:id="@+id/switch_check_for_updates"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/automatically_check_for_updates"
+            android:textSize="20sp"
+            android:textColor="?textColor"
+            android:layout_marginBottom="7dp"
+            android:thumbTint="?colorAccent" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/txtVersion"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:textColor="?textColor"
+        android:gravity="bottom|center_horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.99" />
+</LinearLayout>
