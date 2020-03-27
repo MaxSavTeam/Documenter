@@ -339,6 +339,13 @@ public class CategoryList extends ThemeActivity {
 				startActivityForResult( intent, Requests.FREE_ENTRIES );
 			}
 		} );
+		findViewById( R.id.fabSettings ).setOnClickListener( new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent( CategoryList.this, SettingsActivity.class );
+				startActivityForResult( intent, Requests.SETTINGS );
+			}
+		} );
 
 		if(!isMemoryAccessGranted()){
 			requestPermissions( new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE }, 1 );

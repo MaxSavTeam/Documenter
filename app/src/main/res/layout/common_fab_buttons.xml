@@ -15,8 +15,18 @@
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            app:borderWidth="0dp"
+            app:srcCompat="@drawable/ic_settings"
+            android:backgroundTint="?attr/fabButtonColor"
+            android:layout_marginTop="@dimen/fab_margin"
+            android:id="@+id/fabSettings" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:id="@+id/fabFreeEntries"
             app:borderWidth="0dp"
+            android:layout_marginTop="@dimen/fab_margin"
             android:backgroundTint="?attr/fabButtonColor"
             app:srcCompat="@drawable/ic_free_entry"/>
 

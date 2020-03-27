@@ -34,8 +34,8 @@ android {
         applicationId "com.maxsavitsky.documenter"
         minSdkVersion 23
         targetSdkVersion 29
-        versionCode 18
-        versionName '0.6.2'
+        versionCode 19
+        versionName '0.7'
         buildConfigField "String", "COMPILATION_DATE", "\"${getDate()}\""
         buildConfigField "int", "BUILD_CODE", "${code}"
     }

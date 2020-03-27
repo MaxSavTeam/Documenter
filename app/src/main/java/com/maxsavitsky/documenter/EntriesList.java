@@ -170,6 +170,13 @@ public class EntriesList extends ThemeActivity {
 				startActivityForResult( intent, Requests.FREE_ENTRIES );
 			}
 		} );
+		findViewById( R.id.fabSettings ).setOnClickListener( new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent( EntriesList.this, SettingsActivity.class );
+				startActivityForResult( intent, Requests.SETTINGS );
+			}
+		} );
 
 		setupRecyclerView();
 
@@ -401,6 +408,10 @@ public class EntriesList extends ThemeActivity {
 					intent.putExtras( data );
 				startActivityForResult( intent, Requests.VIEW_ENTRY );
 			}
+		}
+		if(resultCode == Results.RESTART_APP){
+			setResult( Results.RESTART_APP );
+			finish();
 		}
 		super.onActivityResult( requestCode, resultCode, data );
 	}

@@ -415,6 +415,14 @@ public class DocumentList extends ThemeActivity {
 				startActivityForResult( intent, Requests.FREE_ENTRIES );
 			}
 		} );
+		findViewById( R.id.fabSettings ).setOnClickListener( new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent( DocumentList.this, SettingsActivity.class );
+				startActivityForResult( intent, Requests.SETTINGS );
+			}
+		} );
+
 		try {
 			mCategory.readProperties();
 		} catch (IOException | SAXException e) {
@@ -436,6 +444,10 @@ public class DocumentList extends ThemeActivity {
 					intent.putExtras( data );
 				startActivityForResult( intent, Requests.ENTRIES_LIST );
 			}
+		}
+		if(resultCode == Results.RESTART_APP){
+			setResult( Results.RESTART_APP );
+			finish();
 		}
 		super.onActivityResult( requestCode, resultCode, data );
 	}
