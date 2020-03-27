@@ -10,7 +10,8 @@ public class SpanEntry {
 	private StyleSpan mStyleSpan;
 	private UnderlineSpan mUnderlineSpan;
 	private StrikethroughSpan mStrikethroughSpan;
-	private int st, end;
+	private final int st;
+	private final int end;
 
 	public SpanEntry(ForegroundColorSpan span, int st, int end) {
 		mSpan = span;

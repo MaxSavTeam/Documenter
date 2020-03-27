@@ -23,14 +23,14 @@ import com.maxsavitsky.documenter.data.Info;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.utils.Utils;
-import com.maxsavitsky.documenter.xml.ParseSeparate;
+import com.maxsavitsky.documenter.xml.XMLParser;
 
 import java.util.ArrayList;
 import java.util.Date;
 
 public class CreateDocument extends ThemeActivity {
 	private String categoryId;
-	private ArrayList<Entry> mEntriesToInclude = new ArrayList<>(  );
+	private final ArrayList<Entry> mEntriesToInclude = new ArrayList<>(  );
 
 	private void applyTheme(){
 		ActionBar actionBar = getSupportActionBar();
@@ -103,7 +103,7 @@ public class CreateDocument extends ThemeActivity {
 		}
 	}
 
-	View.OnClickListener saveDocument = new View.OnClickListener() {
+	final View.OnClickListener saveDocument = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
 			EditText editText = findViewById(R.id.editTextTextPersonName);
@@ -120,7 +120,7 @@ public class CreateDocument extends ThemeActivity {
 				try {
 					thisDocument.setAndSaveInfo( new Info( (int) new Date().getTime() ) );
 					//documents = MainData.getCategoryWithId( categoryId ).getDocuments();
-					documents = ParseSeparate.parseCategoryWithId( categoryId );
+					documents = XMLParser.newInstance().parseCategoryWithId( categoryId );
 				}catch (Exception e){
 					Utils.getErrorDialog( e, CreateDocument.this ).show();
 					return;

@@ -1,6 +1,5 @@
 package com.maxsavitsky.documenter;
 
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -31,7 +30,7 @@ import java.util.Date;
 
 public class CreateCategory extends ThemeActivity {
 
-	private ArrayList<Document> documentsToIncludeInThisCategory = new ArrayList<>();
+	private final ArrayList<Document> documentsToIncludeInThisCategory = new ArrayList<>();
 
 	private void applyTheme(){
 		ActionBar actionBar = getSupportActionBar();
@@ -76,7 +75,7 @@ public class CreateCategory extends ThemeActivity {
 		Utils.showKeyboard( editText, this );
 	}
 
-	View.OnClickListener saveCategory = new View.OnClickListener() {
+	final View.OnClickListener saveCategory = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
 			EditText editText = findViewById(R.id.editTextTextPersonName);
@@ -150,7 +149,7 @@ public class CreateCategory extends ThemeActivity {
 		}
 	}
 
-	View.OnClickListener itemClicked = new View.OnClickListener() {
+	final View.OnClickListener itemClicked = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
 			CheckBox checkBox = v.findViewById(R.id.checkBoxInCheckboxItem );

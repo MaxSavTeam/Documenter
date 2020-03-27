@@ -2,6 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item android:title="@string/parameters"
+        android:id="@+id/item_common_parameters"
         app:showAsAction="never">
         <menu>
             <item android:id="@+id/item_common_remember_pos"
@@ -10,4 +11,7 @@
                 android:title="@string/remember_last_pos" />
         </menu>
     </item>
+    <item android:id="@+id/item_common_free_entries"
+        app:showAsAction="never"
+        android:title="@string/title_activity_free_entries" />
 </menu>

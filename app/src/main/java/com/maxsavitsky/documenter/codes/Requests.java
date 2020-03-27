@@ -11,6 +11,7 @@ public class Requests {
 	public static final int CREATE_ENTRY = 107;
 	public static final int EDIT_ENTRY = 108;
 	public static final int SETTINGS = 109;
+	public static final int FREE_ENTRIES = 110;
 
 	//2xx
 	public static final int PICK_IMAGE = 201;

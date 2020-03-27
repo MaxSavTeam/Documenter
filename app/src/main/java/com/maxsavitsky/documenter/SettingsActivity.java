@@ -132,7 +132,7 @@ public class SettingsActivity extends ThemeActivity {
 		return write && read;
 	}
 
-	private UpdatesChecker.CheckResults mCheckResults = new UpdatesChecker.CheckResults() {
+	private final UpdatesChecker.CheckResults mCheckResults = new UpdatesChecker.CheckResults() {
 		@Override
 		public void noUpdates(UpdatesChecker.VersionInfo versionInfo) {
 			runOnUiThread( new Runnable() {

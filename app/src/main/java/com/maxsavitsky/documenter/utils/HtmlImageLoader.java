@@ -15,7 +15,7 @@ import com.maxsavitsky.documenter.R;
 import java.io.File;
 
 public class HtmlImageLoader implements Html.ImageGetter {
-	private Context c;
+	private final Context c;
 	public HtmlImageLoader(Context context) {
 		c = context;
 	}

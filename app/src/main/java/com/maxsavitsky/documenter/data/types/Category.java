@@ -7,7 +7,6 @@ import androidx.annotation.NonNull;
 import com.maxsavitsky.documenter.data.Info;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.utils.Utils;
-import com.maxsavitsky.documenter.xml.ParseSeparate;
 import com.maxsavitsky.documenter.xml.XMLParser;
 
 import org.xml.sax.SAXException;
@@ -56,7 +55,7 @@ public class Category extends Type {
 		FileWriter fr = new FileWriter( file, false );
 		fr.write( Utils.xmlHeader );
 		fr.append( "<info>\n" );
-		fr.append( "<timestamp value=\"" + Integer.toString( info.getTimeStamp() ) + "\" />" );
+		fr.append( "<timestamp value=\"" ).append( String.valueOf( info.getTimeStamp() ) ).append( "\" />" );
 		fr.append( "</info>" );
 		fr.flush();
 		fr.close();
@@ -65,8 +64,8 @@ public class Category extends Type {
 	public ArrayList<Document> getDocuments() {
 		if(mDocuments == null){
 			try {
-				mDocuments = ParseSeparate.parseCategoryWithId( getId() );
-			} catch (ParserConfigurationException | SAXException | IOException e) {
+				mDocuments = XMLParser.newInstance().parseCategoryWithId( getId() );
+			} catch (SAXException | IOException e) {
 				e.printStackTrace();
 				Log.v("Category " + getId(), e.toString());
 			}
@@ -79,13 +78,13 @@ public class Category extends Type {
 	}
 
 	public void removeDocumentWithId(String documentId) throws Exception{
-		ArrayList<Document> documents = ParseSeparate.parseCategoryWithId( getId() );
+		ArrayList<Document> documents = XMLParser.newInstance().parseCategoryWithId( getId() );
 		documents.remove( MainData.getDocumentWithId( documentId ) );
 		Utils.saveCategoryDocuments( getId(), documents );
 	}
 
 	public void removeDocument(Document document) throws Exception{
-		ArrayList<Document> documents = ParseSeparate.parseCategoryWithId( getId() );
+		ArrayList<Document> documents = XMLParser.newInstance().parseCategoryWithId( getId() );
 		//documents.remove( document );
 		for(int i = 0; i < documents.size(); i++){
 			if(documents.get( i ).getId().equals( document.getId() )){
@@ -127,7 +126,7 @@ public class Category extends Type {
 	}
 
 	public Properties readProperties() throws IOException, SAXException {
-		this.mProperties = new XMLParser().parseCategoryProperties( getId() );
+		this.mProperties = XMLParser.newInstance().parseCategoryProperties( getId() );
 		return this.mProperties;
 	}
 

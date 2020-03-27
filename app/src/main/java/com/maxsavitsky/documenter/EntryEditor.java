@@ -40,7 +40,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.view.animation.TranslateAnimation;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -96,7 +95,7 @@ public class EntryEditor extends ThemeActivity {
 	private Button btnBgColorPicker, btnTextColorPicker;
 	private ImageButton btnBold, btnItalic, btnUnderline, btnStrike;
 	private BottomSheetBehavior mBottomSheetLayout;
-	private ArrayList<ChangeEntry> mHistory = new ArrayList<>();
+	private final ArrayList<ChangeEntry> mHistory = new ArrayList<>();
 	private int mHistoryIterator = -1;
 	private Menu mMenu;
 	private final int UNDO_MENU_INDEX = 0;
@@ -104,8 +103,8 @@ public class EntryEditor extends ThemeActivity {
 	private Editable mStartEditable = new Editable.Factory().newEditable( "" );
 	private boolean mDarkTheme;
 	private SharedPreferences sp;
-	private ArrayList<Integer> mColorHistory = new ArrayList<>();
-	private ArrayList<File> mMediaToMove = new ArrayList<>();
+	private final ArrayList<Integer> mColorHistory = new ArrayList<>();
+	private final ArrayList<File> mMediaToMove = new ArrayList<>();
 
 	private interface OnLoadedTextListener{
 		void loaded(Spannable spannable, String originalText);
@@ -274,6 +273,7 @@ public class EntryEditor extends ThemeActivity {
 	ProgressDialog mProgressDialogOnTextLoad;
 	private long mStartLoadTextTime;
 	private boolean scrolled = false;
+	private boolean mWithoutDoc = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -300,7 +300,7 @@ public class EntryEditor extends ThemeActivity {
 		if ( type != null && type.equals( "edit" ) ) {
 			mEntry = MainData.getEntryWithId( getIntent().getStringExtra( "id" ) );
 			try {
-				mProperties = new XMLParser().parseEntryProperties( mEntry.getId() );
+				mProperties = XMLParser.newInstance().parseEntryProperties( mEntry.getId() );
 			}catch (Exception e){
 				Utils.getErrorDialog( e, this ).show();
 			}
@@ -341,9 +341,11 @@ public class EntryEditor extends ThemeActivity {
 				//return;
 			}
 		}else{
-			mDocument = MainData.getDocumentWithId( getIntent().getStringExtra( "id" ) );
-			mId = Utils.generateUniqueId() + "_ent";
 			title = getResources().getString( R.string.create_new_entry );
+			mWithoutDoc = getIntent().getBooleanExtra( "without_doc", false );
+			if(!mWithoutDoc)
+				mDocument = MainData.getDocumentWithId( getIntent().getStringExtra( "id" ) );
+			mId = Utils.generateUniqueId() + "_ent";
 			hideUpButton();
 		}
 		invalidateOptionsMenu();
@@ -436,7 +438,7 @@ public class EntryEditor extends ThemeActivity {
 		}
 	}
 
-	private OnLoadedTextListener mOnLoadedTextListener = new OnLoadedTextListener() {
+	private final OnLoadedTextListener mOnLoadedTextListener = new OnLoadedTextListener() {
 		@Override
 		public void loaded(final Spannable spannable, final String originalText) {
 			double seconds = (System.currentTimeMillis() - mStartLoadTextTime) / 1000.0;
@@ -514,7 +516,7 @@ public class EntryEditor extends ThemeActivity {
 					Toast.makeText( this, "Some error occurred", Toast.LENGTH_SHORT ).show();
 					return;
 				}
-				InputStream in = null;
+				InputStream in;
 				try {
 					in = getContentResolver().openInputStream( uri );
 					if(in == null){
@@ -526,7 +528,7 @@ public class EntryEditor extends ThemeActivity {
 					if(!MainData.isExists( mId ))
 						mMediaToMove.add( file );
 					FileOutputStream fos = new FileOutputStream(file);
-					int len = 0;
+					int len;
 					byte[] buffer = new byte[1024];
 					while((len = in.read( buffer )) != -1){
 						fos.write( buffer, 0, len );
@@ -623,7 +625,7 @@ public class EntryEditor extends ThemeActivity {
 
 	}
 
-	TextEditor.OnSelectionChanges mOnSelectionChanges = new TextEditor.OnSelectionChanges() {
+	final TextEditor.OnSelectionChanges mOnSelectionChanges = new TextEditor.OnSelectionChanges() {
 		@Override
 		public void onTextSelected(int start, int end) {
 			Editable s = mTextEditor.getText();
@@ -721,7 +723,7 @@ public class EntryEditor extends ThemeActivity {
 		}
 	}
 
-	private View.OnClickListener onUnderlineBtnClick = new View.OnClickListener() {
+	private final View.OnClickListener onUnderlineBtnClick = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
 			Editable s = mTextEditor.getText();
@@ -758,7 +760,7 @@ public class EntryEditor extends ThemeActivity {
 		}
 	};
 
-	private View.OnClickListener onStrikeBtnClick = new View.OnClickListener(){
+	private final View.OnClickListener onStrikeBtnClick = new View.OnClickListener(){
 		@Override
 		public void onClick(View v) {
 			Editable s = mTextEditor.getText();
@@ -795,7 +797,7 @@ public class EntryEditor extends ThemeActivity {
 		}
 	};
 
-	private View.OnClickListener onTextAppearanceClick = new View.OnClickListener() {
+	private final View.OnClickListener onTextAppearanceClick = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
 			int typeface = Typeface.BOLD;
@@ -853,7 +855,7 @@ public class EntryEditor extends ThemeActivity {
 		return super.onCreateOptionsMenu( menu );
 	}
 
-	private View.OnClickListener btnBgColorPickerDefaultClickListener = new View.OnClickListener() {
+	private final View.OnClickListener btnBgColorPickerDefaultClickListener = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
 			View.OnClickListener whatToDo = new View.OnClickListener() {
@@ -895,7 +897,7 @@ public class EntryEditor extends ThemeActivity {
 	}
 
 	private int[] mSelectionBounds;
-	private View.OnClickListener onClickOnSelectColorOfTextSegment = new View.OnClickListener() {
+	private final View.OnClickListener onClickOnSelectColorOfTextSegment = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
 			View.OnClickListener onClickListener = new View.OnClickListener() {
@@ -988,7 +990,7 @@ public class EntryEditor extends ThemeActivity {
 	private int mSelectedColor;
 	private int mDefaultTextColor = Color.BLACK;
 
-	private View.OnClickListener btnTextOnAllColor = new View.OnClickListener() {
+	private final View.OnClickListener btnTextOnAllColor = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
 			final Editable e = mTextEditor.getText();
@@ -1096,10 +1098,12 @@ public class EntryEditor extends ThemeActivity {
 			fr.write( Utils.xmlHeader + "<documents>\n</documents>" );
 			fr.flush();
 			fr.close();
-			mEntry.addDocumentToIncluded( mDocument.getId() );
 			mEntry.saveText( text, mProperties );
 			mEntry.setAndSaveInfo( new Info( (int) new Date().getTime() ) );
-			mDocument.addEntry( mEntry );
+			if(!mWithoutDoc) {
+				mEntry.addDocumentToIncluded( mDocument.getId() );
+				mDocument.addEntry( mEntry );
+			}
 			setResult( Results.REOPEN, new Intent().putExtra( "id", mId ) );
 			finish();
 		}catch (Exception e){
@@ -1108,12 +1112,9 @@ public class EntryEditor extends ThemeActivity {
 		}
 	}
 
-	private Map<File, File> fileReplaceMap = new HashMap<>();
-
 	private void copyTempFiles() throws IOException{
 		for(File file : mMediaToMove){
 			File dest = new File( mEntry.getImagesMediaFolder().getPath() + "/" + file.getName() );
-			fileReplaceMap.put( file, dest );
 			FileInputStream fis = new FileInputStream(file);
 			FileOutputStream fos = new FileOutputStream(dest);
 			byte[] b = new byte[1024];
@@ -1305,7 +1306,7 @@ public class EntryEditor extends ThemeActivity {
 		}
 	}
 
-	View.OnClickListener saveEntry = new View.OnClickListener() {
+	final View.OnClickListener saveEntry = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
 			mTextEditor.clearComposingText();

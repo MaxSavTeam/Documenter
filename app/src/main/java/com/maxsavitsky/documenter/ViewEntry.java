@@ -12,11 +12,9 @@ import android.text.SpannableString;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.view.animation.AnimationUtils;
 import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -36,6 +34,8 @@ import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.utils.HtmlImageLoader;
 import com.maxsavitsky.documenter.utils.Utils;
 
+import org.xml.sax.SAXException;
+
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -45,6 +45,7 @@ public class ViewEntry extends ThemeActivity {
 	private SharedPreferences sp;
 	private boolean resultSet = false;
 	private ScrollView mScrollView;
+	private boolean isFreeMode = false;
 
 	private void applyTheme(){
 		ActionBar actionBar = getSupportActionBar();
@@ -75,89 +76,94 @@ public class ViewEntry extends ThemeActivity {
 
 	@Override
 	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-		if(item.getItemId() == android.R.id.home){
-			backPressed();
-		}else if(item.getItemId() == R.id.item_edit_entry_name){
-			AlertDialog changeNameDialog;
-			final EditText editText = new EditText( this );
-			editText.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT ) );
-			editText.setText( mEntry.getName() );
-			editText.requestFocus();
-			//Utils.showKeyboard( editText, this );
-			AlertDialog.Builder builder = new AlertDialog.Builder( this )
-					.setTitle( R.string.edit_entry_name )
-					.setView( editText )
-					.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							String newName = editText.getText().toString();
-							newName = newName.trim();
-							if ( !newName.isEmpty() && !newName.equals( mEntry.getName() ) ) {
-								if ( Utils.isNameExist( newName, "ent" ) ) {
-									Toast.makeText( ViewEntry.this, R.string.this_name_already_exist, Toast.LENGTH_SHORT ).show();
-									return;
-								}
-								MainData.removeEntryWithId( mEntry.getId() );
-								ArrayList<Entry> entries = MainData.getEntriesList();
-								mEntry = new Entry( mEntry.getId(), newName );
-								entries.add( mEntry );
-								MainData.setEntriesList( entries );
-								Utils.saveEntriesList( entries );
-								applyTheme();
-								setResult( Results.NEED_TO_REFRESH );
-								resultSet = true;
-							} else {
-								Toast.makeText( ViewEntry.this, R.string.invalid_name, Toast.LENGTH_SHORT ).show();
-							}
-						}
-					} )
-					.setNegativeButton( R.string.cancel, new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							dialog.cancel();
-						}
-					} ).setCancelable( false );
-			changeNameDialog = builder.create();
-			changeNameDialog.show();
-		}else if(item.getItemId() == R.id.item_delete_entry){
-			AlertDialog.Builder deletionBuilder = new AlertDialog.Builder( this )
-					.setMessage( R.string.delete_confirmation_text )
-					.setTitle( R.string.confirmation )
-					.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							dialog.cancel();
-							try {
-								if ( MainData.finallyDeleteEntryWithId( mEntry.getId() ) ) {
+		switch ( item.getItemId() ) {
+			case android.R.id.home:
+				backPressed();
+				break;
+			case R.id.item_edit_entry_name:
+				AlertDialog changeNameDialog;
+				final EditText editText = new EditText( this );
+				editText.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT ) );
+				editText.setText( mEntry.getName() );
+				editText.requestFocus();
+				//Utils.showKeyboard( editText, this );
+				AlertDialog.Builder builder = new AlertDialog.Builder( this )
+						.setTitle( R.string.edit_entry_name )
+						.setView( editText )
+						.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								String newName = editText.getText().toString();
+								newName = newName.trim();
+								if ( !newName.isEmpty() && !newName.equals( mEntry.getName() ) ) {
+									if ( Utils.isNameExist( newName, "ent" ) ) {
+										Toast.makeText( ViewEntry.this, R.string.this_name_already_exist, Toast.LENGTH_SHORT ).show();
+										return;
+									}
+									MainData.removeEntryWithId( mEntry.getId() );
+									ArrayList<Entry> entries = MainData.getEntriesList();
+									mEntry = new Entry( mEntry.getId(), newName );
+									entries.add( mEntry );
+									MainData.setEntriesList( entries );
+									Utils.saveEntriesList( entries );
+									applyTheme();
 									setResult( Results.NEED_TO_REFRESH );
-									finish();
+									resultSet = true;
 								} else {
-									Toast.makeText(ViewEntry.this, "Failed", Toast.LENGTH_SHORT).show();
+									Toast.makeText( ViewEntry.this, R.string.invalid_name, Toast.LENGTH_SHORT ).show();
 								}
-							} catch (Exception e) {
-								e.printStackTrace();
-								Toast.makeText( ViewEntry.this, "onOptionsItemSelected", Toast.LENGTH_LONG ).show();
-								Utils.getErrorDialog( e, ViewEntry.this ).show();
 							}
-						}
-					} ).setNeutralButton( R.string.cancel, new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							dialog.cancel();
-						}
-					} ).setCancelable( false );
-			deletionBuilder.create().show();
-		}else if(item.getItemId() == R.id.item_edit_entry_text){
-			mEntry.getProperties().setScrollPosition( mScrollView.getScrollY() );
-			try {
-				mEntry.saveProperties( mEntry.getProperties() );
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			Intent intent = new Intent( this, EntryEditor.class );
-			intent.putExtra( "type", "edit" );
-			intent.putExtra( "id", mEntry.getId() );
-			startActivityForResult( intent, Requests.EDIT_ENTRY );
+						} )
+						.setNegativeButton( R.string.cancel, new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								dialog.cancel();
+							}
+						} ).setCancelable( false );
+				changeNameDialog = builder.create();
+				changeNameDialog.show();
+				break;
+			case R.id.item_delete_entry:
+				AlertDialog.Builder deletionBuilder = new AlertDialog.Builder( this )
+						.setMessage( R.string.delete_confirmation_text )
+						.setTitle( R.string.confirmation )
+						.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								dialog.cancel();
+								try {
+									if ( MainData.finallyDeleteEntryWithId( mEntry.getId() ) ) {
+										setResult( Results.NEED_TO_REFRESH );
+										finish();
+									} else {
+										Toast.makeText( ViewEntry.this, "Failed", Toast.LENGTH_SHORT ).show();
+									}
+								} catch (Exception e) {
+									e.printStackTrace();
+									Toast.makeText( ViewEntry.this, "onOptionsItemSelected", Toast.LENGTH_LONG ).show();
+									Utils.getErrorDialog( e, ViewEntry.this ).show();
+								}
+							}
+						} ).setNeutralButton( R.string.cancel, new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								dialog.cancel();
+							}
+						} ).setCancelable( false );
+				deletionBuilder.create().show();
+				break;
+			case R.id.item_edit_entry_text:
+				mEntry.getProperties().setScrollPosition( mScrollView.getScrollY() );
+				try {
+					mEntry.saveProperties( mEntry.getProperties() );
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				Intent intent = new Intent( this, EntryEditor.class );
+				intent.putExtra( "type", "edit" );
+				intent.putExtra( "id", mEntry.getId() );
+				startActivityForResult( intent, Requests.EDIT_ENTRY );
+				break;
 		}
 		return super.onOptionsItemSelected( item );
 	}
@@ -176,29 +182,31 @@ public class ViewEntry extends ThemeActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate( R.menu.entry_menu, menu );
-		getMenuInflater().inflate( R.menu.common_menu, menu );
-		MenuItem item = menu.findItem(R.id.item_common_remember_pos);
-		item.setChecked( mEntry.getProperties().isSaveLastPos() );
-		item.setOnMenuItemClickListener( new MenuItem.OnMenuItemClickListener() {
-			@Override
-			public boolean onMenuItemClick(MenuItem item) {
-				boolean isChecked = !item.isChecked();
-				item.setChecked( isChecked );
-				try{
-					mEntry.applySaveLastPos( isChecked );
-				} catch (final IOException e) {
-					e.printStackTrace();
-					runOnUiThread( new Runnable() {
-						@Override
-						public void run() {
-							Utils.getErrorDialog( e, ViewEntry.this ).show();
-						}
-					} );
-				}
+		if(!isFreeMode) {
+			getMenuInflater().inflate( R.menu.common_menu, menu );
+			MenuItem item = menu.findItem( R.id.item_common_remember_pos );
+			item.setChecked( mEntry.getProperties().isSaveLastPos() );
+			item.setOnMenuItemClickListener( new MenuItem.OnMenuItemClickListener() {
+				@Override
+				public boolean onMenuItemClick(MenuItem item) {
+					boolean isChecked = !item.isChecked();
+					item.setChecked( isChecked );
+					try {
+						mEntry.applySaveLastPos( isChecked );
+					} catch (final IOException | SAXException e) {
+						e.printStackTrace();
+						runOnUiThread( new Runnable() {
+							@Override
+							public void run() {
+								Utils.getErrorDialog( e, ViewEntry.this ).show();
+							}
+						} );
+					}
 
-				return true;
-			}
-		} );
+					return true;
+				}
+			} );
+		}
 		return super.onCreateOptionsMenu( menu );
 	}
 
@@ -223,7 +231,7 @@ public class ViewEntry extends ThemeActivity {
 		void exceptionOccurred(Exception e);
 	}
 
-	private TextLoaderCallback mCallback = new TextLoaderCallback() {
+	private final TextLoaderCallback mCallback = new TextLoaderCallback() {
 		@Override
 		public void loaded(final ArrayList<String> strings) {
 			runOnUiThread( new Runnable() {
@@ -279,6 +287,7 @@ public class ViewEntry extends ThemeActivity {
 			Utils.getErrorDialog( e, this ).show();
 		}
 		applyTheme();
+		isFreeMode = intent.getBooleanExtra("free_mode", false);
 
 		sp = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
 
@@ -297,21 +306,6 @@ public class ViewEntry extends ThemeActivity {
 				}
 			}
 		} );
-		/*mScrollView.setOnTouchListener( new View.OnTouchListener() {
-			@SuppressLint("ClickableViewAccessibility")
-			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-				if(event.getAction() == MotionEvent.ACTION_DOWN ){
-					hideUpButton();
-					return true;
-				}else if(event.getAction() == MotionEvent.ACTION_UP){
-					showUpButton();
-					return true;
-				}
-
-				return false;
-			}
-		} );*/
 		findViewById( R.id.fabUpView ).setOnClickListener( new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {

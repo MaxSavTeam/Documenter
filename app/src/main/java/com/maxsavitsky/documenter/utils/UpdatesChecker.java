@@ -10,7 +10,6 @@ import com.maxsavitsky.documenter.R;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 public class UpdatesChecker {
@@ -74,9 +73,9 @@ public class UpdatesChecker {
 		}
 	}
 
-	private Context mContext;
-	private Thread mThread;
-	private CheckResults mCheckResults;
+	private final Context mContext;
+	private final Thread mThread;
+	private final CheckResults mCheckResults;
 
 	public interface CheckResults{
 		void noUpdates(VersionInfo versionInfo);

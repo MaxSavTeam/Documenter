@@ -9,8 +9,8 @@ import java.io.InputStream;
 import java.net.URL;
 
 public class UpdatesDownloader {
-	private UpdatesChecker.VersionInfo mVersionInfo;
-	private UpdatesChecker.CheckResults mCheckResults;
+	private final UpdatesChecker.VersionInfo mVersionInfo;
+	private final UpdatesChecker.CheckResults mCheckResults;
 
 	public UpdatesDownloader(UpdatesChecker.VersionInfo versionInfo, UpdatesChecker.CheckResults checkResults) {
 		mVersionInfo = versionInfo;

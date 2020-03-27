@@ -4,7 +4,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Looper;
 import android.os.StrictMode;
 import android.text.Html;
 import android.view.View;
@@ -13,10 +12,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.maxsavitsky.documenter.utils.Utils;
-
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 
 public class ErrorHandlerActivity extends AppCompatActivity {
 	String path;

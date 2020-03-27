@@ -8,8 +8,6 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.os.Looper;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -23,7 +21,7 @@ import java.util.Date;
 import java.util.Locale;
 
 class MyExceptionHandler implements Thread.UncaughtExceptionHandler {
-	private Activity mActivity;
+	private final Activity mActivity;
 	private File mStackTraceFile;
 
 	public MyExceptionHandler(Activity activity) {
@@ -96,7 +94,7 @@ class MyExceptionHandler implements Thread.UncaughtExceptionHandler {
 		try {
 			FileWriter fr = new FileWriter( file, false );
 			fr.write( report.toString() );
-			fr.flush(); ;
+			fr.flush();
 			fr.close();
 		} catch (IOException ignored) {
 		}

@@ -15,9 +15,9 @@ import com.maxsavitsky.documenter.data.types.Category;
 import java.util.ArrayList;
 
 public class CategoryListAdapter extends RecyclerView.Adapter<CategoryListAdapter.ViewHolder> {
-	private ArrayList<Category> mData;
-	private LayoutInflater mLayoutInflater;
-	private View.OnClickListener mOnClickListener;
+	private final ArrayList<Category> mData;
+	private final LayoutInflater mLayoutInflater;
+	private final View.OnClickListener mOnClickListener;
 
 	public CategoryListAdapter(Context context, ArrayList<Category> data, View.OnClickListener onClickListener){
 		this.mData = data;
@@ -44,7 +44,8 @@ public class CategoryListAdapter extends RecyclerView.Adapter<CategoryListAdapte
 	}
 
 	class ViewHolder extends RecyclerView.ViewHolder{
-		TextView name, id;
+		final TextView name;
+		final TextView id;
 
 		ViewHolder(@NonNull View itemView) {
 			super(itemView);

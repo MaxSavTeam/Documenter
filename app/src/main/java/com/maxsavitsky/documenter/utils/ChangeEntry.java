@@ -4,7 +4,7 @@ import android.text.SpannableString;
 
 public class ChangeEntry {
 	private SpannableString mSpannableString;
-	private int mCursorPosition;
+	private final int mCursorPosition;
 	private String mText;
 
 	public ChangeEntry(SpannableString spannableString, int cursorPosition) {

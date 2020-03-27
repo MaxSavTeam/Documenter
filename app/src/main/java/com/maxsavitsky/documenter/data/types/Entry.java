@@ -7,12 +7,10 @@ import android.text.Spannable;
 import android.view.Gravity;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.maxsavitsky.documenter.data.Info;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.utils.Utils;
-import com.maxsavitsky.documenter.xml.ParseSeparate;
 import com.maxsavitsky.documenter.xml.XMLParser;
 
 import org.xml.sax.SAXException;
@@ -30,7 +28,9 @@ import java.util.Locale;
 
 public class Entry extends Type {
 
-	private String id, name, pathDir;
+	private final String id;
+	private final String name;
+	private final String pathDir;
 	private Info mInfo;
 	private Properties mProperties;
 
@@ -75,7 +75,7 @@ public class Entry extends Type {
 		FileWriter fr = new FileWriter( file, false );
 		fr.write( Utils.xmlHeader );
 		fr.append( "<info>\n" );
-		fr.append( "<timestamp value=\"" + Integer.toString( info.getTimeStamp() ) + "\" />\n" );
+		fr.append( "<timestamp value=\"" ).append( String.valueOf( info.getTimeStamp() ) ).append( "\" />\n" );
 		fr.append( "</info>" );
 		fr.flush();
 		fr.close();
@@ -151,8 +151,8 @@ public class Entry extends Type {
 		fw.close();
 	}
 
-	public Entry.Properties readProperties() throws IOException {
-		this.mProperties = new XMLParser().parseEntryProperties( id );
+	public Entry.Properties readProperties() throws IOException, SAXException {
+		this.mProperties = XMLParser.newInstance().parseEntryProperties( id );
 		return mProperties;
 	}
 
@@ -172,9 +172,9 @@ public class Entry extends Type {
 		saveProperties();
 	}
 
-	public void applySaveLastPos(boolean state) throws IOException {
+	public void applySaveLastPos(boolean state) throws IOException, SAXException {
 		if( mProperties == null){
-			mProperties = new XMLParser().parseEntryProperties( id );
+			mProperties = XMLParser.newInstance().parseEntryProperties( id );
 		}
 		mProperties.setSaveLastPos( state );
 		saveProperties();
@@ -209,13 +209,17 @@ public class Entry extends Type {
 		return text;
 	}
 
-	public void addDocumentToIncluded(String documentId) throws Exception {
+	public void addDocumentToIncluded(String documentId) throws IOException, SAXException {
 		ArrayList<Document> documents = getDocumentsInWhichIncludedThisEntry();
+		for(Document document : documents){
+			if(document.getId().equals( documentId ))
+				return;
+		}
 		documents.add( MainData.getDocumentWithId( documentId ));
 		saveInWhichDocumentsIncludedThisEntry( documents );
 	}
 
-	public void removeDocumentFromIncluded(String documentId) throws Exception {
+	public void removeDocumentFromIncluded(String documentId) throws IOException, SAXException {
 		ArrayList<Document> documents = getDocumentsInWhichIncludedThisEntry();
 		//documents.remove(MainData.getDocumentWithId( documentId ));
 		for(int i = 0; i < documents.size(); i++){
@@ -226,7 +230,7 @@ public class Entry extends Type {
 		saveInWhichDocumentsIncludedThisEntry( documents );
 	}
 
-	public ArrayList<Document> getDocumentsInWhichIncludedThisEntry() throws Exception {
+	public ArrayList<Document> getDocumentsInWhichIncludedThisEntry() throws IOException, SAXException {
 		File file = new File( Utils.getExternalStoragePath().getPath() + "/entries" );
 		if(!file.exists())
 			throw new IllegalArgumentException( "MainData.getDocumentsInWhichIncludedThisEntry: entries dir does not exist" );
@@ -237,7 +241,7 @@ public class Entry extends Type {
 		if(!file.exists())
 			return new ArrayList<>(  );
 
-		return ParseSeparate.getDocumentsInWhichIncludedEntryWithId( id );
+		return XMLParser.newInstance().getDocumentsInWhichIncludedEntryWithId( id );
 	}
 
 	public void saveInWhichDocumentsIncludedThisEntry(ArrayList<Document> documents) throws IOException {

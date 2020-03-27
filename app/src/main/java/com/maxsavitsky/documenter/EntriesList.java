@@ -33,8 +33,11 @@ import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.utils.Utils;
-import com.maxsavitsky.documenter.xml.ParseSeparate;
+import com.maxsavitsky.documenter.xml.XMLParser;
 
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -46,6 +49,7 @@ public class EntriesList extends ThemeActivity {
 	private ArrayList<Entry> mEntries;
 	private int mSortOrder = 1;
 	private SharedPreferences sp;
+	private boolean isFreeEntriesMode = false;
 
 	private void applyTheme(){
 		ActionBar actionBar = getSupportActionBar();
@@ -55,7 +59,16 @@ public class EntriesList extends ThemeActivity {
 		}
 	}
 
-	private Comparator<Entry> mEntryComparator = new Comparator<Entry>() {
+	private void backPressed(){
+		finish();
+	}
+
+	@Override
+	public void onBackPressed() {
+		backPressed();
+	}
+
+	private final Comparator<Entry> mEntryComparator = new Comparator<Entry>() {
 		@Override
 		public int compare(Entry o1, Entry o2) {
 			if(o1 == null || o2 == null)
@@ -73,8 +86,8 @@ public class EntriesList extends ThemeActivity {
 
 	private void setupRecyclerView(){
 		try {
-			mEntries = ParseSeparate.parseDocumentWithId( mDocument.getId() );
-		}catch (Exception e){
+			mEntries = XMLParser.newInstance().parseDocumentWithId( mDocument.getId() );
+		}catch (SAXException | IOException e) {
 			e.printStackTrace();
 			Utils.getErrorDialog( e, this ).show();
 			return;
@@ -101,12 +114,13 @@ public class EntriesList extends ThemeActivity {
 		}
 	}
 
-	View.OnClickListener onItemClick = new View.OnClickListener() {
+	final View.OnClickListener onItemClick = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
 			Intent intent = new Intent( EntriesList.this, ViewEntry.class );
 			String id = ((TextView) v.findViewById( R.id.lblHiddenCategoryId )).getText().toString();
 			intent.putExtra( "id",  id);
+			intent.putExtra( "free_entries", isFreeEntriesMode );
 			startActivityForResult( intent, Requests.VIEW_ENTRY );
 		}
 	};
@@ -119,15 +133,20 @@ public class EntriesList extends ThemeActivity {
 		setSupportActionBar ( toolbar );
 		sp = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
 		final Intent intent = getIntent ();
-		mDocument = MainData.getDocumentWithId( intent.getStringExtra ( "id" ) );
-		try {
-			mDocument.readProperties();
-			invalidateOptionsMenu();
-			mEntries = ParseSeparate.parseDocumentWithId( mDocument.getId() );
-		} catch (Exception e) {
-			e.printStackTrace();
-			Utils.getErrorDialog( e, this ).show();
+		isFreeEntriesMode = intent.getBooleanExtra( "free_entries_mode", false );
+		if(!isFreeEntriesMode) {
+			mDocument = MainData.getDocumentWithId( intent.getStringExtra( "id" ) );
+			try {
+				mDocument.readProperties();
+				mEntries = XMLParser.newInstance().parseDocumentWithId( mDocument.getId() );
+			} catch (Exception e) {
+				e.printStackTrace();
+				Utils.getErrorDialog( e, this ).show();
+			}
+		}else{
+			mDocument = new Document( "free_entries", "Free entries" );
 		}
+		invalidateOptionsMenu();
 		applyTheme();
 
 		FloatingActionButton fab = findViewById( R.id.fabCreateEntry );
@@ -137,6 +156,7 @@ public class EntriesList extends ThemeActivity {
 				Intent intent1 = new Intent( EntriesList.this, EntryEditor.class );
 				intent1.putExtra( "id", mDocument.getId() );
 				intent1.putExtra( "type", "create" );
+				intent1.putExtra( "without_doc", isFreeEntriesMode );
 				startActivityForResult( intent1, Requests.CREATE_ENTRY );
 			}
 		} );
@@ -149,7 +169,7 @@ public class EntriesList extends ThemeActivity {
 	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 		switch ( item.getItemId() ) {
 			case android.R.id.home:
-				finish();
+				backPressed();
 				break;
 			case R.id.item_invert_in_document:
 				mSortOrder = -mSortOrder;
@@ -210,7 +230,7 @@ public class EntriesList extends ThemeActivity {
 				editText.setText( mDocument.getName() );
 				editText.append( "" );
 				editText.requestFocus();
-				editText.setTextColor( getResources().getColor( super.mEditTextColor ) );
+				editText.setTextColor( getColor( super.mEditTextColor ) );
 				ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT );
 				editText.setLayoutParams( layoutParams );
 				builder.setView( editText ).setPositiveButton( "OK", new DialogInterface.OnClickListener() {
@@ -263,14 +283,14 @@ public class EntriesList extends ThemeActivity {
 	}
 
 	private ArrayList<Entry> entriesToChange = new ArrayList<>(  );
-	private Map<String, Entry> mDocumentEntriesMap = new HashMap<>(  );
+	private final Map<String, Entry> mDocumentEntriesMap = new HashMap<>(  );
 
 	private void prepareChooseLayout() throws Exception{
 		final ArrayList<Entry> entries = MainData.getEntriesList();
 		if(!entries.isEmpty()){
 			setContentView( R.layout.layout_choose_documents);
 
-			ArrayList<Entry> documentEntries = ParseSeparate.parseDocumentWithId( mDocument.getId() );
+			ArrayList<Entry> documentEntries = XMLParser.newInstance().parseDocumentWithId( mDocument.getId() );
 			for(Entry entry : documentEntries){
 				mDocumentEntriesMap.put( entry.getId(), entry );
 			}
@@ -288,7 +308,24 @@ public class EntriesList extends ThemeActivity {
 			View.OnClickListener apply = new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
+					ArrayList<Entry> documentEntries = mDocument.getEntries();
+					for(Entry entry : documentEntries){
+						try {
+							entry.removeDocumentFromIncluded( mDocument.getId() );
+						} catch (IOException | SAXException e) {
+							e.printStackTrace();
+							Utils.getErrorDialog( e, EntriesList.this ).show();
+						}
+					}
 					Utils.saveDocumentEntries( mDocument.getId(), entriesToChange );
+					for(Entry entry : entriesToChange){
+						try {
+							entry.addDocumentToIncluded( mDocument.getId() );
+						} catch (IOException | SAXException e) {
+							e.printStackTrace();
+							Utils.getErrorDialog( e, EntriesList.this ).show();
+						}
+					}
 					restartActivity();
 				}
 			};
@@ -326,7 +363,7 @@ public class EntriesList extends ThemeActivity {
 	}
 
 	class ChooseAdapter extends DefaultChooseAdapter{
-		ArrayList<Entry> mElements;
+		final ArrayList<Entry> mElements;
 
 		ChooseAdapter(ArrayList<Entry> elements, @Nullable View.OnClickListener onClickListener, Context context) {
 			super( elements, onClickListener, context );
@@ -359,35 +396,15 @@ public class EntriesList extends ThemeActivity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate( R.menu.document_menu, menu );
-		/*getMenuInflater().inflate( R.menu.common_menu, menu );
-
-		MenuItem item = menu.findItem(R.id.item_common_remember_pos);
-		item.setChecked( mDocument.getProperties().isSaveLastPos() );
-		item.setOnMenuItemClickListener( new MenuItem.OnMenuItemClickListener() {
-			@Override
-			public boolean onMenuItemClick(MenuItem item) {
-				boolean isChecked = !item.isChecked();
-				item.setChecked( isChecked );
-				try{
-					mDocument.applySaveLastPosState( isChecked );
-				} catch (SAXException | IOException e) {
-					e.printStackTrace();
-					runOnUiThread( new Runnable() {
-						@Override
-						public void run() {
-							Utils.getErrorDialog( e, EntriesList.this ).show();
-						}
-					} );
-				}
-				return true;
-			}
-		} );*/
+		if(isFreeEntriesMode)
+			getMenuInflater().inflate( R.menu.free_entries_menu, menu );
+		else
+			getMenuInflater().inflate( R.menu.document_menu, menu );
 		return super.onCreateOptionsMenu( menu );
 	}
 
 	class RVAdapter extends RecyclerView.Adapter<RVAdapter.ViewHolder>{
-		private ArrayList<Entry> mData;
+		private final ArrayList<Entry> mData;
 
 		RVAdapter(ArrayList<Entry> data) {
 			mData = data;
@@ -411,7 +428,8 @@ public class EntriesList extends ThemeActivity {
 		}
 
 		 class ViewHolder extends RecyclerView.ViewHolder {
-			TextView id, name;
+			final TextView id;
+			 final TextView name;
 
 			ViewHolder(@NonNull View itemView) {
 				super(itemView);

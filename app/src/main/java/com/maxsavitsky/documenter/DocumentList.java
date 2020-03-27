@@ -33,7 +33,7 @@ import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.utils.Utils;
-import com.maxsavitsky.documenter.xml.ParseSeparate;
+import com.maxsavitsky.documenter.xml.XMLParser;
 
 import org.xml.sax.SAXException;
 
@@ -48,9 +48,9 @@ public class DocumentList extends ThemeActivity {
 	private ArrayList<Document> mDocuments;
 	private Category mCategory;
 	private SharedPreferences sp;
-	private Map<String, Document> mDocumentMap = new HashMap<>(  );
+	private final Map<String, Document> mDocumentMap = new HashMap<>(  );
 	private Map<String, Document> documentsToInclude = new HashMap<>();
-	private ArrayList<String> documentsWhichWillBeExcluded = new ArrayList<>();
+	private final ArrayList<String> documentsWhichWillBeExcluded = new ArrayList<>();
 	private int mSortOrder = 1; // 1 - по возрастанию; -1 -
 	private String[] orders = {"Descending order",  "", "Ascending order" };
 
@@ -66,7 +66,7 @@ public class DocumentList extends ThemeActivity {
 		finish();
 	}
 
-	Comparator<Document> mDocumentComparator = new Comparator<Document>() {
+	final Comparator<Document> mDocumentComparator = new Comparator<Document>() {
 		@Override
 		public int compare(Document o1, Document o2) {
 			if(sp.getInt( "sort_documents", 0 ) == 0) {
@@ -83,7 +83,7 @@ public class DocumentList extends ThemeActivity {
 
 	private void setupRecyclerView(){
 		try {
-			mDocuments = ParseSeparate.parseCategoryWithId( mCategory.getId() );
+			mDocuments = XMLParser.newInstance().parseCategoryWithId( mCategory.getId() );
 		}catch (Exception e){
 			e.printStackTrace();
 			Utils.getErrorDialog( e, this ).show();
@@ -109,7 +109,7 @@ public class DocumentList extends ThemeActivity {
 		}
 	}
 
-	private View.OnClickListener mOnClickListener = new View.OnClickListener() {
+	private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
 			Intent intent = new Intent(DocumentList.this, EntriesList.class);
@@ -170,7 +170,7 @@ public class DocumentList extends ThemeActivity {
 				final EditText editText = new EditText(this);
 				editText.setText(mCategory.getName());
 				editText.append("");
-				editText.setTextColor( getResources().getColor( super.mEditTextColor ) );
+				editText.setTextColor( getColor( super.mEditTextColor ) );
 				editText.requestFocus();
 				ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 				editText.setLayoutParams(layoutParams);
@@ -233,6 +233,11 @@ public class DocumentList extends ThemeActivity {
 			case R.id.item_sort_documents:
 				mSortOrder = -mSortOrder;
 				setupRecyclerView();
+				break;
+			case R.id.item_common_free_entries:
+				Intent intent = new Intent(this, EntriesList.class);
+				intent.putExtra( "free_entries_mode", true );
+				startActivityForResult( intent, Requests.FREE_ENTRIES );
 				break;
 		}
 		return super.onOptionsItemSelected(item);
@@ -303,7 +308,7 @@ public class DocumentList extends ThemeActivity {
 		layoutManager.setOrientation( RecyclerView.VERTICAL );
 		recyclerView.setLayoutManager( layoutManager );
 
-		ArrayList<Document> documents = null;
+		ArrayList<Document> documents;
 		try {
 			documents = MainData.getDocumentsFromThisCategory( mCategory.getId() );
 		} catch (Exception e) {
@@ -385,7 +390,7 @@ public class DocumentList extends ThemeActivity {
 		sp = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
 		try {
 			mCategory = MainData.getCategoryWithId(id);
-			mDocuments = ParseSeparate.parseCategoryWithId(id);
+			mDocuments = XMLParser.newInstance().parseCategoryWithId(id);
 		} catch (Exception e) {
 			e.printStackTrace();
 			Utils.getErrorDialog( e, this ).show();
@@ -427,8 +432,8 @@ public class DocumentList extends ThemeActivity {
 	}
 
 	class DocumentsAdapter extends RecyclerView.Adapter<DocumentsAdapter.VH>{
-		private ArrayList<Document> mData;
-		private View.OnClickListener onClickListener;
+		private final ArrayList<Document> mData;
+		private final View.OnClickListener onClickListener;
 
 		DocumentsAdapter(ArrayList<Document> data, View.OnClickListener onClickListener) {
 			mData = data;
@@ -455,7 +460,8 @@ public class DocumentList extends ThemeActivity {
 		}
 
 		class VH extends RecyclerView.ViewHolder{
-			TextView name, id;
+			final TextView name;
+			final TextView id;
 
 			VH(@NonNull View itemView) {
 				super(itemView);
@@ -467,7 +473,7 @@ public class DocumentList extends ThemeActivity {
 	}
 
 	class ChangeListAdapter2 extends DefaultChooseAdapter{
-		ArrayList<Document> mDocuments;
+		final ArrayList<Document> mDocuments;
 
 		public ChangeListAdapter2(ArrayList<Document> elements, @Nullable View.OnClickListener onClickListener, Context context, @Nullable Runnable onBindRun) {
 			super( elements, onClickListener, context);

@@ -24,7 +24,6 @@ import java.io.FileReader;
 import java.io.IOException;
 
 public class MainActivity extends ThemeActivity {
-	private Thread.UncaughtExceptionHandler defaultHandler;
 	private File mStackTraceFile;
 	private boolean isAfterCrash = false;
 	private String path;
@@ -33,7 +32,7 @@ public class MainActivity extends ThemeActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		defaultHandler = Thread.getDefaultUncaughtExceptionHandler();
+		Thread.UncaughtExceptionHandler defaultHandler = Thread.getDefaultUncaughtExceptionHandler();
 		Thread.setDefaultUncaughtExceptionHandler( new MyExceptionHandler( this ) );
 		try {
 			Toolbar toolbar = findViewById( R.id.toolbar );

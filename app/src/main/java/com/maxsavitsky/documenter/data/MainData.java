@@ -4,7 +4,6 @@ import com.maxsavitsky.documenter.data.types.Category;
 import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.utils.Utils;
-import com.maxsavitsky.documenter.xml.ParseSeparate;
 import com.maxsavitsky.documenter.xml.XMLParser;
 
 import org.xml.sax.SAXException;
@@ -30,7 +29,7 @@ public class MainData {
 	}
 	// START Categories
 
-	private static Map<String, Category> sCategoryMap = new HashMap<>();
+	private static final Map<String, Category> sCategoryMap = new HashMap<>();
 
 	private static ArrayList<Category> sCategoriesList = new ArrayList<>();
 
@@ -48,7 +47,7 @@ public class MainData {
 
 	public static ArrayList<Document> getDocumentsFromThisCategory(String id) throws Exception {
 		ArrayList<Document> documents;
-		documents = ParseSeparate.parseCategoryWithId( id );
+		documents = XMLParser.newInstance().parseCategoryWithId( id );
 
 		return documents;
 	}
@@ -67,8 +66,7 @@ public class MainData {
 			throw new FileNotFoundException( "MainData.getCategoriesInWhichIncludedDocumentWithId: included_in.xml not found; id="+ id );
 		}
 
-		XMLParser xmlParser = new XMLParser();
-		return xmlParser.parseCategoriesInWhichIncludedDocumentWithId(id);
+		return XMLParser.newInstance().parseCategoriesInWhichIncludedDocumentWithId(id);
 	}
 
 	public static Category getCategoryWithId(String id) throws NullPointerException {
@@ -97,7 +95,7 @@ public class MainData {
 				throw new IllegalArgumentException("MainData.finallyDeleteCategoryWithId: category with id=" + id + " does not exist");
 			}
 
-			ArrayList<Document> documents = ParseSeparate.parseCategoryWithId( id );
+			ArrayList<Document> documents = XMLParser.newInstance().parseCategoryWithId( id );
 			if(documents.size() != 0){
 				for(Document document : documents){
 					document.removeCategoryFromIncludedXml( id );
@@ -117,13 +115,12 @@ public class MainData {
 	}
 
 	public static void readAllCategories() throws IOException, SAXException {
-		XMLParser xmlParser = new XMLParser();
-		setCategoriesList(xmlParser.parseCategories());
+		setCategoriesList(XMLParser.newInstance().parseCategories());
 	}
 	// END Categories
 	// START Documents
 	private static ArrayList<Document> sDocumentsList = new ArrayList<>();
-	private static Map<String, Document> sDocumentMap = new HashMap<>(  );
+	private static final Map<String, Document> sDocumentMap = new HashMap<>(  );
 
 	public static ArrayList<Document> getDocumentsList() {
 		return sDocumentsList;
@@ -183,7 +180,7 @@ public class MainData {
 		if ( document == null )
 			throw new IllegalArgumentException( "MainData.finallyDeleteDocumentWithId: document not found; id=" + id );
 
-		ArrayList<Entry> entries = ParseSeparate.parseDocumentWithId( id );
+		ArrayList<Entry> entries = XMLParser.newInstance().parseDocumentWithId( id );
 		if(entries.size() != 0){
 			for(Entry entry : entries){
 				entry.removeDocumentFromIncluded( document.getId() );
@@ -198,13 +195,12 @@ public class MainData {
 	}
 
 	public static void readAllDocuments() throws IOException, SAXException {
-		XMLParser xmlParser = new XMLParser();
-		setDocumentsList(xmlParser.parseDocuments());
+		setDocumentsList(XMLParser.newInstance().parseDocuments());
 	}
 	// END Documents
 	// START Entries
 	private static ArrayList<Entry> sEntriesList = new ArrayList<>();
-	private static Map<String, Entry> sEntryMap = new HashMap<>(  );
+	private static final Map<String, Entry> sEntryMap = new HashMap<>(  );
 
 	public static ArrayList<Entry> getEntriesList() {
 		return sEntriesList;
@@ -229,6 +225,27 @@ public class MainData {
 		}
 	}
 
+	public static ArrayList<Entry> getFreeEntries() throws IOException, SAXException {
+		ArrayList<Entry> entries = new ArrayList<>();
+		for(Entry entry : getEntriesList()){
+			ArrayList<Document> documents = entry.getDocumentsInWhichIncludedThisEntry();
+			if(documents.size() == 0) {
+				entries.add( entry );
+			}else{
+				boolean isFree = true;
+				for(Document document : documents){
+					if(document.getCategoriesInWhichIncludedDocument().size() != 0){
+						isFree = false;
+						break;
+					}
+				}
+				if(isFree)
+					entries.add(entry);
+			}
+		}
+		return entries;
+	}
+
 	public static Entry getEntryWithId(String id){
 		return sEntryMap.get( id );
 	}
@@ -248,8 +265,7 @@ public class MainData {
 	}
 
 	public static void readAllEntries() throws IOException, SAXException {
-		XMLParser xmlParser = new XMLParser();
-		setEntriesList( xmlParser.parseEntries() );
+		setEntriesList( XMLParser.newInstance().parseEntries() );
 	}
 
 	private static boolean deleteEntryWithId(String id){

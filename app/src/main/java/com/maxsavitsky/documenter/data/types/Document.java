@@ -7,13 +7,10 @@ import androidx.annotation.NonNull;
 import com.maxsavitsky.documenter.data.Info;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.utils.Utils;
-import com.maxsavitsky.documenter.xml.ParseSeparate;
 import com.maxsavitsky.documenter.xml.XMLParser;
 
 import org.jetbrains.annotations.NotNull;
-import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -21,12 +18,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 public class Document extends Type implements Comparable{
-	private String id, name;
-	private String pathDir;
+	private final String id;
+	private final String name;
 	private Document.Properties mProperties;
 
 	private ArrayList<Entry> mEntries = null;
@@ -35,7 +30,7 @@ public class Document extends Type implements Comparable{
 	public Document(String id, String name){
 		this.id = id;
 		this.name = name;
-		this.pathDir = Utils.getExternalStoragePath().getPath() + "/documents/" + id;
+		String pathDir = Utils.getExternalStoragePath().getPath() + "/documents/" + id;
 	}
 
 	@Override
@@ -74,7 +69,7 @@ public class Document extends Type implements Comparable{
 		FileWriter fr = new FileWriter( file, false );
 		fr.write( Utils.xmlHeader );
 		fr.append( "<info>\n" );
-		fr.append( "\t<timestamp value=\"" + Integer.toString( info.getTimeStamp() ) + "\" />" );
+		fr.append( "\t<timestamp value=\"" ).append( String.valueOf( info.getTimeStamp() ) ).append( "\" />" );
 		fr.append( "</info>" );
 		fr.flush();
 		fr.close();
@@ -86,7 +81,7 @@ public class Document extends Type implements Comparable{
 		}
 
 		if(mProperties == null) {
-			mProperties = new XMLParser().parseDocumentProperties( id );
+			mProperties = XMLParser.newInstance().parseDocumentProperties( id );
 		}
 		mProperties.setSaveLastPos( state );
 		saveProperties();
@@ -95,8 +90,8 @@ public class Document extends Type implements Comparable{
 	public ArrayList<Entry> getEntries() {
 		if(mEntries == null){
 			try {
-				mEntries = ParseSeparate.parseDocumentWithId( getId() );
-			} catch (ParserConfigurationException | SAXException | IOException e) {
+				mEntries = XMLParser.newInstance().parseDocumentWithId( getId() );
+			} catch (SAXException | IOException e) {
 				e.printStackTrace();
 				Log.e( "Document " + getId(), e.toString() );
 			}
@@ -105,13 +100,13 @@ public class Document extends Type implements Comparable{
 	}
 
 	public void addEntry(Entry entry) throws Exception{
-		mEntries = ParseSeparate.parseDocumentWithId( id );
+		mEntries = XMLParser.newInstance().parseDocumentWithId( id );
 		mEntries.add(entry);
 		Utils.saveDocumentEntries( id, mEntries );
 	}
 
 	public void removeEntry(Entry entry) throws Exception{
-		mEntries = ParseSeparate.parseDocumentWithId( id );
+		mEntries = XMLParser.newInstance().parseDocumentWithId( id );
 		for(int i = 0; i < mEntries.size(); i++){
 			if(mEntries.get( i ).getId().equals( entry.getId() )){
 				mEntries.remove( i );
@@ -133,30 +128,8 @@ public class Document extends Type implements Comparable{
 		saveInWhichCategoriesDocumentWithIdIncludedIn( categories );
 	}
 
-	public ArrayList<Category> getCategoriesInWhichIncludedDocument() throws Exception{
-		File file = new File( Utils.getExternalStoragePath().getPath() + "/documents" );
-		if(!file.exists())
-			return new ArrayList<>(  );
-
-		file = new File( file.getPath() + "/" + id );
-		if(!file.exists())
-			return new ArrayList<>(  );
-
-		file = new File( file.getPath() + "/included_in.xml" );
-		SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
-
-		final ArrayList<Category> categories = new ArrayList<>(  );
-		class MyParser extends DefaultHandler{
-			@Override
-			public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-				if(qName.equals( "category" )){
-					categories.add( MainData.getCategoryWithId( attributes.getValue( "id" ) ) );
-				}
-			}
-		}
-
-		saxParser.parse( file, new MyParser() );
-		return categories;
+	public ArrayList<Category> getCategoriesInWhichIncludedDocument() throws IOException, SAXException {
+		return XMLParser.newInstance().parseCategoriesInWhichIncludedDocumentWithId( id );
 	}
 
 	public void saveInWhichCategoriesDocumentWithIdIncludedIn(ArrayList<Category> categories) throws IOException {
@@ -192,7 +165,7 @@ public class Document extends Type implements Comparable{
 	}
 
 	public Properties readProperties() throws IOException, SAXException {
-		this.mProperties = new XMLParser().parseDocumentProperties( id );
+		this.mProperties = XMLParser.newInstance().parseDocumentProperties( id );
 		return mProperties;
 	}
 

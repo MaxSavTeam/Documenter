@@ -17,9 +17,9 @@ import com.maxsavitsky.documenter.data.types.Type;
 import java.util.ArrayList;
 
 public class DefaultChooseAdapter extends RecyclerView.Adapter<DefaultChooseAdapter.VH>{
-	private ArrayList<? extends Type> mElements;
-	private LayoutInflater mLayoutInflater;
-	private View.OnClickListener mOnClickListener;
+	private final ArrayList<? extends Type> mElements;
+	private final LayoutInflater mLayoutInflater;
+	private final View.OnClickListener mOnClickListener;
 	private Runnable mRunnable;
 
 	public DefaultChooseAdapter(ArrayList<? extends Type> elements, @Nullable View.OnClickListener onClickListener, Context context) {
@@ -49,8 +49,9 @@ public class DefaultChooseAdapter extends RecyclerView.Adapter<DefaultChooseAdap
 	}
 
 	public class VH extends RecyclerView.ViewHolder {
-		public TextView mName, mId;
-		public CheckBox mCheckBox;
+		public final TextView mName;
+		public final TextView mId;
+		public final CheckBox mCheckBox;
 
 		VH(@NonNull View itemView) {
 			super(itemView);

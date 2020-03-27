@@ -45,7 +45,6 @@ import java.util.Collections;
 import java.util.Comparator;
 
 public class CategoryList extends ThemeActivity {
-	private ArrayList<Category> mCategories;
 	private int mSortOrder = 1; //1 - по возрастанию; -1 - по убыванию
 	private SharedPreferences sp;
 
@@ -64,7 +63,7 @@ public class CategoryList extends ThemeActivity {
 	}
 
 	private void finishActivity() {
-		finish(); ;
+		finish();
 	}
 
 	@Override
@@ -116,7 +115,7 @@ public class CategoryList extends ThemeActivity {
 		return super.onCreateOptionsMenu( menu );
 	}
 
-	private Comparator<Category> mCategoryComparator = new Comparator<Category>() {
+	private final Comparator<Category> mCategoryComparator = new Comparator<Category>() {
 		@Override
 		public int compare(Category o1, Category o2) {
 			if(sp.getInt( "sort_categories", 0 ) == 0)
@@ -134,15 +133,15 @@ public class CategoryList extends ThemeActivity {
 		RecyclerView recyclerView = findViewById(R.id.category_list_view);
 		LinearLayoutManager lay = new LinearLayoutManager(this);
 		lay.setOrientation(RecyclerView.VERTICAL);
-		mCategories = MainData.getCategoriesList();
-		if(mCategories.size() == 0){
+		ArrayList<Category> categories = MainData.getCategoriesList();
+		if( categories.size() == 0){
 			recyclerView.setVisibility(View.GONE);
 			TextView textView = findViewById(R.id.textViewNothingFound);
 			textView.setVisibility(View.VISIBLE);
 		}else {
-			if(mCategories.size() > 1)
-				Collections.sort( mCategories, mCategoryComparator );
-			CategoryListAdapter adapter = new CategoryListAdapter(this, mCategories, onCategoryClick);
+			if( categories.size() > 1)
+				Collections.sort( categories, mCategoryComparator );
+			CategoryListAdapter adapter = new CategoryListAdapter(this, categories, onCategoryClick);
 			recyclerView.setLayoutManager(lay);
 			recyclerView.setAdapter(adapter);
 			recyclerView.setVisibility(View.VISIBLE);
@@ -151,7 +150,7 @@ public class CategoryList extends ThemeActivity {
 		}
 	}
 
-	private View.OnClickListener onCategoryClick = new View.OnClickListener() {
+	private final View.OnClickListener onCategoryClick = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
 			Intent intent = new Intent(CategoryList.this, DocumentList.class);
@@ -187,7 +186,7 @@ public class CategoryList extends ThemeActivity {
 		super.onActivityResult( requestCode, resultCode, data );
 	}
 
-	private UpdatesChecker.CheckResults mCheckResults = new UpdatesChecker.CheckResults() {
+	private final UpdatesChecker.CheckResults mCheckResults = new UpdatesChecker.CheckResults() {
 		@Override
 		public void noUpdates(UpdatesChecker.VersionInfo versionInfo) {
 
