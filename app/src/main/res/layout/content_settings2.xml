@@ -48,7 +48,7 @@
             android:layout_gravity="start"
             android:gravity="start|center_vertical"
             android:onClick="initialUnpack"
-            android:text="@string/restore"
+            android:text="@string/restore_from_backup"
             android:textSize="16sp" />
     </LinearLayout>
 

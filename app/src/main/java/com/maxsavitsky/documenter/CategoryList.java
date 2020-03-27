@@ -351,13 +351,15 @@ public class CategoryList extends ThemeActivity {
 			requestPermissions( new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE }, 1 );
 		}else {
 			setupRecyclerView();
-			final UpdatesChecker checker = new UpdatesChecker( this, mCheckResults );
-			new Thread( new Runnable() {
-				@Override
-				public void run() {
-					checker.runCheck();
-				}
-			} ).start();
+			if(sp.getBoolean( "check_updates", true )) {
+				final UpdatesChecker checker = new UpdatesChecker( this, mCheckResults );
+				new Thread( new Runnable() {
+					@Override
+					public void run() {
+						checker.runCheck();
+					}
+				} ).start();
+			}
 		}
 	}
 

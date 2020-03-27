@@ -113,7 +113,14 @@ public class SettingsActivity extends ThemeActivity {
 				} );
 			}
 		} );
-
+		Switch swCheckForUpdates = findViewById( R.id.switch_check_for_updates );
+		swCheckForUpdates.setChecked( sp.getBoolean( "check_updates", true ) );
+		swCheckForUpdates.setOnCheckedChangeListener( new CompoundButton.OnCheckedChangeListener() {
+			@Override
+			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+				sp.edit().putBoolean( "check_updates", isChecked ).apply();
+			}
+		} );
 		Switch swKeepScreenOn = findViewById( R.id.swKeepScreenOn );
 		swKeepScreenOn.setChecked( sp.getBoolean( "keep_screen_on", true ) );
 		swKeepScreenOn.setOnCheckedChangeListener( new CompoundButton.OnCheckedChangeListener() {
