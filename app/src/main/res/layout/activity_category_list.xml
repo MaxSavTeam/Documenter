@@ -23,6 +23,8 @@
     <include
         layout="@layout/content_category_list" />
 
+    <include layout="@layout/common_fab_buttons" />
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabCreateCategory"
         android:layout_width="wrap_content"

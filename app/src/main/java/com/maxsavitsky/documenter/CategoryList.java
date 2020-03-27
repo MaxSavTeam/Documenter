@@ -51,7 +51,7 @@ public class CategoryList extends ThemeActivity {
 	private void applyTheme(){
 		ActionBar actionBar = getSupportActionBar();
 		if (actionBar != null) {
-			actionBar.setTitle("Category List");
+			actionBar.setTitle(R.string.title_activity_category_list);
 			Utils.applyDefaultActionBarStyle(actionBar);
 			actionBar.setDisplayHomeAsUpEnabled( false );
 		}
@@ -105,6 +105,11 @@ public class CategoryList extends ThemeActivity {
 						} );
 				builder.create().show();
 				break;
+			case R.id.item_common_free_entries:
+				Intent open = new Intent(this, EntriesList.class);
+				open.putExtra("free_mode", true);
+				startActivity( open );
+				break;
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -112,6 +117,9 @@ public class CategoryList extends ThemeActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate( R.menu.categories_main_list_menu, menu );
+		getMenuInflater().inflate( R.menu.common_menu, menu );
+		MenuItem item = menu.findItem( R.id.item_common_parameters );
+		item.setVisible( false );
 		return super.onCreateOptionsMenu( menu );
 	}
 
@@ -323,7 +331,14 @@ public class CategoryList extends ThemeActivity {
 				return true;
 			}
 		} );
-
+		findViewById( R.id.fabFreeEntries).setOnClickListener( new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent(CategoryList.this, EntriesList.class);
+				intent.putExtra( "free_mode", true );
+				startActivityForResult( intent, Requests.FREE_ENTRIES );
+			}
+		} );
 
 		if(!isMemoryAccessGranted()){
 			requestPermissions( new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE }, 1 );

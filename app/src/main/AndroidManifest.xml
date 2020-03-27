@@ -34,7 +34,6 @@
             android:name=".EntriesList"
             android:label="@string/title_activity_entries_list"
             android:theme="@style/AppTheme.NoActionBar"
-            android:noHistory="true"
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".DocumentList"

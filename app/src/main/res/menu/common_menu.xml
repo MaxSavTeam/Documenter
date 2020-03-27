@@ -13,5 +13,6 @@
     </item>
     <item android:id="@+id/item_common_free_entries"
         app:showAsAction="never"
+        android:visible="false"
         android:title="@string/title_activity_free_entries" />
 </menu>

@@ -1,6 +1,7 @@
 package com.maxsavitsky.documenter;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -58,15 +59,13 @@ public class ViewEntry extends ThemeActivity {
 	private void backPressed(){
 		if(!resultSet)
 			setResult( Results.OK );
-
 		mEntry.getProperties().setScrollPosition( mScrollView.getScrollY() );
 		try {
-			mEntry.saveProperties( mEntry.getProperties() );
-		} catch (Exception e) {
+			mEntry.saveProperties();
+			finishAndRemoveTask();
+		} catch (IOException e) {
 			Utils.getErrorDialog( e, this ).show();
-			return;
 		}
-		finish();
 	}
 
 	@Override
@@ -86,7 +85,6 @@ public class ViewEntry extends ThemeActivity {
 				editText.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT ) );
 				editText.setText( mEntry.getName() );
 				editText.requestFocus();
-				//Utils.showKeyboard( editText, this );
 				AlertDialog.Builder builder = new AlertDialog.Builder( this )
 						.setTitle( R.string.edit_entry_name )
 						.setView( editText )
@@ -181,6 +179,8 @@ public class ViewEntry extends ThemeActivity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
+		if(menu != null)
+			menu.clear();
 		getMenuInflater().inflate( R.menu.entry_menu, menu );
 		if(!isFreeMode) {
 			getMenuInflater().inflate( R.menu.common_menu, menu );
@@ -288,6 +288,7 @@ public class ViewEntry extends ThemeActivity {
 		}
 		applyTheme();
 		isFreeMode = intent.getBooleanExtra("free_mode", false);
+		invalidateOptionsMenu();
 
 		sp = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
 

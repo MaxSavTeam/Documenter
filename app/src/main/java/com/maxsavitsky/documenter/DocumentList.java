@@ -236,7 +236,7 @@ public class DocumentList extends ThemeActivity {
 				break;
 			case R.id.item_common_free_entries:
 				Intent intent = new Intent(this, EntriesList.class);
-				intent.putExtra( "free_entries_mode", true );
+				intent.putExtra( "free_mode", true );
 				startActivityForResult( intent, Requests.FREE_ENTRIES );
 				break;
 		}
@@ -407,7 +407,14 @@ public class DocumentList extends ThemeActivity {
 				startActivityForResult(new Intent(DocumentList.this, CreateDocument.class).putExtra("parent_id", mCategory.getId()), Requests.CREATE_DOCUMENT );
 			}
 		});
-
+		findViewById( R.id.fabFreeEntries).setOnClickListener( new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent(DocumentList.this, EntriesList.class);
+				intent.putExtra( "free_mode", true );
+				startActivityForResult( intent, Requests.FREE_ENTRIES );
+			}
+		} );
 		try {
 			mCategory.readProperties();
 		} catch (IOException | SAXException e) {
@@ -424,7 +431,9 @@ public class DocumentList extends ThemeActivity {
 		if(requestCode == Requests.ENTRIES_LIST){
 			if(resultCode == Results.RESTART_ACTIVITY){
 				Intent intent = new Intent( this, EntriesList.class );
-				intent.putExtra( "id", data.getStringExtra( "id" ) );
+				//intent.putExtra( "id", data.getStringExtra( "id" ) );
+				if(data != null)
+					intent.putExtras( data );
 				startActivityForResult( intent, Requests.ENTRIES_LIST );
 			}
 		}

@@ -120,7 +120,7 @@ public class EntriesList extends ThemeActivity {
 			Intent intent = new Intent( EntriesList.this, ViewEntry.class );
 			String id = ((TextView) v.findViewById( R.id.lblHiddenCategoryId )).getText().toString();
 			intent.putExtra( "id",  id);
-			intent.putExtra( "free_entries", isFreeEntriesMode );
+			intent.putExtra( "free_mode", isFreeEntriesMode );
 			startActivityForResult( intent, Requests.VIEW_ENTRY );
 		}
 	};
@@ -133,7 +133,8 @@ public class EntriesList extends ThemeActivity {
 		setSupportActionBar ( toolbar );
 		sp = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
 		final Intent intent = getIntent ();
-		isFreeEntriesMode = intent.getBooleanExtra( "free_entries_mode", false );
+		isFreeEntriesMode = intent.getBooleanExtra( "free_mode", false );
+		FloatingActionButton floatingActionButton = findViewById( R.id.fabFreeEntries );
 		if(!isFreeEntriesMode) {
 			mDocument = MainData.getDocumentWithId( intent.getStringExtra( "id" ) );
 			try {
@@ -145,6 +146,7 @@ public class EntriesList extends ThemeActivity {
 			}
 		}else{
 			mDocument = new Document( "free_entries", "Free entries" );
+			floatingActionButton.setVisibility( View.GONE );
 		}
 		invalidateOptionsMenu();
 		applyTheme();
@@ -160,6 +162,14 @@ public class EntriesList extends ThemeActivity {
 				startActivityForResult( intent1, Requests.CREATE_ENTRY );
 			}
 		} );
+		floatingActionButton.setOnClickListener( new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent(EntriesList.this, EntriesList.class);
+				intent.putExtra( "free_mode", true );
+				startActivityForResult( intent, Requests.FREE_ENTRIES );
+			}
+		} );
 
 		setupRecyclerView();
 
@@ -170,6 +180,7 @@ public class EntriesList extends ThemeActivity {
 		switch ( item.getItemId() ) {
 			case android.R.id.home:
 				backPressed();
+				//finish();
 				break;
 			case R.id.item_invert_in_document:
 				mSortOrder = -mSortOrder;
