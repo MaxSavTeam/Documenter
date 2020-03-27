@@ -83,7 +83,7 @@ public class Category extends Type {
 		Utils.saveCategoryDocuments( getId(), documents );
 	}
 
-	public void removeDocument(Document document) throws Exception{
+	public void removeDocument(Document document) throws IOException, SAXException {
 		ArrayList<Document> documents = XMLParser.newInstance().parseCategoryWithId( getId() );
 		//documents.remove( document );
 		for(int i = 0; i < documents.size(); i++){

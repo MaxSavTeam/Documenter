@@ -13,7 +13,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -214,6 +216,20 @@ public class EntriesList extends ThemeActivity {
 				chooserBuilder.create().show();
 				break;
 			case R.id.item_delete_document:
+				final CheckBox checkBoxDelEntries = new CheckBox( this );
+				LinearLayout layout = new LinearLayout( this );
+				layout.setOrientation( LinearLayout.VERTICAL );
+				layout.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT ) );
+
+				checkBoxDelEntries.setText( R.string.delete_document__with_entries );
+				checkBoxDelEntries.setChecked(false);
+
+				if(super.isDarkTheme) {
+					checkBoxDelEntries.setTextColor( getColor( super.mTextColor ) );
+				}
+
+				layout.addView(checkBoxDelEntries);
+
 				AlertDialog.Builder deletionBuilder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
 						.setMessage( R.string.delete_confirmation_text )
 						.setTitle( R.string.confirmation )
@@ -222,7 +238,7 @@ public class EntriesList extends ThemeActivity {
 							public void onClick(DialogInterface dialog, int which) {
 								dialog.cancel();
 								try {
-									if ( MainData.finallyDeleteDocumentWithId( mDocument.getId() ) ) {
+									if ( MainData.finallyDeleteDocumentWithId( mDocument.getId(), checkBoxDelEntries.isChecked() ) ) {
 										setResult( Results.NEED_TO_REFRESH );
 										finish();
 									} else {
@@ -238,7 +254,8 @@ public class EntriesList extends ThemeActivity {
 							public void onClick(DialogInterface dialog, int which) {
 								dialog.cancel();
 							}
-						} ).setCancelable( false );
+						} ).setCancelable( false )
+						.setView( layout );
 				deletionBuilder.create().show();
 				break;
 			case R.id.item_change_document_name:
@@ -248,7 +265,7 @@ public class EntriesList extends ThemeActivity {
 				editText.setText( mDocument.getName() );
 				editText.append( "" );
 				editText.requestFocus();
-				editText.setTextColor( getColor( super.mEditTextColor ) );
+				editText.setTextColor( getColor( super.mTextColor ) );
 				ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT );
 				editText.setLayoutParams( layoutParams );
 				builder.setView( editText ).setPositiveButton( "OK", new DialogInterface.OnClickListener() {

@@ -135,7 +135,7 @@ public class Utils {
 		}
 	}
 
-	public static void saveCategoryDocuments(String id, ArrayList<Document> documents) throws Exception{
+	public static void saveCategoryDocuments(String id, ArrayList<Document> documents) throws IOException {
 		File file = new File(getExternalStoragePath().getPath() + "/categories/");
 		if(!file.exists()){
 			file.mkdir();

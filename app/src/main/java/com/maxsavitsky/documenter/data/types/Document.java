@@ -105,7 +105,7 @@ public class Document extends Type implements Comparable{
 		Utils.saveDocumentEntries( id, mEntries );
 	}
 
-	public void removeEntry(Entry entry) throws Exception{
+	public void removeEntry(Entry entry) throws IOException, SAXException {
 		mEntries = XMLParser.newInstance().parseDocumentWithId( id );
 		for(int i = 0; i < mEntries.size(); i++){
 			if(mEntries.get( i ).getId().equals( entry.getId() )){
@@ -122,7 +122,7 @@ public class Document extends Type implements Comparable{
 		saveInWhichCategoriesDocumentWithIdIncludedIn( categories );
 	}
 
-	public void removeCategoryFromIncludedXml( String categoryId) throws Exception {
+	public void removeCategoryFromIncludedXml( String categoryId) throws IOException, SAXException {
 		ArrayList<Category> categories = getCategoriesInWhichIncludedDocument();
 		categories.remove( MainData.getCategoryWithId( categoryId ) );
 		saveInWhichCategoriesDocumentWithIdIncludedIn( categories );

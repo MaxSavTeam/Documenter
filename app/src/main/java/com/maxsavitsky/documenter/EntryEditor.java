@@ -1232,7 +1232,7 @@ public class EntryEditor extends ThemeActivity {
 				name.setId( View.NO_ID );
 				name.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT ) );
 				name.requestFocus();
-				name.setTextColor( getColor( super.mEditTextColor ) );
+				name.setTextColor( getColor( super.mTextColor ) );
 				name.setMaxLines( 1 );
 				AlertDialog.Builder builder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
 						.setView( name )

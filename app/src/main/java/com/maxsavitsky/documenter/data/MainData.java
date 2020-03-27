@@ -87,31 +87,26 @@ public class MainData {
 		sCategoryMap.remove(id);
 	}
 
-	public static boolean finallyDeleteCategoryWithId(String id) throws Exception {
-		try{
-			Category category = getCategoryWithId(id);
+	public static boolean finallyDeleteCategoryWithId(String id) throws IOException, SAXException {
+		Category category = getCategoryWithId(id);
 
-			if(category == null){
-				throw new IllegalArgumentException("MainData.finallyDeleteCategoryWithId: category with id=" + id + " does not exist");
-			}
-
-			ArrayList<Document> documents = XMLParser.newInstance().parseCategoryWithId( id );
-			if(documents.size() != 0){
-				for(Document document : documents){
-					document.removeCategoryFromIncludedXml( id );
-				}
-			}
-			removeCategoryWithId(id);
-			Utils.saveCategoriesList(getCategoriesList());
-			File file = new File( Utils.getExternalStoragePath().getPath() + "/categories/" + id );
-			for(File file1 : file.listFiles()){
-				file1.delete();
-			}
-			return file.delete();
-		}catch (Exception e){
-			e.printStackTrace();
-			throw new Exception( e.toString() + "\n" + e.getStackTrace()[0] );
+		if(category == null){
+			throw new IllegalArgumentException("MainData.finallyDeleteCategoryWithId: category with id=" + id + " does not exist");
 		}
+
+		ArrayList<Document> documents = XMLParser.newInstance().parseCategoryWithId( id );
+		if(documents.size() != 0){
+			for(Document document : documents){
+				document.removeCategoryFromIncludedXml( id );
+			}
+		}
+		removeCategoryWithId(id);
+		Utils.saveCategoriesList(getCategoriesList());
+		File file = new File( Utils.getExternalStoragePath().getPath() + "/categories/" + id );
+		for(File file1 : file.listFiles()){
+			file1.delete();
+		}
+		return file.delete();
 	}
 
 	public static void readAllCategories() throws IOException, SAXException {
@@ -148,10 +143,10 @@ public class MainData {
 		return sDocumentMap.get( id );
 	}
 
-	private static boolean deleteDocument(String id) throws Exception {
+	private static boolean deleteDocument(String id)  {
 		File path = new File(Utils.getExternalStoragePath().getPath() + "/documents/" + id);
 		if(!path.isDirectory()){
-			throw new Exception("MainData.deleteDocument: path with id=" + id + " not a directory");
+			return false;
 		}
 		removeDocumentWithId(id);
 
@@ -171,7 +166,7 @@ public class MainData {
 		return path.delete();
 	}
 
-	public static boolean finallyDeleteDocumentWithId(String id) throws Exception {
+	public static boolean finallyDeleteDocumentWithId(String id, boolean deleteEntries) throws IOException, SAXException {
 		File file = new File( Utils.getExternalStoragePath().getPath() + "/documents/" + id + "/" + id + ".xml" );
 		if ( !file.exists() )
 			throw new IllegalArgumentException( "MainData.finallyDeleteDocumentWithId: document with id=" + id + " does not exist" );
@@ -184,6 +179,11 @@ public class MainData {
 		if(entries.size() != 0){
 			for(Entry entry : entries){
 				entry.removeDocumentFromIncluded( document.getId() );
+				if(deleteEntries){
+					if(entry.getDocumentsInWhichIncludedThisEntry().size() == 0){
+						finallyDeleteEntryWithId( entry.getId() );
+					}
+				}
 			}
 		}
 		ArrayList<Category> categories = document.getCategoriesInWhichIncludedDocument();
@@ -192,6 +192,10 @@ public class MainData {
 		}
 		return deleteDocument( id );
 
+	}
+
+	public static boolean finallyDeleteDocumentWithId(String id) throws IOException, SAXException {
+		return finallyDeleteDocumentWithId( id, false );
 	}
 
 	public static void readAllDocuments() throws IOException, SAXException {
@@ -206,7 +210,7 @@ public class MainData {
 		return sEntriesList;
 	}
 
-	public static boolean finallyDeleteEntryWithId(String id) throws Exception{
+	public static boolean finallyDeleteEntryWithId(String id) throws IOException, SAXException {
 		Entry entry = getEntryWithId( id );
 		ArrayList<Document> documents = entry.getDocumentsInWhichIncludedThisEntry();
 		for(Document document : documents){

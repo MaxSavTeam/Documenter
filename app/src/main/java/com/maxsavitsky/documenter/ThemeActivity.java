@@ -9,7 +9,9 @@ import androidx.appcompat.app.AppCompatActivity;
 public class ThemeActivity extends AppCompatActivity {
 	public int mAlertDialogStyle = R.style.AlertDialogDark;
 
-	public int mEditTextColor = R.color.black;
+	public int mTextColor = R.color.black;
+
+	public boolean isDarkTheme = false;
 
 	// only for themes
 	@Override
@@ -20,11 +22,12 @@ public class ThemeActivity extends AppCompatActivity {
 		if(sharedPreferences.getBoolean( "dark_theme", false )){
 			setTheme( R.style.AppTheme_Dark );
 			mAlertDialogStyle = R.style.AlertDialogDark;
-			mEditTextColor = R.color.white;
+			mTextColor = R.color.white;
+			isDarkTheme = true;
 		}else{
 			setTheme( R.style.AppTheme );
 			mAlertDialogStyle = R.style.Theme_AppCompat_Light_Dialog;
-			mEditTextColor = R.color.black;
+			mTextColor = R.color.black;
 		}
 	}
 }

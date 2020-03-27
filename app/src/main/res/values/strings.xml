@@ -95,12 +95,8 @@
     <string name="saving">Saving…</string>
     <string name="ignore_this_update">Ignore this update</string>
     <string name="title_activity_free_entries">Free Entries</string>
-    <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
+    <string name="delete_category__with_docs">Also delete all documents included ONLY in this category</string>
+    <string name="delete_category__with_entries">Also delete entries that are included ONLY in deleted documents</string>
 
-    <string name="hello_first_fragment">Hello first fragment</string>
-    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+    <string name="delete_document__with_entries">Delete entries that are included ONLY in this document</string>
 </resources>

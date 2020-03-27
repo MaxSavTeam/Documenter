@@ -13,7 +13,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -135,6 +137,34 @@ public class DocumentList extends ThemeActivity {
 				backPressed();
 				break;
 			case R.id.item_delete:
+				final CheckBox checkBoxDelDocs = new CheckBox( this );
+				final CheckBox checkBoxDelEntries = new CheckBox( this );
+				LinearLayout layout = new LinearLayout( this );
+				layout.setOrientation( LinearLayout.VERTICAL );
+				layout.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT ) );
+
+				checkBoxDelDocs.setText( R.string.delete_category__with_docs );
+				checkBoxDelDocs.setChecked( false );
+				checkBoxDelDocs.setOnCheckedChangeListener( new CompoundButton.OnCheckedChangeListener() {
+					@Override
+					public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+						checkBoxDelEntries.setEnabled( isChecked );
+						if(!isChecked)
+							checkBoxDelEntries.setChecked( false );
+					}
+				} );
+				checkBoxDelEntries.setText( R.string.delete_category__with_entries );
+				checkBoxDelEntries.setChecked(false);
+				checkBoxDelEntries.setEnabled(false);
+
+				if(super.isDarkTheme) {
+					checkBoxDelDocs.setTextColor( getColor( super.mTextColor ) );
+					checkBoxDelEntries.setTextColor( getColor( super.mTextColor ) );
+				}
+
+				layout.addView(checkBoxDelDocs);
+				layout.addView(checkBoxDelEntries);
+
 				AlertDialog.Builder deletionBuilder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
 						.setMessage( R.string.delete_confirmation_text )
 						.setTitle( R.string.confirmation )
@@ -143,6 +173,12 @@ public class DocumentList extends ThemeActivity {
 							public void onClick(DialogInterface dialog, int which) {
 								dialog.cancel();
 								try {
+									if(checkBoxDelDocs.isChecked()){
+										for(Document document : mCategory.getDocuments()){
+											if(document.getCategoriesInWhichIncludedDocument().size() == 1)
+												MainData.finallyDeleteDocumentWithId( document.getId(), checkBoxDelEntries.isChecked() );
+										}
+									}
 									if ( MainData.finallyDeleteCategoryWithId( mCategory.getId() ) ) {
 										setResult( Results.NEED_TO_REFRESH );
 										finish();
@@ -159,7 +195,8 @@ public class DocumentList extends ThemeActivity {
 							public void onClick(DialogInterface dialog, int which) {
 								dialog.cancel();
 							}
-						} ).setCancelable( false );
+						} ).setCancelable( false )
+						.setView( layout );
 				deletionBuilder.create().show();
 				break;
 			case R.id.menu_edit_name:
@@ -170,7 +207,7 @@ public class DocumentList extends ThemeActivity {
 				final EditText editText = new EditText(this);
 				editText.setText(mCategory.getName());
 				editText.append("");
-				editText.setTextColor( getColor( super.mEditTextColor ) );
+				editText.setTextColor( getColor( super.mTextColor ) );
 				editText.requestFocus();
 				ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 				editText.setLayoutParams(layoutParams);

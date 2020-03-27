@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <attr name="textColor" format="color|reference" />
+    <attr name="textColor" format="color" />
     <attr name="fabButtonColor" format="color" />
     <attr name="bottom_sheet_style" format="reference" />
     <attr name="bold_button_src" format="reference" />
