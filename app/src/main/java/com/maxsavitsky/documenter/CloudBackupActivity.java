@@ -118,11 +118,15 @@ public class CloudBackupActivity extends ThemeActivity {
 				ref.addValueEventListener( new ValueEventListener() {
 					@Override
 					public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-						long time = (long) dataSnapshot.getValue();
-						DateFormat format = DateFormat.getDateTimeInstance();
-						String str = String.format( "%s: %s", getString( R.string.last_backup ), format.format( new Date( time ) ) );
-						( (TextView) findViewById( R.id.lblLastBackup ) ).setText( str );
-
+						if(dataSnapshot.getValue() != null) {
+							long time = (long) dataSnapshot.getValue();
+							DateFormat format = DateFormat.getDateTimeInstance();
+							String str = String.format( "%s: %s", getString( R.string.last_backup ), format.format( new Date( time ) ) );
+							( (TextView) findViewById( R.id.lblLastBackup ) ).setText( str );
+						}else{
+							String str = String.format( "%s: %s", getString( R.string.last_backup ), getString( R.string.never ) );
+							( (TextView) findViewById( R.id.lblLastBackup ) ).setText( str );
+						}
 						loader.onDataLoaded();
 					}
 

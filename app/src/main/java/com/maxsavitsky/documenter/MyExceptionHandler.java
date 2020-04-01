@@ -74,6 +74,7 @@ class MyExceptionHandler implements Thread.UncaughtExceptionHandler {
 				.append( "Thread name: " ).append( t.getName() ).append( "\n" )
 				.append( "Thread id: " ).append( t.getId() ).append( "\n" )
 				.append( "Thread state: " ).append( t.getState() ).append( "\n" )
+				.append( "Package: " ).append( BuildConfig.APPLICATION_ID ).append( "\n" )
 				.append( "Manufacturer: " ).append( Build.MANUFACTURER ).append( "\n" )
 				.append( "Model: " ).append( Build.MODEL ).append( "\n" )
 				.append( "Brand: " ).append( Build.BRAND ).append( "\n" )
