@@ -20,9 +20,13 @@ import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.data.types.Type;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -64,6 +68,36 @@ public class Utils {
 		}
 
 		return false;
+	}
+
+	public static void deleteDirectory(File dir) {
+		File[] children = dir.listFiles();
+		if(children != null) {
+			for (File file : children) {
+				if ( file.isDirectory() ) {
+					deleteDirectory( file );
+				} else {
+					file.delete();
+				}
+			}
+		}
+		dir.delete();
+	}
+
+	public static String readFile(File file) throws IOException {
+		String s = "";
+		FileInputStream fileInputStream = new FileInputStream( file );
+		byte[] buffer = new byte[ 1024 ];
+		int len;
+		while ( ( len = fileInputStream.read( buffer ) ) != -1 ) {
+			if ( len < 1024 ) {
+				buffer = Arrays.copyOf( buffer, len );
+			}
+
+			s = String.format( "%s%s", s, new String( buffer, StandardCharsets.UTF_8 ) );
+		}
+		fileInputStream.close();
+		return s;
 	}
 
 	public static void saveCategoriesList(ArrayList<Category> categories){

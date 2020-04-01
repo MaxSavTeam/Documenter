@@ -3,6 +3,7 @@ package com.maxsavitsky.documenter;
 import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -16,12 +17,20 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
-import com.maxsavitsky.documenter.BuildConfig;
+import com.firebase.ui.auth.AuthUI;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.maxsavitsky.documenter.backup.BackupInstruments;
+import com.maxsavitsky.documenter.backup.CloudBackupInstruments;
+import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.utils.ApkInstaller;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.utils.UpdatesChecker;
@@ -29,19 +38,13 @@ import com.maxsavitsky.documenter.utils.UpdatesDownloader;
 import com.maxsavitsky.documenter.utils.Utils;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Locale;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 public class SettingsActivity extends ThemeActivity {
 
 	private boolean mMemoryAccessGranted = false;
+	private FirebaseAuth mAuth;
 
 	private void applyTheme() {
 		ActionBar actionBar = getSupportActionBar();
@@ -67,7 +70,7 @@ public class SettingsActivity extends ThemeActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+		final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
 
 		super.onCreate( savedInstanceState );
 		setContentView( R.layout.activity_settings );
@@ -77,13 +80,13 @@ public class SettingsActivity extends ThemeActivity {
 
 		applyTheme();
 
-		(( TextView ) findViewById( R.id.txtVersion )).setText( String.format( Locale.ROOT, "Version: %s\nCode: %d Build: %d", BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE, BuildConfig.BUILD_CODE ) );
+		( (TextView) findViewById( R.id.txtVersion ) ).setText( String.format( Locale.ROOT, "Version: %s\nCode: %d Build: %d", BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE, BuildConfig.BUILD_CODE ) );
 
 		final Switch swDarkHeader = findViewById( R.id.swDarkTheme );
 		swDarkHeader.setChecked( sp.getBoolean( "dark_theme", false ) );
 		swDarkHeader.setOnClickListener( new View.OnClickListener() {
 			@Override
-			public void onClick(View v){
+			public void onClick(View v) {
 				final boolean isChecked = swDarkHeader.isChecked();
 				sp.edit().putBoolean( "dark_theme", isChecked ).apply();
 				final AlertDialog.Builder builder = new AlertDialog.Builder( SettingsActivity.this, SettingsActivity.super.mAlertDialogStyle )
@@ -119,6 +122,9 @@ public class SettingsActivity extends ThemeActivity {
 			@Override
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 				sp.edit().putBoolean( "check_updates", isChecked ).apply();
+				if ( !isChecked ) {
+					Toast.makeText( SettingsActivity.this, ":(", Toast.LENGTH_SHORT ).show();
+				}
 			}
 		} );
 		Switch swKeepScreenOn = findViewById( R.id.swKeepScreenOn );
@@ -129,11 +135,59 @@ public class SettingsActivity extends ThemeActivity {
 				sp.edit().putBoolean( "keep_screen_on", isChecked ).apply();
 			}
 		} );
+
+		mAuth = FirebaseAuth.getInstance();
+		updateUserUi( mAuth.getCurrentUser() );
+	}
+
+	private void updateUserUi(FirebaseUser user) {
+		if ( user == null ) {
+			findViewById( R.id.layout_authorised_backup ).setVisibility( View.GONE );
+			findViewById( R.id.layout_not_authorised_backup ).setVisibility( View.VISIBLE );
+		} else {
+			findViewById( R.id.layout_authorised_backup ).setVisibility( View.VISIBLE );
+			findViewById( R.id.layout_not_authorised_backup ).setVisibility( View.GONE );
+		}
+	}
+
+	public void signButtonsAction(View v) {
+		if ( v.getId() == R.id.btnSignIn || v.getId() == R.id.btnSignUp ) {
+			startActivityForResult( AuthUI.getInstance()
+							.createSignInIntentBuilder()
+							.build(),
+
+					Requests.SIGN_IN );
+		} else if ( v.getId() == R.id.btnSignOut ) {
+			AuthUI.getInstance().signOut( this )
+					.addOnCompleteListener( new OnCompleteListener<Void>() {
+						@Override
+						public void onComplete(@NonNull Task<Void> task) {
+							updateUserUi( mAuth.getCurrentUser() );
+						}
+					} );
+		}
+	}
+
+	public void cloudBackupParams(View v){
+		Intent intent = new Intent(this, CloudBackupActivity.class);
+		startActivityForResult( intent, Requests.CLOUD_BACKUP_PARAMS );
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+		super.onActivityResult( requestCode, resultCode, data );
+		if ( requestCode == Requests.SIGN_IN ) {
+			updateUserUi( mAuth.getCurrentUser() );
+		}
+		if(resultCode == Results.RESTART_APP){
+			setResult( resultCode );
+			finish();
+		}
 	}
 
 	private ProgressDialog mCheckUpdatesDialog = null;
 
-	private boolean isMemoryAccessGranted(){
+	private boolean isMemoryAccessGranted() {
 		boolean write = ContextCompat.checkSelfPermission( this, Manifest.permission.WRITE_EXTERNAL_STORAGE ) == PackageManager.PERMISSION_GRANTED;
 		boolean read = ContextCompat.checkSelfPermission( this, Manifest.permission.READ_EXTERNAL_STORAGE ) == PackageManager.PERMISSION_GRANTED;
 		return write && read;
@@ -145,8 +199,9 @@ public class SettingsActivity extends ThemeActivity {
 			runOnUiThread( new Runnable() {
 				@Override
 				public void run() {
-					if(mCheckUpdatesDialog != null)
+					if ( mCheckUpdatesDialog != null ) {
 						mCheckUpdatesDialog.dismiss();
+					}
 					Toast.makeText( SettingsActivity.this, R.string.app_is_up_to_date, Toast.LENGTH_LONG ).show();
 				}
 			} );
@@ -157,8 +212,9 @@ public class SettingsActivity extends ThemeActivity {
 			runOnUiThread( new Runnable() {
 				@Override
 				public void run() {
-					if(mCheckUpdatesDialog != null)
+					if ( mCheckUpdatesDialog != null ) {
 						mCheckUpdatesDialog.dismiss();
+					}
 					AlertDialog.Builder builder = new AlertDialog.Builder( SettingsActivity.this, SettingsActivity.super.mAlertDialogStyle );
 					builder.setTitle( R.string.update_available )
 							.setCancelable( false )
@@ -183,8 +239,9 @@ public class SettingsActivity extends ThemeActivity {
 
 		@Override
 		public void downloaded(File path, UpdatesChecker.VersionInfo versionInfo) {
-			if(mDownloadPd != null)
+			if ( mDownloadPd != null ) {
 				mDownloadPd.dismiss();
+			}
 			ApkInstaller.installApk( SettingsActivity.this, path );
 		}
 
@@ -196,10 +253,12 @@ public class SettingsActivity extends ThemeActivity {
 					runOnUiThread( new Runnable() {
 						@Override
 						public void run() {
-							if(mCheckUpdatesDialog != null)
+							if ( mCheckUpdatesDialog != null ) {
 								mCheckUpdatesDialog.dismiss();
-							if(mDownloadPd != null)
+							}
+							if ( mDownloadPd != null ) {
 								mDownloadPd.dismiss();
+							}
 							Utils.getErrorDialog( e, SettingsActivity.this ).show();
 						}
 					} );
@@ -208,8 +267,8 @@ public class SettingsActivity extends ThemeActivity {
 		}
 	};
 
-	public void checkForUpdates(View v){
-		mCheckUpdatesDialog = new ProgressDialog(this);
+	public void checkForUpdates(View v) {
+		mCheckUpdatesDialog = new ProgressDialog( this );
 		mCheckUpdatesDialog.setMessage( getResources().getString( R.string.checking_for_updates ) );
 		mCheckUpdatesDialog.setCancelable( false );
 		mCheckUpdatesDialog.show();
@@ -226,9 +285,9 @@ public class SettingsActivity extends ThemeActivity {
 	private ProgressDialog mDownloadPd = null;
 	private UpdatesChecker.VersionInfo tempVersionInfo;
 
-	private void download(UpdatesChecker.VersionInfo versionInfo){
-		if(!mMemoryAccessGranted ){
-			if(!isMemoryAccessGranted()) {
+	private void download(UpdatesChecker.VersionInfo versionInfo) {
+		if ( !mMemoryAccessGranted ) {
+			if ( !isMemoryAccessGranted() ) {
 				tempVersionInfo = versionInfo;
 				requestPermissions( new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE }, 1 );
 				return;
@@ -236,7 +295,7 @@ public class SettingsActivity extends ThemeActivity {
 		}
 		mMemoryAccessGranted = false;
 		final UpdatesDownloader downloader = new UpdatesDownloader( versionInfo, mCheckResults );
-		mDownloadPd = new ProgressDialog(SettingsActivity.this);
+		mDownloadPd = new ProgressDialog( SettingsActivity.this );
 		mDownloadPd.setMessage( "Downloading..." );
 		mDownloadPd.setCancelable( false );
 		mDownloadPd.setButton( ProgressDialog.BUTTON_NEGATIVE, getResources().getString( R.string.cancel ), new DialogInterface.OnClickListener() {
@@ -261,106 +320,20 @@ public class SettingsActivity extends ThemeActivity {
 		downloadThread.start();
 	}
 
-	private String readFile(File file) {
-		try {
-			String s = "";
-			FileInputStream fileInputStream = new FileInputStream(file);
-			byte[] buffer = new byte[1024];
-			int len;
-			while((len = fileInputStream.read(buffer)) != -1){
-				if(len < 1024){
-					buffer = Arrays.copyOf(buffer, len);
-				}
-
-				s = String.format( "%s%s", s, new String(buffer, StandardCharsets.UTF_8 ) );
-			}
-			fileInputStream.close();
-			return s;
-		} catch (Exception e) {
-			Utils.getErrorDialog( e, this ).show();
-			return "null";
-		}
-	}
-
-	private void myPack(File path, String fileName, ZipOutputStream out) throws IOException {
-		if ( path.isHidden() ) {
-			return;
-		}
-
-		if ( path.isDirectory() ) {
-			if ( fileName.endsWith( "/" ) ) {
-				out.putNextEntry( new ZipEntry( fileName ) );
-			} else {
-				out.putNextEntry( new ZipEntry( fileName + "/" ) );
-			}
-			out.closeEntry();
-
-			File[] children = path.listFiles();
-			for (File child : children) {
-				myPack( child, fileName + "/" + child.getName(), out );
-			}
-			return;
-		}
-
-		String content = readFile( path );
-		ZipEntry zipEntry = new ZipEntry( fileName );
-		out.putNextEntry( zipEntry );
-		out.write( content.getBytes(), 0, content.getBytes().length );
-	}
-
 	private void unpack() {
 		File file = new File( Environment.getExternalStorageDirectory().getPath() + "/documenter_backup.zip" );
 		if ( !file.exists() ) {
 			Toast.makeText( this, R.string.file_not_found, Toast.LENGTH_SHORT ).show();
 			return;
 		}
-		File[] files = Utils.getExternalStoragePath().listFiles();
-		for (File child : files) {
-			if ( child.isDirectory() ) {
-				deleteDirectory( child );
-			} else {
-				child.delete();
-			}
-		}
-
-		File destinationDir = Utils.getExternalStoragePath();
 		try {
-			ZipInputStream zis = new ZipInputStream( new FileInputStream( file.getAbsoluteFile() ) );
-			byte[] buffer = new byte[ 1024 ];
-			ZipEntry zipEntry;
-			while ( ( zipEntry = zis.getNextEntry() ) != null ) {
-				File newFile = new File( destinationDir.getCanonicalPath(), zipEntry.getName() );
-				if ( zipEntry.isDirectory() ) {
-					newFile.mkdir();
-					continue;
-				}
-				FileOutputStream fos = new FileOutputStream( newFile );
+			BackupInstruments.restoreFromBackup( file );
 
-				int len;
-				while ( ( len = zis.read( buffer ) ) > 0 ) {
-					fos.write( buffer, 0, len );
-				}
-				fos.close();
-			}
-			zis.closeEntry();
-			zis.close();
-
-			Toast.makeText( this, R.string.successful, Toast.LENGTH_SHORT ).show();
 			setResult( Results.RESTART_APP );
 			finish();
-		} catch (Exception e) {
+		} catch (IOException e) {
+			e.printStackTrace();
 			Utils.getErrorDialog( e, this ).show();
-		}
-	}
-
-	private void deleteDirectory(File dir) {
-		File[] children = dir.listFiles();
-		for (File file : children) {
-			if ( file.isDirectory() ) {
-				deleteDirectory( file );
-			} else {
-				file.delete();
-			}
 		}
 	}
 
@@ -402,25 +375,15 @@ public class SettingsActivity extends ThemeActivity {
 	}
 
 	private void createMyBackup() {
-		File dir = Utils.getExternalStoragePath();
+		File outputFile = new File( Environment.getExternalStorageDirectory().getPath() + "/documenter_backup.zip" );
 		try {
-			File outputFile = new File( Environment.getExternalStorageDirectory().getPath() + "/documenter_backup.zip" );
 			outputFile.createNewFile();
-			ZipOutputStream zipOutputStream = new ZipOutputStream( new FileOutputStream( outputFile ) );
-			zipOutputStream.setLevel( 9 );
 
-			if ( dir.listFiles() == null ) {
-				zipOutputStream.close();
-				return;
-			}
-			for (File file : dir.listFiles()) {
-				if ( !file.getName().equals( "stacktraces" ) ) {
-					myPack( file, file.getName(), zipOutputStream );
-				}
-			}
-			zipOutputStream.close();
-			Toast.makeText( this, R.string.successful, Toast.LENGTH_SHORT ).show();
-		} catch (Exception e) {
+			BackupInstruments.createBackupToFile( outputFile );
+
+			Toast.makeText( this, R.string.successfully, Toast.LENGTH_SHORT ).show();
+		} catch (IOException e) {
+			e.printStackTrace();
 			Utils.getErrorDialog( e, this ).show();
 		}
 	}
@@ -440,12 +403,12 @@ public class SettingsActivity extends ThemeActivity {
 				Toast.makeText( this, "Denied", Toast.LENGTH_SHORT ).show();
 			}
 		}
-		if(requestCode == 1){
-			if ( grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED && grantResults[ 1 ] == PackageManager.PERMISSION_GRANTED ){
+		if ( requestCode == 1 ) {
+			if ( grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED && grantResults[ 1 ] == PackageManager.PERMISSION_GRANTED ) {
 				mMemoryAccessGranted = true;
 				download( tempVersionInfo );
 				tempVersionInfo = null;
-			}else{
+			} else {
 				Toast.makeText( this, "Permission denied", Toast.LENGTH_SHORT ).show();
 			}
 		}

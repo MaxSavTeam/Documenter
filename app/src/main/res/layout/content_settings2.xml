@@ -1,152 +1,259 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="start|top"
-    android:orientation="vertical"
     android:layout_marginTop="?attr/actionBarSize"
+    android:orientation="vertical"
     android:padding="7dp"
     tools:context=".SettingsActivity">
 
-    <LinearLayout
-        android:id="@+id/layoutBackup"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/bottom_border"
-        android:gravity="start"
-        android:orientation="vertical"
-        tools:ignore="RtlSymmetry">
+        android:layout_height="match_parent"
+        android:layout_gravity="center_horizontal|top">
 
-        <TextView
-            android:id="@+id/lblBackup"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="@dimen/labels_margin_bottom"
-            android:text="@string/backup"
-            android:textColor="?textColor"
-            android:textSize="24sp" />
+            android:orientation="vertical">
 
-        <Button
-            android:id="@+id/btnCreateBackup"
-            style="@style/Widget.AppCompat.Button.Borderless.Colored"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="start|center_vertical"
-            android:onClick="initialBackup"
-            android:text="@string/create_backup"
-            android:textSize="16sp" />
+            <LinearLayout
+                android:id="@+id/layoutBackup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bottom_border"
+                android:gravity="start"
+                android:orientation="vertical"
+                tools:ignore="RtlSymmetry">
 
-        <Button
-            android:id="@+id/btnRestoreFromBackup"
-            style="@style/Widget.AppCompat.Button.Borderless.Colored"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="start"
-            android:gravity="start|center_vertical"
-            android:onClick="initialUnpack"
-            android:text="@string/restore_from_backup"
-            android:textSize="16sp" />
-    </LinearLayout>
+                <TextView
+                    android:id="@+id/lblBackup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="@dimen/labels_margin_bottom"
+                    android:text="@string/local_backup"
+                    android:textColor="?textColor"
+                    android:textSize="24sp" />
 
-    <LinearLayout
-        android:id="@+id/layoutUI"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/bottom_border"
-        android:orientation="vertical">
+                <Button
+                    android:id="@+id/btnCreateBackup"
+                    style="@style/Widget.AppCompat.Button.Borderless.Colored"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="start|center_vertical"
+                    android:onClick="initialBackup"
+                    android:text="@string/create_local_backup"
+                    android:textColor="?colored_buttons_text_color"
+                    android:textSize="16sp" />
 
-        <TextView
-            android:id="@+id/lblUI"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/labels_margin_bottom"
-            android:layout_marginStart="@dimen/labels_margin"
-            android:layout_marginTop="@dimen/labels_margin"
-            android:text="@string/ui"
-            android:textColor="?textColor"
-            android:textSize="24sp" />
+                <Button
+                    android:id="@+id/btnRestoreFromBackup"
+                    style="@style/Widget.AppCompat.Button.Borderless.Colored"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="start"
+                    android:gravity="start|center_vertical"
+                    android:onClick="initialUnpack"
+                    android:text="@string/restore_from_local_backup"
+                    android:textColor="?colored_buttons_text_color"
+                    android:textSize="16sp" />
+            </LinearLayout>
 
-        <Switch
-            android:id="@+id/swDarkTheme"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            android:text="@string/dark_theme"
-            android:textColor="?attr/textColor"
-            android:textSize="20sp"
-            android:thumbTint="?colorAccent" />
+            <LinearLayout
+                android:id="@+id/layoutCloudBackup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bottom_border"
+                android:orientation="vertical">
 
-        <Switch
-            android:id="@+id/swKeepScreenOn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="7dp"
-            android:text="@string/keep_screen_on"
-            android:textColor="?textColor"
-            android:textSize="20sp"
-            android:thumbTint="?colorAccent" />
-    </LinearLayout>
+                <TextView
+                    android:id="@+id/lblCloudBackup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="@dimen/labels_margin_bottom"
+                    android:text="@string/cloud_backup"
+                    android:textColor="?textColor"
+                    android:textSize="24sp" />
 
-    <LinearLayout
-        android:id="@+id/layoutUpdates"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/bottom_border"
-        android:orientation="vertical">
+                <LinearLayout
+                    android:id="@+id/layout_authorised_backup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    android:gravity="center_horizontal"
+                    android:weightSum="1">
 
-        <TextView
-            android:id="@+id/lblUpdates"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/labels_margin"
-            android:layout_marginTop="@dimen/labels_margin"
-            android:layout_marginBottom="@dimen/labels_margin_bottom"
-            android:text="@string/updates"
-            android:textColor="?textColor"
-            android:textSize="24sp" />
+                    <Button
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/btnCloudBackupParams"
+                        android:text="@string/cloud_backup_parameters"
+                        style="@style/Widget.AppCompat.Button.Borderless"
+                        android:onClick="cloudBackupParams"
+                        android:textColor="?colored_buttons_text_color" />
 
-        <Button
-            android:id="@+id/btnCheckForUpdates"
-            style="@style/Widget.AppCompat.Button.Borderless.Colored"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="7dp"
-            android:gravity="start|center_vertical"
-            android:onClick="checkForUpdates"
-            android:text="@string/check_for_updates"
-            android:textSize="16sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/settingsSwitchesLayout"
-            app:layout_constraintVertical_bias="0.050000012" />
+                    <Button
+                        android:id="@+id/btnSignOut"
+                        android:onClick="signButtonsAction"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.AppCompat.Button.Borderless"
+                        android:text="@string/sign_out"
+                        android:textColor="?colored_buttons_text_color"/>
 
-        <Switch
-            android:id="@+id/switch_check_for_updates"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="@string/automatically_check_for_updates"
-            android:textSize="20sp"
-            android:textColor="?textColor"
-            android:layout_marginBottom="7dp"
-            android:thumbTint="?colorAccent" />
+                </LinearLayout>
 
-    </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/layout_not_authorised_backup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:weightSum="1">
+
+                    <Button
+                        android:id="@+id/btnSignIn"
+                        style="@style/Widget.AppCompat.Button.Borderless.Colored"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.4"
+                        android:gravity="center"
+                        android:onClick="signButtonsAction"
+                        android:textColor="?colored_buttons_text_color"
+                        android:text="@string/sign_in"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="7dp"
+                        android:layout_marginEnd="7dp"
+                        android:text="@string/or"
+                        android:textColor="?textColor"
+                        android:textSize="18sp" />
+
+                    <Button
+                        android:id="@+id/btnSignUp"
+                        style="@style/Widget.AppCompat.Button.Borderless.Colored"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.4"
+                        android:gravity="center"
+                        android:onClick="signButtonsAction"
+                        android:text="@string/sign_up"
+                        android:textColor="?colored_buttons_text_color"
+                        android:textSize="16sp" />
+
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/layoutUI"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bottom_border"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/lblUI"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/labels_margin"
+                    android:layout_marginTop="@dimen/labels_margin"
+                    android:layout_marginBottom="@dimen/labels_margin_bottom"
+                    android:text="@string/ui"
+                    android:textColor="?textColor"
+                    android:textSize="24sp" />
+
+                <Switch
+                    android:id="@+id/swDarkTheme"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:text="@string/dark_theme"
+                    android:textColor="?attr/textColor"
+                    android:textSize="20sp"
+                    android:thumbTint="?colorAccent" />
+
+                <Switch
+                    android:id="@+id/swKeepScreenOn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="7dp"
+                    android:text="@string/keep_screen_on"
+                    android:textColor="?textColor"
+                    android:textSize="20sp"
+                    android:thumbTint="?colorAccent" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/layoutUpdates"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bottom_border"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/lblUpdates"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/labels_margin"
+                    android:layout_marginTop="@dimen/labels_margin"
+                    android:layout_marginBottom="@dimen/labels_margin_bottom"
+                    android:text="@string/updates"
+                    android:textColor="?textColor"
+                    android:textSize="24sp" />
+
+                <Button
+                    android:id="@+id/btnCheckForUpdates"
+                    style="@style/Widget.AppCompat.Button.Borderless.Colored"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="7dp"
+                    android:gravity="start|center_vertical"
+                    android:onClick="checkForUpdates"
+                    android:text="@string/check_for_updates"
+                    android:textSize="16sp"
+                    android:textColor="?colored_buttons_text_color"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/settingsSwitchesLayout"
+                    app:layout_constraintVertical_bias="0.050000012" />
+
+                <Switch
+                    android:id="@+id/switch_check_for_updates"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="7dp"
+                    android:checked="true"
+                    android:text="@string/automatically_check_for_updates"
+                    android:textColor="?textColor"
+                    android:textSize="20sp"
+                    android:thumbTint="?colorAccent" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
 
     <TextView
         android:id="@+id/txtVersion"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:textColor="?textColor"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
         android:gravity="bottom|center_horizontal"
+        android:textColor="?textColor"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.99" />
-</LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -1,0 +1,288 @@
+package com.maxsavitsky.documenter;
+
+import android.Manifest;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.text.Html;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.maxsavitsky.documenter.backup.AutonomousCloudBackupper;
+import com.maxsavitsky.documenter.backup.CloudBackupInstruments;
+import com.maxsavitsky.documenter.codes.Results;
+import com.maxsavitsky.documenter.utils.Utils;
+
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+public class CloudBackupActivity extends ThemeActivity {
+
+	private void applyTheme() {
+		ActionBar actionBar = getSupportActionBar();
+		if ( actionBar != null ) {
+			Utils.applyDefaultActionBarStyle( actionBar );
+		}
+	}
+
+	private void backPressed() {
+		finish();
+	}
+
+	@Override
+	public void onBackPressed() {
+		backPressed();
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+		if ( item.getItemId() == android.R.id.home ) {
+			backPressed();
+		}
+		return super.onOptionsItemSelected( item );
+	}
+
+	private interface Loader {
+		void onDataLoaded();
+
+		void failed();
+	}
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate( savedInstanceState );
+		setContentView( R.layout.activity_cloud_backup );
+		Toolbar toolbar = findViewById( R.id.toolbar );
+		setSupportActionBar( toolbar );
+
+		applyTheme();
+
+
+		( (TextView) findViewById( R.id.lblCloud1 ) ).setText( Html.fromHtml( getString( R.string.cloud_backup_activity_text1 ) ) );
+
+		final ProgressDialog pd = new ProgressDialog( this );
+		pd.setMessage( getString( R.string.loading ) );
+		pd.setButton( ProgressDialog.BUTTON_NEUTRAL, getString( R.string.cancel ), new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				backPressed();
+			}
+		} );
+		pd.show();
+		final Loader loader = new Loader() {
+			@Override
+			public void onDataLoaded() {
+				pd.dismiss();
+			}
+
+			@Override
+			public void failed() {
+				pd.dismiss();
+				Toast.makeText( CloudBackupActivity.this, R.string.something_gone_wrong, Toast.LENGTH_SHORT ).show();
+				backPressed();
+			}
+		};
+
+		Thread loadThread = new Thread( new Runnable() {
+			@Override
+			public void run() {
+				FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+				if ( user == null ) {
+					loader.failed();
+					return;
+				}
+				DatabaseReference ref = FirebaseDatabase.getInstance().getReference( "documenter/" + user.getUid() + "/last_backup_time" );
+				ref.addValueEventListener( new ValueEventListener() {
+					@Override
+					public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+						long time = (long) dataSnapshot.getValue();
+						DateFormat format = DateFormat.getDateTimeInstance();
+						String str = String.format( "%s: %s", getString( R.string.last_backup ), format.format( new Date( time ) ) );
+						( (TextView) findViewById( R.id.lblLastBackup ) ).setText( str );
+
+						loader.onDataLoaded();
+					}
+
+					@Override
+					public void onCancelled(@NonNull DatabaseError databaseError) {
+						loader.failed();
+					}
+				} );
+			}
+		} );
+		loadThread.start();
+	}
+
+	@Override
+	protected void onPostCreate(@Nullable Bundle savedInstanceState) {
+		super.onPostCreate( savedInstanceState );
+		final TextView t = findViewById( R.id.lblAutoBackupState );
+		final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
+		final int state = sp.getInt( "auto_backup_state", 0 );
+		final String[] strings = getResources().getStringArray( R.array.auto_backup_states );
+		t.setText( strings[ state ] );
+		LinearLayout layoutAutoBackup = findViewById( R.id.layout_auto_backup );
+		layoutAutoBackup.setOnClickListener( new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				AlertDialog.Builder builder = new AlertDialog.Builder( CloudBackupActivity.this, CloudBackupActivity.super.mAlertDialogStyle )
+						.setTitle( R.string.auto_backup )
+						.setSingleChoiceItems( strings, sp.getInt( "auto_backup_state", 0 ), new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								sp.edit().putInt( "auto_backup_state", which ).apply();
+								t.setText( strings[which] );
+								AutonomousCloudBackupper.getInstance().stateChanged();
+								dialog.dismiss();
+							}
+						} );
+
+				builder.create().show();
+			}
+		} );
+	}
+
+	public void createCloudBackup(View v) {
+		final ProgressDialog pd = new ProgressDialog( this );
+		pd.setMessage( getResources().getString( R.string.creating ) );
+		//pd.setMessage( "Preparing..." );
+		pd.setCancelable( false );
+
+		final CloudBackupInstruments.CloudInterface cloudInterface = new CloudBackupInstruments.CloudInterface() {
+			@Override
+			public void successfully(long timeOfCreation) {
+				runOnUiThread( new Runnable() {
+					@Override
+					public void run() {
+						pd.dismiss();
+						Toast.makeText( CloudBackupActivity.this, R.string.successfully, Toast.LENGTH_SHORT ).show();
+						AutonomousCloudBackupper.getInstance().stateChanged();
+					}
+				} );
+			}
+
+			@Override
+			public void failed() {
+
+			}
+
+			@Override
+			public void exceptionOccurred(final Exception e) {
+				runOnUiThread( new Runnable() {
+					@Override
+					public void run() {
+						pd.dismiss();
+						Utils.getErrorDialog( e, CloudBackupActivity.this ).show();
+					}
+				} );
+			}
+		};
+
+		pd.show();
+		new Thread( new Runnable() {
+			@Override
+			public void run() {
+				try {
+					CloudBackupInstruments.createBackup( cloudInterface );
+				} catch (IOException e) {
+					e.printStackTrace();
+					cloudInterface.exceptionOccurred( e );
+				}
+			}
+		} ).start();
+	}
+
+	private void restore(){
+		final ProgressDialog pd = new ProgressDialog( this );
+		pd.setMessage( getResources().getString( R.string.loading ) );
+		//pd.setMessage( "Preparing..." );
+		pd.setCancelable( false );
+
+		final CloudBackupInstruments.CloudInterface cloudInterface = new CloudBackupInstruments.CloudInterface() {
+			@Override
+			public void successfully(long timeOfCreation) {
+				runOnUiThread( new Runnable() {
+					@Override
+					public void run() {
+						pd.dismiss();
+						setResult( Results.RESTART_APP );
+						finish();
+					}
+				} );
+			}
+
+			@Override
+			public void failed() {
+
+			}
+
+			@Override
+			public void exceptionOccurred(final Exception e) {
+				runOnUiThread( new Runnable() {
+					@Override
+					public void run() {
+						pd.dismiss();
+						Utils.getErrorDialog( e, CloudBackupActivity.this ).show();
+					}
+				} );
+			}
+		};
+
+		pd.show();
+		new Thread( new Runnable() {
+			@Override
+			public void run() {
+				try {
+					CloudBackupInstruments.restoreFromBackup( cloudInterface );
+				} catch (IOException e) {
+					e.printStackTrace();
+					cloudInterface.exceptionOccurred( e );
+				}
+			}
+		} ).start();
+	}
+
+	public void restoreFromCloudBackup(View v) {
+		androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder( this )
+				.setTitle( R.string.confirmation )
+				.setMessage( R.string.confirm_restore_message )
+				.setCancelable( false )
+				.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.cancel();
+						restore();
+					}
+				} )
+				.setNeutralButton( R.string.cancel, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.cancel();
+					}
+				} );
+		builder.create().show();
+	}
+}

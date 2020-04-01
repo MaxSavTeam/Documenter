@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 
+import com.maxsavitsky.documenter.backup.AutonomousCloudBackupper;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.codes.Results;
@@ -24,15 +25,12 @@ import java.io.FileReader;
 import java.io.IOException;
 
 public class MainActivity extends ThemeActivity {
-	private File mStackTraceFile;
-	private boolean isAfterCrash = false;
 	private String path;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		Thread.UncaughtExceptionHandler defaultHandler = Thread.getDefaultUncaughtExceptionHandler();
 		Thread.setDefaultUncaughtExceptionHandler( new MyExceptionHandler( this ) );
 		try {
 			Toolbar toolbar = findViewById( R.id.toolbar );
@@ -59,6 +57,14 @@ public class MainActivity extends ThemeActivity {
 				return;
 			}
 			viewCategoryList( null );
+
+			final AutonomousCloudBackupper backupper = new AutonomousCloudBackupper( this );
+			new Thread( new Runnable() {
+				@Override
+				public void run() {
+					backupper.stateChanged();
+				}
+			}, "AutoBackupper" ).start();
 		}
 
 	}
@@ -132,7 +138,6 @@ public class MainActivity extends ThemeActivity {
 		StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
 		StrictMode.setVmPolicy( builder.build() );
 		try {
-			//startActivity( Intent.createChooser( newIntent, "Choose" ) );
 			startActivity( newIntent );
 		} catch (Exception e) {
 			Utils.getErrorDialog( e, this ).show();

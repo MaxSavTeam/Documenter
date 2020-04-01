@@ -5,7 +5,7 @@
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorAccent">@color/green</item>
         <item name="android:navigationBarColor">@color/white</item>
         <!-- from my attrs.xml -->
         <item name="textColor">@color/black</item>
@@ -15,6 +15,7 @@
         <item name="italic_button_src">@drawable/ic_italic_black</item>
         <item name="underline_button_src">@drawable/ic_underline_black</item>
         <item name="strike_button_src">@drawable/ic_strikethrough_black</item>
+        <item name="colored_buttons_text_color">@color/green</item>
     </style>
 
     <style name="AppTheme.Dark">

@@ -47,7 +47,7 @@
     <string name="send_report">Send report</string>
     <string name="please">Please</string>
     <string name="send_report_dialog_mes">It seems that an error has occurred and it is our fault. You can make your invaluable contribution to improving the application by sending us a file with a description of the error. &lt;br&gt;&lt;b&gt;We will immediately begin work on the bugs.&lt;/b&gt; &lt;br&gt; And if you still describe the problem and where and how it happened, then you have no price.&lt;br&gt;&lt;br&gt;Thank you for using our application and all the best!</string>
-    <string name="successful">Successful</string>
+    <string name="successfully">Successfully</string>
     <string name="file_not_found">File not found</string>
     <string name="create_entry_exit_mes">Do you really want to leave? All changes made will not be saved.</string>
     <string name="yes">Yes</string>
@@ -59,15 +59,11 @@
     <string name="set_text_color_of_selected_segment">Select text color of selected segment</string>
     <string name="set_text_color_of_all_text">Select text color of all text</string>
     <string name="save_and_exit">Save and exit</string>
-    <string name="title_activity_view_entry">MainActivity</string>
     <!-- Strings used for fragments for navigation -->
     <string name="color_history">Color history</string>
     <string name="set_background_color">Set background color</string>
     <string name="keep_screen_on">Keep screen on</string>
     <string name="dark_theme">Dark theme</string>
-    <string name="backup">Backup</string>
-    <string name="create">Create</string>
-    <string name="restore">Restore</string>
     <string name="checking_for_updates">Checking for updates…</string>
     <string name="update_available">Update available</string>
     <string name="would_you_like_to_download_and_install">Would you like to download and install?</string>
@@ -91,8 +87,6 @@
     <string name="invalid_name">Invalid name</string>
     <string name="this_name_already_exist">This name already exists</string>
     <string name="do_you_want_to_continue">Do you want to continue?</string>
-    <string name="edit_name">Edit name</string>
-    <string name="saving">Saving…</string>
     <string name="ignore_this_update">Ignore this update</string>
     <string name="title_activity_free_entries">Free Entries</string>
     <string name="delete_category__with_docs">Also delete all documents included ONLY in this category</string>
@@ -100,6 +94,33 @@
     <string name="ui">UI</string>
     <string name="updates">Updates</string>
     <string name="automatically_check_for_updates">Automatically check for updates</string>
-
     <string name="delete_document__with_entries">Delete entries that are included ONLY in this document</string>
+    <string name="create_local_backup">Create local backup</string>
+    <string name="restore_from_local_backup">Restore from local backup</string>
+    <string name="local_backup">Local backup</string>
+    <string name="cloud_backup">Cloud backup</string>
+    <string name="or">or</string>
+    <string name="sign_in">Sign in</string>
+    <string name="sign_up">Sign up</string>
+    <string name="sign_out">Sign out</string>
+    <string name="title_activity_cloud_backup">Cloud Backup</string>
+    <string name="cloud_backup_parameters">Cloud backup parameters</string>
+
+    <string name="cloud_backup_activity_text1"><![CDATA[On this page you can back up all categories, documents and records so that you can access from other devices. Creating a new backup will overwrite the old backup. When recovering from it, <b>you may lose unsaved data<b>.]]></string>
+    <string name="cloud_backup_activity_text2">Attention: backups are uploaded to the Google Firebase server. There they will be protected from outsiders and are subject to Google’s privacy policy.</string>
+    <string name="something_gone_wrong">Something gone wrong</string>
+    <string name="last_backup">Last backup</string>
+    <string name="auto_backup">Auto backup</string>
+
+    <string-array name="auto_backup_states">
+        <item>Off</item>
+        <item>Daily</item>
+        <item>Weekly</item>
+        <item>Monthly</item>
+    </string-array>
+
+    <string name="creating">Creating…</string>
+    <string name="restore">Restore</string>
+    <string name="creating_backup">Creating a backup…</string>
+    <string name="backup_error">Backup error</string>
 </resources>

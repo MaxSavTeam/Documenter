@@ -28,7 +28,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.FirebaseApp;
 import com.maxsavitsky.documenter.adapters.CategoryListAdapter;
+import com.maxsavitsky.documenter.backup.AutonomousCloudBackupper;
 import com.maxsavitsky.documenter.data.types.Category;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.utils.ApkInstaller;

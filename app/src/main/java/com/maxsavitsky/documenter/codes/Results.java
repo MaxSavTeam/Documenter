@@ -6,6 +6,7 @@ public class Results {
 	public static final int RESTART_ACTIVITY = 202;
 	public static final int EXIT = 203;
 	public static final int RESTART_APP = 204;
+	public static final int FAILED = 205;
 
 	// 3xx
 	public static final int NEED_TO_REFRESH = 301;

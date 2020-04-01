@@ -12,7 +12,10 @@ public class Requests {
 	public static final int EDIT_ENTRY = 108;
 	public static final int SETTINGS = 109;
 	public static final int FREE_ENTRIES = 110;
+	public static final int CLOUD_BACKUP_PARAMS = 111;
 
 	//2xx
 	public static final int PICK_IMAGE = 201;
+	public static final int SIGN_IN = 202;
+	public static final int SIGN_UP = 203;
 }

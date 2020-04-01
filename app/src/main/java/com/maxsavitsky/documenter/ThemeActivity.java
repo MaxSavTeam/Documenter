@@ -7,11 +7,13 @@ import android.preference.PreferenceManager;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class ThemeActivity extends AppCompatActivity {
-	public int mAlertDialogStyle = R.style.AlertDialogDark;
+	protected int mAlertDialogStyle = R.style.AlertDialogDark;
 
-	public int mTextColor = R.color.black;
+	protected int mTextColor = R.color.black;
 
-	public boolean isDarkTheme = false;
+	protected boolean isDarkTheme = false;
+
+	protected int CURRENT_THEME;
 
 	// only for themes
 	@Override
@@ -24,7 +26,9 @@ public class ThemeActivity extends AppCompatActivity {
 			mAlertDialogStyle = R.style.AlertDialogDark;
 			mTextColor = R.color.white;
 			isDarkTheme = true;
+			CURRENT_THEME = R.style.AppTheme_Dark;
 		}else{
+			CURRENT_THEME = R.style.AppTheme;
 			setTheme( R.style.AppTheme );
 			mAlertDialogStyle = R.style.Theme_AppCompat_Light_Dialog;
 			mTextColor = R.color.black;
