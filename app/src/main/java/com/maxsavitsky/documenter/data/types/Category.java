@@ -68,6 +68,7 @@ public class Category extends Type {
 			} catch (SAXException | IOException e) {
 				e.printStackTrace();
 				Log.v("Category " + getId(), e.toString());
+				return null;
 			}
 		}
 		return mDocuments;

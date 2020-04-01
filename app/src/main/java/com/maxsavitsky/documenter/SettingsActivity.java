@@ -90,7 +90,7 @@ public class SettingsActivity extends ThemeActivity {
 				final boolean isChecked = swDarkHeader.isChecked();
 				sp.edit().putBoolean( "dark_theme", isChecked ).apply();
 				final AlertDialog.Builder builder = new AlertDialog.Builder( SettingsActivity.this, SettingsActivity.super.mAlertDialogStyle )
-						.setMessage( "Need to restart app" )
+						.setMessage( R.string.need_to_restart_app )
 						.setCancelable( false )
 						.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
 							@Override
@@ -151,7 +151,7 @@ public class SettingsActivity extends ThemeActivity {
 	}
 
 	public void signButtonsAction(View v) {
-		if ( v.getId() == R.id.btnSignIn || v.getId() == R.id.btnSignUp ) {
+		if ( v.getId() == R.id.btnSignIn ) {
 			startActivityForResult( AuthUI.getInstance()
 							.createSignInIntentBuilder()
 							.build(),

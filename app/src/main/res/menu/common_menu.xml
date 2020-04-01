@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item android:id="@+id/item_common_change_name"
+        android:title="@string/edit_name"
+        android:icon="@drawable/ic_edit_name"
+        app:showAsAction="ifRoom"/>
+
+    <item android:id="@+id/item_common_invert"
+        android:title="@string/invert"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/ic_sort_ascending" />
+
+    <item android:id="@+id/item_common_sort_mode"
+        android:title="@string/sort_mode"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/ic_sort_mode"/>
+
     <item android:title="@string/parameters"
         android:id="@+id/item_common_parameters"
         app:showAsAction="never">
@@ -11,8 +27,4 @@
                 android:title="@string/remember_last_pos" />
         </menu>
     </item>
-    <item android:id="@+id/item_common_free_entries"
-        app:showAsAction="never"
-        android:visible="false"
-        android:title="@string/title_activity_free_entries" />
 </menu>

@@ -118,12 +118,12 @@ public class CloudBackupActivity extends ThemeActivity {
 				ref.addValueEventListener( new ValueEventListener() {
 					@Override
 					public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-						if(dataSnapshot.getValue() != null) {
+						if ( dataSnapshot.getValue() != null ) {
 							long time = (long) dataSnapshot.getValue();
 							DateFormat format = DateFormat.getDateTimeInstance();
 							String str = String.format( "%s: %s", getString( R.string.last_backup ), format.format( new Date( time ) ) );
 							( (TextView) findViewById( R.id.lblLastBackup ) ).setText( str );
-						}else{
+						} else {
 							String str = String.format( "%s: %s", getString( R.string.last_backup ), getString( R.string.never ) );
 							( (TextView) findViewById( R.id.lblLastBackup ) ).setText( str );
 						}
@@ -143,30 +143,29 @@ public class CloudBackupActivity extends ThemeActivity {
 	@Override
 	protected void onPostCreate(@Nullable Bundle savedInstanceState) {
 		super.onPostCreate( savedInstanceState );
+		TextView t = findViewById( R.id.lblAutoBackupState );
+		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
+		int state = sp.getInt( "auto_backup_state", 0 );
+		String[] strings = getResources().getStringArray( R.array.auto_backup_states );
+		t.setText( strings[ state ] );
+	}
+
+	public void onAutoBackupClick(View v) {
 		final TextView t = findViewById( R.id.lblAutoBackupState );
 		final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
-		final int state = sp.getInt( "auto_backup_state", 0 );
 		final String[] strings = getResources().getStringArray( R.array.auto_backup_states );
-		t.setText( strings[ state ] );
-		LinearLayout layoutAutoBackup = findViewById( R.id.layout_auto_backup );
-		layoutAutoBackup.setOnClickListener( new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				AlertDialog.Builder builder = new AlertDialog.Builder( CloudBackupActivity.this, CloudBackupActivity.super.mAlertDialogStyle )
-						.setTitle( R.string.auto_backup )
-						.setSingleChoiceItems( strings, sp.getInt( "auto_backup_state", 0 ), new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								sp.edit().putInt( "auto_backup_state", which ).apply();
-								t.setText( strings[which] );
-								AutonomousCloudBackupper.getInstance().stateChanged();
-								dialog.dismiss();
-							}
-						} );
-
-				builder.create().show();
-			}
-		} );
+		AlertDialog.Builder builder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
+				.setTitle( R.string.auto_backup )
+				.setSingleChoiceItems( strings, sp.getInt( "auto_backup_state", 0 ), new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						sp.edit().putInt( "auto_backup_state", which ).apply();
+						t.setText( strings[ which ] );
+						AutonomousCloudBackupper.getInstance().stateChanged();
+						dialog.dismiss();
+					}
+				} );
+		builder.create().show();
 	}
 
 	public void createCloudBackup(View v) {
@@ -219,7 +218,7 @@ public class CloudBackupActivity extends ThemeActivity {
 		} ).start();
 	}
 
-	private void restore(){
+	private void restore() {
 		final ProgressDialog pd = new ProgressDialog( this );
 		pd.setMessage( getResources().getString( R.string.loading ) );
 		//pd.setMessage( "Preparing..." );

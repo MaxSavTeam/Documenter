@@ -19,7 +19,6 @@ public class ThemeActivity extends AppCompatActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate( savedInstanceState );
-
 		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 		if(sharedPreferences.getBoolean( "dark_theme", false )){
 			setTheme( R.style.AppTheme_Dark );

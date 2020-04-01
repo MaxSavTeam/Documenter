@@ -52,18 +52,18 @@ public class MainData {
 		return documents;
 	}
 
-	public static ArrayList<Category> getCategoriesInWhichIncludedDocumentWithId(String id) throws Exception {
+	public static ArrayList<Category> getCategoriesInWhichIncludedDocumentWithId(String id) throws IOException, SAXException {
 		File path = new File(Utils.getExternalStoragePath().getPath() + "/documents");
 		if(!path.exists()){
-			throw new FileNotFoundException("MainData.getCategoriesInWhichIncludedDocumentWithId: documents dir does not exist");
+			throw new IOException("MainData.getCategoriesInWhichIncludedDocumentWithId: documents dir does not exist");
 		}
 		path = new File(path.getPath() + "/" + id);
 		if(!path.exists()){
-			throw new FileNotFoundException("MainData.getCategoriesInWhichIncludedDocumentWithId: dir for this id does not exist; id=" + id + "; path=" + path.getPath());
+			throw new IOException("MainData.getCategoriesInWhichIncludedDocumentWithId: dir for this id does not exist; id=" + id + "; path=" + path.getPath());
 		}
 		path = new File(path.getPath() + "/included_in.xml");
 		if(!path.exists()){
-			throw new FileNotFoundException( "MainData.getCategoriesInWhichIncludedDocumentWithId: included_in.xml not found; id="+ id );
+			throw new IOException( "MainData.getCategoriesInWhichIncludedDocumentWithId: included_in.xml not found; id="+ id );
 		}
 
 		return XMLParser.newInstance().parseCategoriesInWhichIncludedDocumentWithId(id);

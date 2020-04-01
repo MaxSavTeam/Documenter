@@ -11,7 +11,8 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="40dp"
         android:layout_gravity="center_horizontal|top">
 
         <LinearLayout
@@ -46,7 +47,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="start|center_vertical"
                     android:onClick="initialBackup"
-                    android:text="@string/create_local_backup"
+                    android:text="@string/create_backup"
                     android:textColor="?colored_buttons_text_color"
                     android:textSize="16sp" />
 
@@ -58,7 +59,7 @@
                     android:layout_gravity="start"
                     android:gravity="start|center_vertical"
                     android:onClick="initialUnpack"
-                    android:text="@string/restore_from_local_backup"
+                    android:text="@string/restore_from_backup"
                     android:textColor="?colored_buttons_text_color"
                     android:textSize="16sp" />
             </LinearLayout>
@@ -86,17 +87,17 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:visibility="gone"
-                    android:gravity="center_horizontal"
-                    android:weightSum="1">
+                    android:visibility="visible"
+                    android:gravity="start|center_vertical">
 
                     <Button
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:id="@+id/btnCloudBackupParams"
                         android:text="@string/cloud_backup_parameters"
                         style="@style/Widget.AppCompat.Button.Borderless"
                         android:onClick="cloudBackupParams"
+                        android:gravity="start|center_vertical"
                         android:textColor="?colored_buttons_text_color" />
 
                     <Button
@@ -106,6 +107,7 @@
                         android:layout_height="wrap_content"
                         style="@style/Widget.AppCompat.Button.Borderless"
                         android:text="@string/sign_out"
+                        android:gravity="start|center_vertical"
                         android:textColor="?colored_buttons_text_color"/>
 
                 </LinearLayout>
@@ -114,41 +116,18 @@
                     android:id="@+id/layout_not_authorised_backup"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="horizontal"
-                    android:weightSum="1">
+                    android:gravity="start|center_vertical"
+                    android:orientation="horizontal">
 
                     <Button
                         android:id="@+id/btnSignIn"
                         style="@style/Widget.AppCompat.Button.Borderless.Colored"
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="0.4"
                         android:gravity="center"
                         android:onClick="signButtonsAction"
                         android:textColor="?colored_buttons_text_color"
                         android:text="@string/sign_in"
-                        android:textSize="16sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="7dp"
-                        android:layout_marginEnd="7dp"
-                        android:text="@string/or"
-                        android:textColor="?textColor"
-                        android:textSize="18sp" />
-
-                    <Button
-                        android:id="@+id/btnSignUp"
-                        style="@style/Widget.AppCompat.Button.Borderless.Colored"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="0.4"
-                        android:gravity="center"
-                        android:onClick="signButtonsAction"
-                        android:text="@string/sign_up"
-                        android:textColor="?colored_buttons_text_color"
                         android:textSize="16sp" />
 
                 </LinearLayout>
@@ -247,13 +226,8 @@
     <TextView
         android:id="@+id/txtVersion"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="40dp"
         android:layout_gravity="bottom|center_horizontal"
         android:gravity="bottom|center_horizontal"
-        android:textColor="?textColor"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.99" />
+        android:textColor="?textColor" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

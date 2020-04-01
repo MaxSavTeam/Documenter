@@ -13,7 +13,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -53,15 +52,15 @@ public class EntriesList extends ThemeActivity {
 	private SharedPreferences sp;
 	private boolean isFreeEntriesMode = false;
 
-	private void applyTheme(){
+	private void applyTheme() {
 		ActionBar actionBar = getSupportActionBar();
-		if (actionBar != null) {
-			actionBar.setTitle(mDocument.getName());
-			Utils.applyDefaultActionBarStyle(actionBar);
+		if ( actionBar != null ) {
+			actionBar.setTitle( mDocument.getName() );
+			Utils.applyDefaultActionBarStyle( actionBar );
 		}
 	}
 
-	private void backPressed(){
+	private void backPressed() {
 		finish();
 	}
 
@@ -73,11 +72,12 @@ public class EntriesList extends ThemeActivity {
 	private final Comparator<Entry> mEntryComparator = new Comparator<Entry>() {
 		@Override
 		public int compare(Entry o1, Entry o2) {
-			if(o1 == null || o2 == null)
+			if ( o1 == null || o2 == null ) {
 				return 0;
-			if(sp.getInt( "sort_entries", 0 ) == 0)
+			}
+			if ( sp.getInt( "sort_entries", 0 ) == 0 ) {
 				return o1.getName().compareToIgnoreCase( o2.getName() ) * mSortOrder;
-			else{
+			} else {
 				int t1 = MainData.getEntryWithId( o1.getId() ).getInfo().getTimeStamp();
 				int t2 = MainData.getEntryWithId( o2.getId() ).getInfo().getTimeStamp();
 				int compareRes = Integer.compare( t1, t2 );
@@ -86,22 +86,23 @@ public class EntriesList extends ThemeActivity {
 		}
 	};
 
-	private void setupRecyclerView(){
+	private void setupRecyclerView() {
 		try {
 			mEntries = XMLParser.newInstance().parseDocumentWithId( mDocument.getId() );
-		}catch (SAXException | IOException e) {
+		} catch (SAXException | IOException e) {
 			e.printStackTrace();
 			Utils.getErrorDialog( e, this ).show();
 			return;
 		}
 		RecyclerView recyclerView = findViewById( R.id.category_list_view );
-		if(mEntries.isEmpty()){
-			recyclerView.setVisibility(View.GONE);
-			TextView textView = findViewById(R.id.textViewNothingFound);
-			textView.setVisibility(View.VISIBLE);
-		}else{
-			if(mEntries.size() > 1)
+		if ( mEntries.isEmpty() ) {
+			recyclerView.setVisibility( View.GONE );
+			TextView textView = findViewById( R.id.textViewNothingFound );
+			textView.setVisibility( View.VISIBLE );
+		} else {
+			if ( mEntries.size() > 1 ) {
 				Collections.sort( mEntries, mEntryComparator );
+			}
 
 			LinearLayoutManager linearLayoutManager = new LinearLayoutManager( this );
 			linearLayoutManager.setOrientation( RecyclerView.VERTICAL );
@@ -110,9 +111,9 @@ public class EntriesList extends ThemeActivity {
 
 			recyclerView.setLayoutManager( linearLayoutManager );
 			recyclerView.setAdapter( rvAdapter );
-			recyclerView.setVisibility(View.VISIBLE);
-			TextView textView = findViewById(R.id.textViewNothingFound);
-			textView.setVisibility(View.GONE);
+			recyclerView.setVisibility( View.VISIBLE );
+			TextView textView = findViewById( R.id.textViewNothingFound );
+			textView.setVisibility( View.GONE );
 		}
 	}
 
@@ -120,8 +121,8 @@ public class EntriesList extends ThemeActivity {
 		@Override
 		public void onClick(View v) {
 			Intent intent = new Intent( EntriesList.this, ViewEntry.class );
-			String id = ((TextView) v.findViewById( R.id.lblHiddenCategoryId )).getText().toString();
-			intent.putExtra( "id",  id);
+			String id = ( (TextView) v.findViewById( R.id.lblHiddenCategoryId ) ).getText().toString();
+			intent.putExtra( "id", id );
 			intent.putExtra( "free_mode", isFreeEntriesMode );
 			startActivityForResult( intent, Requests.VIEW_ENTRY );
 		}
@@ -129,15 +130,15 @@ public class EntriesList extends ThemeActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate ( savedInstanceState );
-		setContentView ( R.layout.activity_entries_list );
-		Toolbar toolbar = findViewById ( R.id.toolbar );
-		setSupportActionBar ( toolbar );
+		super.onCreate( savedInstanceState );
+		setContentView( R.layout.activity_entries_list );
+		Toolbar toolbar = findViewById( R.id.toolbar );
+		setSupportActionBar( toolbar );
 		sp = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
-		final Intent intent = getIntent ();
+		final Intent intent = getIntent();
 		isFreeEntriesMode = intent.getBooleanExtra( "free_mode", false );
 		FloatingActionButton floatingActionButton = findViewById( R.id.fabFreeEntries );
-		if(!isFreeEntriesMode) {
+		if ( !isFreeEntriesMode ) {
 			mDocument = MainData.getDocumentWithId( intent.getStringExtra( "id" ) );
 			try {
 				mDocument.readProperties();
@@ -146,8 +147,8 @@ public class EntriesList extends ThemeActivity {
 				e.printStackTrace();
 				Utils.getErrorDialog( e, this ).show();
 			}
-		}else{
-			mDocument = new Document( "free_entries", "Free entries" );
+		} else {
+			mDocument = new Document( "free_entries", getString( R.string.free_entries ) );
 			floatingActionButton.setVisibility( View.GONE );
 		}
 		invalidateOptionsMenu();
@@ -167,7 +168,7 @@ public class EntriesList extends ThemeActivity {
 		floatingActionButton.setOnClickListener( new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				Intent intent = new Intent(EntriesList.this, EntriesList.class);
+				Intent intent = new Intent( EntriesList.this, EntriesList.class );
 				intent.putExtra( "free_mode", true );
 				startActivityForResult( intent, Requests.FREE_ENTRIES );
 			}
@@ -191,11 +192,16 @@ public class EntriesList extends ThemeActivity {
 				backPressed();
 				//finish();
 				break;
-			case R.id.item_invert_in_document:
+			case R.id.item_common_invert:
 				mSortOrder = -mSortOrder;
+				if ( mSortOrder == 1 ) {
+					item.setIcon( R.drawable.ic_sort_ascending );
+				} else {
+					item.setIcon( R.drawable.ic_sort_descending );
+				}
 				setupRecyclerView();
 				break;
-			case R.id.item_choose_entry_sort_mode:
+			case R.id.item_common_sort_mode:
 				AlertDialog.Builder chooserBuilder = new AlertDialog.Builder( this )
 						.setTitle( R.string.choose_sort_mode )
 						.setCancelable( false )
@@ -222,13 +228,13 @@ public class EntriesList extends ThemeActivity {
 				layout.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT ) );
 
 				checkBoxDelEntries.setText( R.string.delete_document__with_entries );
-				checkBoxDelEntries.setChecked(false);
+				checkBoxDelEntries.setChecked( false );
 
-				if(super.isDarkTheme) {
+				if ( super.isDarkTheme ) {
 					checkBoxDelEntries.setTextColor( getColor( super.mTextColor ) );
 				}
 
-				layout.addView(checkBoxDelEntries);
+				layout.addView( checkBoxDelEntries );
 
 				AlertDialog.Builder deletionBuilder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
 						.setMessage( R.string.delete_confirmation_text )
@@ -242,7 +248,7 @@ public class EntriesList extends ThemeActivity {
 										setResult( Results.NEED_TO_REFRESH );
 										finish();
 									} else {
-										Toast.makeText(EntriesList.this, "Failed", Toast.LENGTH_SHORT).show();
+										Toast.makeText( EntriesList.this, "Failed", Toast.LENGTH_SHORT ).show();
 									}
 								} catch (Exception e) {
 									e.printStackTrace();
@@ -258,7 +264,7 @@ public class EntriesList extends ThemeActivity {
 						.setView( layout );
 				deletionBuilder.create().show();
 				break;
-			case R.id.item_change_document_name:
+			case R.id.item_common_change_name:
 				AlertDialog alertDialog;
 				AlertDialog.Builder builder = new AlertDialog.Builder( this ).setTitle( R.string.edit_document_name );
 				final EditText editText = new EditText( this );
@@ -300,36 +306,29 @@ public class EntriesList extends ThemeActivity {
 				alertDialog.show();
 				break;
 			case R.id.item_edit_entries_list:
-				try {
-					prepareChooseLayout();
-				}catch (Exception e){
-					Utils.getErrorDialog( e, this ).show();
-					e.printStackTrace();
-					restartActivity();
-				}
+				prepareChooseLayout();
 				break;
 		}
 		return super.onOptionsItemSelected( item );
 	}
 
-	private void restartActivity(){
-		setResult( Results.RESTART_ACTIVITY, new Intent(  ).putExtra( "id", mDocument.getId() ) );
+	private void restartActivity() {
+		setResult( Results.RESTART_ACTIVITY, new Intent().putExtra( "id", mDocument.getId() ) );
 		finish();
 	}
 
-	private ArrayList<Entry> entriesToChange = new ArrayList<>(  );
-	private final Map<String, Entry> mDocumentEntriesMap = new HashMap<>(  );
+	private ArrayList<Entry> entriesToChange = new ArrayList<>();
+	private final Map<String, Entry> mDocumentEntriesMap = new HashMap<>();
 
-	private void prepareChooseLayout() throws Exception{
+	private void prepareChooseLayout() {
 		final ArrayList<Entry> entries = MainData.getEntriesList();
-		if(!entries.isEmpty()){
-			setContentView( R.layout.layout_choose_documents);
+		if ( !entries.isEmpty() ) {
+			setContentView( R.layout.layout_choose_documents );
 
-			ArrayList<Entry> documentEntries = XMLParser.newInstance().parseDocumentWithId( mDocument.getId() );
-			for(Entry entry : documentEntries){
+			entriesToChange = mDocument.getEntries();
+			for (Entry entry : entriesToChange) {
 				mDocumentEntriesMap.put( entry.getId(), entry );
 			}
-			entriesToChange = documentEntries;
 
 			View.OnClickListener cancel = new View.OnClickListener() {
 				@Override
@@ -344,7 +343,7 @@ public class EntriesList extends ThemeActivity {
 				@Override
 				public void onClick(View v) {
 					ArrayList<Entry> documentEntries = mDocument.getEntries();
-					for(Entry entry : documentEntries){
+					for (Entry entry : documentEntries) {
 						try {
 							entry.removeDocumentFromIncluded( mDocument.getId() );
 						} catch (IOException | SAXException e) {
@@ -353,7 +352,7 @@ public class EntriesList extends ThemeActivity {
 						}
 					}
 					Utils.saveDocumentEntries( mDocument.getId(), entriesToChange );
-					for(Entry entry : entriesToChange){
+					for (Entry entry : entriesToChange) {
 						try {
 							entry.addDocumentToIncluded( mDocument.getId() );
 						} catch (IOException | SAXException e) {
@@ -372,13 +371,13 @@ public class EntriesList extends ThemeActivity {
 				public void onClick(View v) {
 					CheckBox checkBox = v.findViewById( R.id.checkBoxInCheckboxItem );
 					checkBox.setChecked( !checkBox.isChecked() );
-					String id = ((TextView) v.findViewById( R.id.checkbox_item_hidden_id )).getText().toString();
-					if(checkBox.isChecked()){
+					String id = ( (TextView) v.findViewById( R.id.checkbox_item_hidden_id ) ).getText().toString();
+					if ( checkBox.isChecked() ) {
 						Entry entry = MainData.getEntryWithId( id );
 						entriesToChange.add( entry );
-					}else{
-						for(int i = 0; i < entriesToChange.size(); i++){
-							if(entriesToChange.get( i ).getId().equals( id )){
+					} else {
+						for (int i = 0; i < entriesToChange.size(); i++) {
+							if ( entriesToChange.get( i ).getId().equals( id ) ) {
 								entriesToChange.remove( i );
 								break;
 							}
@@ -397,7 +396,7 @@ public class EntriesList extends ThemeActivity {
 		}
 	}
 
-	class ChooseAdapter extends DefaultChooseAdapter{
+	private class ChooseAdapter extends DefaultChooseAdapter {
 		final ArrayList<Entry> mElements;
 
 		ChooseAdapter(ArrayList<Entry> elements, @Nullable View.OnClickListener onClickListener, Context context) {
@@ -415,18 +414,20 @@ public class EntriesList extends ThemeActivity {
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-		if(resultCode == Results.NEED_TO_REFRESH)
+		if ( resultCode == Results.NEED_TO_REFRESH ) {
 			setupRecyclerView();
-		if(requestCode == Requests.VIEW_ENTRY || requestCode == Requests.CREATE_ENTRY){
-			if(resultCode == Results.REOPEN){
+		}
+		if ( requestCode == Requests.VIEW_ENTRY || requestCode == Requests.CREATE_ENTRY ) {
+			if ( resultCode == Results.REOPEN ) {
 				setupRecyclerView();
 				Intent intent = new Intent( this, ViewEntry.class );
-				if(data != null)
+				if ( data != null ) {
 					intent.putExtras( data );
+				}
 				startActivityForResult( intent, Requests.VIEW_ENTRY );
 			}
 		}
-		if(resultCode == Results.RESTART_APP){
+		if ( resultCode == Results.RESTART_APP ) {
 			setResult( Results.RESTART_APP );
 			finish();
 		}
@@ -435,14 +436,31 @@ public class EntriesList extends ThemeActivity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		if(isFreeEntriesMode)
-			getMenuInflater().inflate( R.menu.free_entries_menu, menu );
-		else
+		if ( isFreeEntriesMode ) {
+			getMenuInflater().inflate( R.menu.common_menu, menu );
+			menu.setGroupVisible( 0, false );
+			try {
+				if(MainData.getFreeEntries().size() != 0) {
+					menu.findItem( R.id.item_common_invert ).setVisible( true );
+					menu.findItem( R.id.item_common_sort_mode ).setVisible( true );
+				}
+			} catch (IOException | SAXException e) {
+				e.printStackTrace();
+				Utils.getErrorDialog( e, this ).show();
+			}
+		} else {
+			getMenuInflater().inflate( R.menu.common_menu, menu );
 			getMenuInflater().inflate( R.menu.document_menu, menu );
+			if(mDocument.getEntries().size() == 0){
+				menu.findItem( R.id.item_common_invert ).setVisible( false );
+				menu.findItem( R.id.item_common_sort_mode ).setVisible( false );
+				menu.findItem( R.id.item_common_parameters ).setVisible( false );
+			}
+		}
 		return super.onCreateOptionsMenu( menu );
 	}
 
-	class RVAdapter extends RecyclerView.Adapter<RVAdapter.ViewHolder>{
+	class RVAdapter extends RecyclerView.Adapter<RVAdapter.ViewHolder> {
 		private final ArrayList<Entry> mData;
 
 		RVAdapter(ArrayList<Entry> data) {
@@ -466,12 +484,12 @@ public class EntriesList extends ThemeActivity {
 			return mData.size();
 		}
 
-		 class ViewHolder extends RecyclerView.ViewHolder {
+		class ViewHolder extends RecyclerView.ViewHolder {
 			final TextView id;
-			 final TextView name;
+			final TextView name;
 
 			ViewHolder(@NonNull View itemView) {
-				super(itemView);
+				super( itemView );
 				id = itemView.findViewById( R.id.lblHiddenCategoryId );
 				name = itemView.findViewById( R.id.lblCategoryName );
 				itemView.setOnClickListener( onItemClick );

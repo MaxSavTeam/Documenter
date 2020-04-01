@@ -10,7 +10,7 @@
         android:id="@+id/textViewNothingFound"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Nothing to show"
+        android:text="@string/nothing_to_show"
         android:textColor="?attr/textColor"
         android:textSize="24sp"
         android:visibility="gone"

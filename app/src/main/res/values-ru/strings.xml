@@ -1,0 +1,125 @@
+<resources xmlns:ns0="http://schemas.android.com/tools">
+    <string name="title_activity_create_category">Создать категорию</string>
+    <string name="title_activity_category_list">Список категорий</string>
+    <string name="title_activity_create_documents">Создать документы</string>
+    <string name="title_activity_document_list">Список документов</string>
+    <string name="title_activity_entries_list">Список записей</string>
+    <string name="edit_documents_list">Редактировать список документов</string>
+    <string name="edit_category_name">Изменить название категории</string>
+
+    <string name="delete">Удалить</string>
+    <string name="cancel">Отменить</string>
+    <string name="apply">Применить</string>
+    <string name="edit_document_name">Изменить название документа</string>
+    <string name="title_activity_create_entry">Создать запись</string>
+    <string name="enter_your_minds_here">Введите ваши мысли здесь…</string>
+    <string name="enter_name">Введите имя</string>
+    <string name="name_yours_minds">Назовите свои мысли</string>
+    <string name="edit_entries_list">Изменить список записей</string>
+    <string name="choose_sort_mode">Выберите режим сортировки</string>
+    <string-array name="sort_modes">
+        <item>По названию</item>
+        <item>По дате создания</item>
+    </string-array>
+    <string name="edit_entry_name">Изменить название записи</string>
+    <string name="sort_mode">Режим сортировки</string>
+    <string name="edit_text">Редактировать текст</string>
+    <string name="tools">Инструменты</string>
+    <string name="swipe_up">Проведите вверх</string>
+    <string name="text_size">Размер текста</string>
+    <string name="confirmation">Подтверждение</string>
+    <string name="delete_confirmation_text" ns0:ignore="ExtraTranslation">Вы уверены, что хотите удалить?</string>
+    <string name="invert">Инвертировать</string>
+    <string name="settings">Настройки</string>
+    <string name="create_backup">Создать резервную копию</string>
+    <string name="restore_from_backup">Восстановить из резервной копии</string>
+    <string name="confirm_restore_message">Эта операция удалит предыдущие данные. Продолжить?</string>
+    <string name="background_color">Цвет фона</string>
+    <string name="text_color">Цвет текста</string>
+    <string name="error_has_occurred">Произошла ошибка.</string>
+    <string name="send_report">Отправить отчёт</string>
+    <string name="please">Пожалуйста</string>
+    <string name="send_report_dialog_mes">Кажется, произошла ошибка, и это наша вина. Вы можете внести свой неоценимый вклад в улучшение приложения, отправив нам файл с описанием ошибки. &lt;br&gt; &lt;b&gt; Мы немедленно начнем работу над ошибками. &lt;/b&gt; &lt;br&gt; И если вы опишите проблему, где и как это произошло, то у вас нет цены. &lt;br&gt; &lt;br&gt; Спасибо за использование нашего приложения и всего самого наилучшего!</string>
+    <string name="successfully">Успешно</string>
+    <string name="file_not_found">Файл не найден</string>
+    <string name="create_entry_exit_mes">Вы действительно хотите уйти? Все сделанные изменения не будут сохранены.</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
+    <string name="text_alignment">Выравнивание текста</string>
+    <string name="view_report">Посмотреть отчет</string>
+    <string name="undo">Отменить</string>
+    <string name="redo">Повторить</string>
+    <string name="set_text_color_of_selected_segment">Выберите цвет текста выбранного сегмента</string>
+    <string name="set_text_color_of_all_text">Выберите цвет всего текста</string>
+    <string name="save_and_exit">Сохранить и выйти</string>
+    
+    <string name="color_history">История цветов</string>
+    <string name="set_background_color">Установить цвет фона</string>
+    <string name="keep_screen_on">Оставьте экран включенным</string>
+    <string name="dark_theme">Темная тема</string>
+    <string name="checking_for_updates">Проверка обновлений…</string>
+    <string name="update_available">Доступны обновления</string>
+    <string name="would_you_like_to_download_and_install">Хотите скачать и установить?</string>
+    <string name="check_for_updates">Проверить наличие обновлений</string>
+    <string name="app_is_up_to_date">Это последняя версия</string>
+    <string name="font">Шрифт</string>
+    <string name="remember_last_pos">Запомнить последнюю позицию</string>
+    <string name="parameters">Параметры</string>
+    <string name="you_will_not_pass">Ты не пройдёшь!</string>
+    <string name="warning_when_memory_denied">Без доступа к памяти приложение не может работать. Нажмите «Запрос» и разрешите доступ, пожалуйста</string>
+    <string name="loading">Загрузка…</string>
+    <string name="entry_is_loading">Запись загружается …</string>
+    <string name="edit_entry">Изменить запись</string>
+    <string name="create_new_entry">Создать новую запись</string>
+    <string name="pick_images">Выберите изображение</string>
+    <string name="image_picker_warning_memory_not_accessed">Функция не может работать, потому что приложение не имеет доступа к памяти. Нажмите кнопку «Запрос» для доступа к приложению.</string>
+    <string name="request">Запрос</string>
+    <string name="warning">Предупреждение</string>
+    <string name="documents_to_be_included_in_category">Документы для включения в категорию</string>
+    <string name="entries_to_be_included_in_category">Записи для включения в категорию</string>
+    <string name="invalid_name">Неправильное имя</string>
+    <string name="this_name_already_exist">Это имя уже существует</string>
+    <string name="do_you_want_to_continue">Вы хотите продолжить?</string>
+    <string name="ignore_this_update">Игнорировать это обновление</string>
+    <string name="title_activity_free_entries">Свободные записи</string>
+    <string name="delete_category__with_docs">Также удалите все документы, включенные ТОЛЬКО в эту категорию</string>
+    <string name="delete_category__with_entries">Также удаляйте записи, которые включены ТОЛЬКО в удаленные документы</string>
+    <string name="ui">UI</string>
+    <string name="updates">Обновления</string>
+    <string name="automatically_check_for_updates">Автоматически проверять наличие обновлений</string>
+    <string name="delete_document__with_entries">Удалить записи, которые включены ТОЛЬКО в этот документ</string>
+    <string name="create_local_backup">Создать локальную резервную копию</string>
+    <string name="restore_from_local_backup">Восстановить из локальной резервной копии</string>
+    <string name="local_backup">Локальное резервное копирование</string>
+    <string name="cloud_backup">Облачное резервное копирование</string>
+    <string name="or">или же</string>
+    <string name="sign_in">Войти в систему</string>
+    <string name="sign_up">Зарегистрироваться</string>
+    <string name="sign_out">Выйти</string>
+    <string name="title_activity_cloud_backup">Облачное резервное копирование</string>
+    <string name="cloud_backup_parameters">Параметры резервного копирования в облаке</string>
+
+    <string name="cloud_backup_activity_text1">На этой странице Вы можете создать резервную копию всех категорий, документов и записей, чтобы иметь доступ с других устройств. Создание новой резервной копии перезапишет старую резервную копию. При восстановлении &lt;b&gt; Вы можете потерять несохраненные данные &lt;b&gt;.</string>
+    <string name="cloud_backup_activity_text2">Внимание: резервные копии загружаются на сервер Google Firebase. Там они будут защищены от посторонних и подчиняются политике конфиденциальности Google.</string>
+    <string name="something_gone_wrong">Что-то пошло не так</string>
+    <string name="last_backup">Последнее резервное копирование</string>
+    <string name="auto_backup">Автобэкап</string>
+
+    <string-array name="auto_backup_states">
+        <item>Отключено</item>
+        <item>Ежедневно</item>
+        <item>Еженедельно</item>
+        <item>Ежемесячно</item>
+    </string-array>
+
+    <string name="creating">Создание…</string>
+    <string name="restore">Восстановить</string>
+    <string name="creating_backup">Создание резервной копии…</string>
+    <string name="backup_error">Ошибка резервного копирования</string>
+    <string name="never">никогда</string>
+    <string name="free_entries">Свободные записи</string>
+    <string name="nothing_to_show">Здесь нечего показывать</string>
+
+    <string name="need_to_restart_app">Необходимо перезапустить приложение</string>
+    <string name="edit_name">Изменить имя</string>
+</resources>

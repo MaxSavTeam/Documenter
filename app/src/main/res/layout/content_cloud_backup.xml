@@ -43,6 +43,7 @@
         android:orientation="vertical"
         android:paddingStart="7dp"
         android:paddingEnd="7dp"
+        android:onClick="onAutoBackupClick"
         android:background="@drawable/bottom_border"
         android:gravity="start|center_vertical"
         android:id="@+id/layout_auto_backup">

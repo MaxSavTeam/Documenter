@@ -116,7 +116,7 @@ public class Document extends Type implements Comparable{
 		Utils.saveDocumentEntries( id, mEntries );
 	}
 
-	public void addCategoryToIncludedInXml(String categoryId) throws Exception {
+	public void addCategoryToIncludedInXml(String categoryId) throws IOException, SAXException {
 		ArrayList<Category> categories = MainData.getCategoriesInWhichIncludedDocumentWithId( getId() );
 		categories.add( MainData.getCategoryWithId( categoryId ) );
 		saveInWhichCategoriesDocumentWithIdIncludedIn( categories );

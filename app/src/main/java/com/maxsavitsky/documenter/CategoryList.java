@@ -28,9 +28,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.FirebaseApp;
 import com.maxsavitsky.documenter.adapters.CategoryListAdapter;
-import com.maxsavitsky.documenter.backup.AutonomousCloudBackupper;
 import com.maxsavitsky.documenter.data.types.Category;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.utils.ApkInstaller;
@@ -47,7 +45,7 @@ import java.util.Collections;
 import java.util.Comparator;
 
 public class CategoryList extends ThemeActivity {
-	private int mSortOrder = 1; //1 - по возрастанию; -1 - по убыванию
+	private int mSortOrder = 1; //1 - по возрастанию - стрелка вверх; -1 - по убыванию
 	private SharedPreferences sp;
 
 	private void applyTheme(){
@@ -79,15 +77,15 @@ public class CategoryList extends ThemeActivity {
 			case android.R.id.home:
 				onMyBackPressed();
 				break;
-			case R.id.item_main_invert:
+			case R.id.item_common_invert:
 				mSortOrder = -mSortOrder;
+				if(mSortOrder == 1)
+					item.setIcon( R.drawable.ic_sort_ascending );
+				else
+					item.setIcon( R.drawable.ic_sort_descending );
 				setupRecyclerView();
 				break;
-			case R.id.item_settings:
-				Intent intent = new Intent( this, SettingsActivity.class );
-				startActivityForResult( intent, Requests.SETTINGS );
-				break;
-			case R.id.item_main_choose_sort_mode:
+			case R.id.item_common_sort_mode:
 				AlertDialog.Builder builder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
 						.setTitle( R.string.choose_sort_mode )
 						.setCancelable( false )
@@ -107,21 +105,15 @@ public class CategoryList extends ThemeActivity {
 						} );
 				builder.create().show();
 				break;
-			case R.id.item_common_free_entries:
-				Intent open = new Intent(this, EntriesList.class);
-				open.putExtra("free_mode", true);
-				startActivity( open );
-				break;
 		}
 		return super.onOptionsItemSelected(item);
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate( R.menu.categories_main_list_menu, menu );
 		getMenuInflater().inflate( R.menu.common_menu, menu );
-		MenuItem item = menu.findItem( R.id.item_common_parameters );
-		item.setVisible( false );
+		menu.findItem( R.id.item_common_parameters ).setVisible( false );
+		menu.findItem( R.id.item_common_change_name ).setVisible( false );
 		return super.onCreateOptionsMenu( menu );
 	}
 
@@ -288,7 +280,7 @@ public class CategoryList extends ThemeActivity {
 		Toolbar toolbar = findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 
-		applyTheme();
+		//applyTheme();
 		Log.d( "TAG", "started" );
 		FloatingActionButton fab = findViewById(R.id.fabCreateCategory);
 		fab.setOnClickListener(new View.OnClickListener() {

@@ -36,7 +36,7 @@ android {
         minSdkVersion 23
         targetSdkVersion 29
         versionCode 22
-        versionName '1.0.0'
+        versionName '1.0.1'
         buildConfigField "String", "COMPILATION_DATE", "\"${getDate()}\""
         buildConfigField "int", "BUILD_CODE", "${code}"
     }
@@ -70,7 +70,7 @@ dependencies {
     implementation 'org.jetbrains:annotations-java5:15.0'
     implementation 'com.android.support:design:29.0.0'
     implementation files('libs/quadflask.colorpicker.aar')
-    implementation 'com.google.firebase:firebase-core:17.2.3'
+    implementation 'com.google.firebase:firebase-core:17.3.0'
     implementation 'com.firebaseui:firebase-ui-auth:6.2.0'
     implementation 'com.google.firebase:firebase-auth:19.3.0'
     implementation 'com.google.firebase:firebase-storage:19.1.1'

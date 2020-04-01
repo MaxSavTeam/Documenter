@@ -6,6 +6,8 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.Html;
@@ -85,6 +87,7 @@ public class ViewEntry extends ThemeActivity {
 				editText.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT ) );
 				editText.setText( mEntry.getName() );
 				editText.requestFocus();
+				editText.setTextColor( getColor(super.mTextColor) );
 				AlertDialog.Builder builder = new AlertDialog.Builder( this )
 						.setTitle( R.string.edit_entry_name )
 						.setView( editText )
