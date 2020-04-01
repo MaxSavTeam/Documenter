@@ -160,6 +160,8 @@ public class AutonomousCloudBackupper {
 		ref.addListenerForSingleValueEvent( new ValueEventListener() {
 			@Override
 			public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+				if(dataSnapshot.getValue() == null)
+					return;
 				long time = (long) dataSnapshot.getValue();
 				long cur = System.currentTimeMillis();
 				long r = cur - time;
