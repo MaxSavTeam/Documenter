@@ -25,7 +25,6 @@
             android:label="@string/title_activity_cloud_backup" />
         <activity android:name=".ThemeActivity" />
         <activity android:name=".SettingsActivity" />
-        <activity android:name=".ErrorHandlerActivity" />
         <activity
             android:name=".EntryEditor"
             android:label="@string/title_activity_create_entry"
