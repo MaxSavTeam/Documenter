@@ -117,4 +117,5 @@
 
     <string name="need_to_restart_app">Необходимо перезапустить приложение</string>
     <string name="edit_name">Изменить имя</string>
+    <string name="version">Версия</string>
 </resources>
