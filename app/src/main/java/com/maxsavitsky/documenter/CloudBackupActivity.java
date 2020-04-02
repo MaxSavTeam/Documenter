@@ -40,6 +40,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class CloudBackupActivity extends ThemeActivity {
+	private long mLastBackupTime;
 
 	private void applyTheme() {
 		ActionBar actionBar = getSupportActionBar();
@@ -120,12 +121,14 @@ public class CloudBackupActivity extends ThemeActivity {
 					public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 						if ( dataSnapshot.getValue() != null ) {
 							long time = (long) dataSnapshot.getValue();
+							mLastBackupTime = time;
 							DateFormat format = DateFormat.getDateTimeInstance();
 							String str = String.format( "%s: %s", getString( R.string.last_backup ), format.format( new Date( time ) ) );
 							( (TextView) findViewById( R.id.lblLastBackup ) ).setText( str );
 						} else {
 							String str = String.format( "%s: %s", getString( R.string.last_backup ), getString( R.string.never ) );
 							( (TextView) findViewById( R.id.lblLastBackup ) ).setText( str );
+							mLastBackupTime = -1;
 						}
 						loader.onDataLoaded();
 					}
@@ -269,6 +272,8 @@ public class CloudBackupActivity extends ThemeActivity {
 	}
 
 	public void restoreFromCloudBackup(View v) {
+		if(mLastBackupTime == -1)
+			return;
 		androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder( this )
 				.setTitle( R.string.confirmation )
 				.setMessage( R.string.confirm_restore_message )

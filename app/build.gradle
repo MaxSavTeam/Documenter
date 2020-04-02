@@ -3,6 +3,7 @@ import java.text.SimpleDateFormat
 apply plugin: 'com.android.application'
 apply plugin: 'androidx.navigation.safeargs'
 apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.firebase.firebase-perf'
 
 android {
     signingConfigs {
@@ -35,8 +36,8 @@ android {
         applicationId "com.maxsavitsky.documenter"
         minSdkVersion 23
         targetSdkVersion 29
-        versionCode 23
-        versionName '1.1.0'
+        versionCode 24
+        versionName '1.1.1'
         buildConfigField "String", "COMPILATION_DATE", "\"${getDate()}\""
         buildConfigField "int", "BUILD_CODE", "${code}"
     }
@@ -45,10 +46,18 @@ android {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            shrinkResources true
+            FirebasePerformance {
+                instrumentationEnabled true
+            }
         }
         debug {
             debuggable true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             applicationIdSuffix ".alpha"
+            FirebasePerformance {
+                instrumentationEnabled false
+            }
         }
     }
 
@@ -75,4 +84,5 @@ dependencies {
     implementation 'com.google.firebase:firebase-auth:19.3.0'
     implementation 'com.google.firebase:firebase-storage:19.1.1'
     implementation 'com.google.firebase:firebase-database:19.2.1'
+    implementation 'com.google.firebase:firebase-perf:19.0.5'
 }

@@ -50,29 +50,29 @@ public class DocumentList extends ThemeActivity {
 	private ArrayList<Document> mDocuments;
 	private Category mCategory;
 	private SharedPreferences sp;
-	private final Map<String, Document> mDocumentMap = new HashMap<>(  );
+	private final Map<String, Document> mDocumentMap = new HashMap<>();
 	private Map<String, Document> documentsToInclude = new HashMap<>();
 	private final ArrayList<String> documentsWhichWillBeExcluded = new ArrayList<>();
 	private int mSortOrder = 1; // 1 - по возрастанию; -1 -
 
-	private void applyTheme(){
+	private void applyTheme() {
 		ActionBar actionBar = getSupportActionBar();
-		if (actionBar != null) {
-			actionBar.setTitle(mCategory.getName());
+		if ( actionBar != null ) {
+			actionBar.setTitle( mCategory.getName() );
 			Utils.applyDefaultActionBarStyle( actionBar );
 		}
 	}
 
-	private void backPressed(){
+	private void backPressed() {
 		finish();
 	}
 
 	final Comparator<Document> mDocumentComparator = new Comparator<Document>() {
 		@Override
 		public int compare(Document o1, Document o2) {
-			if(sp.getInt( "sort_documents", 0 ) == 0) {
+			if ( sp.getInt( "sort_documents", 0 ) == 0 ) {
 				return o1.getName().compareToIgnoreCase( o2.getName() ) * mSortOrder;
-			}else {
+			} else {
 				int t1 = MainData.getDocumentWithId( o1.getId() ).getInfo().getTimeStamp();
 				int t2 = MainData.getDocumentWithId( o2.getId() ).getInfo().getTimeStamp();
 				int compared = Integer.compare( t1, t2 );
@@ -82,37 +82,37 @@ public class DocumentList extends ThemeActivity {
 		}
 	};
 
-	private void setupRecyclerView(){
+	private void setupRecyclerView() {
 		mDocuments = mCategory.getDocuments();
-		invalidateOptionsMenu();
-		RecyclerView recyclerView = findViewById(R.id.category_list_view);
-		if( mDocuments.isEmpty()){
-			recyclerView.setVisibility(View.GONE);
-			TextView textView = findViewById(R.id.textViewNothingFound);
-			textView.setVisibility(View.VISIBLE);
+		RecyclerView recyclerView = findViewById( R.id.category_list_view );
+		if ( mDocuments.isEmpty() ) {
+			recyclerView.setVisibility( View.GONE );
+			TextView textView = findViewById( R.id.textViewNothingFound );
+			textView.setVisibility( View.VISIBLE );
 
-		}else {
-			LinearLayoutManager lay = new LinearLayoutManager(this);
-			lay.setOrientation(RecyclerView.VERTICAL);
-			if(mDocuments.size() > 1)
-				Collections.sort( mDocuments, mDocumentComparator);
-			DocumentsAdapter mAdapter = new DocumentsAdapter( mDocuments, mOnClickListener);
-			recyclerView.setLayoutManager(lay);
-			recyclerView.setAdapter(mAdapter);
-			recyclerView.setVisibility(View.VISIBLE);
-			TextView textView = findViewById(R.id.textViewNothingFound);
-			textView.setVisibility(View.GONE);
+		} else {
+			LinearLayoutManager lay = new LinearLayoutManager( this );
+			lay.setOrientation( RecyclerView.VERTICAL );
+			if ( mDocuments.size() > 1 ) {
+				Collections.sort( mDocuments, mDocumentComparator );
+			}
+			DocumentsAdapter mAdapter = new DocumentsAdapter( mDocuments, mOnClickListener );
+			recyclerView.setLayoutManager( lay );
+			recyclerView.setAdapter( mAdapter );
+			recyclerView.setVisibility( View.VISIBLE );
+			TextView textView = findViewById( R.id.textViewNothingFound );
+			textView.setVisibility( View.GONE );
 		}
 	}
 
 	private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
-			Intent intent = new Intent(DocumentList.this, EntriesList.class);
-			TextView t = v.findViewById(R.id.lblHiddenCategoryId);
+			Intent intent = new Intent( DocumentList.this, EntriesList.class );
+			TextView t = v.findViewById( R.id.lblHiddenCategoryId );
 			String id = t.getText().toString();
-			intent.putExtra("id", id);
-			startActivityForResult(intent, Requests.ENTRIES_LIST );
+			intent.putExtra( "id", id );
+			startActivityForResult( intent, Requests.ENTRIES_LIST );
 		}
 	};
 
@@ -141,8 +141,9 @@ public class DocumentList extends ThemeActivity {
 				@Override
 				public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 					checkBoxDelEntries.setEnabled( isChecked );
-					if ( !isChecked )
+					if ( !isChecked ) {
 						checkBoxDelEntries.setChecked( false );
+					}
 				}
 			} );
 			checkBoxDelEntries.setText( R.string.delete_category__with_entries );
@@ -167,8 +168,9 @@ public class DocumentList extends ThemeActivity {
 							try {
 								if ( checkBoxDelDocs.isChecked() ) {
 									for (Document document : mCategory.getDocuments()) {
-										if ( document.getCategoriesInWhichIncludedDocument().size() == 1 )
+										if ( document.getCategoriesInWhichIncludedDocument().size() == 1 ) {
 											MainData.finallyDeleteDocumentWithId( document.getId(), checkBoxDelEntries.isChecked() );
+										}
 									}
 								}
 								if ( MainData.finallyDeleteCategoryWithId( mCategory.getId() ) ) {
@@ -190,8 +192,7 @@ public class DocumentList extends ThemeActivity {
 					} ).setCancelable( false )
 					.setView( layout );
 			deletionBuilder.create().show();
-		}
-		else if ( itemId == R.id.item_common_change_name ) {
+		} else if ( itemId == R.id.item_common_change_name ) {
 			AlertDialog alertDialog;
 			AlertDialog.Builder builder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
 					.setTitle( R.string.edit_category_name );
@@ -234,8 +235,7 @@ public class DocumentList extends ThemeActivity {
 			} ).setCancelable( false );
 			alertDialog = builder.create();
 			alertDialog.show();
-		}
-		else if ( itemId == R.id.item_common_sort_mode ) {
+		} else if ( itemId == R.id.item_common_sort_mode ) {
 			AlertDialog.Builder builder;
 			AlertDialog chooseSortType;
 			String[] items = getResources().getStringArray( R.array.sort_modes );
@@ -261,23 +261,26 @@ public class DocumentList extends ThemeActivity {
 			chooseSortType.show();
 		} else if ( itemId == R.id.item_common_invert ) {
 			mSortOrder = -mSortOrder;
-			if ( mSortOrder == 1 )
-				item.setIcon( R.drawable.ic_sort_ascending );
-			else
-				item.setIcon( R.drawable.ic_sort_descending );
+
+			if ( mSortOrder == 1 ) {
+				item.setIcon( getDrawable(R.drawable.ic_sort_ascending) );
+			} else {
+				item.setIcon( getDrawable(R.drawable.ic_sort_descending) );
+			}
 			setupRecyclerView();
 		}
-		return super.onOptionsItemSelected(item);
+		return super.onOptionsItemSelected( item );
 	}
 
 	private void restartActivity() {
 		setResult( Results.RESTART_ACTIVITY, new Intent().putExtra( "id", mCategory.getId() ) );
 		this.finish();
 	}
+
 	private ArrayList<Document> documentsToChange;
 
-	private void prepareChooseRecyclerView(){
-		if(MainData.getEntriesList().size() != 0) {
+	private void prepareChooseRecyclerView() {
+		if ( MainData.getEntriesList().size() != 0 ) {
 			documentsToChange = mCategory.getDocuments();
 			mDocumentMap.clear();
 			for (Document document : documentsToChange) {
@@ -358,8 +361,8 @@ public class DocumentList extends ThemeActivity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate(R.menu.common_menu, menu);
-		getMenuInflater().inflate(R.menu.category_menu, menu);
+		getMenuInflater().inflate( R.menu.common_menu, menu );
+		getMenuInflater().inflate( R.menu.category_menu, menu );
 		MenuItem m = menu.findItem( R.id.item_common_remember_pos );
 		m.setChecked( mCategory.getProperties().isSaveLastPos() );
 		m.setOnMenuItemClickListener( new MenuItem.OnMenuItemClickListener() {
@@ -381,28 +384,28 @@ public class DocumentList extends ThemeActivity {
 				return true;
 			}
 		} );
-		if(mCategory.getDocuments().size() == 0){
+		if ( mCategory.getDocuments().size() == 0 ) {
 			menu.findItem( R.id.item_common_invert ).setVisible( false );
 			menu.findItem( R.id.item_common_sort_mode ).setVisible( false );
 			menu.findItem( R.id.item_common_parameters ).setVisible( false );
 		}
-		return super.onCreateOptionsMenu(menu);
+		return super.onCreateOptionsMenu( menu );
 	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_document_list2);
-		Toolbar toolbar = findViewById(R.id.toolbar);
-		setSupportActionBar(toolbar);
+		super.onCreate( savedInstanceState );
+		setContentView( R.layout.activity_document_list2 );
+		Toolbar toolbar = findViewById( R.id.toolbar );
+		setSupportActionBar( toolbar );
 		invalidateOptionsMenu();
 
 		Intent intent = getIntent();
-		String id = intent.getStringExtra("category_uid");
+		String id = intent.getStringExtra( "category_uid" );
 		sp = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
 		try {
-			mCategory = MainData.getCategoryWithId(id);
-			mDocuments = XMLParser.newInstance().parseCategoryWithId(id);
+			mCategory = MainData.getCategoryWithId( id );
+			mDocuments = XMLParser.newInstance().parseCategoryWithId( id );
 		} catch (Exception e) {
 			e.printStackTrace();
 			Utils.getErrorDialog( e, this ).show();
@@ -411,17 +414,17 @@ public class DocumentList extends ThemeActivity {
 
 		applyTheme();
 
-		FloatingActionButton fab = findViewById(R.id.fabCreateDocument);
-		fab.setOnClickListener(new View.OnClickListener() {
+		FloatingActionButton fab = findViewById( R.id.fabCreateDocument );
+		fab.setOnClickListener( new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				startActivityForResult(new Intent(DocumentList.this, CreateDocument.class).putExtra("parent_id", mCategory.getId()), Requests.CREATE_DOCUMENT );
+				startActivityForResult( new Intent( DocumentList.this, CreateDocument.class ).putExtra( "parent_id", mCategory.getId() ), Requests.CREATE_DOCUMENT );
 			}
-		});
-		findViewById( R.id.fabFreeEntries).setOnClickListener( new View.OnClickListener() {
+		} );
+		findViewById( R.id.fabFreeEntries ).setOnClickListener( new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				Intent intent = new Intent(DocumentList.this, EntriesList.class);
+				Intent intent = new Intent( DocumentList.this, EntriesList.class );
 				intent.putExtra( "free_mode", true );
 				startActivityForResult( intent, Requests.FREE_ENTRIES );
 			}
@@ -450,46 +453,48 @@ public class DocumentList extends ThemeActivity {
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-		if(resultCode == Results.NEED_TO_REFRESH){
+		if ( resultCode == Results.NEED_TO_REFRESH ) {
 			setupRecyclerView();
 		}
-		if(requestCode == Requests.ENTRIES_LIST){
-			if(resultCode == Results.RESTART_ACTIVITY){
+		if ( requestCode == Requests.ENTRIES_LIST ) {
+			if ( resultCode == Results.RESTART_ACTIVITY ) {
 				Intent intent = new Intent( this, EntriesList.class );
 				//intent.putExtra( "id", data.getStringExtra( "id" ) );
-				if(data != null)
+				if ( data != null ) {
 					intent.putExtras( data );
+				}
 				startActivityForResult( intent, Requests.ENTRIES_LIST );
 			}
 		}
-		if(resultCode == Results.RESTART_APP){
+		if ( resultCode == Results.RESTART_APP ) {
 			setResult( Results.RESTART_APP );
 			finish();
 		}
 		super.onActivityResult( requestCode, resultCode, data );
 	}
 
-	class DocumentsAdapter extends RecyclerView.Adapter<DocumentsAdapter.VH>{
+	class DocumentsAdapter extends RecyclerView.Adapter<DocumentsAdapter.VH> {
 		private final ArrayList<Document> mData;
 		private final View.OnClickListener onClickListener;
 
 		DocumentsAdapter(ArrayList<Document> data, View.OnClickListener onClickListener) {
 			mData = data;
-			if(mData.size()  > 1)
+			if ( mData.size() > 1 ) {
 				Collections.sort( mData, mDocumentComparator );
+			}
 			this.onClickListener = onClickListener;
 		}
 
 		@NonNull
 		@Override
 		public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-			return new VH(LayoutInflater.from(DocumentList.this).inflate(R.layout.list_item, parent, false));
+			return new VH( LayoutInflater.from( DocumentList.this ).inflate( R.layout.list_item, parent, false ) );
 		}
 
 		@Override
 		public void onBindViewHolder(@NonNull VH holder, int position) {
-			holder.name.setText(mData.get(position).getName());
-			holder.id.setText(mData.get(position).getId());
+			holder.name.setText( mData.get( position ).getName() );
+			holder.id.setText( mData.get( position ).getId() );
 		}
 
 		@Override
@@ -497,32 +502,32 @@ public class DocumentList extends ThemeActivity {
 			return mData.size();
 		}
 
-		class VH extends RecyclerView.ViewHolder{
+		class VH extends RecyclerView.ViewHolder {
 			final TextView name;
 			final TextView id;
 
 			VH(@NonNull View itemView) {
-				super(itemView);
-				name = itemView.findViewById(R.id.lblCategoryName);
-				id = itemView.findViewById(R.id.lblHiddenCategoryId);
+				super( itemView );
+				name = itemView.findViewById( R.id.lblCategoryName );
+				id = itemView.findViewById( R.id.lblHiddenCategoryId );
 				itemView.setOnClickListener( DocumentsAdapter.this.onClickListener );
 			}
 		}
 	}
 
-	class ChangeListAdapter2 extends DefaultChooseAdapter{
+	class ChangeListAdapter2 extends DefaultChooseAdapter {
 		final ArrayList<Document> mDocuments;
 
 		public ChangeListAdapter2(ArrayList<Document> elements, @Nullable View.OnClickListener onClickListener, Context context, @Nullable Runnable onBindRun) {
-			super( elements, onClickListener, context);
+			super( elements, onClickListener, context );
 			mDocuments = elements;
 		}
 
 		@Override
 		public void onBindViewHolder(@NonNull DefaultChooseAdapter.VH holder, int position) {
-			if(mDocumentMap.containsKey( mDocuments.get( position ).getId() )){
+			if ( mDocumentMap.containsKey( mDocuments.get( position ).getId() ) ) {
 				holder.mCheckBox.setChecked( true );
-			}else{
+			} else {
 				holder.mCheckBox.setChecked( false );
 			}
 			holder.mName.setText( mDocuments.get( position ).getName() );

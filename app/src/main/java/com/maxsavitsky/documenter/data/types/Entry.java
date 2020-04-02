@@ -28,13 +28,20 @@ import java.util.Locale;
 
 public class Entry extends Type {
 
-	private final String id;
-	private final String name;
-	private final String pathDir;
+	private final String mId;
+	private final String mName;
+	private final String mPathDir;
 	private Info mInfo;
 	private Properties mProperties;
 
-	public Properties getProperties() {
+	public Properties getProperties(){
+		if(mProperties == null) {
+			try {
+				return readProperties();
+			} catch (IOException | SAXException e) {
+				e.printStackTrace();
+			}
+		}
 		return mProperties;
 	}
 
@@ -43,10 +50,10 @@ public class Entry extends Type {
 	}
 
 	public Entry(String id, String name) {
-		this.id = id;
-		this.name = name;
+		this.mId = id;
+		this.mName = name;
 
-		this.pathDir = Utils.getExternalStoragePath().getPath() + "/entries/" + id + "/";
+		this.mPathDir = Utils.getExternalStoragePath().getPath() + "/entries/" + id + "/";
 	}
 
 	public void setInfo(Info info) {
@@ -83,21 +90,21 @@ public class Entry extends Type {
 
 	@Override
 	public String getId() {
-		return id;
+		return mId;
 	}
 
 	@Override
 	public String getName() {
-		return name;
+		return mName;
 	}
 
 	public String getPathDir() {
-		return pathDir;
+		return mPathDir;
 	}
 
 	public void saveText(Spannable text, Properties properties) throws Exception {
 		//text = text.replaceAll( "\n", "<br>" );
-		File file = new File( pathDir + "text.html" );
+		File file = new File( mPathDir + "text.html" );
 		if(!file.exists())
 			file.createNewFile();
 		FileWriter fr = new FileWriter( file );
@@ -121,7 +128,7 @@ public class Entry extends Type {
 				.append( "\n</html>" );
 		fr.flush();
 
-		fr = new FileWriter( pathDir + "text" );
+		fr = new FileWriter( mPathDir + "text" );
 		fr.write( htmlText );
 		fr.flush();
 		fr.close();
@@ -132,7 +139,7 @@ public class Entry extends Type {
 	}
 
 	public void saveProperties() throws IOException {
-		File file = new File( Utils.getExternalStoragePath().getPath() + "/entries/" + id + "/properties.xml" );
+		File file = new File( Utils.getExternalStoragePath().getPath() + "/entries/" + mId + "/properties.xml" );
 		if ( !file.exists() ) {
 			file.createNewFile();
 		}
@@ -152,19 +159,19 @@ public class Entry extends Type {
 	}
 
 	public Entry.Properties readProperties() throws IOException, SAXException {
-		this.mProperties = XMLParser.newInstance().parseEntryProperties( id );
+		this.mProperties = XMLParser.newInstance().parseEntryProperties( mId );
 		return mProperties;
 	}
 
 	public void checkMediaDir(){
-		File file = new File( Utils.getExternalStoragePath().getPath() + "/entries/" + id + "/media/images" );
+		File file = new File( Utils.getExternalStoragePath().getPath() + "/entries/" + mId + "/media/images" );
 		if(!file.exists())
 			file.mkdirs();
 	}
 
 	public File getImagesMediaFolder(){
 		checkMediaDir();
-		return new File( Utils.getExternalStoragePath().getPath() + "/entries/" + id + "/media/images" );
+		return new File( Utils.getExternalStoragePath().getPath() + "/entries/" + mId + "/media/images" );
 	}
 
 	public void saveProperties(Properties properties) throws IOException{
@@ -174,14 +181,14 @@ public class Entry extends Type {
 
 	public void applySaveLastPos(boolean state) throws IOException, SAXException {
 		if( mProperties == null){
-			mProperties = XMLParser.newInstance().parseEntryProperties( id );
+			mProperties = XMLParser.newInstance().parseEntryProperties( mId );
 		}
 		mProperties.setSaveLastPos( state );
 		saveProperties();
 	}
 
 	public ArrayList<String> loadTextLines() throws IOException{
-		BufferedReader br = new BufferedReader( new FileReader( new File( pathDir + "text" ) ) );
+		BufferedReader br = new BufferedReader( new FileReader( new File( mPathDir + "text" ) ) );
 		String line;
 		ArrayList<String> strings = new ArrayList<>();
 		while(((line = br.readLine())) != null){
@@ -195,7 +202,7 @@ public class Entry extends Type {
 
 	public String loadText() throws IOException{
 		String text = "";
-		FileInputStream fileInputStream = new FileInputStream( pathDir + "text" );
+		FileInputStream fileInputStream = new FileInputStream( mPathDir + "text" );
 		byte[] buffer = new byte[1024];
 		int c;
 		while(((c = fileInputStream.read(buffer))) != -1){
@@ -234,14 +241,14 @@ public class Entry extends Type {
 		File file = new File( Utils.getExternalStoragePath().getPath() + "/entries" );
 		if(!file.exists())
 			throw new IllegalArgumentException( "MainData.getDocumentsInWhichIncludedThisEntry: entries dir does not exist" );
-		file = new File( file.getPath() + "/" + id );
+		file = new File( file.getPath() + "/" + mId );
 		if(!file.exists())
-			throw new IllegalArgumentException( "MainData.getDocumentsInWhichIncludedThisEntry: entry dir with id=" + id + " does not exist" );
+			throw new IllegalArgumentException( "MainData.getDocumentsInWhichIncludedThisEntry: entry dir with id=" + mId + " does not exist" );
 		file = new File( file.getPath() + "/included_in.xml" );
 		if(!file.exists())
 			return new ArrayList<>(  );
 
-		return XMLParser.newInstance().getDocumentsInWhichIncludedEntryWithId( id );
+		return XMLParser.newInstance().getDocumentsInWhichIncludedEntryWithId( mId );
 	}
 
 	public void saveInWhichDocumentsIncludedThisEntry(ArrayList<Document> documents) throws IOException {

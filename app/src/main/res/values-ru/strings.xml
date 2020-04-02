@@ -81,23 +81,18 @@
     <string name="this_name_already_exist">Это имя уже существует</string>
     <string name="do_you_want_to_continue">Вы хотите продолжить?</string>
     <string name="ignore_this_update">Игнорировать это обновление</string>
-    <string name="title_activity_free_entries">Свободные записи</string>
     <string name="delete_category__with_docs">Также удалите все документы, включенные ТОЛЬКО в эту категорию</string>
     <string name="delete_category__with_entries">Также удаляйте записи, которые включены ТОЛЬКО в удаленные документы</string>
     <string name="ui">UI</string>
     <string name="updates">Обновления</string>
     <string name="automatically_check_for_updates">Автоматически проверять наличие обновлений</string>
     <string name="delete_document__with_entries">Удалить записи, которые включены ТОЛЬКО в этот документ</string>
-    <string name="create_local_backup">Создать локальную резервную копию</string>
-    <string name="restore_from_local_backup">Восстановить из локальной резервной копии</string>
     <string name="local_backup">Локальное резервное копирование</string>
     <string name="cloud_backup">Облачное резервное копирование</string>
-    <string name="or">или же</string>
     <string name="sign_in">Войти в систему</string>
-    <string name="sign_up">Зарегистрироваться</string>
     <string name="sign_out">Выйти</string>
     <string name="title_activity_cloud_backup">Облачное резервное копирование</string>
-    <string name="cloud_backup_parameters">Параметры резервного копирования в облаке</string>
+    <string name="cloud_backup_parameters">Параметры резервного копирования в облако</string>
 
     <string name="cloud_backup_activity_text1">На этой странице Вы можете создать резервную копию всех категорий, документов и записей, чтобы иметь доступ с других устройств. Создание новой резервной копии перезапишет старую резервную копию. При восстановлении &lt;b&gt; Вы можете потерять несохраненные данные &lt;b&gt;.</string>
     <string name="cloud_backup_activity_text2">Внимание: резервные копии загружаются на сервер Google Firebase. Там они будут защищены от посторонних и подчиняются политике конфиденциальности Google.</string>
