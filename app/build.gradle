@@ -40,7 +40,7 @@ android {
         applicationId "com.maxsavitsky.documenter"
         minSdkVersion 23
         targetSdkVersion 29
-        versionCode 24
+        versionCode 25
 
         verCode = versionCode
         cleanVersionName = "1.2.0" + ".$versionCode" + (code != -1 ? "." + code.toString() : "")
