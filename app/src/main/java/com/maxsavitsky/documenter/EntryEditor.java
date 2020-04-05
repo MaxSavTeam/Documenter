@@ -667,6 +667,7 @@ public class EntryEditor extends ThemeActivity {
 			mSelectionBounds = new int[]{start, end};
 			btnTextColorPicker.setBackgroundTintList( ColorStateList.valueOf( c ) );
 			btnTextColorPicker.setOnClickListener( onClickOnSelectColorOfTextSegment );
+			btnBgColorPicker.setOnClickListener( btnBgColorPickerDefaultClickListener );
 			applyStyleBtnState( start, end );
 			btnBold.setOnClickListener(onTextAppearanceClick);
 			btnItalic.setOnClickListener(onTextAppearanceClick);
@@ -713,8 +714,8 @@ public class EntryEditor extends ThemeActivity {
 					return;
 
 				e.setSpan( new ForegroundColorSpan( mDefaultTextColor ), start, start + len - 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+				e.setSpan( new AlignmentSpan.Standard( mMainAlignment ), start, start + len - 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 			}
-			saveTextChange();
 		}
 	};
 
@@ -1077,16 +1078,6 @@ public class EntryEditor extends ThemeActivity {
 		btnBgColorPicker.setBackgroundTintList( ColorStateList.valueOf( mProperties.getBgColor() ) );
 		mTextEditor.setBackgroundColor( mProperties.getBgColor() );
 		getWindow().getDecorView().setBackgroundColor( mProperties.getBgColor() );
-
-		/*ImageButton imageButton;
-		if( mProperties.getTextAlignment() == Gravity.CENTER_HORIZONTAL)
-			imageButton = findViewById( R.id.btnAlignCenter );
-		else if( mProperties.getTextAlignment() == Gravity.START)
-			imageButton = findViewById( R.id.btnAlignLeft );
-		else
-			imageButton = findViewById( R.id.btnAlignRight );
-
-		chooseTextAlignment( imageButton );*/
 	}
 
 	public void plusTextSize(View view){
