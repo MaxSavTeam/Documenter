@@ -3,13 +3,16 @@ package com.maxsavitsky.documenter.data.types;
 import android.graphics.Color;
 import android.text.Html;
 import android.text.Layout;
+import android.text.Layout.Alignment;
 import android.text.Spannable;
+import android.text.style.AlignmentSpan;
 import android.view.Gravity;
 
 import androidx.annotation.NonNull;
 
 import com.maxsavitsky.documenter.data.Info;
 import com.maxsavitsky.documenter.data.MainData;
+import com.maxsavitsky.documenter.utils.SpanEntry;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.XMLParser;
 
@@ -102,36 +105,70 @@ public class Entry extends Type {
 		return mPathDir;
 	}
 
-	public void saveText(Spannable text, Properties properties) throws Exception {
-		//text = text.replaceAll( "\n", "<br>" );
-		File file = new File( mPathDir + "text.html" );
+	public void saveText(Spannable text) throws Exception {
+		File file = new File( mPathDir + "text" );
 		if(!file.exists())
 			file.createNewFile();
-		FileWriter fr = new FileWriter( file );
-		fr.write( Utils.htmlHeader );
-		String alignment;
-		if( properties.getTextAlignment() == Gravity.START ){
-			alignment = "left";
-		}else if( properties.getTextAlignment() == Gravity.CENTER_HORIZONTAL){
-			alignment = "center";
-		}else if( properties.getTextAlignment() == Layout.JUSTIFICATION_MODE_INTER_WORD ){
-			alignment = "justify";
-		}else{
-			alignment = "right";
-		}
-		String htmlText = Html.toHtml( text );
-		fr.append( "<html>\n" )
-				.append( "\t<body bgcolor=\"" ).append( "#" ).append( Integer.toHexString( properties.getBgColor() ).substring( 2 ) ).append( "\" " )
-				.append( "align=\"" ).append( alignment ).append( "\">\n" )
-				.append( htmlText )
-				.append( "\n\t</body>" )
-				.append( "\n</html>" );
-		fr.flush();
 
-		fr = new FileWriter( mPathDir + "text" );
-		fr.write( htmlText );
+		saveAllAlignments( text.getSpans( 0, text.length(), AlignmentSpan.Standard.class ), text );
+		for(AlignmentSpan.Standard span : text.getSpans( 0, text.length(), AlignmentSpan.Standard.class )){
+			text.removeSpan( span );
+		}
+
+		String htmlText = Html.toHtml( text );
+		FileWriter fr = new FileWriter( file );
+		fr.append( htmlText );
 		fr.flush();
 		fr.close();
+	}
+
+	private void saveAllAlignments(AlignmentSpan.Standard[] spans, Spannable text){
+		File file = new File( mPathDir + "alignment" );
+		if(spans.length != 0){
+			StringBuilder sb = new StringBuilder();
+			for(int i = 0; i < spans.length; i++){
+				AlignmentSpan.Standard span = spans[i];
+				sb.append( span.getAlignment().toString() ).append( " " ).append( text.getSpanStart( span ) ).append( " " ).append( text.getSpanEnd( span ) );
+				if ( i != spans.length - 1 ) {
+					sb.append( "\n" );
+				}
+			}
+			try{
+				FileWriter fr = new FileWriter(file);
+				fr.write( sb.toString() );
+				fr.flush();
+				fr.close();
+			}catch (IOException e){
+				e.printStackTrace();
+			}
+		}else{
+			if(file.exists())
+				file.delete();
+		}
+	}
+
+	public ArrayList<SpanEntry> getAlignments(){
+		ArrayList<SpanEntry> arrayList = new ArrayList<>();
+		File file = new File( mPathDir + "alignment" );
+		if(file.exists()) {
+			try {
+				BufferedReader br = new BufferedReader( new FileReader( file ) );
+				String line;
+				while ( ( line = br.readLine() ) != null ) {
+					if ( Thread.currentThread().isInterrupted() )
+						break;
+
+					String[] strings = line.split( " " );
+					SpanEntry se = new SpanEntry( new AlignmentSpan.Standard( Alignment.valueOf( strings[ 0 ] ) ),
+							Integer.parseInt( strings[ 1 ] ),
+							Integer.parseInt( strings[ 2 ] ) );
+					arrayList.add( se );
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return arrayList;
 	}
 
 	private String formatInt(int x){
@@ -191,7 +228,7 @@ public class Entry extends Type {
 		BufferedReader br = new BufferedReader( new FileReader( new File( mPathDir + "text" ) ) );
 		String line;
 		ArrayList<String> strings = new ArrayList<>();
-		while(((line = br.readLine())) != null){
+		while((line = br.readLine()) != null){
 			if(Thread.currentThread().isInterrupted())
 				break;
 			strings.add( line );

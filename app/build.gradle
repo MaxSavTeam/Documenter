@@ -5,6 +5,10 @@ apply plugin: 'androidx.navigation.safeargs'
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.firebase-perf'
 
+String cleanVersionName = ""
+int verCode = 0
+String projectPath = ""
+
 android {
     signingConfigs {
         release {
@@ -28,16 +32,20 @@ android {
         Properties p = new Properties()
         p.load(new FileInputStream(buildPropFile))
         code = p['BUILD'].toInteger() + 1
+        projectPath = p['PROJECT_PATH']
         p['BUILD'] = code.toString()
         p.store(buildPropFile.newWriter(), null)
     }
-
     defaultConfig {
         applicationId "com.maxsavitsky.documenter"
         minSdkVersion 23
         targetSdkVersion 29
         versionCode 24
-        versionName "1.1.1" + ".$versionCode" + (code != -1 ? "." + code.toString() : "") + "+${formatDate("yyyyMMddHHmm")}"
+
+        verCode = versionCode
+        cleanVersionName = "1.1.1" + ".$versionCode" + (code != -1 ? "." + code.toString() : "")
+
+        versionName cleanVersionName + "+${formatDate("yyyyMMddHHmm")}"
         buildConfigField "String", "COMPILATION_DATE", "\"${getDate()}\""
         buildConfigField "int", "BUILD_CODE", "${code}"
     }
@@ -48,7 +56,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             shrinkResources true
             FirebasePerformance {
-                instrumentationEnabled true
+                instrumentationEnabled false
             }
         }
         debug {
@@ -63,7 +71,7 @@ android {
 
 }
 
-def String formatDate(String format){
+static def String formatDate(String format){
     SimpleDateFormat dateFormat = new SimpleDateFormat(format)
     return dateFormat.format(new Date())
 }
@@ -72,6 +80,18 @@ static String getDate() {
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
     simpleDateFormat.setTimeZone(TimeZone.getTimeZone("GMT+3"));
     return simpleDateFormat.format(new Date())
+}
+
+afterEvaluate{ // delete this if you aren't me
+    assembleRelease.doLast{
+        exec {
+            commandLine "cmd", "/c", "groovy", "${projectPath}app\\after_build_tasks.groovy", 'afterBuildTask', cleanVersionName, verCode
+        }
+    }
+}
+
+task rollbackUpdate(type: Exec){
+    commandLine "cmd", "/c", "groovy", "${projectPath}app\\after_build_tasks.groovy", 'rollBack'
 }
 
 dependencies {

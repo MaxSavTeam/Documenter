@@ -21,3 +21,8 @@
 /app/google-services.json
 /app/keystore.properties
 /app/build.properties
+/app/after_build.gradle
+/app/after_build_tasks.groovy
+/app/previous_update.txt
+/app/release/app-release.apk
+/app/release/output.json

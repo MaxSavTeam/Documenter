@@ -63,7 +63,7 @@ class MyExceptionHandler implements Thread.UncaughtExceptionHandler {
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat( "dd.MM.yyyy HH:mm:ss", Locale.ROOT );
 		SimpleDateFormat fileFormatter = new SimpleDateFormat( "dd-MM-yyyy_HH:mm:ss", Locale.ROOT );
 		String formattedDate = fileFormatter.format( date );
-		file = new File( file.getPath() + "/stacktrace-" + formattedDate + ".trace" );
+		file = new File( file.getPath() + "/stacktrace-" + formattedDate + ".txt" );
 
 		try {
 			file.createNewFile();

@@ -11,7 +11,10 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.Html;
+import android.text.Layout.Alignment;
+import android.text.Spannable;
 import android.text.SpannableString;
+import android.text.Spanned;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -35,6 +38,7 @@ import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.utils.HtmlImageLoader;
+import com.maxsavitsky.documenter.utils.SpanEntry;
 import com.maxsavitsky.documenter.utils.Utils;
 
 import org.xml.sax.SAXException;
@@ -232,6 +236,7 @@ public class ViewEntry extends ThemeActivity {
 	private interface TextLoaderCallback{
 		void loaded(ArrayList<String> strings);
 		void exceptionOccurred(Exception e);
+		void loaded(String text);
 	}
 
 	private final TextLoaderCallback mCallback = new TextLoaderCallback() {
@@ -257,6 +262,36 @@ public class ViewEntry extends ThemeActivity {
 					}
 				}
 			} );
+		}
+
+		@Override
+		public void loaded(final String text) {
+			new Thread( new Runnable() {
+				@Override
+				public void run() {
+					final TextView t = findViewById( R.id.textViewContent );
+					final Spannable spannable = (Spannable) Html.fromHtml(text, new HtmlImageLoader( ViewEntry.this ), null);
+					ArrayList<SpanEntry> spanEntries = mEntry.getAlignments();
+					for(SpanEntry se : spanEntries){
+						spannable.setSpan( se.getAlignmentSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+					}
+					t.post( new Runnable() {
+						@Override
+						public void run() {
+							t.setText( spannable );
+							if(mEntry.getProperties().isSaveLastPos()){
+								mScrollView.post( new Runnable() {
+									@Override
+									public void run() {
+										mScrollView.smoothScrollTo(0, mEntry.getProperties().getScrollPosition() );
+									}
+								} );
+							}
+							mProgressDialog.dismiss();
+						}
+					} );
+				}
+			} ).start();
 		}
 
 		@Override
@@ -322,8 +357,9 @@ public class ViewEntry extends ThemeActivity {
 			@Override
 			public void run() {
 				try {
-					ArrayList<String> array = mEntry.loadTextLines();
-					mCallback.loaded( array );
+					//ArrayList<String> array = mEntry.loadTextLines();
+					String text = mEntry.loadText();
+					mCallback.loaded( text );
 				} catch (IOException e) {
 					e.printStackTrace();
 					mCallback.exceptionOccurred( e );

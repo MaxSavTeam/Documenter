@@ -17,16 +17,17 @@ import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.Html;
 import android.text.Layout;
+import android.text.Layout.Alignment;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.AbsoluteSizeSpan;
+import android.text.style.AlignmentSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.ImageSpan;
 import android.text.style.StrikethroughSpan;
@@ -34,7 +35,6 @@ import android.text.style.StyleSpan;
 import android.text.style.UnderlineSpan;
 import android.util.Log;
 import android.view.Display;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -101,10 +101,11 @@ public class EntryEditor extends ThemeActivity {
 	private final int UNDO_MENU_INDEX = 0;
 	private final int REDO_MENU_INDEX = 1;
 	private Editable mStartEditable = new Editable.Factory().newEditable( "" );
-	private boolean mDarkTheme;
 	private SharedPreferences sp;
 	private final ArrayList<Integer> mColorHistory = new ArrayList<>();
 	private final ArrayList<File> mMediaToMove = new ArrayList<>();
+	private int[] mSelectionBounds = new int[]{0, 0};
+	private Alignment mMainAlignment = Alignment.ALIGN_NORMAL;
 
 	private interface OnLoadedTextListener{
 		void loaded(Spannable spannable, String originalText);
@@ -117,8 +118,7 @@ public class EntryEditor extends ThemeActivity {
 			Utils.applyDefaultActionBarStyle(actionBar);
 			actionBar.setTitle( title );
 		}
-		mDarkTheme = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() ).getBoolean( "dark_theme", false );
-		if(mDarkTheme) {
+		if(super.isDarkTheme) {
 			ImageButton btn = findViewById( R.id.btnAlignLeft );
 			btn.setImageDrawable( getDrawable( R.drawable.ic_align_left_white ) );
 			btn = findViewById( R.id.btnAlignCenter );
@@ -388,7 +388,7 @@ public class EntryEditor extends ThemeActivity {
 					mBottomSheetLayout.setState( BottomSheetBehavior.STATE_COLLAPSED );
 			}
 		} );
-
+		setAlignmentButtonClicked( getAlignmentButtonId( mMainAlignment ) );
 	}
 
 	private void readColorHistory(){
@@ -423,19 +423,16 @@ public class EntryEditor extends ThemeActivity {
 		sp.edit().putString( "color_history", save ).apply();
 	}
 
-
-
 	private void setTextInEditor(String text){
 		Editable e = mTextEditor.getText();
 		if(e != null)
 			e.clear();
 
-		String[] splitStrings = text.split( "\n" );
-
-		for (String s : splitStrings) {
-			Spanned fromHtml  = Html.fromHtml( s, new HtmlImageLoader(this), null );
-			mTextEditor.appendW( fromHtml );
+		Spannable spannable = (Spannable) Html.fromHtml( text, new HtmlImageLoader( this ), null );
+		for(SpanEntry se : mEntry.getAlignments()){
+			spannable.setSpan( se.getAlignmentSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 		}
+		mTextEditor.setTextW( spannable );
 	}
 
 	private final OnLoadedTextListener mOnLoadedTextListener = new OnLoadedTextListener() {
@@ -443,11 +440,11 @@ public class EntryEditor extends ThemeActivity {
 		public void loaded(final Spannable spannable, final String originalText) {
 			double seconds = (System.currentTimeMillis() - mStartLoadTextTime) / 1000.0;
 			Log.v( "TextLoader", "mOnLoadedTextListener.loaded called. Seconds = " + seconds );
+			setTextInEditor( originalText );
 
 			runOnUiThread( new Runnable() {
 				@Override
 				public void run() {
-					setTextInEditor( originalText );
 					mTextEditor.setScrollY( mProperties.getScrollPosition() );
 					mStartEditable = mTextEditor.getText();
 					mProgressDialogOnTextLoad.cancel();
@@ -461,6 +458,8 @@ public class EntryEditor extends ThemeActivity {
 					d.getSize( p );
 					if(scrollView.getHeight() <= p.y)
 						hideUpButton();
+
+					calculateMainAlignment();
 				}
 			} );
 		}
@@ -476,6 +475,26 @@ public class EntryEditor extends ThemeActivity {
 			} );
 		}
 	};
+
+	private void calculateMainAlignment(){
+		Editable e = mTextEditor.getText();
+		if(e == null)
+			return;
+		AlignmentSpan.Standard[] spans = e.getSpans( 0, e.length(), AlignmentSpan.Standard.class );
+		if(spans.length == 1){
+			mMainAlignment = spans[0].getAlignment();
+		}
+		setAlignmentButtonClicked( getAlignmentButtonId( mMainAlignment ) );
+	}
+
+	private int getAlignmentButtonId(Alignment alignment){
+		if(alignment == Alignment.ALIGN_NORMAL)
+			return R.id.btnAlignLeft;
+		else if(alignment == Alignment.ALIGN_CENTER)
+			return R.id.btnAlignCenter;
+		else
+			return R.id.btnAlignRight;
+	}
 
 	public void pickImages(View v){
 		if(!isReadMemoryAccess()){
@@ -646,6 +665,12 @@ public class EntryEditor extends ThemeActivity {
 			btnItalic.setOnClickListener(onTextAppearanceClick);
 			btnUnderline.setOnClickListener( onUnderlineBtnClick );
 			btnStrike.setOnClickListener( onStrikeBtnClick );
+
+			AlignmentSpan.Standard[] spans = s.getSpans( mSelectionBounds[0], mSelectionBounds[1], AlignmentSpan.Standard.class );
+			if(spans.length > 0){
+				Layout.Alignment a = spans[0].getAlignment();
+				setAlignmentButtonClicked( getAlignmentButtonId( a ) );
+			}
 		}
 
 		@Override
@@ -661,6 +686,8 @@ public class EntryEditor extends ThemeActivity {
 			btnUnderline.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
 			btnStrike.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
 			mSelectionBounds = new int[]{newSelectionPosition, newSelectionPosition};
+
+			setAlignmentButtonClicked( getAlignmentButtonId( mMainAlignment ) );
 		}
 
 		@Override
@@ -896,7 +923,6 @@ public class EntryEditor extends ThemeActivity {
 		s.setSpan( new ForegroundColorSpan( color ), selSt, selEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 	}
 
-	private int[] mSelectionBounds;
 	private final View.OnClickListener onClickOnSelectColorOfTextSegment = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
@@ -1029,7 +1055,7 @@ public class EntryEditor extends ThemeActivity {
 		mTextEditor.setBackgroundColor( mProperties.getBgColor() );
 		getWindow().getDecorView().setBackgroundColor( mProperties.getBgColor() );
 
-		ImageButton imageButton;
+		/*ImageButton imageButton;
 		if( mProperties.getTextAlignment() == Gravity.CENTER_HORIZONTAL)
 			imageButton = findViewById( R.id.btnAlignCenter );
 		else if( mProperties.getTextAlignment() == Gravity.START)
@@ -1037,7 +1063,7 @@ public class EntryEditor extends ThemeActivity {
 		else
 			imageButton = findViewById( R.id.btnAlignRight );
 
-		chooseTextAlignment( imageButton );
+		chooseTextAlignment( imageButton );*/
 	}
 
 	public void plusTextSize(View view){
@@ -1098,7 +1124,7 @@ public class EntryEditor extends ThemeActivity {
 			fr.write( Utils.xmlHeader + "<documents>\n</documents>" );
 			fr.flush();
 			fr.close();
-			mEntry.saveText( text, mProperties );
+			mEntry.saveText( text );
 			mEntry.setAndSaveInfo( new Info( (int) new Date().getTime() ) );
 			if(!mWithoutDoc) {
 				mEntry.addDocumentToIncluded( mDocument.getId() );
@@ -1140,36 +1166,70 @@ public class EntryEditor extends ThemeActivity {
 	}
 
 	public void chooseTextAlignment(View v){
+		Editable e = mTextEditor.getText();
+		if(e == null)
+			return;
+		if(mSelectionBounds[0] != mSelectionBounds[1]){
+			setGravityOfSegment( v.getId() );
+			return;
+		}
+		setAlignmentButtonClicked( v.getId() );
+
+		Layout.Alignment alignment = Layout.Alignment.ALIGN_NORMAL;
+		if(v.getId() == R.id.btnAlignCenter)
+			alignment = Layout.Alignment.ALIGN_CENTER;
+		else if(v.getId() == R.id.btnAlignRight)
+			alignment = Layout.Alignment.ALIGN_OPPOSITE;
+
+		mMainAlignment = alignment;
+
+		AlignmentSpan.Standard[] spans = e.getSpans( 0, e.length(), AlignmentSpan.Standard.class );
+		for(AlignmentSpan.Standard span : spans){
+			e.removeSpan( span );
+		}
+		e.setSpan( new AlignmentSpan.Standard( alignment ), 0, e.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+	}
+
+	private void setAlignmentButtonClicked(int id){
 		resetAlignmentButtons();
-		if(mDarkTheme)
+		View v = findViewById( id );
+		if(super.isDarkTheme)
 			v.setBackgroundTintList( ColorStateList.valueOf( getColor( R.color.gray ) ) );
 		else
 			v.setBackgroundTintList( ColorStateList.valueOf( getColor( R.color.btnClicked ) ) );
+	}
 
-		EditText editText = findViewById( R.id.edittextEntry );
-		if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ){
-			editText.setJustificationMode( Layout.JUSTIFICATION_MODE_NONE );
-		}
-		int alignment = Gravity.START;
-		if(v.getId() == R.id.btnAlignCenter){
-			alignment = Gravity.CENTER_HORIZONTAL;
-		}else if(v.getId() == R.id.btnAlignRight){
-			alignment = Gravity.END;
-		}else{
-			if(v.getId() == R.id.btnAlignJustify) {
-				if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ) {
-					editText.setJustificationMode( Layout.JUSTIFICATION_MODE_INTER_WORD );
-					editText.setGravity( Gravity.NO_GRAVITY );
-					editText.setTextAlignment( View.TEXT_ALIGNMENT_INHERIT );
-					alignment = Layout.JUSTIFICATION_MODE_INTER_WORD;
-					Toast.makeText( this, "Done", Toast.LENGTH_SHORT ).show();
-				}
+	private void setGravityOfSegment(int id){
+		Editable e = mTextEditor.getText();
+		if(e == null)
+			return;
+		Layout.Alignment alignment = Layout.Alignment.ALIGN_NORMAL;
+		if(id == R.id.btnAlignCenter)
+			alignment = Layout.Alignment.ALIGN_CENTER;
+		else if(id == R.id.btnAlignRight)
+			alignment = Layout.Alignment.ALIGN_OPPOSITE;
+
+		int selSt = mSelectionBounds[0];
+		int selEnd = mSelectionBounds[1];
+		AlignmentSpan.Standard[] spans = e.getSpans( mSelectionBounds[0], mSelectionBounds[1], AlignmentSpan.Standard.class );
+		ArrayList<SpanEntry> spansToApply = new ArrayList<>();
+		for(AlignmentSpan.Standard span : spans){
+			int st = e.getSpanStart( span );
+			int end = e.getSpanEnd( span );
+			if(st < selSt){
+				SpanEntry se = new SpanEntry( span, st, selSt );
+				spansToApply.add( se );
 			}
+			if(end > selEnd){
+				SpanEntry se = new SpanEntry( span, selEnd, end );
+				spansToApply.add(se);
+			}
+			e.removeSpan( span );
 		}
-		if(v.getId() != R.id.btnAlignJustify)
-			editText.setGravity( alignment );
-
-		mProperties.setTextAlignment( alignment );
+		for(SpanEntry se : spansToApply){
+			e.setSpan( se.getAlignmentSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+		}
+		e.setSpan( new AlignmentSpan.Standard( alignment ), selSt, selEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 	}
 
 	private void removeUnusedImages(){
@@ -1294,7 +1354,7 @@ public class EntryEditor extends ThemeActivity {
 				removeUnusedImages();
 				try {
 					mEntry.saveProperties( mProperties );
-					mEntry.saveText( mTextEditor.getText(), mProperties );
+					mEntry.saveText( mTextEditor.getText() );
 					setResult( Results.REOPEN, new Intent(  ).putExtra( "id", mEntry.getId() ) );
 				}catch (Exception ex){
 					ex.printStackTrace();
