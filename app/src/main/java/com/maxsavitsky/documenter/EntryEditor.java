@@ -44,6 +44,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -94,7 +95,7 @@ public class EntryEditor extends ThemeActivity {
 	private TextEditor mTextEditor;
 	private Button btnBgColorPicker, btnTextColorPicker;
 	private ImageButton btnBold, btnItalic, btnUnderline, btnStrike;
-	private BottomSheetBehavior mBottomSheetLayout;
+	private BottomSheetBehavior<View> mBottomSheetLayout;
 	private final ArrayList<ChangeEntry> mHistory = new ArrayList<>();
 	private int mHistoryIterator = -1;
 	private Menu mMenu;
@@ -408,10 +409,14 @@ public class EntryEditor extends ThemeActivity {
 	}
 
 	private void addColorToHistory(int color){
-		if(mColorHistory.size() == 5){
-			mColorHistory.remove( 0 );
-		}
+		if(mColorHistory.size() > 0 && mColorHistory.get( 0 ) == color)
+			return;
+		ArrayList<Integer> clone = new ArrayList<>(mColorHistory);
+		mColorHistory.clear();
 		mColorHistory.add( color );
+		for(int i = 0; i < Math.min(4, clone.size()); i++){
+			mColorHistory.add( clone.get( i ) );
+		}
 		saveColorHistory();
 	}
 
@@ -958,8 +963,8 @@ public class EntryEditor extends ThemeActivity {
 		}
 	};
 
-	private void initializeColorButtons(final View layout, final View.OnClickListener clickListener, final AlertDialog alertDialog){
-		int[] btnIds = new int[]{ R.id.btnColorHistory5, R.id.btnColorHistory4, R.id.btnColorHistory3, R.id.btnColorHistory2, R.id.btnColorHistory1 };
+	private void initializeColorButtons(final View layout, final View.OnClickListener clickListener){
+		int[] btnIds = new int[]{ R.id.btnColorHistory1, R.id.btnColorHistory2, R.id.btnColorHistory3, R.id.btnColorHistory4, R.id.btnColorHistory5 };
 		for(int i = 0; i < btnIds.length; i++){
 			int id = btnIds[i];
 			Button btn = layout.findViewById(id);
@@ -968,18 +973,27 @@ public class EntryEditor extends ThemeActivity {
 				btn.setVisibility( View.INVISIBLE );
 			}else{
 				btn.setBackgroundTintList( ColorStateList.valueOf( mColorHistory.get( i ) ) );
-				btn.setTag( mColorHistory.get( i ) );
+				btn.setTag( R.id.color_int_in_history, mColorHistory.get( i ) );
+				btn.setTag( R.id.color_pos_in_history, i );
 				btn.setOnClickListener( clickListener );
-				/*btn.setOnLongClickListener( new View.OnLongClickListener() {
+				btn.setOnLongClickListener( new View.OnLongClickListener() {
 					@Override
-					public boolean onLongClick(View v) {
-						int tag = (int) v.getTag(1);
-						mColorHistory.remove( tag );
-						alertDialog.cancel();
-						Toast.makeText( CreateEntry.this, "Entry was deleted from history", Toast.LENGTH_SHORT ).show();
+					public boolean onLongClick(final View v) {
+						PopupMenu popupMenu = new PopupMenu( EntryEditor.this, v );
+						popupMenu.getMenu().add( EntryEditor.this.getString( R.string.delete ) );
+						popupMenu.setOnMenuItemClickListener( new PopupMenu.OnMenuItemClickListener() {
+							@Override
+							public boolean onMenuItemClick(MenuItem item) {
+								mColorHistory.remove( (int) v.getTag(R.id.color_pos_in_history) );
+								saveColorHistory();
+								initializeColorButtons( (View) v.getParent(), clickListener );
+								return true;
+							}
+						} );
+						popupMenu.show();
 						return true;
 					}
-				} );*/
+				} );
 			}
 		}
 	}
@@ -1013,10 +1027,10 @@ public class EntryEditor extends ThemeActivity {
 				@Override
 				public void onClick(View v) {
 					alertDialog.cancel();
-					mSelectedColor = (int) v.getTag();
+					mSelectedColor = (int) v.getTag(R.id.color_int_in_history);
 					whatToDo.onClick(null);
 				}
-			}, alertDialog );
+			} );
 		}
 
 		return alertDialog;
