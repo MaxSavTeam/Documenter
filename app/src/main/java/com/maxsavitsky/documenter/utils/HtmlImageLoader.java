@@ -28,7 +28,9 @@ public class HtmlImageLoader implements Html.ImageGetter {
 		Display display = windowManager.getDefaultDisplay();
 		Point size = new Point();
 		display.getSize(size);
-		Bitmap b = BitmapFactory.decodeFile(path);
+		BitmapFactory.Options options = new BitmapFactory.Options();
+		options.inJustDecodeBounds = true;
+		Bitmap b = BitmapFactory.decodeFile(path, options);
 		if(b == null || !file.exists()) {
 			Drawable d = c.getDrawable( R.drawable.image_not_found_or_damaged );
 			int w = d.getIntrinsicWidth();
@@ -38,15 +40,15 @@ public class HtmlImageLoader implements Html.ImageGetter {
 			d.setBounds( 0, 0, w1, h1 );
 			return d;
 		}
-		Drawable d = new BitmapDrawable(b);
-		if(b.getWidth() > size.x){
-			int w = b.getWidth();
-			int h = b.getHeight();
+		Drawable d = new BitmapDrawable(c.getResources(), b);
+		if(options.outWidth > size.x){
+			int w = options.outWidth;
+			int h = options.outHeight;
 			int w1 = size.x;
 			int h1 = (w1 * h) / w;
 			d.setBounds( 0, 0, w1, h1 );
 		}else{
-			d.setBounds( 0, 0, b.getWidth(), b.getHeight() );
+			d.setBounds( 0, 0, options.outWidth, options.outHeight );
 		}
 
 		return d;

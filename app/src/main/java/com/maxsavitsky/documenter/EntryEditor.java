@@ -440,11 +440,11 @@ public class EntryEditor extends ThemeActivity {
 		public void loaded(final Spannable spannable, final String originalText) {
 			double seconds = (System.currentTimeMillis() - mStartLoadTextTime) / 1000.0;
 			Log.v( "TextLoader", "mOnLoadedTextListener.loaded called. Seconds = " + seconds );
-			setTextInEditor( originalText );
 
 			runOnUiThread( new Runnable() {
 				@Override
 				public void run() {
+					setTextInEditor( originalText );
 					mTextEditor.setScrollY( mProperties.getScrollPosition() );
 					mStartEditable = mTextEditor.getText();
 					mProgressDialogOnTextLoad.cancel();
@@ -575,25 +575,27 @@ public class EntryEditor extends ThemeActivity {
 		Editable e = mTextEditor.getText();
 		int s;
 		if(e == null) {
-			mTextEditor.setText( "\n \n" );
+			mTextEditor.setText( "\n " );
 			mSelectionBounds[0] = 0;
 			s = 0;
 			e = mTextEditor.getText();
 		}else{
 			s = mSelectionBounds[0];
-			e.insert( s, "\n \n" );
+			e.insert( s, "\n " );
 		}
-		Bitmap b = BitmapFactory.decodeFile( file.getPath() );
+		BitmapFactory.Options options = new BitmapFactory.Options();
+		options.inJustDecodeBounds = true;
+		Bitmap b = BitmapFactory.decodeFile( file.getPath(), options );
 		Point size = getScreenSize();
-		Drawable d = new BitmapDrawable(b);
-		if(b.getWidth() > size.x){
-			int w = b.getWidth();
-			int h = b.getHeight();
+		Drawable d = new BitmapDrawable(getResources(), b);
+		if(options.outWidth > size.x){
+			int w = options.outWidth;
+			int h = options.outHeight;
 			int w1 = size.x;
 			int h1 = (w1 * h) / w;
 			d.setBounds( 0, 0, w1, h1 );
 		}else{
-			d.setBounds( 0, 0, b.getWidth(), b.getHeight() );
+			d.setBounds( 0, 0, options.outWidth, options.outHeight );
 		}
 		ImageSpan imageSpan = new ImageSpan(d, file.getPath());
 
@@ -687,7 +689,14 @@ public class EntryEditor extends ThemeActivity {
 			btnStrike.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
 			mSelectionBounds = new int[]{newSelectionPosition, newSelectionPosition};
 
-			setAlignmentButtonClicked( getAlignmentButtonId( mMainAlignment ) );
+			if(mTextEditor.getText() != null && mTextEditor.getText().getSpans( newSelectionPosition, newSelectionPosition, AlignmentSpan.Standard.class ).length > 0)
+				setAlignmentButtonClicked(
+						getAlignmentButtonId(
+								mTextEditor.getText().getSpans( newSelectionPosition, newSelectionPosition, AlignmentSpan.Standard.class )[0].getAlignment()
+						)
+				);
+			else
+				setAlignmentButtonClicked( getAlignmentButtonId( mMainAlignment ) );
 		}
 
 		@Override
