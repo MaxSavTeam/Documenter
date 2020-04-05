@@ -40,10 +40,10 @@ android {
         applicationId "com.maxsavitsky.documenter"
         minSdkVersion 23
         targetSdkVersion 29
-        versionCode 25
+        versionCode 26
 
         verCode = versionCode
-        cleanVersionName = "1.2.0" + ".$versionCode" + (code != -1 ? "." + code.toString() : "")
+        cleanVersionName = "1.3.0" + ".$versionCode" + (code != -1 ? "." + code.toString() : "")
 
         versionName cleanVersionName + "+${formatDate("yyyyMMddHHmm")}"
         buildConfigField "String", "COMPILATION_DATE", "\"${getDate()}\""
