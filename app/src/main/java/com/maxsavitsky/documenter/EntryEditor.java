@@ -1,6 +1,7 @@
 package com.maxsavitsky.documenter;
 
 import android.Manifest;
+import android.animation.Animator;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -15,6 +16,7 @@ import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -28,6 +30,7 @@ import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.AbsoluteSizeSpan;
 import android.text.style.AlignmentSpan;
+import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.ImageSpan;
 import android.text.style.StrikethroughSpan;
@@ -93,7 +96,7 @@ public class EntryEditor extends ThemeActivity {
 	private String title = "Create new entry";
 	private Entry.Properties mProperties;
 	private TextEditor mTextEditor;
-	private Button btnBgColorPicker, btnTextColorPicker;
+	private Button btnBgColorPicker, btnTextColorPicker, btnTextBackgroundColorPicker;
 	private ImageButton btnBold, btnItalic, btnUnderline, btnStrike;
 	private BottomSheetBehavior<View> mBottomSheetLayout;
 	private final ArrayList<ChangeEntry> mHistory = new ArrayList<>();
@@ -288,6 +291,7 @@ public class EntryEditor extends ThemeActivity {
 
 		btnBgColorPicker = findViewById( R.id.btnBgColorPicker );
 		btnTextColorPicker = findViewById( R.id.btnTextColorPicker );
+		btnTextBackgroundColorPicker = findViewById(R.id.btnTextBackgroundColorPicker);
 
 		btnBold = findViewById( R.id.btnBold );
 		btnItalic = findViewById( R.id.btnItalic );
@@ -657,6 +661,7 @@ public class EntryEditor extends ThemeActivity {
 			Editable s = mTextEditor.getText();
 			if(s == null)
 				return;
+			mTextEditor.clearComposingText();
 			ForegroundColorSpan[] foregroundColorSpans = s.getSpans( start, end, ForegroundColorSpan.class );
 			int c;
 			if(foregroundColorSpans.length != 0){
@@ -667,12 +672,98 @@ public class EntryEditor extends ThemeActivity {
 			mSelectionBounds = new int[]{start, end};
 			btnTextColorPicker.setBackgroundTintList( ColorStateList.valueOf( c ) );
 			btnTextColorPicker.setOnClickListener( onClickOnSelectColorOfTextSegment );
-			btnBgColorPicker.setOnClickListener( btnBgColorPickerDefaultClickListener );
+			final BackgroundColorSpan[] backgroundColorSpans = s.getSpans( start, end, BackgroundColorSpan.class );
+			final int editTextColor = (( ColorDrawable ) mTextEditor.getBackground()).getColor();
+			final int color = (backgroundColorSpans.length == 0 ? editTextColor : backgroundColorSpans[0].getBackgroundColor());
+			btnTextBackgroundColorPicker.setBackgroundTintList( ColorStateList.valueOf( color ) );
+			btnTextBackgroundColorPicker.setOnClickListener( new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					View.OnClickListener listener = new View.OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							Editable e = mTextEditor.getText();
+							if(e == null)
+								return;
+							int selSt = mSelectionBounds[0];
+							int selEnd = mSelectionBounds[1];
+							ArrayList<SpanEntry> arrayList = new ArrayList<>();
+							for(BackgroundColorSpan span : e.getSpans( selSt, selEnd, BackgroundColorSpan.class )){
+								int st = e.getSpanStart( span );
+								int end = e.getSpanEnd( span );
+								if(st < selSt){
+									arrayList.add( new SpanEntry( new BackgroundColorSpan( span.getBackgroundColor() ), st, selSt ) );
+								}
+								if(end > selEnd){
+									arrayList.add( new SpanEntry( new BackgroundColorSpan( span.getBackgroundColor() ), selEnd, end ) );
+								}
+								e.removeSpan( span );
+							}
+							for(SpanEntry se : arrayList){
+								e.setSpan( se.getBackgroundColorSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+							}
+							e.setSpan( new BackgroundColorSpan( mSelectedColor ), selSt, selEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+							btnTextBackgroundColorPicker.setBackgroundTintList( ColorStateList.valueOf( mSelectedColor ) );
+						}
+					};
+					AlertDialog alertDialog = getColorPickerDialog( R.string.choose_text_background_of_segment, color, listener );
+					if(backgroundColorSpans.length > 0){
+						alertDialog.setButton( AlertDialog.BUTTON_NEUTRAL, getString( R.string.delete ), new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								Editable e = mTextEditor.getText();
+								if(e == null)
+									return;
+								int selSt = mSelectionBounds[0];
+								int selEnd = mSelectionBounds[1];
+								ArrayList<SpanEntry> arrayList = new ArrayList<>();
+								for(BackgroundColorSpan span : e.getSpans( selSt, selEnd, BackgroundColorSpan.class )){
+									int st = e.getSpanStart( span );
+									int end = e.getSpanEnd( span );
+									if(st < selSt){
+										arrayList.add( new SpanEntry( span, st, selSt ) );
+									}
+									if(end > selEnd){
+										arrayList.add( new SpanEntry( span, selEnd, end ) );
+									}
+									e.removeSpan( span );
+								}
+								for(SpanEntry se : arrayList){
+									e.setSpan( se.getBackgroundColorSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+								}
+								btnTextBackgroundColorPicker.setBackgroundTintList( ColorStateList.valueOf( editTextColor ) );
+							}
+						} );
+					}
+					alertDialog.show();
+				}
+			} );
 			applyStyleBtnState( start, end );
 			btnBold.setOnClickListener(onTextAppearanceClick);
 			btnItalic.setOnClickListener(onTextAppearanceClick);
 			btnUnderline.setOnClickListener( onUnderlineBtnClick );
 			btnStrike.setOnClickListener( onStrikeBtnClick );
+			findViewById( R.id.textBackgroundLayout ).animate().scaleY( 1 ).setDuration( 500 ).setListener( new Animator.AnimatorListener() {
+				@Override
+				public void onAnimationStart(Animator animation) {
+					findViewById( R.id.textBackgroundLayout ).setVisibility( View.VISIBLE );
+				}
+
+				@Override
+				public void onAnimationEnd(Animator animation) {
+
+				}
+
+				@Override
+				public void onAnimationCancel(Animator animation) {
+
+				}
+
+				@Override
+				public void onAnimationRepeat(Animator animation) {
+
+				}
+			} ).start();
 
 			AlignmentSpan.Standard[] spans = s.getSpans( mSelectionBounds[0], mSelectionBounds[1], AlignmentSpan.Standard.class );
 			if(spans.length > 0){
@@ -694,6 +785,27 @@ public class EntryEditor extends ThemeActivity {
 			btnUnderline.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
 			btnStrike.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
 			mSelectionBounds = new int[]{newSelectionPosition, newSelectionPosition};
+			findViewById( R.id.textBackgroundLayout ).animate().scaleY( 0 ).setDuration( 500 ).setListener( new Animator.AnimatorListener()     {
+				@Override
+				public void onAnimationStart(Animator animation) {
+
+				}
+
+				@Override
+				public void onAnimationEnd(Animator animation) {
+					findViewById( R.id.textBackgroundLayout ).setVisibility( View.GONE );
+				}
+
+				@Override
+				public void onAnimationCancel(Animator animation) {
+
+				}
+
+				@Override
+				public void onAnimationRepeat(Animator animation) {
+
+				}
+			} ).start();
 
 			if(mTextEditor.getText() != null && mTextEditor.getText().getSpans( newSelectionPosition, newSelectionPosition, AlignmentSpan.Standard.class ).length > 0)
 				setAlignmentButtonClicked(
@@ -904,7 +1016,6 @@ public class EntryEditor extends ThemeActivity {
 				@Override
 				public void onClick(View v) {
 					btnBgColorPicker.setBackgroundTintList( ColorStateList.valueOf( mSelectedColor ) );
-					//btnBgColorPicker.setBackground( getDrawable( R.drawable.btn_picker_borders ) );
 					mTextEditor.setBackgroundColor( mSelectedColor );
 					getWindow().getDecorView().setBackgroundColor( mSelectedColor );
 					mProperties.setBgColor( mSelectedColor );

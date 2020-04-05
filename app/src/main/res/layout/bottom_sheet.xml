@@ -5,13 +5,13 @@
     android:id="@+id/bottom_sheet"
     android:layout_width="match_parent"
     android:layout_height="250dp"
+    android:layout_marginStart="5dp"
+    android:layout_marginEnd="5dp"
     android:background="?attr/bottom_sheet_style"
     android:orientation="vertical"
     app:behavior_hideable="false"
     app:behavior_peekHeight="@dimen/peekHeight"
-    app:layout_behavior="@string/bottom_sheet_behavior"
-    android:layout_marginStart="5dp"
-    android:layout_marginEnd="5dp">
+    app:layout_behavior="@string/bottom_sheet_behavior">
 
     <LinearLayout
         android:id="@+id/layoutBottomSheetCeil"
@@ -40,10 +40,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -170,60 +170,61 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
                 android:layout_marginBottom="@dimen/btn_style_margin_top_bottom"
-                android:gravity="center">
+                android:gravity="center"
+                android:orientation="vertical">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="?attr/textColor"
+                    android:layout_marginBottom="5dp"
                     android:text="@string/font"
-                    android:textSize="18sp"
-                    android:layout_marginBottom="5dp"/>
+                    android:textColor="?attr/textColor"
+                    android:textSize="18sp" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="horizontal"
-                    android:gravity="center">
-                    <ImageButton
-                        android:layout_width="@dimen/btn_text_style_width"
-                        android:layout_height="@dimen/btn_text_style_width"
-                        android:id="@+id/btnBold"
-                        android:scaleType="centerInside"
-                        android:backgroundTint="@android:color/transparent"
-                        android:src="?attr/bold_button_src"
-                        tools:ignore="ContentDescription"
-                        android:layout_marginEnd="5dp"/>
+                    android:gravity="center"
+                    android:orientation="horizontal">
 
                     <ImageButton
+                        android:id="@+id/btnBold"
                         android:layout_width="@dimen/btn_text_style_width"
                         android:layout_height="@dimen/btn_text_style_width"
+                        android:layout_marginEnd="5dp"
+                        android:backgroundTint="@android:color/transparent"
+                        android:scaleType="centerInside"
+                        android:src="?attr/bold_button_src"
+                        tools:ignore="ContentDescription" />
+
+                    <ImageButton
                         android:id="@+id/btnItalic"
+                        android:layout_width="@dimen/btn_text_style_width"
+                        android:layout_height="@dimen/btn_text_style_width"
+                        android:layout_marginEnd="5dp"
+                        android:backgroundTint="@android:color/transparent"
                         android:scaleType="centerInside"
                         android:src="?attr/italic_button_src"
-                        android:backgroundTint="@android:color/transparent"
-                        tools:ignore="ContentDescription"
-                        android:layout_marginEnd="5dp"/>
+                        tools:ignore="ContentDescription" />
 
                     <ImageButton
-                        android:layout_width="@dimen/btn_text_style_width"
-                        android:layout_height="@dimen/btn_text_style_width"
                         android:id="@+id/btnUnderline"
-                        android:scaleType="centerInside"
-                        android:backgroundTint="@android:color/transparent"
-                        android:src="?attr/underline_button_src"
-                        tools:ignore="ContentDescription"/>
-
-                    <ImageButton
                         android:layout_width="@dimen/btn_text_style_width"
                         android:layout_height="@dimen/btn_text_style_width"
-                        android:id="@+id/btnStrike"
-                        android:scaleType="centerInside"
                         android:backgroundTint="@android:color/transparent"
+                        android:scaleType="centerInside"
+                        android:src="?attr/underline_button_src"
+                        tools:ignore="ContentDescription" />
+
+                    <ImageButton
+                        android:id="@+id/btnStrike"
+                        android:layout_width="@dimen/btn_text_style_width"
+                        android:layout_height="@dimen/btn_text_style_width"
+                        android:backgroundTint="@android:color/transparent"
+                        android:scaleType="centerInside"
                         android:src="?attr/strike_button_src"
-                        tools:ignore="ContentDescription"/>
+                        tools:ignore="ContentDescription" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -240,7 +241,7 @@
                     android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/textView3"
+                        android:id="@+id/txtBackgroundColor"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:gravity="center"
@@ -296,17 +297,50 @@
                 </LinearLayout>
 
             </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/textBackgroundLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/txtTextBackgroundColor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/text_background_color"
+                    android:textColor="?textColor"
+                    android:textSize="18sp" />
+
+                <LinearLayout
+                    android:layout_width="@dimen/backLayoutWidth"
+                    android:layout_height="@dimen/backLayoutWidth"
+                    android:background="?textColor"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btnTextBackgroundColorPicker"
+                        android:layout_width="@dimen/bgColorPickerWidth"
+                        android:layout_height="@dimen/bgColorPickerWidth"
+                        android:backgroundTint="@color/black" />
+                </LinearLayout>
+            </LinearLayout>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal">
+
                 <Button
+                    style="@style/Widget.AppCompat.Button.Borderless"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:onClick="pickImages"
-                    android:textColor="?textColor"
                     android:text="@string/pick_images"
-                    style="@style/Widget.AppCompat.Button.Borderless" />
+                    android:textColor="?textColor" />
             </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

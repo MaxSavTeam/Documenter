@@ -125,4 +125,7 @@
     <string name="need_to_restart_app">Need to restart app</string>
     <string name="edit_name">Edit name</string>
     <string name="version">Version</string>
+    <string name="text_background_color">Text background color</string>
+    <string name="choose_text_background_of_segment">Select the background color of the selected text</string>
+    <string name="delete_applied_styles">Delete applied styles</string>
 </resources>

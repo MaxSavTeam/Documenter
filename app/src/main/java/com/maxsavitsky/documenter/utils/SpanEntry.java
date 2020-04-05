@@ -1,6 +1,7 @@
 package com.maxsavitsky.documenter.utils;
 
 import android.text.style.AlignmentSpan;
+import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StrikethroughSpan;
 import android.text.style.StyleSpan;
@@ -12,8 +13,15 @@ public class SpanEntry {
 	private UnderlineSpan mUnderlineSpan;
 	private StrikethroughSpan mStrikethroughSpan;
 	private AlignmentSpan.Standard mAlignmentSpan;
+	private BackgroundColorSpan mBackgroundColorSpan;
 	private final int st;
 	private final int end;
+
+	public SpanEntry(BackgroundColorSpan backgroundColorSpan, int st, int end) {
+		mBackgroundColorSpan = backgroundColorSpan;
+		this.st = st;
+		this.end = end;
+	}
 
 	public SpanEntry(AlignmentSpan.Standard alignmentSpan, int st, int end) {
 		mAlignmentSpan = alignmentSpan;
@@ -63,6 +71,10 @@ public class SpanEntry {
 
 	public AlignmentSpan.Standard getAlignmentSpan() {
 		return mAlignmentSpan;
+	}
+
+	public BackgroundColorSpan getBackgroundColorSpan() {
+		return mBackgroundColorSpan;
 	}
 
 	public int getStart() {

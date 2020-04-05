@@ -118,4 +118,7 @@
     <string name="need_to_restart_app">Необходимо перезапустить приложение</string>
     <string name="edit_name">Изменить имя</string>
     <string name="version">Версия</string>
+    <string name="text_background_color">Цвет фона текста</string>
+    <string name="choose_text_background_of_segment">Выберите цвет фона выбранного текста</string>
+    <string name="delete_applied_styles">Удалить приминённые стили</string>
 </resources>
