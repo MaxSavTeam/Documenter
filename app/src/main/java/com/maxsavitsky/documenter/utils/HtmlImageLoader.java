@@ -10,6 +10,7 @@ import android.text.Html;
 import android.view.Display;
 import android.view.WindowManager;
 
+import com.maxsavitsky.documenter.MyExceptionHandler;
 import com.maxsavitsky.documenter.R;
 
 import java.io.File;
@@ -30,7 +31,8 @@ public class HtmlImageLoader implements Html.ImageGetter {
 		display.getSize(size);
 		BitmapFactory.Options options = new BitmapFactory.Options();
 		options.inJustDecodeBounds = true;
-		Bitmap b = BitmapFactory.decodeFile(path, options);
+		BitmapFactory.decodeFile(path, options); // just get original sizes
+		Bitmap b = BitmapFactory.decodeFile( path );
 		if(b == null || !file.exists()) {
 			Drawable d = c.getDrawable( R.drawable.image_not_found_or_damaged );
 			int w = d.getIntrinsicWidth();
@@ -38,6 +40,13 @@ public class HtmlImageLoader implements Html.ImageGetter {
 			int w1 = size.x;
 			int h1 = (w1 * h) / w;
 			d.setBounds( 0, 0, w1, h1 );
+			String msg = "";
+			if(b == null)
+				msg += "bitmap render error\n";
+			if(!file.exists()){
+				msg += "file not found\n";
+			}
+			new MyExceptionHandler( null ).justWriteException( Thread.currentThread(), new Throwable(msg) );
 			return d;
 		}
 		Drawable d = new BitmapDrawable(c.getResources(), b);

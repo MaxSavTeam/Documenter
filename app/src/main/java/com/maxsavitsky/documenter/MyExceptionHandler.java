@@ -20,7 +20,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-class MyExceptionHandler implements Thread.UncaughtExceptionHandler {
+public class MyExceptionHandler implements Thread.UncaughtExceptionHandler {
 	private final Activity mActivity;
 	private File mStackTraceFile;
 
@@ -30,7 +30,7 @@ class MyExceptionHandler implements Thread.UncaughtExceptionHandler {
 
 	@Override
 	public void uncaughtException(@NonNull Thread t, @NonNull Throwable e) {
-		prepareStacktrace( t, e );
+		prepareStacktrace( t, e, false );
 
 		Intent intent = new Intent( mActivity, MainActivity.class );
 		intent.putExtra( "crash", true ).putExtra( "path", mStackTraceFile.getPath() );
@@ -46,7 +46,11 @@ class MyExceptionHandler implements Thread.UncaughtExceptionHandler {
 		System.exit( 2 );
 	}
 
-	private void prepareStacktrace(Thread t, Throwable e) {
+	public void justWriteException(Thread t, Throwable tr){
+		prepareStacktrace( t, tr, true );
+	}
+
+	private void prepareStacktrace(Thread t, Throwable e, boolean calledManually) {
 		e.printStackTrace();
 		PackageInfo mPackageInfo = null;
 		try {
@@ -63,13 +67,15 @@ class MyExceptionHandler implements Thread.UncaughtExceptionHandler {
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat( "dd.MM.yyyy HH:mm:ss", Locale.ROOT );
 		SimpleDateFormat fileFormatter = new SimpleDateFormat( "dd-MM-yyyy_HH:mm:ss", Locale.ROOT );
 		String formattedDate = fileFormatter.format( date );
-		file = new File( file.getPath() + "/stacktrace-" + formattedDate + ".txt" );
+		file = new File( file.getPath() + "/stacktrace-" + formattedDate + (calledManually ? "-m" : "") + ".txt" );
 
 		try {
 			file.createNewFile();
 		} catch (IOException ignored) {
 		}
 		StringBuilder report = new StringBuilder();
+		if(calledManually)
+			report.append( "CALLED MANUALLY\n" );
 		report.append( "Time: " ).append( simpleDateFormat.format( date ) ).append( "\n" )
 				.append( "Thread name: " ).append( t.getName() ).append( "\n" )
 				.append( "Thread id: " ).append( t.getId() ).append( "\n" )

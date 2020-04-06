@@ -567,6 +567,9 @@ public class EntryEditor extends ThemeActivity {
 					setImageAtSelBounds( file );
 				} catch (IOException | NullPointerException e) {
 					e.printStackTrace();
+					Utils.getErrorDialog( e, this ).show();
+					Toast.makeText( this, "Picture could be damaged.\n" +
+														"We recommend deleting and re-adding.", Toast.LENGTH_LONG ).show();
 				}
 			}
 		}
