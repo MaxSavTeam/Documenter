@@ -74,6 +74,8 @@ import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.widget.TextEditor;
 import com.maxsavitsky.documenter.xml.XMLParser;
 
+import org.xml.sax.SAXException;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -91,11 +93,11 @@ import static com.maxsavitsky.documenter.codes.Requests.*;
 
 public class EntryEditor extends ThemeActivity {
 	private Document mDocument;
-	private String type;
+	private String type, mOriginalText;
 	private Entry mEntry;
 	private String mId;
 	private String title = "Create new entry";
-	private Entry.Properties mProperties;
+	private Entry.Properties mStartProperties;
 	private TextEditor mTextEditor;
 	private Button btnBgColorPicker, btnTextColorPicker, btnTextBackgroundColorPicker;
 	private ImageButton btnBold, btnItalic, btnUnderline, btnStrike;
@@ -144,41 +146,48 @@ public class EntryEditor extends ThemeActivity {
 			_finishActivity();
 			return;
 		}
-		String t = mTextEditor.getText().toString();
-		if ( !t.isEmpty() &&
-				( !type.equals( "edit" )
-						|| !mProperties.equals( mEntry.getProperties() )
-						|| !mStartEditable.equals( mTextEditor.getEditableText() )
-				)
-		) {
-			AlertDialog.Builder builder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
-					.setTitle( R.string.confirmation )
-					.setMessage( R.string.create_entry_exit_mes ).setCancelable( false )
-					.setNegativeButton( R.string.cancel, new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							dialog.cancel();
-						}
-					} )
-					.setPositiveButton( R.string.yes, new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							setResult( Results.OK );
-							_finishActivity();
-						}
-					} ).setNeutralButton( R.string.save_and_exit, new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							dialog.cancel();
-							saveEntry();
-						}
-					} );
+		String t = "";
+		if(mTextEditor.getText() != null){
+			t = Html.toHtml( mTextEditor.getText() );
+		}
+		boolean firstCondition = type.equals( "create" )
+				&& mTextEditor.getText() != null;
 
-			builder.create().show();
+		boolean secondCondition = type.equals( "edit" )
+				&& (!t.equals( mOriginalText ) || !mStartProperties.equals( mEntry.getProperties() ) );
+		if ( firstCondition || secondCondition ) {
+			showExitAlertDialog();
 		} else {
 			setResult( Results.OK );
 			_finishActivity();
 		}
+	}
+
+	private void showExitAlertDialog(){
+		AlertDialog.Builder builder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
+				.setTitle( R.string.confirmation )
+				.setMessage( R.string.create_entry_exit_mes ).setCancelable( false )
+				.setNegativeButton( R.string.cancel, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.cancel();
+					}
+				} )
+				.setPositiveButton( R.string.yes, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						setResult( Results.OK );
+						_finishActivity();
+					}
+				} ).setNeutralButton( R.string.save_and_exit, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.cancel();
+						saveEntry();
+					}
+				} );
+
+		builder.create().show();
 	}
 
 	@Override
@@ -300,21 +309,21 @@ public class EntryEditor extends ThemeActivity {
 		btnStrike = findViewById( R.id.btnStrike );
 
 		type = getIntent().getStringExtra( "type" );
-		mProperties = new Entry.Properties();
 		mTextEditor = findViewById( R.id.edittextEntry );
 		mTextEditor.setListener( mOnSelectionChanges );
 		if ( type != null && type.equals( "edit" ) ) {
 			mEntry = MainData.getEntryWithId( getIntent().getStringExtra( "id" ) );
 			try {
-				mProperties = XMLParser.newInstance().parseEntryProperties( mEntry.getId() );
-			}catch (Exception e){
+				mEntry.readProperties();
+			}catch (IOException | SAXException e){
 				Utils.getErrorDialog( e, this ).show();
+				return;
 			}
 			mId = mEntry.getId();
-			mEntry.setProperties( new Entry.Properties( mProperties ) );
-			mDefaultTextColor = mProperties.getDefaultTextColor();
+			mStartProperties = new Entry.Properties( mEntry.getProperties() );
+			mDefaultTextColor = mEntry.getProperties().getDefaultTextColor();
 			mTextEditor.setTextColor( mDefaultTextColor );
-			getWindow().getDecorView().setBackgroundColor( mProperties.getBgColor() );
+			getWindow().getDecorView().setBackgroundColor( mEntry.getProperties().getBgColor() );
 			title = getResources().getString( R.string.edit_entry );
 
 			try {
@@ -379,6 +388,13 @@ public class EntryEditor extends ThemeActivity {
 		setEditTextSize();
 		FloatingActionButton fab = findViewById( R.id.fabSaveEntry );
 		fab.setOnClickListener( saveEntry );
+		fab.setOnLongClickListener( new View.OnLongClickListener() {
+			@Override
+			public boolean onLongClick(View v) {
+				Toast.makeText( EntryEditor.this, "id: " + mId, Toast.LENGTH_SHORT ).show();
+				return true;
+			}
+		} );
 		Utils.showKeyboard( mTextEditor, this );
 
 		View llBottomSheet = findViewById( R.id.bottom_sheet );
@@ -444,12 +460,13 @@ public class EntryEditor extends ThemeActivity {
 		public void loaded(final Spannable spannable, final String originalText) {
 			double seconds = (System.currentTimeMillis() - mStartLoadTextTime) / 1000.0;
 			Log.v( "TextLoader", "mOnLoadedTextListener.loaded called. Seconds = " + seconds );
+			mOriginalText = originalText;
 
 			runOnUiThread( new Runnable() {
 				@Override
 				public void run() {
 					setTextInEditor( originalText );
-					mTextEditor.setScrollY( mProperties.getScrollPosition() );
+					mTextEditor.setScrollY( mEntry.getProperties().getScrollPosition() );
 					mStartEditable = mTextEditor.getText();
 					mProgressDialogOnTextLoad.cancel();
 					final double end = System.currentTimeMillis();
@@ -517,7 +534,7 @@ public class EntryEditor extends ThemeActivity {
 			return;
 		}
 		Intent picker = new Intent(Intent.ACTION_GET_CONTENT);
-		picker.setType( "image/jpeg" );
+		picker.setType( "image/*" );
 		startActivityForResult( picker, PICK_IMAGE );
 	}
 
@@ -527,7 +544,6 @@ public class EntryEditor extends ThemeActivity {
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-		super.onActivityResult( requestCode, resultCode, data );
 		if(requestCode == PICK_IMAGE){
 			if(resultCode == Activity.RESULT_OK){
 				if(data == null){
@@ -542,12 +558,18 @@ public class EntryEditor extends ThemeActivity {
 				InputStream in;
 				try {
 					in = getContentResolver().openInputStream( uri );
-					if(in == null){
+					String type = getContentResolver().getType(uri);
+					if(in == null || type == null) {
 						Toast.makeText( this, "Some problems with reading", Toast.LENGTH_SHORT ).show();
 						return;
 					}
 					File file = Utils.getEntryImagesMediaFolder( mId );
-					file = new File(file.getPath() + "/" + Utils.generateUniqueId() + ".jpg");
+					file = new File(file.getPath() + "/" + Utils.generateUniqueId());
+					if(type.equals( "image/png" )){
+						file = new File( file.getPath() + ".png" );
+					}else if(type.equals( "image/jpeg" )){
+						file = new File(file.getPath() + ".jpg");
+					}
 					if(!MainData.isExists( mId ))
 						mMediaToMove.add( file );
 					FileOutputStream fos = new FileOutputStream(file);
@@ -568,6 +590,7 @@ public class EntryEditor extends ThemeActivity {
 				}
 			}
 		}
+		super.onActivityResult( requestCode, resultCode, data );
 	}
 
 	private Point getScreenSize(){
@@ -1016,10 +1039,10 @@ public class EntryEditor extends ThemeActivity {
 					btnBgColorPicker.setBackgroundTintList( ColorStateList.valueOf( mSelectedColor ) );
 					mTextEditor.setBackgroundColor( mSelectedColor );
 					getWindow().getDecorView().setBackgroundColor( mSelectedColor );
-					mProperties.setBgColor( mSelectedColor );
+					mEntry.getProperties().setBgColor( mSelectedColor );
 				}
 			};
-			AlertDialog alertDialog = getColorPickerDialog( R.string.set_background_color, mProperties.getBgColor(), whatToDo );
+			AlertDialog alertDialog = getColorPickerDialog( R.string.set_background_color, mEntry.getProperties().getBgColor(), whatToDo );
 			alertDialog.show();
 		}
 	};
@@ -1170,7 +1193,7 @@ public class EntryEditor extends ThemeActivity {
 							mTextEditor.setTextColor( mSelectedColor );
 
 							mDefaultTextColor = mSelectedColor;
-							mProperties.setDefaultTextColor( mSelectedColor );
+							mEntry.getProperties().setDefaultTextColor( mSelectedColor );
 						}
 					} );
 			alertDialog.show();
@@ -1184,31 +1207,31 @@ public class EntryEditor extends ThemeActivity {
 		setBtnTextColorPickerBackground();
 		btnTextColorPicker.setOnClickListener( btnTextOnAllColor );
 
-		btnBgColorPicker.setBackgroundTintList( ColorStateList.valueOf( mProperties.getBgColor() ) );
-		mTextEditor.setBackgroundColor( mProperties.getBgColor() );
-		getWindow().getDecorView().setBackgroundColor( mProperties.getBgColor() );
+		btnBgColorPicker.setBackgroundTintList( ColorStateList.valueOf( mEntry.getProperties().getBgColor() ) );
+		mTextEditor.setBackgroundColor( mEntry.getProperties().getBgColor() );
+		getWindow().getDecorView().setBackgroundColor( mEntry.getProperties().getBgColor() );
 	}
 
 	public void plusTextSize(View view){
-		if( mProperties.textSize < 45)
-			mProperties.textSize++;
+		if( mEntry.getProperties().textSize < 45)
+			mEntry.getProperties().textSize++;
 		setEditTextSize();
 	}
 
 	public void minusTextSize(View view){
-		if( mProperties.textSize > 15)
-			mProperties.textSize--;
+		if( mEntry.getProperties().textSize > 15)
+			mEntry.getProperties().textSize--;
 		setEditTextSize();
 	}
 
 	private void setEditTextSize(){
 		TextView t = findViewById( R.id.textViewTextSize );
-		t.setText( String.format( Locale.ROOT, "%d", mProperties.textSize ) );
+		t.setText( String.format( Locale.ROOT, "%d", mEntry.getProperties().textSize ) );
 		Editable e = mTextEditor.getText();
 		if(e == null)
 			return;
 
-		AbsoluteSizeSpan absoluteSizeSpan = new AbsoluteSizeSpan( mProperties.getTextSize(), true );
+		AbsoluteSizeSpan absoluteSizeSpan = new AbsoluteSizeSpan( mEntry.getProperties().getTextSize(), true );
 		AbsoluteSizeSpan[] spans = e.getSpans( 0, e.length(), AbsoluteSizeSpan.class );
 		for(AbsoluteSizeSpan span : spans){
 			e.removeSpan( span );
@@ -1227,7 +1250,7 @@ public class EntryEditor extends ThemeActivity {
 		if(!file.exists())
 			file.mkdirs();
 		try {
-			mEntry.setProperties( mProperties );
+			mEntry.setProperties( mEntry.getProperties() );
 			mEntry.saveProperties();
 		}catch (Exception e){
 			Utils.getErrorDialog( e, this ).show();
@@ -1476,7 +1499,7 @@ public class EntryEditor extends ThemeActivity {
 			if(text.length() != 0){
 				removeUnusedImages();
 				try {
-					mEntry.saveProperties( mProperties );
+					mEntry.saveProperties( mEntry.getProperties() );
 					mEntry.saveText( mTextEditor.getText() );
 					setResult( Results.REOPEN, new Intent(  ).putExtra( "id", mEntry.getId() ) );
 				}catch (Exception ex){

@@ -16,6 +16,7 @@ import com.maxsavitsky.documenter.utils.SpanEntry;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.XMLParser;
 
+import org.jetbrains.annotations.NotNull;
 import org.xml.sax.SAXException;
 
 import java.io.BufferedReader;
@@ -355,8 +356,8 @@ public class Entry extends Type {
 			this.textSize = properties.getTextSize();
 			this.bgColor = properties.getBgColor();
 			this.textColor = properties.getTextColor();
-			mScrollPosition = properties.getScrollPosition();
-			mTextAlignment = properties.getTextAlignment();
+			this.mScrollPosition = properties.getScrollPosition();
+			this.mTextAlignment = properties.getTextAlignment();
 			this.mSaveLastPos = properties.isSaveLastPos();
 			this.mDefaultTextColor = properties.getDefaultTextColor();
 		}
@@ -399,31 +400,10 @@ public class Entry extends Type {
 
 		@Override
 		public boolean equals(Object o) {
-			if ( this == o ) {
-				return true;
-			}
-			if ( o == null || getClass() != o.getClass() ) {
+			if(o == null || getClass() != o.getClass())
 				return false;
-			}
 
-			Properties that = (Properties) o;
-
-			if ( textSize != that.textSize ) {
-				return false;
-			}
-			if ( bgColor != that.bgColor ) {
-				return false;
-			}
-			if ( textColor != that.textColor ) {
-				return false;
-			}
-			if ( mScrollPosition != that.mScrollPosition ) {
-				return false;
-			}
-			if ( mTextAlignment != that.mTextAlignment ) {
-				return false;
-			}
-			return mSaveLastPos == that.mSaveLastPos;
+			return ((Properties) o).toString().equals( this.toString() );
 		}
 
 		@Override
@@ -434,16 +414,22 @@ public class Entry extends Type {
 			result = 31 * result + mScrollPosition;
 			result = 31 * result + mTextAlignment;
 			result = 31 * result + ( mSaveLastPos ? 1 : 0 );
+			result = 31 * result + mDefaultTextColor;
 			return result;
 		}
 
-		@NonNull
+		@NotNull
 		@Override
 		public String toString() {
-			return bgColor + "\n" +
-					textColor + "\n" +
-					textSize + "\n" +
-					mScrollPosition;
+			return "Properties{" +
+					"textSize=" + textSize +
+					", bgColor=" + bgColor +
+					", textColor=" + textColor +
+					", mScrollPosition=" + mScrollPosition +
+					", mTextAlignment=" + mTextAlignment +
+					", mSaveLastPos=" + mSaveLastPos +
+					", mDefaultTextColor=" + mDefaultTextColor +
+					'}';
 		}
 	}
 }

@@ -45,7 +45,7 @@ public class Utils {
 
 	public static void setContext(Context context) {
 		sContext = context;
-		externalStoragePath = context.getExternalFilesDir( null );
+		externalStoragePath = context.getApplicationContext().getExternalFilesDir( null );
 	}
 
 	public static File getExternalStoragePath() {
