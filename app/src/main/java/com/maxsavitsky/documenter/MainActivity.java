@@ -19,6 +19,7 @@ import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.utils.Utils;
+import com.rollbar.android.Rollbar;
 
 import java.io.File;
 import java.io.FileReader;
@@ -31,6 +32,7 @@ public class MainActivity extends ThemeActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		Rollbar.init(this);
 		Thread.setDefaultUncaughtExceptionHandler( new MyExceptionHandler( this ) );
 		try {
 			Toolbar toolbar = findViewById( R.id.toolbar );

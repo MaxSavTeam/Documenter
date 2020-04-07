@@ -82,6 +82,9 @@
         <meta-data
             android:name="firebase_performance_logcat_enabled"
             android:value="true" />
+
+        <meta-data android:name="com.rollbar.android.ACCESS_TOKEN"
+            android:value="77063d5610734aaeabbe0a34e23313dc" />
     </application>
 
 </manifest>
