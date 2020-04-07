@@ -81,6 +81,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -399,15 +400,9 @@ public class EntryEditor extends ThemeActivity {
 	private void readColorHistory(){
 		String history = sp.getString( "color_history", null );
 		if(history != null){
-			int i = 0;
-			while(i < history.length()){
-				String entry = "";
-				while(history.charAt( i ) != ';'){
-					entry = String.format( "%s%c", entry, history.charAt( i ) );
-					i++;
-				}
-				mColorHistory.add( Integer.parseInt( entry ) );
-				i++;
+			String[] strings = history.split( ";" );
+			for(String str : strings){
+				mColorHistory.add( Integer.parseInt( str ) );
 			}
 		}
 	}
