@@ -17,35 +17,23 @@ public class UpdatesChecker {
 		private int mVersionCode;
 		private String mVersionName;
 		private String mDownloadUrl;
+		private int mUpdateSize;
 
-		public VersionInfo(int versionCode, String versionName, String downloadUrl) {
+		public VersionInfo(int versionCode, String versionName, String downloadUrl, int updateSize) {
 			mVersionCode = versionCode;
 			mVersionName = versionName;
 			mDownloadUrl = downloadUrl;
+			mUpdateSize = updateSize;
 		}
 
 		public static VersionInfo parseInfo(String data){
-			int i = 0;
-			int versionCode = 0;
-			while(data.charAt( i ) != ';'){
-				versionCode *= 10;
-				versionCode += Integer.parseInt( String.valueOf( data.charAt( i ) ) );
-				i++;
-			}
-			i++;
-			String downloadUrl = "";
-			while(data.charAt( i ) != ';'){
-				downloadUrl = String.format( "%s%c", downloadUrl, data.charAt( i ) );
-				i++;
-			}
-			i++;
-			String versionName = "";
-			while(data.charAt( i ) != ';'){
-				versionName = String.format( "%s%c", versionCode, data.charAt( i ) );
-				i++;
-			}
+			String[] strings = data.split( ";" );
+			int versionCode = Integer.parseInt( strings[0] );
+			String downloadUrl = strings[1];
+			String versionName = strings[2];
+			int size = Integer.parseInt( strings[3] );
 
-			return new VersionInfo( versionCode, versionName, downloadUrl );
+			return new VersionInfo( versionCode, versionName, downloadUrl, size );
 		}
 
 		public int getVersionCode() {
@@ -71,6 +59,14 @@ public class UpdatesChecker {
 		public void setDownloadUrl(String downloadUrl) {
 			mDownloadUrl = downloadUrl;
 		}
+
+		public int getUpdateSize() {
+			return mUpdateSize;
+		}
+
+		public void setUpdateSize(int updateSize) {
+			mUpdateSize = updateSize;
+		}
 	}
 
 	private final Context mContext;
@@ -81,6 +77,7 @@ public class UpdatesChecker {
 		void noUpdates(VersionInfo versionInfo);
 		void updateAvailable(VersionInfo versionInfo);
 		void downloaded(File path, VersionInfo versionInfo);
+		void onDownloadProgress(int bytesCount, int totalBytesCount);
 		void exceptionOccurred(IOException e);
 	}
 
@@ -106,7 +103,7 @@ public class UpdatesChecker {
 		InputStream inputStream = null;
 		try {
 			String data = "";
-			url = new URL( mContext.getResources().getString( R.string.resources_url ) + "/apk/documenter/version" );
+			url = new URL( mContext.getResources().getString( R.string.resources_url ) + "/apk/documenter/versiont" ); // TODO: 07.04.2020
 			inputStream = url.openConnection().getInputStream();
 			int b = inputStream.read();
 			while ( b != -1 && !mThread.isInterrupted() ) {

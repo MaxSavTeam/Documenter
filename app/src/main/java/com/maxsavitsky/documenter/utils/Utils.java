@@ -12,6 +12,7 @@ import android.widget.EditText;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 
+import com.maxsavitsky.documenter.MyExceptionHandler;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Category;
@@ -340,7 +341,10 @@ public class Utils {
 		return msg;
 	}
 
-	public static AlertDialog getErrorDialog(Exception e, Context context) {
+	public static AlertDialog getErrorDialog(Exception e, Context context, boolean silentWriteToFile) {
+		if(silentWriteToFile)
+			new MyExceptionHandler( null ).justWriteException( Thread.currentThread(), e );
+
 		e.printStackTrace();
 		AlertDialog.Builder builder = new AlertDialog.Builder( context ).setTitle( "Error stacktrace" );
 		builder.setMessage( Html.fromHtml( "<b>Stacktrace:</b><br><br>" + getExceptionStackTrace( e ) + "<br><br>" + e.getClass().getName() + ": " + e.getMessage() ) )
@@ -352,6 +356,10 @@ public class Utils {
 				} ).setCancelable( false );
 
 		return builder.create();
+	}
+
+	public static AlertDialog getErrorDialog(Exception e, Context context){
+		return getErrorDialog( e, context, true );
 	}
 
 	public static AlertDialog getErrorDialog(Throwable t, Context context) {

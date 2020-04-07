@@ -239,6 +239,18 @@ public class CategoryList extends ThemeActivity {
 		public void exceptionOccurred(IOException e) {
 
 		}
+
+		@Override
+		public void onDownloadProgress(final int bytesCount, final int totalBytesCount) {
+			runOnUiThread( new Runnable() {
+				@Override
+				public void run() {
+					mDownloadPd.setIndeterminate( false );
+					mDownloadPd.setMax( 100 );
+					mDownloadPd.setProgress( bytesCount * 100 / totalBytesCount );
+				}
+			} );
+		}
 	};
 
 
@@ -248,8 +260,10 @@ public class CategoryList extends ThemeActivity {
 	private void download(UpdatesChecker.VersionInfo versionInfo){
 		final UpdatesDownloader downloader = new UpdatesDownloader( versionInfo, mCheckResults );
 		mDownloadPd = new ProgressDialog(this);
-		mDownloadPd.setMessage( "Downloading..." );
+		mDownloadPd.setMessage( getString( R.string.downloading ) );
 		mDownloadPd.setCancelable( false );
+		mDownloadPd.setProgressStyle( ProgressDialog.STYLE_HORIZONTAL );
+		mDownloadPd.setIndeterminate( true );
 		mDownloadPd.setButton( ProgressDialog.BUTTON_NEGATIVE, getResources().getString( R.string.cancel ), new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(final DialogInterface dialog, int which) {

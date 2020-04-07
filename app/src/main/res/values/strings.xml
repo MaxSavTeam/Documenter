@@ -128,4 +128,5 @@
     <string name="text_background_color">Text background color</string>
     <string name="choose_text_background_of_segment">Select the background color of the selected text</string>
     <string name="delete_applied_styles">Delete applied styles</string>
+    <string name="downloading">Downloading…</string>
 </resources>

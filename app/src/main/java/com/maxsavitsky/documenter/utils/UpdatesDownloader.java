@@ -40,7 +40,10 @@ public class UpdatesDownloader {
 			os = new FileOutputStream( file );
 			byte[] buffer = new byte[ 1024 ];
 			int count;
+			int allCount = 0;
 			while ( ( count = in.read( buffer, 0, 1024 ) ) != -1 ) {
+				allCount += count;
+				mCheckResults.onDownloadProgress( allCount, mVersionInfo.getUpdateSize() );
 				os.write( buffer, 0, count );
 				if(Thread.currentThread().isInterrupted()){
 					in.close();

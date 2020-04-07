@@ -246,6 +246,18 @@ public class SettingsActivity extends ThemeActivity {
 		}
 
 		@Override
+		public void onDownloadProgress(final int bytesCount, final int totalBytesCount) {
+			runOnUiThread( new Runnable() {
+				@Override
+				public void run() {
+					mDownloadPd.setIndeterminate( false );
+					mDownloadPd.setMax( 100 );
+					mDownloadPd.setProgress( bytesCount * 100 / totalBytesCount );
+				}
+			} );
+		}
+
+		@Override
 		public void exceptionOccurred(final IOException e) {
 			runOnUiThread( new Runnable() {
 				@Override
@@ -296,8 +308,10 @@ public class SettingsActivity extends ThemeActivity {
 		mMemoryAccessGranted = false;
 		final UpdatesDownloader downloader = new UpdatesDownloader( versionInfo, mCheckResults );
 		mDownloadPd = new ProgressDialog( SettingsActivity.this );
-		mDownloadPd.setMessage( "Downloading..." );
+		mDownloadPd.setProgressStyle( ProgressDialog.STYLE_HORIZONTAL );
+		mDownloadPd.setMessage( getString( R.string.downloading ) );
 		mDownloadPd.setCancelable( false );
+		mDownloadPd.setIndeterminate( true );
 		mDownloadPd.setButton( ProgressDialog.BUTTON_NEGATIVE, getResources().getString( R.string.cancel ), new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(final DialogInterface dialog, int which) {
