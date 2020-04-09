@@ -40,6 +40,10 @@ public class Entry extends Type {
 
 	public Properties getProperties(){
 		if(mProperties == null) {
+			if(mId.equals( "temp_entry" )){
+				mProperties = new Properties();
+				return mProperties;
+			}
 			try {
 				return readProperties();
 			} catch (IOException | SAXException e) {
@@ -106,7 +110,7 @@ public class Entry extends Type {
 		return mPathDir;
 	}
 
-	public void saveText(Spannable text) throws Exception {
+	public void saveText(Spannable text) throws IOException {
 		File file = new File( mPathDir + "text" );
 		if(!file.exists())
 			file.createNewFile();
@@ -301,7 +305,7 @@ public class Entry extends Type {
 		fr.write( Utils.xmlHeader );
 		fr.append( "<documents>\n" );
 		for(Document document : documents){
-			fr.append( "<document id=\"" + document.getId() + "\" />\n" );
+			fr.append( "<document id=\"" ).append( document.getId() ).append( "\" />\n" );
 		}
 		fr.append( "</documents>" );
 		fr.flush();
@@ -315,7 +319,8 @@ public class Entry extends Type {
 	}
 
 	public static class Properties {
-		public int textSize;
+		private int textSize = 22;
+
 		private int bgColor = Color.WHITE;
 
 		private int textColor = Color.BLACK;

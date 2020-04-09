@@ -88,6 +88,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 
 import static com.maxsavitsky.documenter.codes.Requests.*;
 
@@ -311,7 +312,12 @@ public class EntryEditor extends ThemeActivity {
 		type = getIntent().getStringExtra( "type" );
 		mTextEditor = findViewById( R.id.edittextEntry );
 		mTextEditor.setListener( mOnSelectionChanges );
-		if ( type != null && type.equals( "edit" ) ) {
+		if(type == null){
+			Toast.makeText( this, getString(R.string.something_gone_wrong), Toast.LENGTH_SHORT ).show();
+			_finishActivity();
+			return;
+		}
+		if ( type.equals( "edit" ) ) {
 			mEntry = MainData.getEntryWithId( getIntent().getStringExtra( "id" ) );
 			try {
 				mEntry.readProperties();
@@ -360,6 +366,7 @@ public class EntryEditor extends ThemeActivity {
 			mWithoutDoc = getIntent().getBooleanExtra( "without_doc", false );
 			if(!mWithoutDoc)
 				mDocument = MainData.getDocumentWithId( getIntent().getStringExtra( "id" ) );
+			mEntry = new Entry( "temp_entry", "" );
 			mId = Utils.generateUniqueId() + "_ent";
 			hideUpButton();
 		}
@@ -468,6 +475,7 @@ public class EntryEditor extends ThemeActivity {
 					setTextInEditor( originalText );
 					mTextEditor.setScrollY( mEntry.getProperties().getScrollPosition() );
 					mStartEditable = mTextEditor.getText();
+					setEditTextSize();
 					mProgressDialogOnTextLoad.cancel();
 					final double end = System.currentTimeMillis();
 					final double seconds = (end - mStartLoadTextTime) / 1000;
@@ -843,11 +851,13 @@ public class EntryEditor extends ThemeActivity {
 			Editable e = mTextEditor.getText();
 			if(lengthAfter > lengthBefore){
 				int len = lengthAfter - lengthBefore;
+				int end = start + len;
 				if(e == null)
 					return;
 
-				e.setSpan( new ForegroundColorSpan( mDefaultTextColor ), start, start + len - 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-				e.setSpan( new AlignmentSpan.Standard( mMainAlignment ), start, start + len - 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+				e.setSpan( new ForegroundColorSpan( mDefaultTextColor ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+				e.setSpan( new AlignmentSpan.Standard( mMainAlignment ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+				e.setSpan( new AbsoluteSizeSpan( mEntry.getProperties().getTextSize(), true ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 			}
 		}
 	};
@@ -1213,20 +1223,22 @@ public class EntryEditor extends ThemeActivity {
 	}
 
 	public void plusTextSize(View view){
-		if( mEntry.getProperties().textSize < 45)
-			mEntry.getProperties().textSize++;
+		int ts = mEntry.getProperties().getTextSize();
+		if( ts < 45)
+			mEntry.getProperties().setTextSize( ts + 1 );
 		setEditTextSize();
 	}
 
 	public void minusTextSize(View view){
-		if( mEntry.getProperties().textSize > 15)
-			mEntry.getProperties().textSize--;
+		int ts = mEntry.getProperties().getTextSize();
+		if( ts > 15 )
+			mEntry.getProperties().setTextSize( ts - 1 );
 		setEditTextSize();
 	}
 
 	private void setEditTextSize(){
 		TextView t = findViewById( R.id.textViewTextSize );
-		t.setText( String.format( Locale.ROOT, "%d", mEntry.getProperties().textSize ) );
+		t.setText( String.format( Locale.ROOT, "%d", mEntry.getProperties().getTextSize() ) );
 		Editable e = mTextEditor.getText();
 		if(e == null)
 			return;
@@ -1241,6 +1253,7 @@ public class EntryEditor extends ThemeActivity {
 
 	private void createEntry(String name, Spannable text){
 		mTextEditor.clearComposingText();
+		Entry.Properties props = mEntry.getProperties();
 		mEntry = new Entry( mId, name );
 		ArrayList<Entry> entries = MainData.getEntriesList();
 		entries.add( mEntry );
@@ -1250,9 +1263,9 @@ public class EntryEditor extends ThemeActivity {
 		if(!file.exists())
 			file.mkdirs();
 		try {
-			mEntry.setProperties( mEntry.getProperties() );
+			mEntry.setProperties( props );
 			mEntry.saveProperties();
-		}catch (Exception e){
+		}catch (IOException e){
 			Utils.getErrorDialog( e, this ).show();
 			return;
 		}
@@ -1266,19 +1279,16 @@ public class EntryEditor extends ThemeActivity {
 			copyTempFiles();
 			replaceTempImagesInSpans();
 			removeUnusedImages();
-			FileWriter fr = new FileWriter( file, false );
-			fr.write( Utils.xmlHeader + "<documents>\n</documents>" );
-			fr.flush();
-			fr.close();
+			mEntry.saveInWhichDocumentsIncludedThisEntry( new ArrayList<Document>() );
 			mEntry.saveText( text );
-			mEntry.setAndSaveInfo( new Info( (int) new Date().getTime() ) );
+			mEntry.setAndSaveInfo( new Info( (int) System.currentTimeMillis() ) );
 			if(!mWithoutDoc) {
 				mEntry.addDocumentToIncluded( mDocument.getId() );
 				mDocument.addEntry( mEntry );
 			}
 			setResult( Results.REOPEN, new Intent().putExtra( "id", mId ) );
 			finish();
-		}catch (Exception e){
+		}catch (IOException | SAXException e){
 			Utils.getErrorDialog( e, this ).show();
 			e.printStackTrace();
 		}

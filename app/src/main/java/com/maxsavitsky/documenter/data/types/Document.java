@@ -99,7 +99,7 @@ public class Document extends Type implements Comparable{
 		return mEntries;
 	}
 
-	public void addEntry(Entry entry) throws Exception{
+	public void addEntry(Entry entry) throws IOException, SAXException {
 		mEntries = XMLParser.newInstance().parseDocumentWithId( id );
 		mEntries.add(entry);
 		Utils.saveDocumentEntries( id, mEntries );
