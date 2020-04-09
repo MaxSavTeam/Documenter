@@ -122,4 +122,8 @@
     <string name="choose_text_background_of_segment">Выберите цвет фона выбранного текста</string>
     <string name="delete_applied_styles">Удалить приминённые стили</string>
     <string name="downloading">Скачивание…</string>
+    <string name="resend_verification_email">Отправить письмо повторно</string>
+    <string name="account_not_verified_label">Ваша учётная запись не подтверждена.\n
+Мы отправили Вам письмо с инструкцией по подтверждению учётной записи.\n
+Если Вы подтвердили почту и это надпись не исчезла, перезапустите приложение.</string>
 </resources>

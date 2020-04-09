@@ -122,9 +122,6 @@ public class SettingsActivity extends ThemeActivity {
 			@Override
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 				sp.edit().putBoolean( "check_updates", isChecked ).apply();
-				if ( !isChecked ) {
-					Toast.makeText( SettingsActivity.this, ":(", Toast.LENGTH_SHORT ).show();
-				}
 			}
 		} );
 		Switch swKeepScreenOn = findViewById( R.id.swKeepScreenOn );
@@ -137,16 +134,26 @@ public class SettingsActivity extends ThemeActivity {
 		} );
 
 		mAuth = FirebaseAuth.getInstance();
+		if(mAuth.getCurrentUser() != null)
+			mAuth.getCurrentUser().reload();
 		updateUserUi( mAuth.getCurrentUser() );
 	}
 
 	private void updateUserUi(FirebaseUser user) {
 		if ( user == null ) {
 			findViewById( R.id.layout_authorised_backup ).setVisibility( View.GONE );
+			findViewById( R.id.layout_email_not_verified ).setVisibility( View.GONE );
 			findViewById( R.id.layout_not_authorised_backup ).setVisibility( View.VISIBLE );
 		} else {
-			findViewById( R.id.layout_authorised_backup ).setVisibility( View.VISIBLE );
-			findViewById( R.id.layout_not_authorised_backup ).setVisibility( View.GONE );
+			if(user.isEmailVerified()) {
+				findViewById( R.id.layout_authorised_backup ).setVisibility( View.VISIBLE );
+				findViewById( R.id.layout_not_authorised_backup ).setVisibility( View.GONE );
+				findViewById( R.id.layout_email_not_verified ).setVisibility( View.GONE );
+			}else{
+				findViewById( R.id.layout_authorised_backup ).setVisibility( View.GONE );
+				findViewById( R.id.layout_not_authorised_backup ).setVisibility( View.GONE );
+				findViewById( R.id.layout_email_not_verified ).setVisibility( View.VISIBLE );
+			}
 		}
 	}
 
@@ -157,7 +164,7 @@ public class SettingsActivity extends ThemeActivity {
 							.build(),
 
 					Requests.SIGN_IN );
-		} else if ( v.getId() == R.id.btnSignOut ) {
+		} else if ( v.getId() == R.id.btnSignOut || v.getId() == R.id.btnSignOutVer ) {
 			AuthUI.getInstance().signOut( this )
 					.addOnCompleteListener( new OnCompleteListener<Void>() {
 						@Override
@@ -165,6 +172,19 @@ public class SettingsActivity extends ThemeActivity {
 							updateUserUi( mAuth.getCurrentUser() );
 						}
 					} );
+		}else if(v.getId() == R.id.btnSendVerification){
+			FirebaseUser user = mAuth.getCurrentUser();
+			if(user != null) {
+				user.sendEmailVerification()
+						.addOnCompleteListener( new OnCompleteListener<Void>() {
+							@Override
+							public void onComplete(@NonNull Task<Void> task) {
+								if(task.isSuccessful()){
+									Toast.makeText( SettingsActivity.this, "Email sent", Toast.LENGTH_SHORT ).show();
+								}
+							}
+						} );
+			}
 		}
 	}
 
@@ -178,6 +198,9 @@ public class SettingsActivity extends ThemeActivity {
 		super.onActivityResult( requestCode, resultCode, data );
 		if ( requestCode == Requests.SIGN_IN ) {
 			updateUserUi( mAuth.getCurrentUser() );
+			if(mAuth.getCurrentUser() != null && !mAuth.getCurrentUser().isEmailVerified()){
+				mAuth.getCurrentUser().sendEmailVerification();
+			}
 		}
 		if(resultCode == Results.RESTART_APP){
 			setResult( resultCode );
