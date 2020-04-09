@@ -132,4 +132,5 @@
     <string name="resend_verification_email">Send verification email again</string>
     <string name="account_not_verified_label">Your account is not verified.\n We have sent you an email with instructions for verifying your account.\n If you have confirmed the mail and this message has not disappeared, restart the application.</string>
     <string name="restoring_please_donot_close_app"><![CDATA[Restoring…<br>Please do not close the application.]]></string>
+    <string name="logged_in">Logged in</string>
 </resources>

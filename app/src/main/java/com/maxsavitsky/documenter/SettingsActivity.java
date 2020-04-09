@@ -146,6 +146,7 @@ public class SettingsActivity extends ThemeActivity {
 			findViewById( R.id.layout_authorised_backup ).setVisibility( View.GONE );
 			findViewById( R.id.layout_email_not_verified ).setVisibility( View.GONE );
 			findViewById( R.id.layout_not_authorised_backup ).setVisibility( View.VISIBLE );
+			findViewById( R.id.lblLoggedIn ).setVisibility( View.GONE );
 		} else {
 			if(user.isEmailVerified()) {
 				findViewById( R.id.layout_authorised_backup ).setVisibility( View.VISIBLE );
@@ -156,6 +157,9 @@ public class SettingsActivity extends ThemeActivity {
 				findViewById( R.id.layout_not_authorised_backup ).setVisibility( View.GONE );
 				findViewById( R.id.layout_email_not_verified ).setVisibility( View.VISIBLE );
 			}
+			TextView textViewLoggedIn = findViewById(R.id.lblLoggedIn);
+			textViewLoggedIn.setVisibility( View.VISIBLE );
+			textViewLoggedIn.setText( String.format( "%s %s", getString(R.string.logged_in), user.getEmail() ) );
 		}
 	}
 
