@@ -29,7 +29,7 @@ public class CloudBackupInstruments {
 		void exceptionOccurred(Exception e);
 	}
 
-	public static void createBackup(final CloudInterface cloudInterface) throws IOException {
+	public static void createBackup(final BackupInterface cloudInterface) throws IOException {
 		final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 		if ( user == null ) {
 			return;
@@ -39,7 +39,7 @@ public class CloudBackupInstruments {
 			file.createNewFile();
 		}
 
-		BackupInstruments.createBackupToFile( file );
+		BackupInstruments.createBackupToFile( file, null );
 
 		StorageReference storageRef = FirebaseStorage.getInstance().getReference();
 
@@ -76,7 +76,7 @@ public class CloudBackupInstruments {
 				} );
 	}
 
-	public static void restoreFromBackup(final CloudInterface cloudInterface) throws IOException {
+	public static void restoreFromBackup(final BackupInterface cloudInterface) throws IOException {
 		final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 		if ( user == null ) {
 			return;
@@ -92,7 +92,7 @@ public class CloudBackupInstruments {
 					@Override
 					public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
 						try {
-							BackupInstruments.restoreFromBackup( file );
+							BackupInstruments.restoreFromBackup( file, null );
 							cloudInterface.successfully( 0 );
 						} catch (IOException e) {
 							e.printStackTrace();

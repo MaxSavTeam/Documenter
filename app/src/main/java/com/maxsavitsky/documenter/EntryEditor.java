@@ -1506,8 +1506,8 @@ public class EntryEditor extends ThemeActivity {
 				mTextEditor.requestFocus();
 			}
 		}else if(type.equals( "edit" )){
+			removeUnusedImages();
 			if(text.length() != 0){
-				removeUnusedImages();
 				try {
 					mEntry.saveProperties( mEntry.getProperties() );
 					mEntry.saveText( mTextEditor.getText() );

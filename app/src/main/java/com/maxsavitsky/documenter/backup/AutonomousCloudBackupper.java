@@ -82,7 +82,7 @@ public class AutonomousCloudBackupper {
 				.setOngoing( true )
 				.setProgress( 0, 0, true );
 
-		final CloudBackupInstruments.CloudInterface cloudInterface = new CloudBackupInstruments.CloudInterface() {
+		final BackupInterface backupInterface = new BackupInterface() {
 			@Override
 			public void successfully(long timeOfCreation) {
 				manager.cancelAll();
@@ -115,10 +115,10 @@ public class AutonomousCloudBackupper {
 			@Override
 			public void run() {
 				try {
-					CloudBackupInstruments.createBackup( cloudInterface );
+					CloudBackupInstruments.createBackup( backupInterface );
 				} catch (IOException e) {
 					e.printStackTrace();
-					cloudInterface.exceptionOccurred( e );
+					backupInterface.exceptionOccurred( e );
 				}
 			}
 		} ).start();

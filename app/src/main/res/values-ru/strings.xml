@@ -109,7 +109,7 @@
 
     <string name="creating">Создание…</string>
     <string name="restore">Восстановить</string>
-    <string name="creating_backup">Создание резервной копии…</string>
+    <string name="creating_backup"><![CDATA[Создание резервной копии…<br><br>Скорость создания зависит от количества категорий, документов, записей, а также от количества и размера картинок.]]></string>
     <string name="backup_error">Ошибка резервного копирования</string>
     <string name="never">никогда</string>
     <string name="free_entries">Свободные записи</string>
@@ -126,4 +126,5 @@
     <string name="account_not_verified_label">Ваша учётная запись не подтверждена.\n
 Мы отправили Вам письмо с инструкцией по подтверждению учётной записи.\n
 Если Вы подтвердили почту и это надпись не исчезла, перезапустите приложение.</string>
+    <string name="restoring_please_donot_close_app"><![CDATA[Восстанавливаем…<br>Пожалуйста, не закрывайте приложение.]]></string>
 </resources>

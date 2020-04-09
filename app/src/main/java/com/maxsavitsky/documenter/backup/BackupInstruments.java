@@ -1,8 +1,12 @@
 package com.maxsavitsky.documenter.backup;
 
 import android.os.Environment;
+import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+
+import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.utils.Utils;
@@ -17,8 +21,9 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 public class BackupInstruments {
+	private static final String THIS_TAG = MainActivity.TAG + " BInstruments";
 
-	public static void restoreFromBackup(File backupFile) throws IOException {
+	public static void restoreFromBackup(File backupFile, @Nullable BackupInterface backupInterface) throws IOException {
 		File[] files = Utils.getExternalStoragePath().listFiles();
 		for (File child : files) {
 			if(child.getName().endsWith( ".zip" ))
@@ -50,13 +55,17 @@ public class BackupInstruments {
 		}
 		zis.closeEntry();
 		zis.close();
+		if(backupInterface != null)
+			backupInterface.successfully( System.currentTimeMillis() );
 	}
 
-	public static void createBackupToFile(File path) throws IOException {
+	public static void createBackupToFile(File path, @Nullable BackupInterface backupInterface) throws IOException {
+		long startTime = System.currentTimeMillis();
+		Utils.removeAllUnusedImages();
 		File dir = Utils.getExternalStoragePath();
 		path.createNewFile();
 		ZipOutputStream zipOutputStream = new ZipOutputStream( new FileOutputStream( path ) );
-		zipOutputStream.setLevel( 9 );
+		zipOutputStream.setLevel( 0 );
 
 		if ( dir == null || dir.listFiles() == null ) {
 			zipOutputStream.close();
@@ -67,13 +76,18 @@ public class BackupInstruments {
 				myPack( file, file.getName(), zipOutputStream );
 		}
 		zipOutputStream.close();
+
+		long end = System.currentTimeMillis();
+		Log.i( THIS_TAG, "packed in " + ((end - startTime) / 1000) + "s" );
+		if(backupInterface != null)
+			backupInterface.successfully( System.currentTimeMillis() );
 	}
 
 	private static void myPack(File path, String fileName, ZipOutputStream out) throws IOException {
 		if ( path.isHidden() ) {
 			return;
 		}
-
+		Log.i( THIS_TAG, "packing " + (path.getPath().replace( Utils.getExternalStoragePath().getPath(), "" )) + " size: " + (path.length() / 1024) + "KB" );
 		if ( path.isDirectory() ) {
 			if ( fileName.endsWith( "/" ) ) {
 				out.putNextEntry( new ZipEntry( fileName ) );

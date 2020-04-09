@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.text.Html;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CompoundButton;
@@ -29,6 +30,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.maxsavitsky.documenter.backup.BackupInstruments;
+import com.maxsavitsky.documenter.backup.BackupInterface;
 import com.maxsavitsky.documenter.backup.CloudBackupInstruments;
 import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.utils.ApkInstaller;
@@ -358,20 +360,60 @@ public class SettingsActivity extends ThemeActivity {
 	}
 
 	private void unpack() {
-		File file = new File( Environment.getExternalStorageDirectory().getPath() + "/documenter_backup.zip" );
+		final File file = new File( Environment.getExternalStorageDirectory().getPath() + "/documenter_backup.zip" );
 		if ( !file.exists() ) {
 			Toast.makeText( this, R.string.file_not_found, Toast.LENGTH_SHORT ).show();
 			return;
 		}
-		try {
-			BackupInstruments.restoreFromBackup( file );
+		final ProgressDialog pd = new ProgressDialog( this );
+		pd.setMessage( Html.fromHtml( getString(R.string.restoring_please_donot_close_app) ) );
+		pd.setCancelable( false );
+		final BackupInterface backupInterface = new BackupInterface() {
+			@Override
+			public void successfully(long timeOfCreation) {
+				runOnUiThread( new Runnable() {
+					@Override
+					public void run() {
+						pd.dismiss();
+					}
+				} );
+				setResult( Results.RESTART_APP );
+				finish();
+			}
 
-			setResult( Results.RESTART_APP );
-			finish();
-		} catch (IOException e) {
-			e.printStackTrace();
-			Utils.getErrorDialog( e, this ).show();
-		}
+			@Override
+			public void failed() {
+				runOnUiThread( new Runnable() {
+					@Override
+					public void run() {
+						pd.dismiss();
+						Toast.makeText( SettingsActivity.this, R.string.something_gone_wrong, Toast.LENGTH_SHORT ).show();
+					}
+				} );
+			}
+
+			@Override
+			public void exceptionOccurred(final Exception e) {
+				runOnUiThread( new Runnable() {
+					@Override
+					public void run() {
+						Utils.getErrorDialog( e, SettingsActivity.this ).show();
+					}
+				} );
+			}
+		};
+		pd.show();
+		new Thread( new Runnable() {
+			@Override
+			public void run() {
+				try {
+					BackupInstruments.restoreFromBackup( file, backupInterface );
+				} catch (IOException e) {
+					e.printStackTrace();
+					backupInterface.exceptionOccurred( e );
+				}
+			}
+		} ).start();
 	}
 
 	public void initialUnpack(View v) {
@@ -412,17 +454,56 @@ public class SettingsActivity extends ThemeActivity {
 	}
 
 	private void createMyBackup() {
-		File outputFile = new File( Environment.getExternalStorageDirectory().getPath() + "/documenter_backup.zip" );
-		try {
-			outputFile.createNewFile();
+		final File outputFile = new File( Environment.getExternalStorageDirectory().getPath() + "/documenter_backup.zip" );
+		final ProgressDialog pd = new ProgressDialog( this );
+		pd.setMessage( Html.fromHtml( getString(R.string.creating_backup) ) );
+		pd.setCancelable( false );
+		final BackupInterface backupInterface = new BackupInterface() {
+			@Override
+			public void successfully(long timeOfCreation) {
+				runOnUiThread( new Runnable() {
+					@Override
+					public void run() {
+						pd.dismiss();
+						Toast.makeText( SettingsActivity.this, R.string.successfully, Toast.LENGTH_SHORT ).show();
+					}
+				} );
+			}
 
-			BackupInstruments.createBackupToFile( outputFile );
+			@Override
+			public void failed() {
+				runOnUiThread( new Runnable() {
+					@Override
+					public void run() {
+						pd.dismiss();
+						Toast.makeText( SettingsActivity.this, R.string.something_gone_wrong, Toast.LENGTH_SHORT ).show();
+					}
+				} );
+			}
 
-			Toast.makeText( this, R.string.successfully, Toast.LENGTH_SHORT ).show();
-		} catch (IOException e) {
-			e.printStackTrace();
-			Utils.getErrorDialog( e, this ).show();
-		}
+			@Override
+			public void exceptionOccurred(final Exception e) {
+				runOnUiThread( new Runnable() {
+					@Override
+					public void run() {
+						pd.dismiss();
+						Utils.getErrorDialog( e, SettingsActivity.this ).show();
+					}
+				} );
+			}
+		};
+		pd.show();
+		new Thread( new Runnable() {
+			@Override
+			public void run() {
+				try {
+					BackupInstruments.createBackupToFile( outputFile, backupInterface );
+				} catch (IOException e) {
+					e.printStackTrace();
+					backupInterface.exceptionOccurred( e );
+				}
+			}
+		} ).start();
 	}
 
 	@Override

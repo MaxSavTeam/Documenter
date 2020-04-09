@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.text.Html;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -12,6 +13,7 @@ import android.widget.EditText;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 
+import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.MyExceptionHandler;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.data.MainData;
@@ -39,6 +41,7 @@ public class Utils {
 
 	public static final String xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 	public static final String htmlHeader = "<!DOCTYPE html>\n";
+	private static final String THIS_TAG = MainActivity.TAG + " Utils";
 
 	public static Context getContext() {
 		return sContext;
@@ -51,6 +54,19 @@ public class Utils {
 
 	public static File getExternalStoragePath() {
 		return externalStoragePath;
+	}
+
+	/**
+	 * This functions checks all entries and all images and removes unused images in this entries
+	 * */
+	public static void removeAllUnusedImages(){
+		Log.i(THIS_TAG, "removing all unused images");
+		for(Entry entry : MainData.getEntriesList()){
+			ArrayList<String> r = entry.removeUnusedImages();
+			for(String s : r){
+				Log.i(THIS_TAG, "removed " + s);
+			}
+		}
 	}
 
 	/**

@@ -5,7 +5,9 @@ import android.text.Html;
 import android.text.Layout;
 import android.text.Layout.Alignment;
 import android.text.Spannable;
+import android.text.Spanned;
 import android.text.style.AlignmentSpan;
+import android.text.style.ImageSpan;
 import android.view.Gravity;
 
 import androidx.annotation.NonNull;
@@ -28,7 +30,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 public class Entry extends Type {
 
@@ -198,6 +202,33 @@ public class Entry extends Type {
 				.append( "</properties>" );
 		fw.flush();
 		fw.close();
+	}
+
+	public ArrayList<String> removeUnusedImages(){
+		ArrayList<String > removed = new ArrayList<>();
+		try{
+			Spanned spanned = Html.fromHtml( loadText() );
+			ImageSpan[] spans = spanned.getSpans( 0, spanned.length(), ImageSpan.class );
+			Map<String, Boolean> used = new HashMap<>();
+			for(ImageSpan span : spans){
+				File f = new File(span.getSource());
+				used.put( f.getName(), true );
+			}
+			File dir = getImagesMediaFolder();
+
+			File[] files = dir.listFiles();
+			if(files != null){
+				for(File file : files){
+					if(!used.containsKey( file.getName() )) {
+						file.delete();
+						removed.add( file.getPath().replace( Utils.getExternalStoragePath().getPath(), "" ) );
+					}
+				}
+			}
+		}catch (IOException e){
+			e.printStackTrace();
+		}
+		return removed;
 	}
 
 	public Entry.Properties readProperties() throws IOException, SAXException {

@@ -27,6 +27,7 @@ import java.io.IOException;
 
 public class MainActivity extends ThemeActivity {
 	private String path;
+	public static final String TAG = "Documenter";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

@@ -30,6 +30,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.maxsavitsky.documenter.backup.AutonomousCloudBackupper;
+import com.maxsavitsky.documenter.backup.BackupInterface;
 import com.maxsavitsky.documenter.backup.CloudBackupInstruments;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.utils.Utils;
@@ -173,11 +174,11 @@ public class CloudBackupActivity extends ThemeActivity {
 
 	public void createCloudBackup(View v) {
 		final ProgressDialog pd = new ProgressDialog( this );
-		pd.setMessage( getResources().getString( R.string.creating ) );
+		pd.setMessage( Html.fromHtml( getString( R.string.creating_backup ) ) );
 		//pd.setMessage( "Preparing..." );
 		pd.setCancelable( false );
 
-		final CloudBackupInstruments.CloudInterface cloudInterface = new CloudBackupInstruments.CloudInterface() {
+		final BackupInterface backupInterface = new BackupInterface() {
 			@Override
 			public void successfully(long timeOfCreation) {
 				runOnUiThread( new Runnable() {
@@ -212,10 +213,10 @@ public class CloudBackupActivity extends ThemeActivity {
 			@Override
 			public void run() {
 				try {
-					CloudBackupInstruments.createBackup( cloudInterface );
+					CloudBackupInstruments.createBackup( backupInterface );
 				} catch (IOException e) {
 					e.printStackTrace();
-					cloudInterface.exceptionOccurred( e );
+					backupInterface.exceptionOccurred( e );
 				}
 			}
 		} ).start();
@@ -227,7 +228,7 @@ public class CloudBackupActivity extends ThemeActivity {
 		//pd.setMessage( "Preparing..." );
 		pd.setCancelable( false );
 
-		final CloudBackupInstruments.CloudInterface cloudInterface = new CloudBackupInstruments.CloudInterface() {
+		final BackupInterface backupInterface = new BackupInterface() {
 			@Override
 			public void successfully(long timeOfCreation) {
 				runOnUiThread( new Runnable() {
@@ -262,10 +263,10 @@ public class CloudBackupActivity extends ThemeActivity {
 			@Override
 			public void run() {
 				try {
-					CloudBackupInstruments.restoreFromBackup( cloudInterface );
+					CloudBackupInstruments.restoreFromBackup( backupInterface );
 				} catch (IOException e) {
 					e.printStackTrace();
-					cloudInterface.exceptionOccurred( e );
+					backupInterface.exceptionOccurred( e );
 				}
 			}
 		} ).start();
