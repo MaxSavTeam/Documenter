@@ -25,6 +25,9 @@ import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.XMLParser;
 
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -35,7 +38,7 @@ public class CreateDocument extends ThemeActivity {
 	private void applyTheme(){
 		ActionBar actionBar = getSupportActionBar();
 		if (actionBar != null) {
-			actionBar.setTitle("Create Document");
+			actionBar.setTitle(getString(R.string.title_activity_create_document ));
 			Utils.applyDefaultActionBarStyle( actionBar );
 		}
 	}
@@ -131,9 +134,8 @@ public class CreateDocument extends ThemeActivity {
 				try {
 					Utils.createAllNecessaryForDocument( id );
 					thisDocument.addCategoryToIncludedInXml( categoryId );
-				}catch (Exception e){
+				}catch (IOException | SAXException e){
 					e.printStackTrace();
-					Toast.makeText( CreateDocument.this, "saveDocument 1", Toast.LENGTH_LONG ).show();
 					Utils.getErrorDialog( e, CreateDocument.this ).show();
 					return;
 				}
@@ -143,16 +145,16 @@ public class CreateDocument extends ThemeActivity {
 				try {
 					Utils.saveCategoryDocuments( categoryId, documents );
 					categories.add( MainData.getCategoryWithId( categoryId ) );
-				}catch (Exception e){
-					Toast.makeText( CreateDocument.this, "saveDocument1.5" + e.toString(), Toast.LENGTH_LONG ).show();
+				}catch (IOException e){
 					Utils.getErrorDialog( e, CreateDocument.this ).show();
+					return;
 				}
 				try {
 					thisDocument.saveInWhichCategoriesDocumentWithIdIncludedIn( categories );
 				} catch (Exception e) {
 					e.printStackTrace();
-					Toast.makeText( CreateDocument.this, "saveDocument2", Toast.LENGTH_LONG ).show();
 					Utils.getErrorDialog( e, CreateDocument.this ).show();
+					return;
 				}
 
 				try {
@@ -162,6 +164,7 @@ public class CreateDocument extends ThemeActivity {
 				}catch (Exception e){
 					e.printStackTrace();
 					Utils.getErrorDialog( e, CreateDocument.this ).show();
+					return;
 				}
 
 				Utils.saveDocumentEntries( id, mEntriesToInclude );

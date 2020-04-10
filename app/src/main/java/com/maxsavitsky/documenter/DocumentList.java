@@ -89,7 +89,6 @@ public class DocumentList extends ThemeActivity {
 			recyclerView.setVisibility( View.GONE );
 			TextView textView = findViewById( R.id.textViewNothingFound );
 			textView.setVisibility( View.VISIBLE );
-
 		} else {
 			LinearLayoutManager lay = new LinearLayoutManager( this );
 			lay.setOrientation( RecyclerView.VERTICAL );
@@ -310,13 +309,21 @@ public class DocumentList extends ThemeActivity {
 							Utils.getErrorDialog( e, DocumentList.this ).show();
 						}
 					}
-					Utils.saveCategoryDocuments( mCategory.getId(), documentsToChange );
+					try {
+						Utils.saveCategoryDocuments( mCategory.getId(), documentsToChange );
+					} catch (IOException e) {
+						e.printStackTrace();
+						Utils.getErrorDialog( e, DocumentList.this ).show();
+						Toast.makeText( DocumentList.this, R.string.some_data_might_not_be_saved_correctly, Toast.LENGTH_SHORT ).show();
+						return;
+					}
 					for (Document document : documentsToChange) {
 						try {
 							document.addCategoryToIncludedInXml( mCategory.getId() );
 						} catch (IOException | SAXException e) {
 							e.printStackTrace();
 							Utils.getErrorDialog( e, DocumentList.this ).show();
+							Toast.makeText( DocumentList.this, R.string.some_data_might_not_be_saved_correctly, Toast.LENGTH_SHORT ).show();
 						}
 					}
 

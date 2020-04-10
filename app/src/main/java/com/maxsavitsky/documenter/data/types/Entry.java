@@ -305,6 +305,7 @@ public class Entry extends Type {
 		for(int i = 0; i < documents.size(); i++){
 			if(documents.get( i ).getId().equals( documentId )){
 				documents.remove( i );
+				break;
 			}
 		}
 		saveInWhichDocumentsIncludedThisEntry( documents );

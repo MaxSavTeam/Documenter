@@ -4,6 +4,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.data.Info;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.utils.Utils;
@@ -88,15 +89,13 @@ public class Document extends Type implements Comparable{
 	}
 
 	public ArrayList<Entry> getEntries() {
-		if(mEntries == null){
-			try {
-				mEntries = XMLParser.newInstance().parseDocumentWithId( getId() );
-			} catch (SAXException | IOException e) {
-				e.printStackTrace();
-				Log.e( "Document " + getId(), e.toString() );
-			}
+		ArrayList<Entry> entries = null;
+		try {
+			entries = XMLParser.newInstance().parseDocumentWithId( id );
+		} catch (SAXException | IOException e) {
+			e.printStackTrace();
 		}
-		return mEntries;
+		return entries;
 	}
 
 	public void addEntry(Entry entry) throws IOException, SAXException {

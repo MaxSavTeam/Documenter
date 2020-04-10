@@ -62,16 +62,13 @@ public class Category extends Type {
 	}
 
 	public ArrayList<Document> getDocuments() {
-		if(mDocuments == null){
-			try {
-				mDocuments = XMLParser.newInstance().parseCategoryWithId( getId() );
-			} catch (SAXException | IOException e) {
-				e.printStackTrace();
-				Log.v("Category " + getId(), e.toString());
-				return null;
-			}
+		ArrayList<Document> documents = null;
+		try {
+			documents = XMLParser.newInstance().parseCategoryWithId( mId );
+		} catch (IOException | SAXException e) {
+			e.printStackTrace();
 		}
-		return mDocuments;
+		return documents;
 	}
 
 	public void addDocument(Document document){

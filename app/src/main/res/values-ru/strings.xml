@@ -1,7 +1,7 @@
 <resources xmlns:ns0="http://schemas.android.com/tools">
     <string name="title_activity_create_category">Создать категорию</string>
     <string name="title_activity_category_list">Список категорий</string>
-    <string name="title_activity_create_documents">Создать документы</string>
+    <string name="title_activity_create_document">Создать документ</string>
     <string name="title_activity_document_list">Список документов</string>
     <string name="title_activity_entries_list">Список записей</string>
     <string name="edit_documents_list">Редактировать список документов</string>
@@ -129,4 +129,5 @@
     <string name="restoring_please_donot_close_app"><![CDATA[Восстанавливаем…<br>Пожалуйста, не закрывайте приложение.]]></string>
     <string name="logged_in">Выполнен вход в</string>
     <string name="file_type_is_not_supported">Извините, но этот тип файла не поддерживается.</string>
+    <string name="some_data_might_not_be_saved_correctly">Некоторые данные могли некорректно сохраниться.</string>
 </resources>

@@ -218,33 +218,29 @@ public class Utils {
 		}
 	}
 
-	public static void saveCategoryDocuments(String id, ArrayList<Document> documents) {
-		try {
-			File file = new File( getExternalStoragePath().getPath() + "/categories/" );
-			if ( !file.exists() ) {
-				file.mkdir();
-			}
-			file = new File( file.getPath() + "/" + id );
-			if ( !file.exists() ) {
-				file.mkdir();
-			}
-			file = new File( file.getPath() + "/" + id + ".xml" );
-			if ( !file.exists() ) {
-				file.createNewFile();
-			}
-			FileWriter fr = new FileWriter( file, false );
-			fr.write( xmlHeader );
-			fr.append( "<documents>\n" );
-			for (int i = 0; i < documents.size(); i++) {
-				Document cur = documents.get( i );
-				fr.append( "\t<document " + "id=\"" + cur.getId() + "\" />\n" );
-			}
-			fr.append( "</documents>" );
-			fr.flush();
-			fr.close();
-		} catch (IOException e) {
-			e.printStackTrace();
+	public static void saveCategoryDocuments(String id, ArrayList<Document> documents) throws IOException {
+		File file = new File( getExternalStoragePath().getPath() + "/categories/" );
+		if ( !file.exists() ) {
+			file.mkdir();
 		}
+		file = new File( file.getPath() + "/" + id );
+		if ( !file.exists() ) {
+			file.mkdir();
+		}
+		file = new File( file.getPath() + "/" + id + ".xml" );
+		if ( !file.exists() ) {
+			file.createNewFile();
+		}
+		FileWriter fr = new FileWriter( file, false );
+		fr.write( xmlHeader );
+		fr.append( "<documents>\n" );
+		for (int i = 0; i < documents.size(); i++) {
+			Document cur = documents.get( i );
+			fr.append( "\t<document " + "id=\"" + cur.getId() + "\" />\n" );
+		}
+		fr.append( "</documents>" );
+		fr.flush();
+		fr.close();
 	}
 
 	public static void saveDocumentEntries(String id, ArrayList<Entry> entries) {
@@ -280,13 +276,9 @@ public class Utils {
 	}
 
 	public static void createAllNecessaryForDocument(String id) throws IOException {
-		File file = new File( getExternalStoragePath().getPath() + "/documents/" );
+		File file = new File( getExternalStoragePath().getPath() + "/documents/" + id );
 		if ( !file.exists() ) {
-			file.mkdir();
-		}
-		file = new File( file.getPath() + "/" + id );
-		if ( !file.exists() ) {
-			file.mkdir();
+			file.mkdirs();
 		}
 		file = new File( file.getPath() + "/" + id + ".xml" );
 		if ( !file.exists() ) {

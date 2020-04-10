@@ -40,6 +40,7 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -325,10 +326,7 @@ public class EntriesList extends ThemeActivity {
 		if ( !entries.isEmpty() ) {
 			setContentView( R.layout.layout_choose_documents );
 
-			entriesToChange = mDocument.getEntries();
-			for (Entry entry : entriesToChange) {
-				mDocumentEntriesMap.put( entry.getId(), entry );
-			}
+			entriesToChange = new ArrayList<>( mDocument.getEntries() );
 
 			View.OnClickListener cancel = new View.OnClickListener() {
 				@Override
@@ -406,9 +404,17 @@ public class EntriesList extends ThemeActivity {
 
 		@Override
 		public void onBindViewHolder(@NonNull VH holder, int position) {
-			holder.mCheckBox.setChecked( mDocumentEntriesMap.containsKey( mElements.get( position ).getId() ) );
-			holder.mId.setText( mElements.get( position ).getId() );
-			holder.mName.setText( mElements.get( position ).getName() );
+			boolean isHere = false;
+			Entry entry = mElements.get( position );
+			for(Entry entry1 : mDocument.getEntries()){
+				if(entry1.getId().equals( entry.getId() )){
+					isHere = true;
+					break;
+				}
+			}
+			holder.mCheckBox.setChecked( isHere );
+			holder.mId.setText( entry.getId() );
+			holder.mName.setText( entry.getName() );
 		}
 	}
 
