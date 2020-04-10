@@ -1,4 +1,4 @@
-package com.maxsavitsky.documenter.utils;
+package com.maxsavitsky.documenter.media.images;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -9,6 +9,7 @@ import android.graphics.drawable.Drawable;
 
 import com.maxsavitsky.documenter.MyExceptionHandler;
 import com.maxsavitsky.documenter.R;
+import com.maxsavitsky.documenter.utils.Utils;
 
 import java.io.File;
 

@@ -34,8 +34,8 @@ import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.utils.ApkInstaller;
 import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.codes.Results;
-import com.maxsavitsky.documenter.utils.UpdatesChecker;
-import com.maxsavitsky.documenter.utils.UpdatesDownloader;
+import com.maxsavitsky.documenter.updates.UpdatesChecker;
+import com.maxsavitsky.documenter.updates.UpdatesDownloader;
 import com.maxsavitsky.documenter.utils.Utils;
 
 import java.io.File;

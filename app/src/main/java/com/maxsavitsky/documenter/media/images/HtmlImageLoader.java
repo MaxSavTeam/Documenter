@@ -1,19 +1,8 @@
-package com.maxsavitsky.documenter.utils;
+package com.maxsavitsky.documenter.media.images;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Point;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.Html;
-import android.view.Display;
-import android.view.WindowManager;
-
-import com.maxsavitsky.documenter.MyExceptionHandler;
-import com.maxsavitsky.documenter.R;
-
-import java.io.File;
 
 public class HtmlImageLoader implements Html.ImageGetter {
 	private final Context c;

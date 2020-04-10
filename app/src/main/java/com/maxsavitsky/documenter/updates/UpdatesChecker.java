@@ -1,4 +1,4 @@
-package com.maxsavitsky.documenter.utils;
+package com.maxsavitsky.documenter.updates;
 
 import android.content.Context;
 import android.content.SharedPreferences;

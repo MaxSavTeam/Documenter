@@ -1,6 +1,8 @@
-package com.maxsavitsky.documenter.utils;
+package com.maxsavitsky.documenter.updates;
 
 import android.os.Environment;
+
+import com.maxsavitsky.documenter.updates.UpdatesChecker;
 
 import java.io.File;
 import java.io.FileOutputStream;

@@ -10,12 +10,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Typeface;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -33,7 +30,6 @@ import android.text.method.LinkMovementMethod;
 import android.text.style.AbsoluteSizeSpan;
 import android.text.style.AlignmentSpan;
 import android.text.style.BackgroundColorSpan;
-import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.ImageSpan;
 import android.text.style.StrikethroughSpan;
@@ -72,8 +68,8 @@ import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.utils.ChangeEntry;
 import com.maxsavitsky.documenter.codes.Results;
-import com.maxsavitsky.documenter.utils.HtmlImageLoader;
-import com.maxsavitsky.documenter.utils.ImageRenderer;
+import com.maxsavitsky.documenter.media.images.HtmlImageLoader;
+import com.maxsavitsky.documenter.media.images.ImageRenderer;
 import com.maxsavitsky.documenter.utils.SpanEntry;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.widget.TextEditor;
@@ -611,14 +607,6 @@ public class EntryEditor extends ThemeActivity {
 			}
 		}
 		super.onActivityResult( requestCode, resultCode, data );
-	}
-
-	private Point getScreenSize(){
-		WindowManager windowManager = (WindowManager) getSystemService( Context.WINDOW_SERVICE );
-		Display d = windowManager.getDefaultDisplay();
-		Point p = new Point();
-		d.getSize( p );
-		return p;
 	}
 
 	private void setImageAtSelBounds(File file){

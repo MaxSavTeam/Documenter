@@ -31,12 +31,11 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.maxsavitsky.documenter.backup.BackupInstruments;
 import com.maxsavitsky.documenter.backup.BackupInterface;
-import com.maxsavitsky.documenter.backup.CloudBackupInstruments;
 import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.utils.ApkInstaller;
 import com.maxsavitsky.documenter.codes.Results;
-import com.maxsavitsky.documenter.utils.UpdatesChecker;
-import com.maxsavitsky.documenter.utils.UpdatesDownloader;
+import com.maxsavitsky.documenter.updates.UpdatesChecker;
+import com.maxsavitsky.documenter.updates.UpdatesDownloader;
 import com.maxsavitsky.documenter.utils.Utils;
 
 import java.io.File;
