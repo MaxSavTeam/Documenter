@@ -22,12 +22,14 @@ import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.data.types.Type;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -117,6 +119,18 @@ public class Utils {
 		}
 		fileInputStream.close();
 		return s;
+	}
+
+	public static byte[] readFileByBytes(File file) throws IOException{
+		FileInputStream fis = new FileInputStream(file);
+		ByteArrayOutputStream ous = new ByteArrayOutputStream();
+		byte[] buffer = new byte[1024];
+		int len;
+		while((len = fis.read( buffer )) != -1){
+			ous.write( buffer, 0, len );
+		}
+
+		return ous.toByteArray();
 	}
 
 	public static void saveCategoriesList(ArrayList<Category> categories) {

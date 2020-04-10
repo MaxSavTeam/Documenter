@@ -65,7 +65,7 @@ public class BackupInstruments {
 		File dir = Utils.getExternalStoragePath();
 		path.createNewFile();
 		ZipOutputStream zipOutputStream = new ZipOutputStream( new FileOutputStream( path ) );
-		zipOutputStream.setLevel( 0 );
+		zipOutputStream.setLevel( 9 );
 
 		if ( dir == null || dir.listFiles() == null ) {
 			zipOutputStream.close();
@@ -103,9 +103,9 @@ public class BackupInstruments {
 			return;
 		}
 
-		String content = Utils.readFile( path );
+		byte[] content = Utils.readFileByBytes( path );
 		ZipEntry zipEntry = new ZipEntry( fileName );
 		out.putNextEntry( zipEntry );
-		out.write( content.getBytes(), 0, content.getBytes().length );
+		out.write( content, 0, content.length );
 	}
 }

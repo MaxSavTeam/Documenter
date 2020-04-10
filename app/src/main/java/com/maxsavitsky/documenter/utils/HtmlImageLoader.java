@@ -23,6 +23,7 @@ public class HtmlImageLoader implements Html.ImageGetter {
 
 	@Override
 	public Drawable getDrawable(String source) {
+		Thread.currentThread().setName( "HtmlImageLoader thread" );
 		String path = source.startsWith( "file://" ) ? source.substring( "file://".length() ) : source;
 		File file = new File( path );
 		WindowManager windowManager = (WindowManager) c.getSystemService(Context.WINDOW_SERVICE);
@@ -31,7 +32,7 @@ public class HtmlImageLoader implements Html.ImageGetter {
 		display.getSize(size);
 		BitmapFactory.Options options = new BitmapFactory.Options();
 		options.inJustDecodeBounds = true;
-		BitmapFactory.decodeFile(path, options); // just get original sizes
+		BitmapFactory.decodeFile(path, options); // get original sizes
 		Bitmap b = BitmapFactory.decodeFile( path );
 		if(b == null || !file.exists()) {
 			Drawable d = c.getDrawable( R.drawable.image_not_found_or_damaged );
@@ -44,7 +45,7 @@ public class HtmlImageLoader implements Html.ImageGetter {
 			if(b == null)
 				msg += "bitmap render error\n";
 			if(!file.exists()){
-				msg += "file not found\n";
+				msg += "file not found: " + path;
 			}
 			new MyExceptionHandler( null ).justWriteException( Thread.currentThread(), new Throwable(msg) );
 			return d;
