@@ -4,9 +4,12 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Point;
 import android.text.Html;
 import android.util.Log;
+import android.view.Display;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
@@ -89,6 +92,15 @@ public class Utils {
 		}
 
 		return false;
+	}
+
+	public static Point getScreenSize(){
+		WindowManager windowManager = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
+		Display display = windowManager.getDefaultDisplay();
+		Point size = new Point();
+		display.getSize(size);
+
+		return size;
 	}
 
 	public static void deleteDirectory(File dir) {

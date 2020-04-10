@@ -249,14 +249,6 @@ public class ViewEntry extends ThemeActivity {
 				public void run() {
 					final TextView t = findViewById( R.id.textViewContent );
 					final Spannable spannable = (Spannable) Html.fromHtml(text, new HtmlImageLoader( ViewEntry.this ), null);
-					for(ImageSpan span : spannable.getSpans( 0, spannable.length(), ImageSpan.class )){
-						spannable.setSpan( new ClickableSpan() {
-							@Override
-							public void onClick(@NonNull View widget) {
-								Toast.makeText( ViewEntry.this, "Clicked", Toast.LENGTH_SHORT ).show();
-							}
-						}, spannable.getSpanStart( span ), spannable.getSpanEnd( span ), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-					}
 					ArrayList<SpanEntry> spanEntries = mEntry.getAlignments();
 					for(SpanEntry se : spanEntries){
 						spannable.setSpan( se.getAlignmentSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );

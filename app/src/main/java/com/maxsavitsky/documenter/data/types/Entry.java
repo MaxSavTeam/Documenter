@@ -114,7 +114,7 @@ public class Entry extends Type {
 		return mPathDir;
 	}
 
-	public void saveText(Spannable text) throws IOException {
+	public void saveContent(Spannable text) throws IOException {
 		File file = new File( mPathDir + "text" );
 		if(!file.exists())
 			file.createNewFile();

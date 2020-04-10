@@ -25,9 +25,11 @@ import android.text.Editable;
 import android.text.Html;
 import android.text.Layout;
 import android.text.Layout.Alignment;
+import android.text.Selection;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.Spanned;
+import android.text.method.LinkMovementMethod;
 import android.text.style.AbsoluteSizeSpan;
 import android.text.style.AlignmentSpan;
 import android.text.style.BackgroundColorSpan;
@@ -41,6 +43,7 @@ import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -70,26 +73,22 @@ import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.utils.ChangeEntry;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.utils.HtmlImageLoader;
+import com.maxsavitsky.documenter.utils.ImageRenderer;
 import com.maxsavitsky.documenter.utils.SpanEntry;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.widget.TextEditor;
-import com.maxsavitsky.documenter.xml.XMLParser;
 
 import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Properties;
 
 import static com.maxsavitsky.documenter.codes.Requests.*;
 
@@ -313,6 +312,14 @@ public class EntryEditor extends ThemeActivity {
 		type = getIntent().getStringExtra( "type" );
 		mTextEditor = findViewById( R.id.edittextEntry );
 		mTextEditor.setListener( mOnSelectionChanges );
+		mTextEditor.setMovementMethod( new LinkMovementMethod(){
+			@Override
+			public boolean onTouchEvent(TextView widget, Spannable buffer, MotionEvent event) {
+				Selection.removeSelection(buffer);
+				widget.setHighlightColor(Color.argb(0,0,0,0));
+				return super.onTouchEvent(widget, buffer, event);
+			}
+		} );
 		if(type == null){
 			Toast.makeText( this, getString(R.string.something_gone_wrong), Toast.LENGTH_SHORT ).show();
 			_finishActivity();
@@ -618,33 +625,20 @@ public class EntryEditor extends ThemeActivity {
 		Editable e = mTextEditor.getText();
 		int s;
 		if(e == null) {
-			mTextEditor.setText( "\n " );
+			mTextEditor.setText( " " );
 			mSelectionBounds[0] = 0;
 			s = 0;
 			e = mTextEditor.getText();
 		}else{
 			s = mSelectionBounds[0];
-			e.insert( s, "\r " );
+			e.insert( s, " " );
 		}
-		BitmapFactory.Options options = new BitmapFactory.Options();
-		options.inJustDecodeBounds = true;
-		BitmapFactory.decodeFile( file.getPath(), options );
-		Bitmap b = BitmapFactory.decodeFile( file.getPath() );
-		Point size = getScreenSize();
-		Drawable d = new BitmapDrawable(getResources(), b);
-		if(options.outWidth > size.x){
-			int w = options.outWidth;
-			int h = options.outHeight;
-			int w1 = size.x;
-			int h1 = (w1 * h) / w;
-			d.setBounds( 0, 0, w1, h1 );
-		}else{
-			d.setBounds( 0, 0, options.outWidth, options.outHeight );
-		}
+
+		Drawable d = ImageRenderer.renderDrawable( file.getPath() );
+
 		ImageSpan imageSpan = new ImageSpan(d, file.getPath());
 
-		e.setSpan( imageSpan, s+1, s + 2, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-		mTextEditor.postInvalidate();
+		e.setSpan( imageSpan, s, s + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 	}
 
 	private void enableThisMenuItem(int i){
@@ -1285,9 +1279,8 @@ public class EntryEditor extends ThemeActivity {
 		try {
 			copyTempFiles();
 			replaceTempImagesInSpans();
-			removeUnusedImages();
 			mEntry.saveInWhichDocumentsIncludedThisEntry( new ArrayList<Document>() );
-			mEntry.saveText( text );
+			mEntry.saveContent( text );
 			mEntry.setAndSaveInfo( new Info( (int) System.currentTimeMillis() ) );
 			if(!mWithoutDoc) {
 				mEntry.addDocumentToIncluded( mDocument.getId() );
@@ -1517,7 +1510,7 @@ public class EntryEditor extends ThemeActivity {
 			if(text.length() != 0){
 				try {
 					mEntry.saveProperties( mEntry.getProperties() );
-					mEntry.saveText( mTextEditor.getText() );
+					mEntry.saveContent( mTextEditor.getText() );
 					setResult( Results.REOPEN, new Intent(  ).putExtra( "id", mEntry.getId() ) );
 				}catch (Exception ex){
 					ex.printStackTrace();
