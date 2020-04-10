@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.media.Image;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.Html;
@@ -15,6 +16,8 @@ import android.text.Layout.Alignment;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.Spanned;
+import android.text.style.ClickableSpan;
+import android.text.style.ImageSpan;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -234,36 +237,11 @@ public class ViewEntry extends ThemeActivity {
 	private ProgressDialog mProgressDialog;
 
 	private interface TextLoaderCallback{
-		void loaded(ArrayList<String> strings);
 		void exceptionOccurred(Exception e);
 		void loaded(String text);
 	}
 
 	private final TextLoaderCallback mCallback = new TextLoaderCallback() {
-		@Override
-		public void loaded(final ArrayList<String> strings) {
-			runOnUiThread( new Runnable() {
-				@Override
-				public void run() {
-					TextView t = findViewById( R.id.textViewContent );
-					t.setText( "" );
-					for(String s : strings){
-						SpannableString spannableString = new SpannableString( Html.fromHtml(s, new HtmlImageLoader( ViewEntry.this ), null ) );
-						t.append( spannableString );
-					}
-					mProgressDialog.dismiss();
-					if(mEntry.getProperties().isSaveLastPos()){
-						mScrollView.post( new Runnable() {
-							@Override
-							public void run() {
-								mScrollView.smoothScrollTo(0, mEntry.getProperties().getScrollPosition() );
-							}
-						} );
-					}
-				}
-			} );
-		}
-
 		@Override
 		public void loaded(final String text) {
 			new Thread( new Runnable() {
@@ -271,6 +249,14 @@ public class ViewEntry extends ThemeActivity {
 				public void run() {
 					final TextView t = findViewById( R.id.textViewContent );
 					final Spannable spannable = (Spannable) Html.fromHtml(text, new HtmlImageLoader( ViewEntry.this ), null);
+					for(ImageSpan span : spannable.getSpans( 0, spannable.length(), ImageSpan.class )){
+						spannable.setSpan( new ClickableSpan() {
+							@Override
+							public void onClick(@NonNull View widget) {
+								Toast.makeText( ViewEntry.this, "Clicked", Toast.LENGTH_SHORT ).show();
+							}
+						}, spannable.getSpanStart( span ), spannable.getSpanEnd( span ), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+					}
 					ArrayList<SpanEntry> spanEntries = mEntry.getAlignments();
 					for(SpanEntry se : spanEntries){
 						spannable.setSpan( se.getAlignmentSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );

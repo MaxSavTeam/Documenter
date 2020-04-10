@@ -31,6 +31,7 @@ import android.text.Spanned;
 import android.text.style.AbsoluteSizeSpan;
 import android.text.style.AlignmentSpan;
 import android.text.style.BackgroundColorSpan;
+import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.ImageSpan;
 import android.text.style.StrikethroughSpan;
@@ -152,7 +153,7 @@ public class EntryEditor extends ThemeActivity {
 			t = Html.toHtml( mTextEditor.getText() );
 		}
 		boolean firstCondition = type.equals( "create" )
-				&& mTextEditor.getText() != null;
+				&& mTextEditor.getText() != null && !mTextEditor.getText().toString().equals( "" );
 
 		boolean secondCondition = type.equals( "edit" )
 				&& (!t.equals( mOriginalText ) || !mStartProperties.equals( mEntry.getProperties() ) );
@@ -577,6 +578,10 @@ public class EntryEditor extends ThemeActivity {
 						file = new File( file.getPath() + ".png" );
 					}else if(type.equals( "image/jpeg" )){
 						file = new File(file.getPath() + ".jpg");
+					}else{
+						Toast.makeText( this, R.string.file_type_is_not_supported, Toast.LENGTH_LONG ).show();
+						in.close();
+						return;
 					}
 					if(!MainData.isExists( mId ))
 						mMediaToMove.add( file );
@@ -619,11 +624,12 @@ public class EntryEditor extends ThemeActivity {
 			e = mTextEditor.getText();
 		}else{
 			s = mSelectionBounds[0];
-			e.insert( s, "\n " );
+			e.insert( s, "\r " );
 		}
 		BitmapFactory.Options options = new BitmapFactory.Options();
 		options.inJustDecodeBounds = true;
-		Bitmap b = BitmapFactory.decodeFile( file.getPath(), options );
+		BitmapFactory.decodeFile( file.getPath(), options );
+		Bitmap b = BitmapFactory.decodeFile( file.getPath() );
 		Point size = getScreenSize();
 		Drawable d = new BitmapDrawable(getResources(), b);
 		if(options.outWidth > size.x){
@@ -638,6 +644,7 @@ public class EntryEditor extends ThemeActivity {
 		ImageSpan imageSpan = new ImageSpan(d, file.getPath());
 
 		e.setSpan( imageSpan, s+1, s + 2, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+		mTextEditor.postInvalidate();
 	}
 
 	private void enableThisMenuItem(int i){
