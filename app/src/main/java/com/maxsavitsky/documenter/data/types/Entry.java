@@ -156,8 +156,8 @@ public class Entry extends Type {
 		}
 	}
 
-	public ArrayList<SpanEntry> getAlignments(){
-		ArrayList<SpanEntry> arrayList = new ArrayList<>();
+	public ArrayList<SpanEntry<AlignmentSpan.Standard>> getAlignments(){
+		ArrayList<SpanEntry<AlignmentSpan.Standard>> arrayList = new ArrayList<>();
 		File file = new File( mPathDir + "alignment" );
 		if(file.exists()) {
 			try {
@@ -168,7 +168,7 @@ public class Entry extends Type {
 						break;
 
 					String[] strings = line.split( " " );
-					SpanEntry se = new SpanEntry( new AlignmentSpan.Standard( Alignment.valueOf( strings[ 0 ] ) ),
+					SpanEntry<AlignmentSpan.Standard> se = new SpanEntry<AlignmentSpan.Standard>( new AlignmentSpan.Standard( Alignment.valueOf( strings[ 0 ] ) ),
 							Integer.parseInt( strings[ 1 ] ),
 							Integer.parseInt( strings[ 2 ] ) );
 					arrayList.add( se );

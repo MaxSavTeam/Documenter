@@ -32,6 +32,7 @@ public class TextEditor extends AppCompatEditText {
 		void onTextSelected(int start, int end);
 		void onTextSelectionBreak(int newSelectionPosition);
 		void onTextChanged(CharSequence text, int start, int lengthBefore, int lengthAfter);
+		void onSelectionChanged();
 	}
 
 	public void setTextW(CharSequence text){
@@ -55,6 +56,8 @@ public class TextEditor extends AppCompatEditText {
 				listener.onTextSelected( selStart, selEnd );
 			}
 		}
+		if(listener != null)
+			listener.onSelectionChanged();
 		super.onSelectionChanged( selStart, selEnd );
 	}
 

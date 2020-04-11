@@ -14,4 +14,6 @@
     <dimen name="scrollbars_size">8dp</dimen>
     <dimen name="labels_margin">20dp</dimen>
     <dimen name="labels_margin_bottom">10dp</dimen>
+
+    <dimen name="bottom_sheet_elements_margin">7dp</dimen>
 </resources>

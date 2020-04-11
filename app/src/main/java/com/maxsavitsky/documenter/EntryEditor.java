@@ -34,6 +34,8 @@ import android.text.style.ForegroundColorSpan;
 import android.text.style.ImageSpan;
 import android.text.style.StrikethroughSpan;
 import android.text.style.StyleSpan;
+import android.text.style.SubscriptSpan;
+import android.text.style.SuperscriptSpan;
 import android.text.style.UnderlineSpan;
 import android.util.Log;
 import android.view.Display;
@@ -97,6 +99,7 @@ public class EntryEditor extends ThemeActivity {
 	private Entry.Properties mStartProperties;
 	private TextEditor mTextEditor;
 	private Button btnBgColorPicker, btnTextColorPicker, btnTextBackgroundColorPicker;
+	private Button btnSubScript, btnSupScript;
 	private ImageButton btnBold, btnItalic, btnUnderline, btnStrike;
 	private BottomSheetBehavior<View> mBottomSheetLayout;
 	private final ArrayList<ChangeEntry> mHistory = new ArrayList<>();
@@ -283,7 +286,6 @@ public class EntryEditor extends ThemeActivity {
 
 	ProgressDialog mProgressDialogOnTextLoad;
 	private long mStartLoadTextTime;
-	private boolean scrolled = false;
 	private boolean mWithoutDoc = false;
 
 	@Override
@@ -300,6 +302,12 @@ public class EntryEditor extends ThemeActivity {
 		btnTextColorPicker = findViewById( R.id.btnTextColorPicker );
 		btnTextBackgroundColorPicker = findViewById(R.id.btnTextBackgroundColorPicker);
 
+		btnSupScript = findViewById(R.id.btnSuperscript);
+		btnSubScript = findViewById(R.id.btnSubscript);
+
+		btnSupScript.setText( Html.fromHtml( getString(R.string.sup) ) );
+		btnSubScript.setText( Html.fromHtml( getString(R.string.sub) ) );
+
 		btnBold = findViewById( R.id.btnBold );
 		btnItalic = findViewById( R.id.btnItalic );
 		btnUnderline = findViewById( R.id.btnUnderline );
@@ -308,14 +316,6 @@ public class EntryEditor extends ThemeActivity {
 		type = getIntent().getStringExtra( "type" );
 		mTextEditor = findViewById( R.id.edittextEntry );
 		mTextEditor.setListener( mOnSelectionChanges );
-		mTextEditor.setMovementMethod( new LinkMovementMethod(){
-			@Override
-			public boolean onTouchEvent(TextView widget, Spannable buffer, MotionEvent event) {
-				Selection.removeSelection(buffer);
-				widget.setHighlightColor(Color.argb(0,0,0,0));
-				return super.onTouchEvent(widget, buffer, event);
-			}
-		} );
 		if(type == null){
 			Toast.makeText( this, getString(R.string.something_gone_wrong), Toast.LENGTH_SHORT ).show();
 			_finishActivity();
@@ -460,8 +460,8 @@ public class EntryEditor extends ThemeActivity {
 			e.clear();
 
 		Spannable spannable = (Spannable) Html.fromHtml( text, new HtmlImageLoader( this ), null );
-		for(SpanEntry se : mEntry.getAlignments()){
-			spannable.setSpan( se.getAlignmentSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+		for(SpanEntry<AlignmentSpan.Standard> se : mEntry.getAlignments()){
+			spannable.setSpan( se.getSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 		}
 		mTextEditor.setTextW( spannable );
 	}
@@ -705,21 +705,7 @@ public class EntryEditor extends ThemeActivity {
 								return;
 							int selSt = mSelectionBounds[0];
 							int selEnd = mSelectionBounds[1];
-							ArrayList<SpanEntry> arrayList = new ArrayList<>();
-							for(BackgroundColorSpan span : e.getSpans( selSt, selEnd, BackgroundColorSpan.class )){
-								int st = e.getSpanStart( span );
-								int end = e.getSpanEnd( span );
-								if(st < selSt){
-									arrayList.add( new SpanEntry( new BackgroundColorSpan( span.getBackgroundColor() ), st, selSt ) );
-								}
-								if(end > selEnd){
-									arrayList.add( new SpanEntry( new BackgroundColorSpan( span.getBackgroundColor() ), selEnd, end ) );
-								}
-								e.removeSpan( span );
-							}
-							for(SpanEntry se : arrayList){
-								e.setSpan( se.getBackgroundColorSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-							}
+							removeAllSpansInBounds( mSelectionBounds[0], mSelectionBounds[1], BackgroundColorSpan.class );
 							e.setSpan( new BackgroundColorSpan( mSelectedColor ), selSt, selEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 							btnTextBackgroundColorPicker.setBackgroundTintList( ColorStateList.valueOf( mSelectedColor ) );
 						}
@@ -732,23 +718,7 @@ public class EntryEditor extends ThemeActivity {
 								Editable e = mTextEditor.getText();
 								if(e == null)
 									return;
-								int selSt = mSelectionBounds[0];
-								int selEnd = mSelectionBounds[1];
-								ArrayList<SpanEntry> arrayList = new ArrayList<>();
-								for(BackgroundColorSpan span : e.getSpans( selSt, selEnd, BackgroundColorSpan.class )){
-									int st = e.getSpanStart( span );
-									int end = e.getSpanEnd( span );
-									if(st < selSt){
-										arrayList.add( new SpanEntry( span, st, selSt ) );
-									}
-									if(end > selEnd){
-										arrayList.add( new SpanEntry( span, selEnd, end ) );
-									}
-									e.removeSpan( span );
-								}
-								for(SpanEntry se : arrayList){
-									e.setSpan( se.getBackgroundColorSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-								}
+								removeAllSpansInBounds( mSelectionBounds[0], mSelectionBounds[1], BackgroundColorSpan.class );
 								btnTextBackgroundColorPicker.setBackgroundTintList( ColorStateList.valueOf( editTextColor ) );
 							}
 						} );
@@ -849,7 +819,105 @@ public class EntryEditor extends ThemeActivity {
 				e.setSpan( new AbsoluteSizeSpan( mEntry.getProperties().getTextSize(), true ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 			}
 		}
+
+		@Override
+		public void onSelectionChanged() {
+			applySupSubButton( R.id.btnSuperscript );
+			applySupSubButton( R.id.btnSubscript );
+		}
 	};
+
+	private void applySupSubButton(int id){
+		Button btn = findViewById(id);
+
+		if(mSelectionBounds[0] == mSelectionBounds[1]){
+			btn.setBackgroundColor(  getColor( android.R.color.transparent ) );
+			btn.setOnClickListener( null );
+		}else{
+			Editable e = mTextEditor.getText();
+			if(e == null)
+				return;
+			int selSt = mSelectionBounds[0];
+			int selEnd = mSelectionBounds[1];
+			boolean apply;
+			if(id == R.id.btnSuperscript) {
+				apply = e.getSpans( selSt, selEnd, SuperscriptSpan.class ).length > 0;
+				btn.setOnClickListener(onSupBtnClick);
+			}else {
+				apply = e.getSpans( selSt, selEnd, SubscriptSpan.class ).length > 0;
+				btn.setOnClickListener( onSubBtnClick );
+			}
+
+			if(apply)
+				btn.setBackgroundColor( getColor( R.color.btnClicked ) );
+			else
+				btn.setBackgroundColor( getColor( android.R.color.transparent ) );
+			btn.setTag( apply );
+		}
+	}
+
+	private View.OnClickListener onSupBtnClick = new View.OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			boolean isApplied = (boolean) v.getTag();
+			int selSt = mSelectionBounds[0];
+			int selEnd = mSelectionBounds[1];
+			Editable e = mTextEditor.getText();
+			if(e == null)
+				return;
+			removeAllSpansInBounds( selSt, selEnd, SuperscriptSpan.class );
+			removeAllSpansInBounds( selSt, selEnd, SubscriptSpan.class );
+
+			if(!isApplied){
+				e.setSpan( new SuperscriptSpan(), selSt, selEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+			}
+			applySupSubButton( v.getId() );
+			applySupSubButton( R.id.btnSubscript );
+		}
+	};
+
+	private View.OnClickListener onSubBtnClick = new View.OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			boolean isApplied = (boolean) v.getTag();
+			int selSt = mSelectionBounds[0];
+			int selEnd = mSelectionBounds[1];
+			Editable e = mTextEditor.getText();
+			if(e == null)
+				return;
+			removeAllSpansInBounds( selSt, selEnd, SubscriptSpan.class );
+			removeAllSpansInBounds( selSt, selEnd, SuperscriptSpan.class );
+
+			if(!isApplied){
+				e.setSpan( new SubscriptSpan(), selSt, selEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+			}
+			applySupSubButton( v.getId() );
+			applySupSubButton( R.id.btnSuperscript );
+		}
+	};
+
+	private <T> void removeAllSpansInBounds(int selSt, int selEnd, Class<T> type){
+		Editable e = mTextEditor.getText();
+		if(e == null)
+			return;
+
+		ArrayList<SpanEntry<T>> arrayList = new ArrayList<>();
+		T[] spans = e.getSpans( selSt, selEnd, type );
+		for(T span : spans){
+			int st = e.getSpanStart( span );
+			int end = e.getSpanEnd( span );
+			if(st < selSt){
+				arrayList.add( new SpanEntry<T>( span, st, selSt ) );
+			}
+			if(end > selEnd){
+				arrayList.add( new SpanEntry<T>( span, selEnd, end ) );
+			}
+			e.removeSpan( span );
+		}
+		for(SpanEntry<T> se : arrayList){
+			e.setSpan( se.getSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+		}
+	}
 
 	private void applyStyleBtnState(int selS, int selE){
 		Editable e = mTextEditor.getText();
@@ -907,22 +975,7 @@ public class EntryEditor extends ThemeActivity {
 			int selSt = mSelectionBounds[0];
 			int selEnd = mSelectionBounds[1];
 			boolean isUnderline = (boolean) v.getTag();
-			UnderlineSpan[] spans = s.getSpans( selSt, selEnd, UnderlineSpan.class );
-			ArrayList<SpanEntry> spansToApply = new ArrayList<>();
-			for(UnderlineSpan span : spans){
-				int st = s.getSpanStart( span );
-				int end = s.getSpanEnd( span );
-				if(st < selSt){
-					spansToApply.add( new SpanEntry( new UnderlineSpan(), st, selSt ) );
-				}
-				if(end > selEnd){
-					spansToApply.add( new SpanEntry( new UnderlineSpan(), selEnd, end ) );
-				}
-				s.removeSpan( span );
-			}
-			for(SpanEntry e : spansToApply){
-				s.setSpan( e.getUnderlineSpan(), e.getStart(), e.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-			}
+			removeAllSpansInBounds( selSt, selEnd, UnderlineSpan.class );
 
 			v.setTag( !isUnderline );
 			if(!isUnderline){ // apply
@@ -944,22 +997,7 @@ public class EntryEditor extends ThemeActivity {
 			int selSt = mSelectionBounds[0];
 			int selEnd = mSelectionBounds[1];
 			boolean isStrike = (boolean) v.getTag();
-			StrikethroughSpan[] spans = s.getSpans( selSt, selEnd, StrikethroughSpan.class );
-			ArrayList<SpanEntry> spansToApply = new ArrayList<>();
-			for(StrikethroughSpan span : spans){
-				int st = s.getSpanStart( span );
-				int end = s.getSpanEnd( span );
-				if(st < selSt){
-					spansToApply.add( new SpanEntry( new StrikethroughSpan(), st, selSt ) );
-				}
-				if(end > selEnd){
-					spansToApply.add( new SpanEntry( new StrikethroughSpan(), selEnd, end ) );
-				}
-				s.removeSpan( span );
-			}
-			for(SpanEntry e : spansToApply){
-				s.setSpan( e.getStrikethroughSpan(), e.getStart(), e.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-			}
+			removeAllSpansInBounds( selSt, selEnd, StrikethroughSpan.class );
 
 			v.setTag( !isStrike );
 			if(!isStrike){ // apply
@@ -996,25 +1034,25 @@ public class EntryEditor extends ThemeActivity {
 			return;
 
 		StyleSpan[] ss = s.getSpans( selSt, selEnd, StyleSpan.class );
-		ArrayList<SpanEntry> spansToApply = new ArrayList<>();
+		ArrayList<SpanEntry<StyleSpan>> spansToApply = new ArrayList<>();
 		for(StyleSpan span : ss){
 			if(span.getStyle() == typeface){
 				int st = s.getSpanStart( span );
 				int end = s.getSpanEnd( span );
 
 				if(st < selSt){
-					SpanEntry se = new SpanEntry( new StyleSpan( span.getStyle() ), st, selSt );
+					SpanEntry<StyleSpan> se = new SpanEntry<>( new StyleSpan( span.getStyle() ), st, selSt );
 					spansToApply.add( se );
 				}
 				if(end > selEnd){
-					SpanEntry se = new SpanEntry( new StyleSpan( span.getStyle() ), selEnd, end );
+					SpanEntry<StyleSpan> se = new SpanEntry<>( new StyleSpan( span.getStyle() ), selEnd, end );
 					spansToApply.add(se);
 				}
 				s.removeSpan( span );
 			}
 		}
-		for(SpanEntry spanEntry : spansToApply){
-			s.setSpan( spanEntry.getStyleSpan(), spanEntry.getStart(), spanEntry.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+		for(SpanEntry<StyleSpan> spanEntry : spansToApply){
+			s.setSpan( spanEntry.getSpan(), spanEntry.getStart(), spanEntry.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 		}
 		if(action.equals( "apply" ))
 			s.setSpan( new StyleSpan( typeface ), selSt, selEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
@@ -1050,22 +1088,7 @@ public class EntryEditor extends ThemeActivity {
 		Editable s = mTextEditor.getText();
 		if(s == null)
 			return;
-		ForegroundColorSpan[] spans = s.getSpans( mSelectionBounds[0], mSelectionBounds[1], ForegroundColorSpan.class );
-		ArrayList<SpanEntry> spansToApply = new ArrayList<>();
-		for(ForegroundColorSpan span : spans){
-			int st = s.getSpanStart( span );
-			int end = s.getSpanEnd( span );
-			if(st < selSt){
-				spansToApply.add( new SpanEntry( new ForegroundColorSpan( span.getForegroundColor() ), st, selSt ) );
-			}
-			if(end > selEnd){
-				spansToApply.add( new SpanEntry( new ForegroundColorSpan( span.getForegroundColor() ), selEnd, end ) );
-			}
-			s.removeSpan( span );
-		}
-		for(SpanEntry entry : spansToApply){
-			s.setSpan( entry.getForegroundSpan(), entry.getStart(), entry.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-		}
+		removeAllSpansInBounds( selSt, selEnd, ForegroundColorSpan.class );
 		s.setSpan( new ForegroundColorSpan( color ), selSt, selEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 	}
 
@@ -1355,24 +1378,7 @@ public class EntryEditor extends ThemeActivity {
 
 		int selSt = mSelectionBounds[0];
 		int selEnd = mSelectionBounds[1];
-		AlignmentSpan.Standard[] spans = e.getSpans( mSelectionBounds[0], mSelectionBounds[1], AlignmentSpan.Standard.class );
-		ArrayList<SpanEntry> spansToApply = new ArrayList<>();
-		for(AlignmentSpan.Standard span : spans){
-			int st = e.getSpanStart( span );
-			int end = e.getSpanEnd( span );
-			if(st < selSt){
-				SpanEntry se = new SpanEntry( span, st, selSt );
-				spansToApply.add( se );
-			}
-			if(end > selEnd){
-				SpanEntry se = new SpanEntry( span, selEnd, end );
-				spansToApply.add(se);
-			}
-			e.removeSpan( span );
-		}
-		for(SpanEntry se : spansToApply){
-			e.setSpan( se.getAlignmentSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-		}
+		removeAllSpansInBounds( selSt, selEnd, AlignmentSpan.Standard.class );
 		e.setSpan( new AlignmentSpan.Standard( alignment ), selSt, selEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 	}
 

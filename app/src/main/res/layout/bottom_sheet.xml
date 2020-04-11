@@ -97,7 +97,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="7dp"
+                android:layout_margin="@dimen/bottom_sheet_elements_margin"
                 android:gravity="center"
                 android:orientation="vertical">
 
@@ -170,7 +170,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/btn_style_margin_top_bottom"
+                android:layout_marginBottom="@dimen/bottom_sheet_elements_margin"
                 android:gravity="center"
                 android:orientation="vertical">
 
@@ -226,6 +226,41 @@
                         android:src="?attr/strike_button_src"
                         tools:ignore="ContentDescription" />
                 </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:layout_marginBottom="@dimen/bottom_sheet_elements_margin">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/sup_and_subscript"
+                    android:textColor="?textColor"
+                    android:gravity="center"
+                    android:textSize="18sp"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.AppCompat.Button.Borderless"
+                        android:id="@+id/btnSuperscript"/>
+
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.AppCompat.Button.Borderless"
+                        android:id="@+id/btnSubscript"/>
+                </LinearLayout>
+
             </LinearLayout>
 
             <LinearLayout

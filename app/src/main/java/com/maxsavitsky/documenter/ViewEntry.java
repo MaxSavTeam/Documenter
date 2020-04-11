@@ -10,6 +10,7 @@ import android.preference.PreferenceManager;
 import android.text.Html;
 import android.text.Spannable;
 import android.text.Spanned;
+import android.text.style.AlignmentSpan;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -241,9 +242,9 @@ public class ViewEntry extends ThemeActivity {
 				public void run() {
 					final TextView t = findViewById( R.id.textViewContent );
 					final Spannable spannable = (Spannable) Html.fromHtml(text, new HtmlImageLoader( ViewEntry.this ), null);
-					ArrayList<SpanEntry> spanEntries = mEntry.getAlignments();
-					for(SpanEntry se : spanEntries){
-						spannable.setSpan( se.getAlignmentSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+					ArrayList<SpanEntry<AlignmentSpan.Standard>> spanEntries = mEntry.getAlignments();
+					for(SpanEntry<AlignmentSpan.Standard> se : spanEntries){
+						spannable.setSpan( se.getSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 					}
 					t.post( new Runnable() {
 						@Override

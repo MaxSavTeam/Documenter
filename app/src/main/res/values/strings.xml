@@ -135,4 +135,7 @@
     <string name="logged_in">Logged in</string>
     <string name="file_type_is_not_supported">Sorry, but this file type is not supported.</string>
     <string name="some_data_might_not_be_saved_correctly">Some data might not be saved correctly.</string>
+    <string name="sup_and_subscript">Superscript and subscript</string>
+    <string name="sup"><![CDATA[<sup>sup</sup>]]></string>
+    <string name="sub"><![CDATA[<sub>sub</sub>]]></string>
 </resources>
