@@ -10,6 +10,7 @@ import android.text.Html;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
@@ -19,22 +20,28 @@ import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.utils.Utils;
-import com.rollbar.android.Rollbar;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.math.BigDecimal;
 
 public class MainActivity extends ThemeActivity {
 	private String path;
 	public static final String TAG = "Documenter";
+	private MyExceptionHandler mExceptionHandler;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		mExceptionHandler = new MyExceptionHandler( this );
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		Rollbar.init(this);
-		Thread.setDefaultUncaughtExceptionHandler( new MyExceptionHandler( this ) );
+		Thread.setDefaultUncaughtExceptionHandler( new Thread.UncaughtExceptionHandler() {
+			@Override
+			public void uncaughtException(@NonNull Thread t, @NonNull Throwable e) {
+				mExceptionHandler.uncaughtException( t, e );
+			}
+		} );
 		try {
 			Toolbar toolbar = findViewById( R.id.toolbar );
 			setSupportActionBar( toolbar );
@@ -222,7 +229,8 @@ public class MainActivity extends ThemeActivity {
 	}
 
 	public void makeError(View v){
-		throw new NullPointerException( "Test exception" );
+		//throw new NullPointerException( "Test exception" );
+		BigDecimal a = BigDecimal.ONE.divide( BigDecimal.valueOf( 3 ) );
 	}
 
 	private void restartApp() {

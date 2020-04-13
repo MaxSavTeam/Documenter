@@ -12,7 +12,6 @@ import android.os.Build;
 import androidx.annotation.NonNull;
 
 import com.maxsavitsky.documenter.utils.Utils;
-import com.rollbar.android.Rollbar;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -31,7 +30,6 @@ public class MyExceptionHandler implements Thread.UncaughtExceptionHandler {
 
 	@Override
 	public void uncaughtException(@NonNull Thread t, @NonNull Throwable e) {
-		Rollbar.instance().critical( e );
 		prepareStacktrace( t, e, false );
 
 		Intent intent = new Intent( mActivity, MainActivity.class );

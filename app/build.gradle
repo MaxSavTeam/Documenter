@@ -40,10 +40,10 @@ android {
         applicationId "com.maxsavitsky.documenter"
         minSdkVersion 23
         targetSdkVersion 29
-        versionCode 31
+        versionCode 32
 
         verCode = versionCode
-        cleanVersionName = "1.4.2" + ".$versionCode" + (code != -1 ? "." + code.toString() : "")
+        cleanVersionName = "1.5.0" + ".$versionCode" + (code != -1 ? "." + code.toString() : "")
 
         versionName cleanVersionName + "+${formatDate("yyyyMMddHHmm")}"
         buildConfigField "String", "COMPILATION_DATE", "\"${getDate()}\""
@@ -109,8 +109,5 @@ dependencies {
     implementation 'com.google.firebase:firebase-auth:19.3.0'
     implementation 'com.google.firebase:firebase-storage:19.1.1'
     implementation 'com.google.firebase:firebase-database:19.2.1'
-    implementation 'com.google.firebase:firebase-perf:19.0.5'
-
-    implementation 'com.rollbar:rollbar-java:1.6.0'
-    implementation 'com.rollbar:rollbar-android:1.6.0@aar'
+    implementation 'com.google.firebase:firebase-perf:19.0.6'
 }

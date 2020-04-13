@@ -241,7 +241,7 @@ public class ViewEntry extends ThemeActivity {
 				@Override
 				public void run() {
 					final TextView t = findViewById( R.id.textViewContent );
-					final Spannable spannable = (Spannable) Html.fromHtml(text, new HtmlImageLoader( ViewEntry.this ), null);
+					final Spannable spannable = (Spannable) Html.fromHtml(text, new HtmlImageLoader(), null);
 					ArrayList<SpanEntry<AlignmentSpan.Standard>> spanEntries = mEntry.getAlignments();
 					for(SpanEntry<AlignmentSpan.Standard> se : spanEntries){
 						spannable.setSpan( se.getSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );

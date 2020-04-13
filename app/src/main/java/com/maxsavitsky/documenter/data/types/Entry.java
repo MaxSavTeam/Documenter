@@ -437,10 +437,34 @@ public class Entry extends Type {
 
 		@Override
 		public boolean equals(Object o) {
-			if(o == null || getClass() != o.getClass())
+			if ( this == o ) {
+				return true;
+			}
+			if ( o == null || getClass() != o.getClass() ) {
 				return false;
+			}
 
-			return ((Properties) o).toString().equals( this.toString() );
+			Properties that = (Properties) o;
+
+			if ( textSize != that.textSize ) {
+				return false;
+			}
+			if ( bgColor != that.bgColor ) {
+				return false;
+			}
+			if ( textColor != that.textColor ) {
+				return false;
+			}
+			if ( mScrollPosition != that.mScrollPosition ) {
+				return false;
+			}
+			if ( mTextAlignment != that.mTextAlignment ) {
+				return false;
+			}
+			if ( mSaveLastPos != that.mSaveLastPos ) {
+				return false;
+			}
+			return mDefaultTextColor == that.mDefaultTextColor;
 		}
 
 		@Override

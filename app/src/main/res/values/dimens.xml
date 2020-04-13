@@ -16,4 +16,7 @@
     <dimen name="labels_margin_bottom">10dp</dimen>
 
     <dimen name="bottom_sheet_elements_margin">7dp</dimen>
+
+    <dimen name="layout_colors_height">43dp</dimen>
+    <dimen name="layout_colors_width">70dp</dimen>
 </resources>

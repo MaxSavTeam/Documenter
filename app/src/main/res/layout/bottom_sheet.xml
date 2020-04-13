@@ -231,34 +231,35 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/bottom_sheet_elements_margin"
                 android:gravity="center"
-                android:orientation="vertical"
-                android:layout_marginBottom="@dimen/bottom_sheet_elements_margin">
+                android:orientation="vertical">
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:gravity="center"
                     android:text="@string/sup_and_subscript"
                     android:textColor="?textColor"
-                    android:gravity="center"
-                    android:textSize="18sp"/>
+                    android:textSize="18sp" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:orientation="horizontal">
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        style="@style/Widget.AppCompat.Button.Borderless"
-                        android:id="@+id/btnSuperscript"/>
 
                     <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:id="@+id/btnSuperscript"
                         style="@style/Widget.AppCompat.Button.Borderless"
-                        android:id="@+id/btnSubscript"/>
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <Button
+                        android:id="@+id/btnSubscript"
+                        style="@style/Widget.AppCompat.Button.Borderless"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
                 </LinearLayout>
 
             </LinearLayout>
@@ -267,6 +268,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
+                android:layout_marginBottom="@dimen/bottom_sheet_elements_margin"
                 android:orientation="horizontal">
 
                 <LinearLayout
@@ -334,33 +336,72 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/textBackgroundLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:orientation="vertical"
-                android:visibility="gone">
-
-                <TextView
-                    android:id="@+id/txtTextBackgroundColor"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/text_background_color"
-                    android:textColor="?textColor"
-                    android:textSize="18sp" />
+                android:orientation="horizontal">
 
                 <LinearLayout
-                    android:layout_width="@dimen/backLayoutWidth"
-                    android:layout_height="@dimen/backLayoutWidth"
-                    android:background="?textColor"
+                    android:id="@+id/textBackgroundLayout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:orientation="horizontal">
+                    android:layout_marginEnd="5dp"
+                    android:orientation="vertical"
+                    android:visibility="gone">
 
-                    <Button
-                        android:id="@+id/btnTextBackgroundColorPicker"
-                        android:layout_width="@dimen/bgColorPickerWidth"
-                        android:layout_height="@dimen/bgColorPickerWidth"
-                        android:backgroundTint="@color/black" />
+                    <TextView
+                        android:id="@+id/txtTextBackgroundColor"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/text_background_color"
+                        android:textColor="?textColor"
+                        android:textSize="18sp" />
+
+                    <LinearLayout
+                        android:layout_width="@dimen/backLayoutWidth"
+                        android:layout_height="@dimen/backLayoutWidth"
+                        android:background="?textColor"
+                        android:gravity="center"
+                        android:orientation="horizontal">
+
+                        <Button
+                            android:id="@+id/btnTextBackgroundColorPicker"
+                            android:layout_width="@dimen/bgColorPickerWidth"
+                            android:layout_height="@dimen/bgColorPickerWidth"
+                            android:backgroundTint="@color/black" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/layout_replace_this_color"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:visibility="visible">
+
+                    <TextView
+                        android:id="@+id/txtReplaceColor"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/replace_this_color"
+                        android:textColor="?textColor"
+                        android:textSize="18sp" />
+
+                    <LinearLayout
+                        android:layout_width="@dimen/backLayoutWidth"
+                        android:layout_height="@dimen/backLayoutWidth"
+                        android:background="?textColor"
+                        android:gravity="center"
+                        android:orientation="horizontal">
+
+                        <Button
+                            android:id="@+id/btnReplaceColor"
+                            android:layout_width="@dimen/bgColorPickerWidth"
+                            android:layout_height="@dimen/bgColorPickerWidth"
+                            android:backgroundTint="@color/black" />
+                    </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
 
@@ -370,6 +411,7 @@
                 android:gravity="center_horizontal">
 
                 <Button
+                    android:id="@+id/btnPickImage"
                     style="@style/Widget.AppCompat.Button.Borderless"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

@@ -94,7 +94,7 @@
     <string name="title_activity_cloud_backup">Облачное резервное копирование</string>
     <string name="cloud_backup_parameters">Параметры резервного копирования в облако</string>
 
-    <string name="cloud_backup_activity_text1">На этой странице Вы можете создать резервную копию всех категорий, документов и записей, чтобы иметь доступ с других устройств. Создание новой резервной копии перезапишет старую резервную копию. При восстановлении &lt;b&gt; Вы можете потерять несохраненные данные &lt;b&gt;.</string>
+    <string name="cloud_backup_activity_text1"><![CDATA[На этой странице Вы можете создать резервную копию всех категорий, документов и записей, чтобы иметь доступ с других устройств. Создание новой резервной копии перезапишет старую резервную копию. При восстановлении <b> Вы можете потерять несохраненные данные <b>.]]></string>
     <string name="cloud_backup_activity_text2">Внимание: резервные копии загружаются на сервер Google Firebase. Там они будут защищены от посторонних и подчиняются политике конфиденциальности Google.</string>
     <string name="something_gone_wrong">Что-то пошло не так</string>
     <string name="last_backup">Последнее резервное копирование</string>
@@ -133,4 +133,7 @@
     <string name="sup_and_subscript">Верхний и нижний индексы</string>
     <string name="sup"><![CDATA[<sup>верхний</sup> индекс]]></string>
     <string name="sub"><![CDATA[<sub>нижний</sub> индекс]]></string>
+    <string name="apply_to_everything">Применить ко всему</string>
+    <string name="to">к</string>
+    <string name="replace_this_color">Заменить этот цвет</string>
 </resources>
