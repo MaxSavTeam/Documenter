@@ -136,4 +136,5 @@
     <string name="apply_to_everything">Применить ко всему</string>
     <string name="to">к</string>
     <string name="replace_this_color">Заменить этот цвет</string>
+    <string name="copy_content">Скопировать содержимое</string>
 </resources>

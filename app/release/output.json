@@ -1,31 +1,19 @@
 {
-  "version": 2,
+  "version": 1,
   "artifactType": {
     "type": "APK",
     "kind": "Directory"
   },
   "applicationId": "com.maxsavitsky.documenter",
-  "variantName": "processReleaseResources",
+  "variantName": "release",
   "elements": [
     {
       "type": "SINGLE",
       "filters": [],
-      "properties": [
-        {
-          "key": "packageId",
-          "value": "com.maxsavitsky.documenter"
-        },
-        {
-          "key": "split",
-          "value": ""
-        },
-        {
-          "key": "minSdkVersion",
-          "value": "23"
-        }
-      ],
-      "versionCode": 31,
-      "versionName": "1.4.2.31.706+202004101803",
+      "properties": [],
+      "versionCode": 32,
+      "versionName": "32",
+      "enabled": true,
       "outputFile": "app-release.apk"
     }
   ]

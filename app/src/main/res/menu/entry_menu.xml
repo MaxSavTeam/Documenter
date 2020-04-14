@@ -11,6 +11,11 @@
         android:icon="@drawable/ic_edit_text"
         app:showAsAction="ifRoom"/>
 
+    <item android:id="@+id/item_copy_content"
+        android:title="@string/copy_content"
+        android:icon="@drawable/ic_copy"
+        app:showAsAction="ifRoom" />
+
     <item android:id="@+id/item_delete_entry"
         android:icon="@drawable/ic_delete"
         android:title="@string/delete"

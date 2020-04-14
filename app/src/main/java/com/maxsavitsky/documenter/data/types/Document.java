@@ -4,13 +4,12 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.google.firebase.database.annotations.NotNull;
 import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.data.Info;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.XMLParser;
-
-import org.jetbrains.annotations.NotNull;
 import org.xml.sax.SAXException;
 
 import java.io.File;

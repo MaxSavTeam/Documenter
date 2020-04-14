@@ -8,17 +8,19 @@ import android.text.Spannable;
 import android.text.Spanned;
 import android.text.style.AlignmentSpan;
 import android.text.style.ImageSpan;
+import android.text.style.RelativeSizeSpan;
+import android.util.Pair;
 import android.view.Gravity;
 
 import androidx.annotation.NonNull;
 
+import com.google.firebase.database.annotations.NotNull;
 import com.maxsavitsky.documenter.data.Info;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.utils.SpanEntry;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.XMLParser;
 
-import org.jetbrains.annotations.NotNull;
 import org.xml.sax.SAXException;
 
 import java.io.BufferedReader;
@@ -124,6 +126,11 @@ public class Entry extends Type {
 			text.removeSpan( span );
 		}
 
+		saveAllRelativeSpans( text.getSpans( 0, text.length(), RelativeSizeSpan.class ), text );
+		for(RelativeSizeSpan span : text.getSpans( 0, text.length(), RelativeSizeSpan.class )){
+			text.removeSpan( span );
+		}
+
 		String htmlText = Html.toHtml( text );
 		FileWriter fr = new FileWriter( file );
 		fr.append( htmlText );
@@ -156,6 +163,31 @@ public class Entry extends Type {
 		}
 	}
 
+	private void saveAllRelativeSpans(RelativeSizeSpan[] spans, Spannable text){
+		File file = new File( mPathDir + "relative_spans" );
+		if(spans.length != 0){
+			StringBuilder sb = new StringBuilder();
+			for(int i = 0; i < spans.length; i++){
+				RelativeSizeSpan span = spans[i];
+				sb.append( span.getSizeChange() ).append( " " ).append( text.getSpanStart( span ) ).append( " " ).append( text.getSpanEnd( span ) );
+				if ( i != spans.length - 1 ) {
+					sb.append( "\n" );
+				}
+			}
+			try{
+				FileWriter fr = new FileWriter(file);
+				fr.write( sb.toString() );
+				fr.flush();
+				fr.close();
+			}catch (IOException e){
+				e.printStackTrace();
+			}
+		}else{
+			if(file.exists())
+				file.delete();
+		}
+	}
+
 	public ArrayList<SpanEntry<AlignmentSpan.Standard>> getAlignments(){
 		ArrayList<SpanEntry<AlignmentSpan.Standard>> arrayList = new ArrayList<>();
 		File file = new File( mPathDir + "alignment" );
@@ -169,6 +201,30 @@ public class Entry extends Type {
 
 					String[] strings = line.split( " " );
 					SpanEntry<AlignmentSpan.Standard> se = new SpanEntry<AlignmentSpan.Standard>( new AlignmentSpan.Standard( Alignment.valueOf( strings[ 0 ] ) ),
+							Integer.parseInt( strings[ 1 ] ),
+							Integer.parseInt( strings[ 2 ] ) );
+					arrayList.add( se );
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return arrayList;
+	}
+
+	public ArrayList<SpanEntry<RelativeSizeSpan>> getRelativeSpans(){
+		ArrayList<SpanEntry<RelativeSizeSpan>> arrayList = new ArrayList<>();
+		File file = new File( mPathDir + "relative_spans" );
+		if(file.exists()) {
+			try {
+				BufferedReader br = new BufferedReader( new FileReader( file ) );
+				String line;
+				while ( ( line = br.readLine() ) != null ) {
+					if ( Thread.currentThread().isInterrupted() )
+						break;
+
+					String[] strings = line.split( " " );
+					SpanEntry<RelativeSizeSpan> se = new SpanEntry<>( new RelativeSizeSpan( Float.parseFloat( strings[0] ) ),
 							Integer.parseInt( strings[ 1 ] ),
 							Integer.parseInt( strings[ 2 ] ) );
 					arrayList.add( se );
@@ -287,6 +343,19 @@ public class Entry extends Type {
 		}
 		fileInputStream.close();
 		return text;
+	}
+
+	public Spannable loadAndPrepareText() throws IOException{
+		String text = loadText();
+		Spannable spannable = (Spannable) Html.fromHtml( text );
+		for(SpanEntry<AlignmentSpan.Standard> se : getAlignments()){
+			spannable.setSpan( se.getSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+		}
+		for(SpanEntry<RelativeSizeSpan> se : getRelativeSpans()){
+			spannable.setSpan( se.getSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+		}
+
+		return spannable;
 	}
 
 	public void addDocumentToIncluded(String documentId) throws IOException, SAXException {

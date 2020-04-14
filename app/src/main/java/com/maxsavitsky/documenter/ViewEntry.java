@@ -232,6 +232,7 @@ public class ViewEntry extends ThemeActivity {
 	private interface TextLoaderCallback{
 		void exceptionOccurred(Exception e);
 		void loaded(String text);
+		void loaded(Spannable spannable);
 	}
 
 	private final TextLoaderCallback mCallback = new TextLoaderCallback() {
@@ -263,6 +264,26 @@ public class ViewEntry extends ThemeActivity {
 					} );
 				}
 			} ).start();
+		}
+
+		@Override
+		public void loaded(final Spannable spannable) {
+			final TextView t = findViewById( R.id.textViewContent );
+			runOnUiThread( new Runnable() {
+				@Override
+				public void run() {
+					t.setText( spannable );
+					if(mEntry.getProperties().isSaveLastPos()){
+						mScrollView.post( new Runnable() {
+							@Override
+							public void run() {
+								mScrollView.smoothScrollTo(0, mEntry.getProperties().getScrollPosition() );
+							}
+						} );
+					}
+					mProgressDialog.dismiss();
+				}
+			} );
 		}
 
 		@Override
@@ -329,8 +350,7 @@ public class ViewEntry extends ThemeActivity {
 			public void run() {
 				try {
 					//ArrayList<String> array = mEntry.loadTextLines();
-					String text = mEntry.loadText();
-					mCallback.loaded( text );
+					mCallback.loaded( mEntry.loadAndPrepareText() );
 				} catch (IOException e) {
 					e.printStackTrace();
 					mCallback.exceptionOccurred( e );

@@ -141,4 +141,5 @@
     <string name="apply_to_everything">Apply to everything</string>
     <string name="to">to</string>
     <string name="replace_this_color">Replace this color</string>
+    <string name="copy_content">Copy content</string>
 </resources>

@@ -68,7 +68,9 @@ android {
             }
         }
     }
-
+    lintOptions{
+        checkReleaseBuilds false
+    }
 }
 
 static def String formatDate(String format){
@@ -85,7 +87,7 @@ static String getDate() {
 afterEvaluate{ // delete this if you aren't me
     assembleRelease.doLast{
         exec {
-            commandLine "cmd", "/c", "groovy", "${projectPath}app\\after_build_tasks.groovy", 'afterBuildTask', cleanVersionName, verCode
+            commandLine ("cmd", "/c", "groovy", "${projectPath}app\\after_build_tasks.groovy", 'afterBuildTask', cleanVersionName, verCode)
         }
     }
 }
@@ -101,9 +103,12 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     implementation 'androidx.navigation:navigation-fragment:2.2.1'
     implementation 'androidx.navigation:navigation-ui:2.2.1'
-    implementation 'org.jetbrains:annotations-java5:15.0'
+
     implementation 'com.android.support:design:29.0.0'
     implementation files('libs/quadflask.colorpicker.aar')
+
+    implementation 'com.android.support:multidex:1.0.3'
+
     implementation 'com.google.firebase:firebase-core:17.3.0'
     implementation 'com.firebaseui:firebase-ui-auth:6.2.0'
     implementation 'com.google.firebase:firebase-auth:19.3.0'

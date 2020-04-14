@@ -30,6 +30,7 @@ import android.text.style.AlignmentSpan;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.ImageSpan;
+import android.text.style.RelativeSizeSpan;
 import android.text.style.StrikethroughSpan;
 import android.text.style.StyleSpan;
 import android.text.style.SubscriptSpan;
@@ -91,7 +92,7 @@ import static com.maxsavitsky.documenter.codes.Requests.*;
 public class EntryEditor extends ThemeActivity {
 	private Document mDocument;
 	private String type, mOriginalText;
-	private Entry mEntry;
+	private Entry mEntry, mCopyEntry;
 	private String mId;
 	private String title = "Create new entry";
 	private Entry.Properties mStartProperties;
@@ -112,9 +113,10 @@ public class EntryEditor extends ThemeActivity {
 	private int[] mSelectionBounds = new int[]{0, 0};
 	private Alignment mMainAlignment = Alignment.ALIGN_NORMAL;
 	private int mDefaultTextColor = Color.BLACK;
+	private final float INDEX_PROPORTION = 0.75f;
 
 	private interface OnLoadedTextListener{
-		void loaded(Spannable spannable, String originalText);
+		void loaded(Spannable spannable, Entry entry);
 		void exceptionOccurred(Exception e);
 	}
 
@@ -271,7 +273,7 @@ public class EntryEditor extends ThemeActivity {
 		mLoadFromHistoryDialog.setCancelable( false );
 		final OnLoadedTextListener listener = new OnLoadedTextListener() {
 			@Override
-			public void loaded(Spannable spannable, String originalText) {
+			public void loaded(Spannable spannable, Entry entry) {
 				if(changeEntry.getCursorPosition() > mTextEditor.getSelectionStart())
 					mTextEditor.setSelection( mTextEditor.getSelectionStart() );
 				else {
@@ -365,39 +367,8 @@ public class EntryEditor extends ThemeActivity {
 			getWindow().getDecorView().setBackgroundColor( mEntry.getProperties().getBgColor() );
 			title = getResources().getString( R.string.edit_entry );
 
-			try {
-				mProgressDialogOnTextLoad = new ProgressDialog( this );
-				mProgressDialogOnTextLoad.setTitle( R.string.loading );
-				mProgressDialogOnTextLoad.setMessage( getResources().getString( R.string.entry_is_loading ) );
-				mProgressDialogOnTextLoad.setCancelable( false );
-				mProgressDialogOnTextLoad.show();
-				new Thread( new Runnable() {
-					@Override
-					public void run() {
-						String loadedText;
-						mStartLoadTextTime = System.currentTimeMillis();
-						Log.v("TextLoader", "Start");
-						try {
-							loadedText = mEntry.loadText();
-						}catch (final IOException e){
-							mOnLoadedTextListener.exceptionOccurred( e );
-							Log.v( "TextLoader", "exception = " + e.toString() );
-							return;
-						}
-						Log.v("TextLoader", "Text loaded");
-						Spannable spannable = (Spannable) Html.fromHtml( loadedText );
-						for(SpanEntry<AlignmentSpan.Standard> se : mEntry.getAlignments()){
-							spannable.setSpan( se.getSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-						}
-						mOnLoadedTextListener.loaded( spannable, loadedText );
-					}
-				} ).start();
-			}catch (Exception e){
-				e.printStackTrace();
-				Utils.getErrorDialog( e, this ).show();
-				//return;
-			}
-		}else{
+			loadTextFromEntryInEditor( mId );
+		}else if(type.equals( "create" )){
 			title = getResources().getString( R.string.create_new_entry );
 			mWithoutDoc = getIntent().getBooleanExtra( "without_doc", false );
 			if(!mWithoutDoc)
@@ -456,6 +427,32 @@ public class EntryEditor extends ThemeActivity {
 		setAlignmentButtonClicked( getAlignmentButtonId( mMainAlignment ) );
 	}
 
+	private void loadTextFromEntryInEditor(String id){
+		final Entry entry = MainData.getEntryWithId( id );
+		mProgressDialogOnTextLoad = new ProgressDialog( this );
+		mProgressDialogOnTextLoad.setTitle( R.string.loading );
+		mProgressDialogOnTextLoad.setMessage( getResources().getString( R.string.entry_is_loading ) );
+		mProgressDialogOnTextLoad.setCancelable( false );
+		mProgressDialogOnTextLoad.show();
+		new Thread( new Runnable() {
+			@Override
+			public void run() {
+				Spannable loadedSpannable;
+				mStartLoadTextTime = System.currentTimeMillis();
+				Log.v("TextLoader", "Start");
+				try {
+					loadedSpannable = entry.loadAndPrepareText();
+				}catch (final IOException e){
+					mOnLoadedTextListener.exceptionOccurred( e );
+					Log.v( "TextLoader", "exception = " + e.toString() );
+					return;
+				}
+				Log.v("TextLoader", "Text loaded");
+				mOnLoadedTextListener.loaded( loadedSpannable, entry );
+			}
+		} ).start();
+	}
+
 	private void readColorHistory(){
 		String history = sp.getString( "color_history", null );
 		if(history != null){
@@ -508,11 +505,11 @@ public class EntryEditor extends ThemeActivity {
 
 	private final OnLoadedTextListener mOnLoadedTextListener = new OnLoadedTextListener() {
 		@Override
-		public void loaded(final Spannable spannable, final String originalText) {
+		public void loaded(final Spannable spannable, final Entry entry) {
 			double seconds = (System.currentTimeMillis() - mStartLoadTextTime) / 1000.0;
 			Log.v( "TextLoader", "mOnLoadedTextListener.loaded called. Seconds = " + seconds );
 
-			AbsoluteSizeSpan absoluteSizeSpan = new AbsoluteSizeSpan( mEntry.getProperties().getTextSize(), true );
+			AbsoluteSizeSpan absoluteSizeSpan = new AbsoluteSizeSpan( entry.getProperties().getTextSize(), true );
 			spannable.setSpan( absoluteSizeSpan, 0, spannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 
 			mOriginalText = Html.toHtml( trim( spannable ) );
@@ -521,7 +518,7 @@ public class EntryEditor extends ThemeActivity {
 				@Override
 				public void run() {
 					setTextInEditor( spannable );
-					mTextEditor.setScrollY( mEntry.getProperties().getScrollPosition() );
+					mTextEditor.setScrollY( entry.getProperties().getScrollPosition() );
 					mStartEditable = mTextEditor.getText();
 					setEditTextSize();
 					setButtonReplaceColorAppearance();
@@ -993,9 +990,11 @@ public class EntryEditor extends ThemeActivity {
 				return;
 			removeAllSpansInBounds( selSt, selEnd, SuperscriptSpan.class );
 			removeAllSpansInBounds( selSt, selEnd, SubscriptSpan.class );
+			removeAllSpansInBounds( selSt, selEnd, RelativeSizeSpan.class );
 
 			if(!isApplied){
 				e.setSpan( new SuperscriptSpan(), selSt, selEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+				e.setSpan( new RelativeSizeSpan( INDEX_PROPORTION ), selSt, selEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 			}
 			applySupSubButton( v.getId() );
 			applySupSubButton( R.id.btnSubscript );
@@ -1013,9 +1012,11 @@ public class EntryEditor extends ThemeActivity {
 				return;
 			removeAllSpansInBounds( selSt, selEnd, SubscriptSpan.class );
 			removeAllSpansInBounds( selSt, selEnd, SuperscriptSpan.class );
+			removeAllSpansInBounds( selSt, selEnd, RelativeSizeSpan.class );
 
 			if(!isApplied){
 				e.setSpan( new SubscriptSpan(), selSt, selEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+				e.setSpan( new RelativeSizeSpan( INDEX_PROPORTION ), selSt, selEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 			}
 			applySupSubButton( v.getId() );
 			applySupSubButton( R.id.btnSuperscript );
@@ -1418,8 +1419,19 @@ public class EntryEditor extends ThemeActivity {
 			return;
 
 		AbsoluteSizeSpan absoluteSizeSpan = new AbsoluteSizeSpan( mEntry.getProperties().getTextSize(), true );
+		RelativeSizeSpan[] spans = e.getSpans( 0, e.length(), RelativeSizeSpan.class );
+		ArrayList<SpanEntry<RelativeSizeSpan>> spanEntries = new ArrayList<>(  );
+		for(RelativeSizeSpan span : spans){
+			int st = e.getSpanStart( span );
+			int end = e.getSpanEnd( span );
+			spanEntries.add( new SpanEntry<>( new RelativeSizeSpan( span.getSizeChange() ), st, end ) );
+		}
 		removeAllSpansInBounds( 0, e.length(), AbsoluteSizeSpan.class );
+		removeAllSpansInBounds( 0, e.length(), RelativeSizeSpan.class );
 		e.setSpan( absoluteSizeSpan, 0, e.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+		for(SpanEntry<RelativeSizeSpan> se : spanEntries){
+			e.setSpan( se.getSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+		}
 	}
 
 	private void createEntry(String name, Spannable text){
