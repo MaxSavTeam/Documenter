@@ -27,12 +27,16 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.maxsavitsky.documenter.adapters.ListAdapter;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.codes.Results;
+import com.maxsavitsky.documenter.data.types.Type;
 import com.maxsavitsky.documenter.media.images.HtmlImageLoader;
 import com.maxsavitsky.documenter.utils.SpanEntry;
 import com.maxsavitsky.documenter.utils.Utils;
@@ -41,6 +45,7 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class ViewEntry extends ThemeActivity {
 
@@ -77,96 +82,142 @@ public class ViewEntry extends ThemeActivity {
 
 	@Override
 	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-		switch ( item.getItemId() ) {
-			case android.R.id.home:
-				backPressed();
-				break;
-			case R.id.item_edit_entry_name:
-				AlertDialog changeNameDialog;
-				final EditText editText = new EditText( this );
-				editText.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT ) );
-				editText.setText( mEntry.getName() );
-				editText.requestFocus();
-				editText.setTextColor( getColor(super.mTextColor) );
-				AlertDialog.Builder builder = new AlertDialog.Builder( this )
-						.setTitle( R.string.edit_entry_name )
-						.setView( editText )
-						.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								String newName = editText.getText().toString();
-								newName = newName.trim();
-								if ( !newName.isEmpty() && !newName.equals( mEntry.getName() ) ) {
-									if ( Utils.isNameExist( newName, "ent" ) ) {
-										Toast.makeText( ViewEntry.this, R.string.this_name_already_exist, Toast.LENGTH_SHORT ).show();
-										return;
-									}
-									MainData.removeEntryWithId( mEntry.getId() );
-									ArrayList<Entry> entries = MainData.getEntriesList();
-									mEntry = new Entry( mEntry.getId(), newName );
-									entries.add( mEntry );
-									MainData.setEntriesList( entries );
-									Utils.saveEntriesList( entries );
-									applyTheme();
+		int itemId = item.getItemId();
+		if ( itemId == android.R.id.home ) {
+			backPressed();
+		} else if ( itemId == R.id.item_edit_entry_name ) {
+			AlertDialog changeNameDialog;
+			final EditText editText = new EditText( this );
+			editText.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT ) );
+			editText.setText( mEntry.getName() );
+			editText.requestFocus();
+			editText.setTextColor( getColor( super.mTextColor ) );
+			AlertDialog.Builder builder = new AlertDialog.Builder( this )
+					.setTitle( R.string.edit_entry_name )
+					.setView( editText )
+					.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							String newName = editText.getText().toString();
+							newName = newName.trim();
+							if ( !newName.isEmpty() && !newName.equals( mEntry.getName() ) ) {
+								if ( Utils.isNameExist( newName, "ent" ) ) {
+									Toast.makeText( ViewEntry.this, R.string.this_name_already_exist, Toast.LENGTH_SHORT ).show();
+									return;
+								}
+								MainData.removeEntryWithId( mEntry.getId() );
+								ArrayList<Entry> entries = MainData.getEntriesList();
+								mEntry = new Entry( mEntry.getId(), newName );
+								entries.add( mEntry );
+								MainData.setEntriesList( entries );
+								Utils.saveEntriesList( entries );
+								applyTheme();
+								setResult( Results.NEED_TO_REFRESH );
+								resultSet = true;
+							} else {
+								Toast.makeText( ViewEntry.this, R.string.invalid_name, Toast.LENGTH_SHORT ).show();
+							}
+						}
+					} )
+					.setNegativeButton( R.string.cancel, new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							dialog.cancel();
+						}
+					} ).setCancelable( false );
+			changeNameDialog = builder.create();
+			changeNameDialog.show();
+		} else if ( itemId == R.id.item_delete_entry ) {
+			AlertDialog.Builder deletionBuilder = new AlertDialog.Builder( this )
+					.setMessage( R.string.delete_confirmation_text )
+					.setTitle( R.string.confirmation )
+					.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							dialog.cancel();
+							try {
+								if ( MainData.finallyDeleteEntryWithId( mEntry.getId() ) ) {
 									setResult( Results.NEED_TO_REFRESH );
-									resultSet = true;
+									finish();
 								} else {
-									Toast.makeText( ViewEntry.this, R.string.invalid_name, Toast.LENGTH_SHORT ).show();
+									Toast.makeText( ViewEntry.this, "Failed", Toast.LENGTH_SHORT ).show();
 								}
+							} catch (Exception e) {
+								e.printStackTrace();
+								Toast.makeText( ViewEntry.this, "onOptionsItemSelected", Toast.LENGTH_LONG ).show();
+								Utils.getErrorDialog( e, ViewEntry.this ).show();
 							}
-						} )
-						.setNegativeButton( R.string.cancel, new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								dialog.cancel();
-							}
-						} ).setCancelable( false );
-				changeNameDialog = builder.create();
-				changeNameDialog.show();
-				break;
-			case R.id.item_delete_entry:
-				AlertDialog.Builder deletionBuilder = new AlertDialog.Builder( this )
-						.setMessage( R.string.delete_confirmation_text )
-						.setTitle( R.string.confirmation )
-						.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								dialog.cancel();
-								try {
-									if ( MainData.finallyDeleteEntryWithId( mEntry.getId() ) ) {
-										setResult( Results.NEED_TO_REFRESH );
-										finish();
-									} else {
-										Toast.makeText( ViewEntry.this, "Failed", Toast.LENGTH_SHORT ).show();
-									}
-								} catch (Exception e) {
-									e.printStackTrace();
-									Toast.makeText( ViewEntry.this, "onOptionsItemSelected", Toast.LENGTH_LONG ).show();
-									Utils.getErrorDialog( e, ViewEntry.this ).show();
-								}
-							}
-						} ).setNeutralButton( R.string.cancel, new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								dialog.cancel();
-							}
-						} ).setCancelable( false );
-				deletionBuilder.create().show();
-				break;
-			case R.id.item_edit_entry_text:
-				mEntry.getProperties().setScrollPosition( mScrollView.getScrollY() );
-				try {
-					mEntry.saveProperties( mEntry.getProperties() );
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-				Intent intent = new Intent( this, EntryEditor.class );
-				intent.putExtra( "type", "edit" );
-				intent.putExtra( "id", mEntry.getId() );
-				startActivityForResult( intent, Requests.EDIT_ENTRY );
-				break;
+						}
+					} ).setNeutralButton( R.string.cancel, new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							dialog.cancel();
+						}
+					} ).setCancelable( false );
+			deletionBuilder.create().show();
+		} else if ( itemId == R.id.item_edit_entry_text ) {
+			mEntry.getProperties().setScrollPosition( mScrollView.getScrollY() );
+			try {
+				mEntry.saveProperties( mEntry.getProperties() );
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			Intent intent = new Intent( this, EntryEditor.class );
+			intent.putExtra( "type", "edit" );
+			intent.putExtra( "id", mEntry.getId() );
+			startActivityForResult( intent, Requests.EDIT_ENTRY );
+		} else if ( itemId == R.id.item_copy_content ) {
+			prepareCopyToLayout();
 		}
 		return super.onOptionsItemSelected( item );
+	}
+
+	private void prepareCopyToLayout(){
+		setContentView( R.layout.layout_copy_to );
+		getWindow().getDecorView().setBackgroundColor( super.BACKGROUND_COLOR );
+		ArrayList<Type> entryArrayList = new ArrayList<>();
+		ArrayList<Entry> mainEntries = MainData.getEntriesList();
+		for(int i = 0; i < mainEntries.size(); i++){
+			Type entry = mainEntries.get( i );
+			if(!entry.getId().equals( mEntry.getId() ))
+				entryArrayList.add( entry );
+		}
+		findViewById( R.id.btnCopyCancel ).setOnClickListener( new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent data = new Intent();
+				data.putExtra( "id", mEntry.getId() );
+				data.putExtra( "free_mode", isFreeMode );
+				setResult( Results.REOPEN, data );
+				finish();
+			}
+		} );
+		RecyclerView rc = findViewById( R.id.rcCopyTo );
+		if(entryArrayList.size() == 0){
+			rc.setVisibility( View.GONE );
+			findViewById( R.id.txtCopyNothingToShow ).setVisibility( View.VISIBLE );
+		}else {
+			Collections.sort( entryArrayList, Utils.getSortByNamesComparator() );
+			View.OnClickListener onItemChose = new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					Intent intent = new Intent();
+					String id = ( (TextView) v.findViewById( R.id.lblHiddenTypeId ) ).getText().toString();
+					intent.putExtra( "type", "copy" );
+					intent.putExtra( "from_id", mEntry.getId() );
+					intent.putExtra( "to_id", id );
+					setResult( Results.COPY_TO_ACTION, intent );
+					finish();
+				}
+			};
+
+			LinearLayoutManager linearLayoutManager = new LinearLayoutManager( this );
+			linearLayoutManager.setOrientation( RecyclerView.VERTICAL );
+
+			ListAdapter listAdapter = new ListAdapter( this, entryArrayList, onItemChose );
+			rc.setLayoutManager( linearLayoutManager );
+			rc.setAdapter( listAdapter );
+		}
 	}
 
 	@Override

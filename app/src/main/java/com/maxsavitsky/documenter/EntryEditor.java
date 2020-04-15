@@ -92,7 +92,7 @@ import static com.maxsavitsky.documenter.codes.Requests.*;
 public class EntryEditor extends ThemeActivity {
 	private Document mDocument;
 	private String type, mOriginalText;
-	private Entry mEntry, mCopyEntry;
+	private Entry mEntry, mCopyToEntry;
 	private String mId;
 	private String title = "Create new entry";
 	private Entry.Properties mStartProperties;
@@ -344,7 +344,8 @@ public class EntryEditor extends ThemeActivity {
 		btnUnderline = findViewById( R.id.btnUnderline );
 		btnStrike = findViewById( R.id.btnStrike );
 
-		type = getIntent().getStringExtra( "type" );
+		Intent startIntent = getIntent();
+		type = startIntent.getStringExtra( "type" );
 		mTextEditor = findViewById( R.id.edittextEntry );
 		mTextEditor.setListener( mOnSelectionChanges );
 		if(type == null){
@@ -365,7 +366,7 @@ public class EntryEditor extends ThemeActivity {
 			mDefaultTextColor = mEntry.getProperties().getDefaultTextColor();
 			mTextEditor.setTextColor( mDefaultTextColor );
 			getWindow().getDecorView().setBackgroundColor( mEntry.getProperties().getBgColor() );
-			title = getResources().getString( R.string.edit_entry );
+			title = getResources().getString( R.string.edit_entry ) + ": " + mEntry.getName();
 
 			loadTextFromEntryInEditor( mId );
 		}else if(type.equals( "create" )){
@@ -376,6 +377,13 @@ public class EntryEditor extends ThemeActivity {
 			mEntry = new Entry( "temp_entry", "" );
 			mId = Utils.generateUniqueId() + "_ent";
 			hideUpButton();
+		}else if(type.equals( "copy" )){
+			String toId = startIntent.getStringExtra( "to_id" );
+			String fromId = startIntent.getStringExtra( "from_id" );
+			mEntry = MainData.getEntryWithId( fromId );
+			mCopyToEntry = MainData.getEntryWithId( toId );
+			title = getResources().getString( R.string.edit_entry ) + ": " + mCopyToEntry.getName();
+			loadTextFromEntryInEditor( fromId );
 		}
 		invalidateOptionsMenu();
 		applyTheme();
@@ -1589,6 +1597,55 @@ public class EntryEditor extends ThemeActivity {
 		}
 	}
 
+	private void copyContentFiles(){
+		mCopyToEntry.deleteContentFiles();
+		ArrayList<File> contentFiles = mEntry.getContentFiles();
+		for(File file : contentFiles){
+			String path = file.getPath().replaceAll( mEntry.getId(), mCopyToEntry.getId() );
+			File nFile = new File( path );
+			File parent = nFile.getParentFile();
+			assert parent != null;
+			if(!parent.exists())
+				parent.mkdirs();
+			try{
+				if(!nFile.exists())
+					nFile.createNewFile();
+				FileInputStream fis = new FileInputStream( file );
+				FileOutputStream fos = new FileOutputStream( nFile );
+				byte[] buffer = new byte[1024];
+				int len;
+				while((len = fis.read(buffer)) != -1){
+					fos.write( buffer, 0, len );
+				}
+
+				fis.close();
+				fos.flush();
+				fos.close();
+			}catch (IOException e){
+				e.printStackTrace();
+				Utils.getErrorDialog( e, this ).show();
+				return;
+			}
+		}
+	}
+
+	private void replaceImages(){
+		Editable e =  mTextEditor.getText();
+		if(e == null )
+			return;
+		ImageSpan[] spans = e.getSpans( 0, e.length(), ImageSpan.class );
+		for(ImageSpan span : spans){
+			String source = span.getSource();
+			assert source != null : "Image source is null";
+			source = source.replaceAll( mEntry.getId(), mCopyToEntry.getId() );
+			int st = e.getSpanStart( span );
+			int end = e.getSpanEnd( span );
+			e.removeSpan( span );
+			Drawable d = ImageRenderer.renderDrawable( source );
+			e.setSpan( new ImageSpan( d, source ), st, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+		}
+	}
+
 	private void saveEntry(){
 		Editable e = mTextEditor.getText();
 		if(e == null)
@@ -1673,6 +1730,22 @@ public class EntryEditor extends ThemeActivity {
 					return;
 				}
 				_finishActivity();
+			}
+		}else if(type.equals( "copy" )){
+			removeUnusedImages();
+			if(e.length() != 0){
+				copyContentFiles();
+				replaceImages();
+				try{
+					mCopyToEntry.saveProperties( mEntry.getProperties() );
+					mCopyToEntry.saveContent( mTextEditor.getText() );
+
+					setResult( Results.REOPEN, new Intent().putExtra( "id", mCopyToEntry.getId() ) );
+					_finishActivity();
+				}catch (IOException ex){
+					ex.printStackTrace();
+					Utils.getErrorDialog( ex, this ).show();
+				}
 			}
 		}
 	}

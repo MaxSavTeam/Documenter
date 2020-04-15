@@ -31,10 +31,17 @@ public class MainActivity extends ThemeActivity {
 	public static final String TAG = "Documenter";
 	private MyExceptionHandler mExceptionHandler;
 
+	private static MainActivity instance;
+
+	public static MainActivity getInstance() {
+		return instance;
+	}
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		mExceptionHandler = new MyExceptionHandler( this );
 		super.onCreate(savedInstanceState);
+		instance = this;
 		setContentView(R.layout.activity_main);
 		Thread.setDefaultUncaughtExceptionHandler( new Thread.UncaughtExceptionHandler() {
 			@Override
@@ -83,7 +90,7 @@ public class MainActivity extends ThemeActivity {
 		findViewById( R.id.btnErrSendReport ).setOnClickListener( new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				sendLog();
+				sendLog(path);
 			}
 		} );
 		findViewById( R.id.btnErrViewReport ).setOnClickListener( new View.OnClickListener() {
@@ -131,26 +138,26 @@ public class MainActivity extends ThemeActivity {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						dialog.cancel();
-						sendLog();
+						sendLog(path);
 					}
 				} );
 
 		builder.create().show();
 	}
 
-	private void sendLog() {
+	public void sendLog(String logPath) {
 		Intent newIntent = new Intent( Intent.ACTION_SEND );
 		newIntent.setType( "message/rfc822" );
 		newIntent.putExtra( Intent.EXTRA_EMAIL, new String[]{ "maxsavhelp@gmail.com" } );
 		newIntent.putExtra( Intent.EXTRA_SUBJECT, "Error in documenter" );
-		newIntent.putExtra( Intent.EXTRA_STREAM, Uri.parse( "file://" + path ) );
+		newIntent.putExtra( Intent.EXTRA_STREAM, Uri.parse( "file://" + logPath ) );
 		newIntent.putExtra( Intent.EXTRA_TEXT, "Log file attached." );
 		StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
 		StrictMode.setVmPolicy( builder.build() );
 		try {
 			startActivity( newIntent );
 		} catch (Exception e) {
-			Utils.getErrorDialog( e, this ).show();
+			Utils.getErrorDialog( e, this, true, false ).show();
 			e.printStackTrace();
 		}
 	}
@@ -230,7 +237,11 @@ public class MainActivity extends ThemeActivity {
 
 	public void makeError(View v){
 		//throw new NullPointerException( "Test exception" );
-		BigDecimal a = BigDecimal.ONE.divide( BigDecimal.valueOf( 3 ) );
+		try {
+			BigDecimal a = BigDecimal.ONE.divide( BigDecimal.valueOf( 3 ) );
+		}catch (Exception e){
+			Utils.getErrorDialog( e, this ).show();
+		}
 	}
 
 	private void restartApp() {

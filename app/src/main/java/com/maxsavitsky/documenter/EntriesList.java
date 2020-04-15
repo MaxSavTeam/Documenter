@@ -28,6 +28,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.maxsavitsky.documenter.adapters.DefaultChooseAdapter;
+import com.maxsavitsky.documenter.adapters.ListAdapter;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.data.types.Entry;
@@ -40,7 +41,6 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -108,7 +108,7 @@ public class EntriesList extends ThemeActivity {
 			LinearLayoutManager linearLayoutManager = new LinearLayoutManager( this );
 			linearLayoutManager.setOrientation( RecyclerView.VERTICAL );
 
-			RVAdapter rvAdapter = new RVAdapter( mEntries );
+			ListAdapter rvAdapter = new ListAdapter( this, mEntries, onItemClick );
 
 			recyclerView.setLayoutManager( linearLayoutManager );
 			recyclerView.setAdapter( rvAdapter );
@@ -122,7 +122,7 @@ public class EntriesList extends ThemeActivity {
 		@Override
 		public void onClick(View v) {
 			Intent intent = new Intent( EntriesList.this, ViewEntry.class );
-			String id = ( (TextView) v.findViewById( R.id.lblHiddenCategoryId ) ).getText().toString();
+			String id = ( (TextView) v.findViewById( R.id.lblHiddenTypeId ) ).getText().toString();
 			intent.putExtra( "id", id );
 			intent.putExtra( "free_mode", isFreeEntriesMode );
 			startActivityForResult( intent, Requests.VIEW_ENTRY );
@@ -431,6 +431,11 @@ public class EntriesList extends ThemeActivity {
 					intent.putExtras( data );
 				}
 				startActivityForResult( intent, Requests.VIEW_ENTRY );
+			}else if(resultCode == Results.COPY_TO_ACTION){
+				Intent intent = new Intent( this, EntryEditor.class );
+				if(data != null)
+					intent.putExtras(data);
+				startActivityForResult( intent, Requests.CREATE_ENTRY );
 			}
 		}
 		if ( resultCode == Results.RESTART_APP ) {
@@ -464,42 +469,5 @@ public class EntriesList extends ThemeActivity {
 			}
 		}
 		return super.onCreateOptionsMenu( menu );
-	}
-
-	class RVAdapter extends RecyclerView.Adapter<RVAdapter.ViewHolder> {
-		private final ArrayList<Entry> mData;
-
-		RVAdapter(ArrayList<Entry> data) {
-			mData = data;
-		}
-
-		@NonNull
-		@Override
-		public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-			return new ViewHolder( LayoutInflater.from( EntriesList.this ).inflate( R.layout.list_item, parent, false ) );
-		}
-
-		@Override
-		public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-			holder.id.setText( mData.get( position ).getId() );
-			holder.name.setText( mData.get( position ).getName() );
-		}
-
-		@Override
-		public int getItemCount() {
-			return mData.size();
-		}
-
-		class ViewHolder extends RecyclerView.ViewHolder {
-			final TextView id;
-			final TextView name;
-
-			ViewHolder(@NonNull View itemView) {
-				super( itemView );
-				id = itemView.findViewById( R.id.lblHiddenCategoryId );
-				name = itemView.findViewById( R.id.lblCategoryName );
-				itemView.setOnClickListener( onItemClick );
-			}
-		}
 	}
 }

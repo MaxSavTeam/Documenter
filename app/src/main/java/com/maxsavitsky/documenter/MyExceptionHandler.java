@@ -22,7 +22,12 @@ import java.util.Locale;
 
 public class MyExceptionHandler implements Thread.UncaughtExceptionHandler {
 	private final Activity mActivity;
-	private File mStackTraceFile;
+
+	public enum CALL_TAGS{
+		CALLED_MANUALLY,
+		CALLED_FROM_ALERT_DIALOG_TO_SEND_LOG,
+		CALLED_FROM_EXCEPTION_HANDLER
+	}
 
 	public MyExceptionHandler(Activity activity) {
 		mActivity = activity;
@@ -30,10 +35,10 @@ public class MyExceptionHandler implements Thread.UncaughtExceptionHandler {
 
 	@Override
 	public void uncaughtException(@NonNull Thread t, @NonNull Throwable e) {
-		prepareStacktrace( t, e, false );
+		File stacktraceFile = prepareStacktrace( t, e, CALL_TAGS.CALLED_FROM_EXCEPTION_HANDLER );
 
 		Intent intent = new Intent( mActivity, MainActivity.class );
-		intent.putExtra( "crash", true ).putExtra( "path", mStackTraceFile.getPath() );
+		intent.putExtra( "crash", true ).putExtra( "path", stacktraceFile.getPath() );
 		intent.addFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP
 				| Intent.FLAG_ACTIVITY_CLEAR_TASK
 				| Intent.FLAG_ACTIVITY_NEW_TASK );
@@ -47,10 +52,14 @@ public class MyExceptionHandler implements Thread.UncaughtExceptionHandler {
 	}
 
 	public void justWriteException(Thread t, Throwable tr){
-		prepareStacktrace( t, tr, true );
+		prepareStacktrace( t, tr, CALL_TAGS.CALLED_MANUALLY );
 	}
 
-	private void prepareStacktrace(Thread t, Throwable e, boolean calledManually) {
+	public File prepareLog(Thread t, Throwable tr){
+		return prepareStacktrace( t, tr, CALL_TAGS.CALLED_FROM_ALERT_DIALOG_TO_SEND_LOG );
+	}
+
+	private File prepareStacktrace(Thread t, Throwable e, CALL_TAGS type) {
 		e.printStackTrace();
 		PackageInfo mPackageInfo = null;
 		try {
@@ -67,15 +76,19 @@ public class MyExceptionHandler implements Thread.UncaughtExceptionHandler {
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat( "dd.MM.yyyy HH:mm:ss", Locale.ROOT );
 		SimpleDateFormat fileFormatter = new SimpleDateFormat( "dd-MM-yyyy_HH:mm:ss", Locale.ROOT );
 		String formattedDate = fileFormatter.format( date );
-		file = new File( file.getPath() + "/stacktrace-" + formattedDate + (calledManually ? "-m" : "") + ".txt" );
+		String suffix = "";
+		if(type == CALL_TAGS.CALLED_MANUALLY)
+			suffix = "-m";
+		else if(type == CALL_TAGS.CALLED_FROM_ALERT_DIALOG_TO_SEND_LOG)
+			suffix = "-m-ad-sl";
+		file = new File( file.getPath() + "/stacktrace-" + formattedDate + suffix + ".txt" );
 
 		try {
 			file.createNewFile();
 		} catch (IOException ignored) {
 		}
 		StringBuilder report = new StringBuilder();
-		if(calledManually)
-			report.append( "CALLED MANUALLY\n" );
+		report.append( type.toString() ).append( "\n" );
 		report.append( "Time: " ).append( simpleDateFormat.format( date ) ).append( "\n" )
 				.append( "Thread name: " ).append( t.getName() ).append( "\n" )
 				.append( "Thread id: " ).append( t.getId() ).append( "\n" )
@@ -105,7 +118,7 @@ public class MyExceptionHandler implements Thread.UncaughtExceptionHandler {
 			fr.close();
 		} catch (IOException ignored) {
 		}
-		mStackTraceFile = file;
+		return file;
 	}
 
 	private void printStackTrace(Throwable t, StringBuilder builder) {

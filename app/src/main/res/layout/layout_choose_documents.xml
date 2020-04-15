@@ -18,7 +18,7 @@
     <LinearLayout
         android:id="@+id/linearLayout2"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="@dimen/buttons_under_recycler_view_height"
         android:gravity="center"
         android:layout_weight="0.1"
         android:orientation="horizontal">

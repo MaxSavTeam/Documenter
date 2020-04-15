@@ -17,14 +17,14 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
-            android:id="@+id/lblHiddenCategoryId"
+            android:id="@+id/lblHiddenTypeId"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="TextView"
             android:visibility="gone" />
 
         <TextView
-            android:id="@+id/lblCategoryName"
+            android:id="@+id/lblTypeName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="15dp"

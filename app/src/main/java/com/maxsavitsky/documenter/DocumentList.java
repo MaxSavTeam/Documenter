@@ -29,6 +29,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.maxsavitsky.documenter.adapters.DefaultChooseAdapter;
+import com.maxsavitsky.documenter.adapters.ListAdapter;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Category;
 import com.maxsavitsky.documenter.data.types.Document;
@@ -95,7 +96,7 @@ public class DocumentList extends ThemeActivity {
 			if ( mDocuments.size() > 1 ) {
 				Collections.sort( mDocuments, mDocumentComparator );
 			}
-			DocumentsAdapter mAdapter = new DocumentsAdapter( mDocuments, mOnClickListener );
+			ListAdapter mAdapter = new ListAdapter( this, mDocuments, mOnClickListener );
 			recyclerView.setLayoutManager( lay );
 			recyclerView.setAdapter( mAdapter );
 			recyclerView.setVisibility( View.VISIBLE );
@@ -108,7 +109,7 @@ public class DocumentList extends ThemeActivity {
 		@Override
 		public void onClick(View v) {
 			Intent intent = new Intent( DocumentList.this, EntriesList.class );
-			TextView t = v.findViewById( R.id.lblHiddenCategoryId );
+			TextView t = v.findViewById( R.id.lblHiddenTypeId );
 			String id = t.getText().toString();
 			intent.putExtra( "id", id );
 			startActivityForResult( intent, Requests.ENTRIES_LIST );
@@ -478,48 +479,6 @@ public class DocumentList extends ThemeActivity {
 			finish();
 		}
 		super.onActivityResult( requestCode, resultCode, data );
-	}
-
-	class DocumentsAdapter extends RecyclerView.Adapter<DocumentsAdapter.VH> {
-		private final ArrayList<Document> mData;
-		private final View.OnClickListener onClickListener;
-
-		DocumentsAdapter(ArrayList<Document> data, View.OnClickListener onClickListener) {
-			mData = data;
-			if ( mData.size() > 1 ) {
-				Collections.sort( mData, mDocumentComparator );
-			}
-			this.onClickListener = onClickListener;
-		}
-
-		@NonNull
-		@Override
-		public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-			return new VH( LayoutInflater.from( DocumentList.this ).inflate( R.layout.list_item, parent, false ) );
-		}
-
-		@Override
-		public void onBindViewHolder(@NonNull VH holder, int position) {
-			holder.name.setText( mData.get( position ).getName() );
-			holder.id.setText( mData.get( position ).getId() );
-		}
-
-		@Override
-		public int getItemCount() {
-			return mData.size();
-		}
-
-		class VH extends RecyclerView.ViewHolder {
-			final TextView name;
-			final TextView id;
-
-			VH(@NonNull View itemView) {
-				super( itemView );
-				name = itemView.findViewById( R.id.lblCategoryName );
-				id = itemView.findViewById( R.id.lblHiddenCategoryId );
-				itemView.setOnClickListener( DocumentsAdapter.this.onClickListener );
-			}
-		}
 	}
 
 	class ChangeListAdapter2 extends DefaultChooseAdapter {

@@ -28,7 +28,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.maxsavitsky.documenter.adapters.CategoryListAdapter;
+import com.maxsavitsky.documenter.adapters.ListAdapter;
 import com.maxsavitsky.documenter.data.types.Category;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.utils.ApkInstaller;
@@ -143,7 +143,7 @@ public class CategoryList extends ThemeActivity {
 		}else {
 			if( categories.size() > 1)
 				Collections.sort( categories, mCategoryComparator );
-			CategoryListAdapter adapter = new CategoryListAdapter(this, categories, onCategoryClick);
+			ListAdapter adapter = new ListAdapter(this, categories, onCategoryClick);
 			recyclerView.setLayoutManager(lay);
 			recyclerView.setAdapter(adapter);
 			recyclerView.setVisibility(View.VISIBLE);
@@ -156,7 +156,7 @@ public class CategoryList extends ThemeActivity {
 		@Override
 		public void onClick(View v) {
 			Intent intent = new Intent(CategoryList.this, DocumentList.class);
-			TextView t = v.findViewById(R.id.lblHiddenCategoryId);
+			TextView t = v.findViewById(R.id.lblHiddenTypeId );
 			String id = t.getText().toString();
 			intent.putExtra("category_uid", id);
 			//startActivity(intent);

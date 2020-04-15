@@ -17,6 +17,7 @@ import androidx.annotation.NonNull;
 import com.google.firebase.database.annotations.NotNull;
 import com.maxsavitsky.documenter.data.Info;
 import com.maxsavitsky.documenter.data.MainData;
+import com.maxsavitsky.documenter.media.images.HtmlImageLoader;
 import com.maxsavitsky.documenter.utils.SpanEntry;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.XMLParser;
@@ -42,6 +43,17 @@ public class Entry extends Type {
 	private final String mName;
 	private final String mPathDir;
 	private Info mInfo;
+
+	@Override
+	public String getId() {
+		return mId;
+	}
+
+	@Override
+	public String getName() {
+		return mName;
+	}
+
 	private Properties mProperties;
 
 	public Properties getProperties(){
@@ -100,16 +112,6 @@ public class Entry extends Type {
 		fr.append( "</info>" );
 		fr.flush();
 		fr.close();
-	}
-
-	@Override
-	public String getId() {
-		return mId;
-	}
-
-	@Override
-	public String getName() {
-		return mName;
 	}
 
 	public String getPathDir() {
@@ -185,6 +187,34 @@ public class Entry extends Type {
 		}else{
 			if(file.exists())
 				file.delete();
+		}
+	}
+
+	public ArrayList<File> getContentFiles(){
+		File dir = new File( mPathDir );
+
+		return getDirectoryFiles( dir );
+	}
+
+	private ArrayList<File> getDirectoryFiles(File dir){
+		ArrayList<File> files = new ArrayList<>();
+		File[] children = dir.listFiles();
+		if(children != null){
+			for(File child : children){
+				if(child.isFile() && !child.getName().equals( "included_in.xml" )){
+					files.add( child );
+				}else if(child.isDirectory()){
+					files.addAll( getDirectoryFiles( child ) );
+				}
+			}
+		}
+		return files;
+	}
+
+	public void deleteContentFiles(){
+		ArrayList<File> files = getContentFiles();
+		for(File file : files){
+			file.delete();
 		}
 	}
 
@@ -347,7 +377,7 @@ public class Entry extends Type {
 
 	public Spannable loadAndPrepareText() throws IOException{
 		String text = loadText();
-		Spannable spannable = (Spannable) Html.fromHtml( text );
+		Spannable spannable = (Spannable) Html.fromHtml( text, new HtmlImageLoader(), null );
 		for(SpanEntry<AlignmentSpan.Standard> se : getAlignments()){
 			spannable.setSpan( se.getSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 		}

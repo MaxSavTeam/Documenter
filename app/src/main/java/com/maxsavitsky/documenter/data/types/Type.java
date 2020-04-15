@@ -1,11 +1,7 @@
 package com.maxsavitsky.documenter.data.types;
 
-public class Type {
-	public String getId() {
-		return null;
-	}
+public abstract class Type {
+	abstract public String getId();
 
-	public String getName() {
-		return null;
-	}
+	abstract public String getName();
 }

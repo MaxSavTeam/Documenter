@@ -1,6 +1,7 @@
 package com.maxsavitsky.documenter;
 
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 
@@ -12,6 +13,8 @@ public class ThemeActivity extends AppCompatActivity {
 	protected int mTextColor = R.color.black;
 
 	protected boolean isDarkTheme = false;
+
+	protected int BACKGROUND_COLOR;
 
 	protected int CURRENT_THEME;
 
@@ -26,7 +29,9 @@ public class ThemeActivity extends AppCompatActivity {
 			mTextColor = R.color.white;
 			isDarkTheme = true;
 			CURRENT_THEME = R.style.AppTheme_Dark;
+			BACKGROUND_COLOR = Color.BLACK;
 		}else{
+			BACKGROUND_COLOR = Color.WHITE;
 			CURRENT_THEME = R.style.AppTheme;
 			setTheme( R.style.AppTheme );
 			mAlertDialogStyle = R.style.Theme_AppCompat_Light_Dialog;

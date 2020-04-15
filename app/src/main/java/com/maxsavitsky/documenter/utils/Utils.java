@@ -375,25 +375,39 @@ public class Utils {
 		return msg;
 	}
 
-	public static AlertDialog getErrorDialog(Exception e, Context context, boolean silentWriteToFile) {
-		if(silentWriteToFile)
-			new MyExceptionHandler( null ).justWriteException( Thread.currentThread(), e );
+	public static AlertDialog getErrorDialog(Exception e, Context context, boolean silentWriteToFile, boolean showSendLogButton) {
+		File stacktraceFile = null;
+		if(showSendLogButton){
+			stacktraceFile = new MyExceptionHandler( null ).prepareLog( Thread.currentThread(), e );
+		}else {
+			if ( silentWriteToFile )
+				new MyExceptionHandler( null ).justWriteException( Thread.currentThread(), e );
+		}
 
 		e.printStackTrace();
 		AlertDialog.Builder builder = new AlertDialog.Builder( context ).setTitle( "Error stacktrace" );
-		builder.setMessage( Html.fromHtml( "<b>Stacktrace:</b><br><br>" + getExceptionStackTrace( e ) + "<br><br>" + e.getClass().getName() + ": " + e.getMessage() ) )
+		builder.setMessage( Html.fromHtml( e.getClass().getName() + ": " + e.getMessage() + "<br><br><b>Stacktrace:</b><br><br>" + getExceptionStackTrace( e ) ) )
 				.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						dialog.cancel();
 					}
 				} ).setCancelable( false );
+		if(showSendLogButton){
+			final File finalStacktraceFile = stacktraceFile;
+			builder.setNeutralButton( R.string.send_report, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					MainActivity.getInstance().sendLog( finalStacktraceFile.getPath() );
+				}
+			} );
+		}
 
 		return builder.create();
 	}
 
 	public static AlertDialog getErrorDialog(Exception e, Context context){
-		return getErrorDialog( e, context, true );
+		return getErrorDialog( e, context, true, true );
 	}
 
 	public static AlertDialog getErrorDialog(Throwable t, Context context) {
@@ -407,5 +421,14 @@ public class Utils {
 				} ).setCancelable( false );
 
 		return builder.create();
+	}
+
+	public static Comparator<? super Type> getSortByNamesComparator(){
+		return new Comparator<Type>() {
+			@Override
+			public int compare(Type o1, Type o2) {
+				return o1.getName().compareToIgnoreCase( o2.getName() );
+			}
+		};
 	}
 }

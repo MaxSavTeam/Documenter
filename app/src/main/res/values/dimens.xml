@@ -19,4 +19,6 @@
 
     <dimen name="layout_colors_height">43dp</dimen>
     <dimen name="layout_colors_width">70dp</dimen>
+
+    <dimen name="buttons_under_recycler_view_height">60dp</dimen>
 </resources>

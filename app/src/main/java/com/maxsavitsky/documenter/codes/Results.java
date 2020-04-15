@@ -13,4 +13,5 @@ public class Results {
 
 	// 4xx
 	public static final int REOPEN = 401;
+	public static final int COPY_TO_ACTION = 402;
 }

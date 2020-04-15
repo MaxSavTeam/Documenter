@@ -34,7 +34,7 @@ public class MainData {
 	private static ArrayList<Category> sCategoriesList = new ArrayList<>();
 
 	public static ArrayList<Category> getCategoriesList() {
-		return sCategoriesList;
+		return new ArrayList<>( sCategoriesList );
 	}
 
 	public static void setCategoriesList(ArrayList<Category> categoriesList) {
@@ -118,7 +118,7 @@ public class MainData {
 	private static final Map<String, Document> sDocumentMap = new HashMap<>(  );
 
 	public static ArrayList<Document> getDocumentsList() {
-		return sDocumentsList;
+		return new ArrayList<>( sDocumentsList );
 	}
 
 	public static void setDocumentsList(ArrayList<Document> documentsList) {
@@ -207,7 +207,7 @@ public class MainData {
 	private static final Map<String, Entry> sEntryMap = new HashMap<>(  );
 
 	public static ArrayList<Entry> getEntriesList() {
-		return sEntriesList;
+		return new ArrayList<>( sEntriesList );
 	}
 
 	public static boolean finallyDeleteEntryWithId(String id) throws IOException, SAXException {
