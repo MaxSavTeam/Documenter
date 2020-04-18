@@ -4,6 +4,7 @@ import android.Manifest;
 import android.animation.Animator;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -43,6 +44,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -627,7 +629,8 @@ public class EntryEditor extends ThemeActivity {
 					}
 					File file = Utils.getEntryImagesMediaFolder( mId );
 					file = new File(file.getPath() + "/" + Utils.generateUniqueId());
-					if(type.equals( "image/png" )){
+					String format = "";
+					/*if(type.equals( "image/png" )){
 						file = new File( file.getPath() + ".png" );
 					}else if(type.equals( "image/jpeg" )){
 						file = new File(file.getPath() + ".jpg");
@@ -635,7 +638,9 @@ public class EntryEditor extends ThemeActivity {
 						Toast.makeText( this, R.string.file_type_is_not_supported, Toast.LENGTH_LONG ).show();
 						in.close();
 						return;
-					}
+					}*/
+					format = MimeTypeMap.getSingleton().getExtensionFromMimeType( getContentResolver().getType( uri ) );
+					file = new File( file.getPath() + "." + format);
 					if(!MainData.isExists( mId ))
 						mMediaToMove.add( file );
 					FileOutputStream fos = new FileOutputStream(file);

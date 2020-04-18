@@ -21,6 +21,8 @@ import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.utils.Utils;
 
+import org.xml.sax.SAXException;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -42,7 +44,7 @@ public class MainActivity extends ThemeActivity {
 		mExceptionHandler = new MyExceptionHandler( this );
 		super.onCreate(savedInstanceState);
 		instance = this;
-		setContentView(R.layout.activity_main);
+		setContentView(R.layout.layout_onstartup);
 		Thread.setDefaultUncaughtExceptionHandler( new Thread.UncaughtExceptionHandler() {
 			@Override
 			public void uncaughtException(@NonNull Thread t, @NonNull Throwable e) {
@@ -67,14 +69,6 @@ public class MainActivity extends ThemeActivity {
 			getSupportActionBar().setTitle( "Documenter bug report" );
 			preparationAfterCrash();
 		}else{
-			try {
-				initialize();
-			}catch (Exception e){
-				Utils.getErrorDialog( e, this ).show();
-				return;
-			}
-			viewCategoryList( null );
-
 			final AutonomousCloudBackupper backupper = new AutonomousCloudBackupper( this );
 			new Thread( new Runnable() {
 				@Override
@@ -83,6 +77,34 @@ public class MainActivity extends ThemeActivity {
 				}
 			}, "AutoBackupper" ).start();
 		}
+
+	}
+
+	@Override
+	protected void onPostCreate(@Nullable Bundle savedInstanceState) {
+		super.onPostCreate( savedInstanceState );
+		new Thread( new Runnable() {
+			@Override
+			public void run() {
+				try {
+					initialize();
+				}catch (final Exception e){
+					runOnUiThread( new Runnable() {
+						@Override
+						public void run() {
+							Utils.getErrorDialog( e, MainActivity.this ).show();
+						}
+					} );
+					return;
+				}
+				try {
+					Thread.sleep( 1000 );
+					viewCategoryList( null );
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		} ).start();
 
 	}
 
@@ -205,7 +227,7 @@ public class MainActivity extends ThemeActivity {
 		Toast.makeText( this, getMemoryInfo(), Toast.LENGTH_LONG ).show();
 	}
 
-	private void initialize() throws Exception {
+	private void initialize() throws IOException, SAXException {
 		MainData.readAllCategories();
 		MainData.readAllDocuments();
 		MainData.readAllEntries();
@@ -259,6 +281,8 @@ public class MainActivity extends ThemeActivity {
 			if(resultCode == Results.RESTART_ACTIVITY ){
 				viewCategoryList( null );
 			}
+			if(resultCode != Results.LOOK_STARTUP)
+				setContentView( R.layout.activity_main );
 		}
 		if ( resultCode == Results.RESTART_APP ) {
 			restartApp();

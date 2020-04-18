@@ -7,6 +7,7 @@ public class Results {
 	public static final int EXIT = 203;
 	public static final int RESTART_APP = 204;
 	public static final int FAILED = 205;
+	public static final int LOOK_STARTUP = 206;
 
 	// 3xx
 	public static final int NEED_TO_REFRESH = 301;

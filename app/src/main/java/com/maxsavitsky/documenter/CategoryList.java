@@ -354,6 +354,14 @@ public class CategoryList extends ThemeActivity {
 				startActivityForResult( intent, Requests.SETTINGS );
 			}
 		} );
+		findViewById( R.id.fabSettings ).setOnLongClickListener( new View.OnLongClickListener() {
+			@Override
+			public boolean onLongClick(View v) {
+				setResult( Results.LOOK_STARTUP );
+				finish();
+				return true;
+			}
+		} );
 
 		if(!isMemoryAccessGranted()){
 			requestPermissions( new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE }, 1 );
