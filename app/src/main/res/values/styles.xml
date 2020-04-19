@@ -16,6 +16,9 @@
         <item name="underline_button_src">@drawable/ic_underline_black</item>
         <item name="strike_button_src">@drawable/ic_strikethrough_black</item>
         <item name="colored_buttons_text_color">@color/green</item>
+
+        <item name="app_icon">@mipmap/ic_documenter_icon_white</item>
+        <item name="app_icon_round">@mipmap/ic_documenter_icon_white_round</item>
     </style>
 
     <style name="AppTheme.Dark">
@@ -33,6 +36,9 @@
         <item name="italic_button_src">@drawable/ic_italic_white</item>
         <item name="underline_button_src">@drawable/ic_underline_white</item>
         <item name="strike_button_src">@drawable/ic_strikethrough_white</item>
+
+        <item name="app_icon">@mipmap/ic_documenter_icon_black</item>
+        <item name="app_icon_round">@mipmap/ic_documenter_icon_black_round</item>
     </style>
 
     <style name="AlertDialogDark" parent="Theme.AppCompat.Light.Dialog">

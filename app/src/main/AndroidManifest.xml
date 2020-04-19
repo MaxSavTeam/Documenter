@@ -13,10 +13,10 @@
     <application
         android:name=".MyApplication"
         android:allowBackup="false"
-        android:icon="@drawable/documenter_icon"
+        android:icon="?attr/app_icon"
         android:label="@string/app_name"
         android:resizeableActivity="false"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="?attr/app_icon_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:targetApi="n">
