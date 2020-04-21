@@ -32,10 +32,10 @@ import com.google.firebase.auth.FirebaseUser;
 import com.maxsavitsky.documenter.backup.BackupInstruments;
 import com.maxsavitsky.documenter.backup.BackupInterface;
 import com.maxsavitsky.documenter.codes.Requests;
-import com.maxsavitsky.documenter.utils.ApkInstaller;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.updates.UpdatesChecker;
 import com.maxsavitsky.documenter.updates.UpdatesDownloader;
+import com.maxsavitsky.documenter.utils.ApkInstaller;
 import com.maxsavitsky.documenter.utils.Utils;
 
 import java.io.File;
@@ -286,7 +286,7 @@ public class SettingsActivity extends ThemeActivity {
 		}
 
 		@Override
-		public void exceptionOccurred(final IOException e) {
+		public void exceptionOccurred(final Exception e) {
 			runOnUiThread( new Runnable() {
 				@Override
 				public void run() {

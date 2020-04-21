@@ -4,8 +4,13 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import androidx.annotation.NonNull;
+
 import com.maxsavitsky.documenter.BuildConfig;
 import com.maxsavitsky.documenter.R;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,12 +23,14 @@ public class UpdatesChecker {
 		private String mVersionName;
 		private String mDownloadUrl;
 		private int mUpdateSize;
+		private int mBuildCode;
 
-		public VersionInfo(int versionCode, String versionName, String downloadUrl, int updateSize) {
+		public VersionInfo(int versionCode, String versionName, String downloadUrl, int updateSize, int buildCode) {
 			mVersionCode = versionCode;
 			mVersionName = versionName;
 			mDownloadUrl = downloadUrl;
 			mUpdateSize = updateSize;
+			mBuildCode = buildCode;
 		}
 
 		public static VersionInfo parseInfo(String data){
@@ -32,8 +39,20 @@ public class UpdatesChecker {
 			String downloadUrl = strings[1];
 			String versionName = strings[2];
 			int size = Integer.parseInt( strings[3] );
+			int buildCode = Integer.parseInt( strings[4] );
 
-			return new VersionInfo( versionCode, versionName, downloadUrl, size );
+			return new VersionInfo( versionCode, versionName, downloadUrl, size, buildCode );
+		}
+
+		public static VersionInfo parseInfoFromJson(String json) throws JSONException {
+			JSONObject jsonObject = new JSONObject( json );
+			int versionCode = jsonObject.getInt( "versionCode" );
+			int size = jsonObject.getInt( "apkSize" );
+			int buildCode = jsonObject.getInt( "buildCode" );
+			String downloadUrl = jsonObject.getString( "downloadUrl" );
+			String versionName = jsonObject.getString( "versionName" );
+
+			return new VersionInfo( versionCode, versionName, downloadUrl, size, buildCode );
 		}
 
 		public int getVersionCode() {
@@ -67,6 +86,10 @@ public class UpdatesChecker {
 		public void setUpdateSize(int updateSize) {
 			mUpdateSize = updateSize;
 		}
+
+		public int getBuildCode() {
+			return mBuildCode;
+		}
 	}
 
 	private final Context mContext;
@@ -78,20 +101,27 @@ public class UpdatesChecker {
 		void updateAvailable(VersionInfo versionInfo);
 		void downloaded(File path, VersionInfo versionInfo);
 		void onDownloadProgress(int bytesCount, int totalBytesCount);
-		void exceptionOccurred(IOException e);
+		void exceptionOccurred(Exception e);
 	}
 
-	public UpdatesChecker(Context context, CheckResults checkResults) {
+	public UpdatesChecker(Context context, @NonNull CheckResults checkResults) {
 		mContext = context;
 		mThread = Thread.currentThread();
 		mCheckResults = checkResults;
 	}
 
 	private void check(String result){
-		VersionInfo info = VersionInfo.parseInfo( result );
+		VersionInfo info = null;
+		try {
+			info = VersionInfo.parseInfoFromJson( result );
+		} catch (JSONException e) {
+			e.printStackTrace();
+			mCheckResults.exceptionOccurred( e );
+			return;
+		}
 		if(info.getVersionCode() > BuildConfig.VERSION_CODE ){
 			SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(mContext.getApplicationContext());
-			if(sp.getInt( "ignore_update", 0 ) != info.getVersionCode() )
+			if(sp.getInt( "ignore_update", 0 ) != info.getBuildCode() )
 				mCheckResults.updateAvailable( info );
 		}else{
 			mCheckResults.noUpdates( info );
@@ -103,7 +133,7 @@ public class UpdatesChecker {
 		InputStream inputStream = null;
 		try {
 			String data = "";
-			url = new URL( mContext.getResources().getString( R.string.resources_url ) + "/apk/documenter/version" );
+			url = new URL( mContext.getResources().getString( R.string.resources_url ) + "/apk/documenter/version.json" );
 			inputStream = url.openConnection().getInputStream();
 			int b = inputStream.read();
 			while ( b != -1 && !mThread.isInterrupted() ) {

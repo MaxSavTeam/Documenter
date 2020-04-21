@@ -21,7 +21,6 @@ public class ThemeActivity extends AppCompatActivity {
 	// only for themes
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate( savedInstanceState );
 		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 		if(sharedPreferences.getBoolean( "dark_theme", false )){
 			setTheme( R.style.AppTheme_Dark );
@@ -37,5 +36,6 @@ public class ThemeActivity extends AppCompatActivity {
 			mAlertDialogStyle = R.style.Theme_AppCompat_Light_Dialog;
 			mTextColor = R.color.black;
 		}
+		super.onCreate( savedInstanceState );
 	}
 }

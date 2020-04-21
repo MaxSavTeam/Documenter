@@ -8,6 +8,7 @@ apply plugin: 'com.google.firebase.firebase-perf'
 String cleanVersionName = ""
 int verCode = 0
 String projectPath = ""
+int buildCode = -1;
 
 android {
     signingConfigs {
@@ -27,13 +28,12 @@ android {
     buildToolsVersion "29.0.2"
 
     def buildPropFile = file('build.properties')
-    def code = -1
     if (buildPropFile.canRead()) {
         Properties p = new Properties()
         p.load(new FileInputStream(buildPropFile))
-        code = p['BUILD'].toInteger() + 1
+        buildCode = p['BUILD'].toInteger() + 1
         projectPath = p['PROJECT_PATH']
-        p['BUILD'] = code.toString()
+        p['BUILD'] = buildCode.toString()
         p.store(buildPropFile.newWriter(), null)
     }
     defaultConfig {
@@ -43,11 +43,11 @@ android {
         versionCode 34
 
         verCode = versionCode
-        cleanVersionName = "1.7.0" + ".$versionCode" + (code != -1 ? "." + code.toString() : "")
+        cleanVersionName = "1.7.0" + ".$versionCode" + (buildCode != -1 ? "." + buildCode.toString() : "")
 
         versionName cleanVersionName + "+${formatDate("yyyyMMddHHmm")}"
         buildConfigField "String", "COMPILATION_DATE", "\"${getDate()}\""
-        buildConfigField "int", "BUILD_CODE", "${code}"
+        buildConfigField "int", "BUILD_CODE", "${buildCode}"
     }
 
     buildTypes {
@@ -87,7 +87,7 @@ static String getDate() {
 afterEvaluate{ // delete this if you aren't me
     assembleRelease.doLast{
         exec {
-            commandLine ("cmd", "/c", "groovy", "${projectPath}app\\after_build_tasks.groovy", 'afterBuildTask', cleanVersionName, verCode)
+            commandLine ("cmd", "/c", "groovy", "${projectPath}app\\after_build_tasks.groovy", 'afterBuildTask', cleanVersionName, verCode, buildCode)
         }
     }
 }

@@ -29,17 +29,16 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.maxsavitsky.documenter.adapters.ListAdapter;
-import com.maxsavitsky.documenter.data.types.Category;
-import com.maxsavitsky.documenter.data.MainData;
-import com.maxsavitsky.documenter.utils.ApkInstaller;
 import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.codes.Results;
+import com.maxsavitsky.documenter.data.MainData;
+import com.maxsavitsky.documenter.data.types.Category;
 import com.maxsavitsky.documenter.updates.UpdatesChecker;
 import com.maxsavitsky.documenter.updates.UpdatesDownloader;
+import com.maxsavitsky.documenter.utils.ApkInstaller;
 import com.maxsavitsky.documenter.utils.Utils;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -219,7 +218,7 @@ public class CategoryList extends ThemeActivity {
 							.setNeutralButton( R.string.ignore_this_update, new DialogInterface.OnClickListener() {
 								@Override
 								public void onClick(DialogInterface dialog, int which) {
-									sp.edit().putInt( "ignore_update", versionInfo.getVersionCode() ).apply();
+									sp.edit().putInt( "ignore_update", versionInfo.getBuildCode() ).apply();
 								}
 							} );
 					builder.create().show();
@@ -236,7 +235,7 @@ public class CategoryList extends ThemeActivity {
 		}
 
 		@Override
-		public void exceptionOccurred(IOException e) {
+		public void exceptionOccurred(Exception e) {
 
 		}
 

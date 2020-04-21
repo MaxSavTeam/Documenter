@@ -10,5 +10,5 @@
     <attr name="underline_button_src" format="reference" />
     <attr name="strike_button_src" format="reference" />
     <attr name="app_icon" format="reference" />
-    <attr name="app_icon_round" format="reference" />
+    <attr name="app_icon_round" format="string" />
 </resources>
