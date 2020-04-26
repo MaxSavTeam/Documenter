@@ -137,4 +137,25 @@
     <string name="to">к</string>
     <string name="replace_this_color">Заменить этот цвет</string>
     <string name="copy_content">Скопировать содержимое</string>
+
+    <string-array name="tools_hints">
+        <item>Размер текста</item>
+        <item>Расположение текста</item>
+        <item>Жирный текст</item>
+        <item>Курсивный текст</item>
+        <item>Подчёркивание</item>
+        <item>Перечёркнутый текст</item>
+        <item>Верхний индекс</item>
+        <item>Нижний индекс</item>
+        <item>Цвет фона</item>
+        <item>Цвет текста</item>
+        <item>Цвет фона текста</item>
+        <item>Заменить цвет</item>
+        <item>Вставить изображение</item>
+    </string-array>
+
+    <string name="feedback">Обратная связь</string>
+    <string name="apparently_you_had_error">Видимо, у Вас произошла критическая ошибка (приложение вылетело). Мы извиняемся. Если Вы не отправили отчёт, отправьте, пожалуйста, сейчас. Это сильно нам поможет.</string>
+    <string name="necessary_update_title">Важное обновление доступно</string>
+    <string name="necessary_update_text">Мы выпустили важное обновление.  Это значит, что данная версия оказалась неудачной и в ней нашлись серьёзные проблемы. Мы просим Вас обновится.</string>
 </resources>

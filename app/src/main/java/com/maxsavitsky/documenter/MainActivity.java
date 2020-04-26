@@ -1,7 +1,9 @@
 package com.maxsavitsky.documenter;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -16,9 +18,9 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 
 import com.maxsavitsky.documenter.backup.AutonomousCloudBackupper;
-import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.codes.Results;
+import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.utils.Utils;
 
 import org.xml.sax.SAXException;
@@ -38,6 +40,8 @@ public class MainActivity extends ThemeActivity {
 	public static MainActivity getInstance() {
 		return instance;
 	}
+
+	private boolean isAfterCrash = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -59,14 +63,16 @@ public class MainActivity extends ThemeActivity {
 		}
 
 		Utils.setContext(this);
+		SharedPreferences sharedPreferences = getSharedPreferences( Utils.APP_PREFERENCES, Context.MODE_PRIVATE );
+		Utils.setDefaultSharedPreferences( sharedPreferences );
 
 		deleteInstalledApks();
 
 		Intent startIntent = getIntent();
 		if(startIntent.getBooleanExtra( "crash", false )){
 			path = startIntent.getStringExtra( "path" );
+			isAfterCrash = true;
 			setContentView( R.layout.activity_errhandler );
-			getSupportActionBar().setTitle( "Documenter bug report" );
 			preparationAfterCrash();
 		}else{
 			final AutonomousCloudBackupper backupper = new AutonomousCloudBackupper( this );
@@ -83,29 +89,30 @@ public class MainActivity extends ThemeActivity {
 	@Override
 	protected void onPostCreate(@Nullable Bundle savedInstanceState) {
 		super.onPostCreate( savedInstanceState );
-		new Thread( new Runnable() {
-			@Override
-			public void run() {
-				try {
-					initialize();
-				}catch (final Exception e){
-					runOnUiThread( new Runnable() {
-						@Override
-						public void run() {
-							Utils.getErrorDialog( e, MainActivity.this ).show();
-						}
-					} );
-					return;
+		if(!isAfterCrash) {
+			new Thread( new Runnable() {
+				@Override
+				public void run() {
+					try {
+						initialize();
+					} catch (final Exception e) {
+						runOnUiThread( new Runnable() {
+							@Override
+							public void run() {
+								Utils.getErrorDialog( e, MainActivity.this ).show();
+							}
+						} );
+						return;
+					}
+					try {
+						Thread.sleep( 1000 );
+						viewCategoryList( null );
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 				}
-				try {
-					Thread.sleep( 1000 );
-					viewCategoryList( null );
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		} ).start();
-
+			} ).start();
+		}
 	}
 
 	private void preparationAfterCrash(){
@@ -258,12 +265,7 @@ public class MainActivity extends ThemeActivity {
 	}
 
 	public void makeError(View v){
-		//throw new NullPointerException( "Test exception" );
-		try {
-			BigDecimal a = BigDecimal.ONE.divide( BigDecimal.valueOf( 3 ) );
-		}catch (Exception e){
-			Utils.getErrorDialog( e, this ).show();
-		}
+		BigDecimal a = BigDecimal.ONE.divide( BigDecimal.valueOf( 3 ) );
 	}
 
 	private void restartApp() {

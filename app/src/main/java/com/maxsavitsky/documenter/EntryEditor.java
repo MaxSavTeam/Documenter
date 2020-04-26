@@ -1,10 +1,8 @@
 package com.maxsavitsky.documenter;
 
 import android.Manifest;
-import android.animation.Animator;
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -13,6 +11,8 @@ import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -29,6 +29,7 @@ import android.text.Spanned;
 import android.text.style.AbsoluteSizeSpan;
 import android.text.style.AlignmentSpan;
 import android.text.style.BackgroundColorSpan;
+import android.text.style.CharacterStyle;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.ImageSpan;
 import android.text.style.RelativeSizeSpan;
@@ -37,8 +38,10 @@ import android.text.style.StyleSpan;
 import android.text.style.SubscriptSpan;
 import android.text.style.SuperscriptSpan;
 import android.text.style.UnderlineSpan;
+import android.transition.Fade;
 import android.util.Log;
 import android.view.Display;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -50,6 +53,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
+import android.widget.PopupWindow;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -65,17 +69,17 @@ import com.flask.colorpicker.ColorPickerView;
 import com.flask.colorpicker.OnColorChangedListener;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.data.Info;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.data.types.Entry;
-import com.maxsavitsky.documenter.utils.ChangeEntry;
-import com.maxsavitsky.documenter.codes.Results;
+import com.maxsavitsky.documenter.editor.TextEditor;
 import com.maxsavitsky.documenter.media.images.HtmlImageLoader;
 import com.maxsavitsky.documenter.media.images.ImageRenderer;
+import com.maxsavitsky.documenter.utils.ChangeEntry;
 import com.maxsavitsky.documenter.utils.SpanEntry;
 import com.maxsavitsky.documenter.utils.Utils;
-import com.maxsavitsky.documenter.widget.TextEditor;
 
 import org.xml.sax.SAXException;
 
@@ -89,7 +93,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import static com.maxsavitsky.documenter.codes.Requests.*;
+import static com.maxsavitsky.documenter.codes.Requests.PICK_IMAGE;
 
 public class EntryEditor extends ThemeActivity {
 	private Document mDocument;
@@ -99,15 +103,16 @@ public class EntryEditor extends ThemeActivity {
 	private String title = "Create new entry";
 	private Entry.Properties mStartProperties;
 	private TextEditor mTextEditor;
-	private Button btnBgColorPicker, btnTextColorPicker, btnTextBackgroundColorPicker;
-	private Button btnSubScript, btnSupScript;
+	private ImageButton btnBgColorPicker, btnTextColorPicker, btnTextBackgroundColorPicker;
+	private ImageButton btnSubScript, btnSupScript;
+	private ImageButton btnTextHighlight, btnReplaceColor;
 	private ImageButton btnBold, btnItalic, btnUnderline, btnStrike;
 	private BottomSheetBehavior<View> mBottomSheetLayout;
 	private final ArrayList<ChangeEntry> mHistory = new ArrayList<>();
 	private int mHistoryIterator = -1;
 	private Menu mMenu;
-	private final int UNDO_MENU_INDEX = 0;
-	private final int REDO_MENU_INDEX = 1;
+	private final int UNDO_MENU_INDEX = R.id.item_undo;
+	private final int REDO_MENU_INDEX = R.id.item_redo;
 	private Editable mStartEditable = new Editable.Factory().newEditable( "" );
 	private SharedPreferences sp;
 	private final ArrayList<Integer> mColorHistory = new ArrayList<>();
@@ -116,6 +121,7 @@ public class EntryEditor extends ThemeActivity {
 	private Alignment mMainAlignment = Alignment.ALIGN_NORMAL;
 	private int mDefaultTextColor = Color.BLACK;
 	private final float INDEX_PROPORTION = 0.75f;
+	private final int DEFAULT_TOOLS_COLOR = Color.WHITE;
 
 	private interface OnLoadedTextListener{
 		void loaded(Spannable spannable, Entry entry);
@@ -127,14 +133,6 @@ public class EntryEditor extends ThemeActivity {
 		if(actionBar != null){
 			Utils.applyDefaultActionBarStyle(actionBar);
 			actionBar.setTitle( title );
-		}
-		if(super.isDarkTheme) {
-			ImageButton btn = findViewById( R.id.btnAlignLeft );
-			btn.setImageDrawable( getDrawable( R.drawable.ic_align_left_white ) );
-			btn = findViewById( R.id.btnAlignCenter );
-			btn.setImageDrawable( getDrawable( R.drawable.ic_align_center_white ) );
-			btn = findViewById( R.id.btnAlignRight );
-			btn.setImageDrawable( getDrawable( R.drawable.ic_align_right_white ) );
 		}
 	}
 
@@ -246,6 +244,9 @@ public class EntryEditor extends ThemeActivity {
 				disableThisMenuItem( REDO_MENU_INDEX );
 			}
 			enableThisMenuItem( UNDO_MENU_INDEX );
+		}else if(item.getItemId() == R.id.item_apply){
+			mTextEditor.clearComposingText();
+			saveEntry();
 		}
 		return super.onOptionsItemSelected( item );
 	}
@@ -331,20 +332,22 @@ public class EntryEditor extends ThemeActivity {
 
 		sp = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
 
-		btnBgColorPicker = findViewById( R.id.btnBgColorPicker );
-		btnTextColorPicker = findViewById( R.id.btnTextColorPicker );
-		btnTextBackgroundColorPicker = findViewById(R.id.btnTextBackgroundColorPicker);
+		btnSupScript = findViewById(R.id.btnToolsSuperscript);
+		btnSubScript = findViewById(R.id.btnToolsSubscript);
 
-		btnSupScript = findViewById(R.id.btnSuperscript);
-		btnSubScript = findViewById(R.id.btnSubscript);
+		btnBold = findViewById( R.id.btnToolsBold );
+		btnItalic = findViewById( R.id.btnToolsItalic );
+		btnUnderline = findViewById( R.id.btnToolsUnderline );
+		btnStrike = findViewById( R.id.btnToolsStrike );
 
-		btnSupScript.setText( Html.fromHtml( getString(R.string.sup) ) );
-		btnSubScript.setText( Html.fromHtml( getString(R.string.sub) ) );
+		btnBgColorPicker = findViewById( R.id.btnToolsBackgroundColor );
+		btnBgColorPicker.setOnClickListener( btnBgColorPickerDefaultClickListener );
 
-		btnBold = findViewById( R.id.btnBold );
-		btnItalic = findViewById( R.id.btnItalic );
-		btnUnderline = findViewById( R.id.btnUnderline );
-		btnStrike = findViewById( R.id.btnStrike );
+		btnTextColorPicker = findViewById( R.id.btnToolsTextColor );
+
+		btnTextHighlight = findViewById( R.id.btnToolsHighlight );
+
+		btnReplaceColor = findViewById( R.id.btnToolsReplaceColor );
 
 		Intent startIntent = getIntent();
 		type = startIntent.getStringExtra( "type" );
@@ -367,15 +370,18 @@ public class EntryEditor extends ThemeActivity {
 			mStartProperties = new Entry.Properties( mEntry.getProperties() );
 			mDefaultTextColor = mEntry.getProperties().getDefaultTextColor();
 			mTextEditor.setTextColor( mDefaultTextColor );
+			setImageButtonColor( mEntry.getProperties().getBgColor(), btnBgColorPicker.getId() );
 			getWindow().getDecorView().setBackgroundColor( mEntry.getProperties().getBgColor() );
+
 			title = getResources().getString( R.string.edit_entry ) + ": " + mEntry.getName();
 
 			loadTextFromEntryInEditor( mId );
 		}else if(type.equals( "create" )){
 			title = getResources().getString( R.string.create_new_entry );
 			mWithoutDoc = getIntent().getBooleanExtra( "without_doc", false );
-			if(!mWithoutDoc)
+			if(!mWithoutDoc) {
 				mDocument = MainData.getDocumentWithId( getIntent().getStringExtra( "id" ) );
+			}
 			mEntry = new Entry( "temp_entry", "" );
 			mId = Utils.generateUniqueId() + "_ent";
 			hideUpButton();
@@ -421,7 +427,11 @@ public class EntryEditor extends ThemeActivity {
 		} );
 		Utils.showKeyboard( mTextEditor, this );
 
-		View llBottomSheet = findViewById( R.id.bottom_sheet );
+		setHintToToolsButtons();
+
+		mOnSelectionChanges.onTextSelectionBreak( 0 );
+
+		/*View llBottomSheet = findViewById( R.id.bottom_sheet );
 		mBottomSheetLayout = BottomSheetBehavior.from( llBottomSheet );
 
 		LinearLayout peek = findViewById( R.id.layoutBottomSheetCeil );
@@ -434,7 +444,32 @@ public class EntryEditor extends ThemeActivity {
 					mBottomSheetLayout.setState( BottomSheetBehavior.STATE_COLLAPSED );
 			}
 		} );
-		setAlignmentButtonClicked( getAlignmentButtonId( mMainAlignment ) );
+		setAlignmentButtonClicked( getAlignmentButtonId( mMainAlignment ) );*/
+	}
+
+	private void setHintToToolsButtons(){
+		LinearLayout layout = findViewById( R.id.toolsLinearLayout );
+		for(int i = 0; i < layout.getChildCount(); i++){
+			View v = layout.getChildAt( i );
+			v.setTag( i );
+			v.setOnLongClickListener( new View.OnLongClickListener() {
+				@Override
+				public boolean onLongClick(View v) {
+					final int tag = (int) v.getTag();
+					runOnUiThread( new Runnable() {
+						@Override
+						public void run() {
+							String[] s = getResources().getStringArray( R.array.tools_hints );
+							Toast t = Toast.makeText( EntryEditor.this, s[tag], Toast.LENGTH_LONG );
+							t.setGravity( Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0 );
+							t.show();
+						}
+					} );
+
+					return true;
+				}
+			} );
+		}
 	}
 
 	private void loadTextFromEntryInEditor(String id){
@@ -531,7 +566,6 @@ public class EntryEditor extends ThemeActivity {
 					mTextEditor.setScrollY( entry.getProperties().getScrollPosition() );
 					mStartEditable = mTextEditor.getText();
 					setEditTextSize();
-					setButtonReplaceColorAppearance();
 					mProgressDialogOnTextLoad.cancel();
 					final double end = System.currentTimeMillis();
 					final double seconds = (end - mStartLoadTextTime) / 1000;
@@ -569,7 +603,6 @@ public class EntryEditor extends ThemeActivity {
 		if(spans.length == 1){
 			mMainAlignment = spans[0].getAlignment();
 		}
-		setAlignmentButtonClicked( getAlignmentButtonId( mMainAlignment ) );
 	}
 
 	private int getAlignmentButtonId(Alignment alignment){
@@ -687,16 +720,17 @@ public class EntryEditor extends ThemeActivity {
 	private void enableThisMenuItem(int i){
 		if(mMenu == null)
 			return;
-		mMenu.getItem( i ).setEnabled( true );
-		mMenu.getItem( i ).setIcon( i == UNDO_MENU_INDEX ? R.drawable.ic_undo : R.drawable.ic_redo );
+		mMenu.findItem( i ).setEnabled( true );
+		mMenu.findItem( i ).setIcon( i == UNDO_MENU_INDEX ? R.drawable.ic_undo : R.drawable.ic_redo );
 		//invalidateOptionsMenu();
 	}
 
 	private void disableThisMenuItem(int i){
 		if(mMenu == null)
 			return;
-		mMenu.getItem( i ).setEnabled( false );
-		mMenu.getItem( i ).setIcon( i == UNDO_MENU_INDEX ? R.drawable.ic_disabled_undo : R.drawable.ic_disabled_redo );
+
+		mMenu.findItem( i ).setEnabled( false );
+		mMenu.findItem( i ).setIcon( i == UNDO_MENU_INDEX ? R.drawable.ic_disabled_undo : R.drawable.ic_disabled_redo );
 		//invalidateOptionsMenu();
 	}
 
@@ -721,14 +755,26 @@ public class EntryEditor extends ThemeActivity {
 		mHistoryIterator = mHistory.size() - 1;
 	}
 
-	private void setBtnTextColorPickerBackground(){
-		/*ForegroundColorSpan[] foregroundColorSpans = mTextEditor.getText().getSpans( 0, mTextEditor.getText().length(), ForegroundColorSpan.class);
-		btnTextColorPicker.setBackgroundTintList( ColorStateList.valueOf(
-				foregroundColorSpans.length != 0 ? foregroundColorSpans[ foregroundColorSpans.length-1 ].getForegroundColor() : mTextEditor.getCurrentTextColor() ) );*/
-		btnTextColorPicker.setBackgroundTintList( ColorStateList.valueOf( mDefaultTextColor ) );
+	private void setBtnTextColorPickerColorAtBounds(){
+		if(mSelectionBounds[0] == mSelectionBounds[1] ||
+				mTextEditor.getText() != null && mSelectionBounds[0] == 0 && mSelectionBounds[1] == mTextEditor.getText().length()){
+			setImageButtonColor( mDefaultTextColor, btnTextColorPicker.getId() );
+		}else{
+			Editable e = mTextEditor.getText();
+			if(e == null)
+				return;
+			ForegroundColorSpan[] foregroundColorSpans = e.getSpans( mSelectionBounds[0], mSelectionBounds[1], ForegroundColorSpan.class );
+			int c;
+			if(foregroundColorSpans.length != 0){
+				c = foregroundColorSpans[foregroundColorSpans.length-1].getForegroundColor();
+			}else{
+				c = Color.BLACK;
+			}
+			setImageButtonColor( c, btnTextColorPicker.getId() );
+		}
 	}
 
-	final TextEditor.OnSelectionChanges mOnSelectionChanges = new TextEditor.OnSelectionChanges() {
+	/*final TextEditor.OnSelectionChanges mOnSelectionChanges = new TextEditor.OnSelectionChanges() {
 		@Override
 		public void onTextSelected(int start, int end) {
 			Editable s = mTextEditor.getText();
@@ -846,23 +892,125 @@ public class EntryEditor extends ThemeActivity {
 			applySupSubButton( R.id.btnSubscript );
 			setButtonReplaceColorAppearance();
 		}
+	};*/
+
+	final TextEditor.OnSelectionChanges mOnSelectionChanges = new TextEditor.OnSelectionChanges() {
+		@Override
+		public void onTextSelected(final int start, final int end) {
+			mTextEditor.clearComposingText();
+			mSelectionBounds = new int[]{start, end};
+
+			applyStyleBtnState( start, end );
+			btnBold.setOnClickListener(onTextAppearanceClick);
+			btnItalic.setOnClickListener(onTextAppearanceClick);
+			btnUnderline.setOnClickListener( onUnderlineBtnClick );
+			btnStrike.setOnClickListener( onStrikeBtnClick );
+
+			btnTextColorPicker.setOnClickListener( onClickOnSelectColorOfTextSegment );
+			setBtnTextColorPickerColorAtBounds();
+
+			Editable s = mTextEditor.getText();
+			if(s == null)
+				return;
+			final BackgroundColorSpan[] backgroundColorSpans = s.getSpans( start, end, BackgroundColorSpan.class );
+			final int editTextColor = (( ColorDrawable ) mTextEditor.getBackground()).getColor();
+			final int backgroundColor = (backgroundColorSpans.length == 0 ? editTextColor : backgroundColorSpans[0].getBackgroundColor());
+			btnTextHighlight.setOnClickListener( new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					OnColorSelected listener = new OnColorSelected() {
+						@Override
+						public void onColorSelected(int color) {
+							Editable e = mTextEditor.getText();
+							if(e == null)
+								return;
+							int selSt = mSelectionBounds[0];
+							int selEnd = mSelectionBounds[1];
+							removeAllSpansInBounds( mSelectionBounds[0], mSelectionBounds[1], BackgroundColorSpan.class );
+							e.setSpan( new BackgroundColorSpan( color ), selSt, selEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+							setImageButtonColor( color, btnTextHighlight.getId() );
+						}
+					};
+					AlertDialog alertDialog = getColorPickerDialog( R.string.choose_text_background_of_segment, backgroundColor, listener );
+					if(backgroundColorSpans.length > 0){
+						alertDialog.setButton( AlertDialog.BUTTON_NEUTRAL, getString( R.string.delete ), new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								Editable e = mTextEditor.getText();
+								if(e == null)
+									return;
+								removeAllSpansInBounds( mSelectionBounds[0], mSelectionBounds[1], BackgroundColorSpan.class );
+							}
+						} );
+					}
+					alertDialog.show();
+				}
+			} );
+			setImageButtonColor( backgroundColor, btnTextHighlight.getId() );
+		}
+
+		@Override
+		public void onTextSelectionBreak(int newSelectionPosition) {
+			mSelectionBounds = new int[]{newSelectionPosition, newSelectionPosition};
+
+			btnBold.setOnClickListener( null );
+			btnItalic.setOnClickListener( null );
+			btnUnderline.setOnClickListener( null );
+			btnStrike.setOnClickListener( null );
+
+			btnTextColorPicker.setOnClickListener( btnTextOnAllColor );
+			setBtnTextColorPickerColorAtBounds();
+
+			btnBold.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
+			btnItalic.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
+			btnUnderline.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
+			btnStrike.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
+
+			btnTextHighlight.setOnClickListener( null );
+
+			setImageButtonColor( DEFAULT_TOOLS_COLOR, btnTextHighlight.getId() );
+		}
+
+		@Override
+		public void onTextChanged(CharSequence text, int start, int lengthBefore, int lengthAfter) {
+			Editable e = mTextEditor.getText();
+			if(lengthAfter > lengthBefore){
+				int len = lengthAfter - lengthBefore;
+				int end = start + len;
+				if(e == null)
+					return;
+
+				e.setSpan( new ForegroundColorSpan( mDefaultTextColor ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+				e.setSpan( new AlignmentSpan.Standard( mMainAlignment ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+				e.setSpan( new AbsoluteSizeSpan( mEntry.getProperties().getTextSize(), true ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+			}
+			if(lengthAfter == 0){
+				btnReplaceColor.setOnClickListener( null );
+			}
+		}
+
+		@Override
+		public void onSelectionChanged() {
+			applySupSubButton( btnSubScript.getId() );
+			applySupSubButton( btnSupScript.getId() );
+			setButtonReplaceColorAppearance();
+		}
 	};
 
 	private void setButtonReplaceColorAppearance(){
-		Button btn = findViewById( R.id.btnReplaceColor );
 		Editable e = mTextEditor.getText();
 		if(e == null){
-			hideThisLayout( R.id.layout_replace_this_color );
+			btnReplaceColor.setOnClickListener( null );
+			setImageButtonColor( Color.WHITE, btnReplaceColor.getId() );
 			return;
 		}
 		int selSt = mSelectionBounds[0];
 		int selEnd = mSelectionBounds[1];
 		ForegroundColorSpan[] spans = e.getSpans( selSt, selEnd, ForegroundColorSpan.class );
 		if(spans.length > 0){
-			showThisLayout( R.id.layout_replace_this_color );
 			final int colorToReplace = spans[0].getForegroundColor();
-			btn.setBackgroundTintList( ColorStateList.valueOf( colorToReplace ) );
-			btn.setOnClickListener( new View.OnClickListener() {
+			setImageButtonColor( colorToReplace, btnReplaceColor.getId() );
+			btnReplaceColor.setOnClickListener( new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
 					OnColorSelected onColorSelected = new OnColorSelected() {
@@ -879,67 +1027,8 @@ public class EntryEditor extends ThemeActivity {
 				}
 			} );
 		}else{
-			hideThisLayout( R.id.layout_replace_this_color );
-		}
-	}
-
-	private void showThisLayout(int id){
-		View v = findViewById( id );
-		if(v instanceof LinearLayout){
-			final LinearLayout layout = (LinearLayout) v;
-			if(layout.getVisibility() == View.VISIBLE)
-				return;
-			layout.animate().scaleY( 1 ).setDuration( 500 ).setListener( new Animator.AnimatorListener() {
-				@Override
-				public void onAnimationStart(Animator animation) {
-					layout.setVisibility( View.VISIBLE );
-				}
-
-				@Override
-				public void onAnimationEnd(Animator animation) {
-
-				}
-
-				@Override
-				public void onAnimationCancel(Animator animation) {
-
-				}
-
-				@Override
-				public void onAnimationRepeat(Animator animation) {
-
-				}
-			} ).start();
-		}
-	}
-
-	private void hideThisLayout(int id){
-		View v = findViewById( id );
-		if(v instanceof LinearLayout){
-			final LinearLayout layout = (LinearLayout) v;
-			if(layout.getVisibility() == View.GONE)
-				return;
-			layout.animate().scaleY( 0 ).setDuration( 500 ).setListener( new Animator.AnimatorListener()     {
-				@Override
-				public void onAnimationStart(Animator animation) {
-
-				}
-
-				@Override
-				public void onAnimationEnd(Animator animation) {
-					layout.setVisibility( View.GONE );
-				}
-
-				@Override
-				public void onAnimationCancel(Animator animation) {
-
-				}
-
-				@Override
-				public void onAnimationRepeat(Animator animation) {
-
-				}
-			} ).start();
+			btnReplaceColor.setOnClickListener( null );
+			setImageButtonColor( DEFAULT_TOOLS_COLOR, btnReplaceColor.getId() );
 		}
 	}
 
@@ -949,12 +1038,13 @@ public class EntryEditor extends ThemeActivity {
 			return;
 
 		ForegroundColorSpan[] spans = e.getSpans( 0, e.length(), ForegroundColorSpan.class );
+		CharacterStyle[] sp = e.getSpans( 0, e.length(), CharacterStyle.class );
 		ArrayList<SpanEntry<ForegroundColorSpan>> apply = new ArrayList<>();
 		for(ForegroundColorSpan span : spans){
 			if(span.getForegroundColor() == oldColor){
 				int st = e.getSpanStart( span );
 				int end = e.getSpanEnd( span );
-				apply.add( new SpanEntry<>( new ForegroundColorSpan( newColor ), st, end ) );
+				apply.add( new SpanEntry<>( new ForegroundColorSpan( newColor ), st, end, ForegroundColorSpan.class ) );
 				e.removeSpan( span );
 			}
 		}
@@ -964,10 +1054,10 @@ public class EntryEditor extends ThemeActivity {
 	}
 
 	private void applySupSubButton(int id){
-		Button btn = findViewById(id);
+		ImageButton btn = findViewById(id);
 
 		if(mSelectionBounds[0] == mSelectionBounds[1]){
-			btn.setBackgroundColor(  getColor( android.R.color.transparent ) );
+			btn.setBackgroundTintList(  ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
 			btn.setOnClickListener( null );
 		}else{
 			Editable e = mTextEditor.getText();
@@ -976,7 +1066,7 @@ public class EntryEditor extends ThemeActivity {
 			int selSt = mSelectionBounds[0];
 			int selEnd = mSelectionBounds[1];
 			boolean apply;
-			if(id == R.id.btnSuperscript) {
+			if(id == R.id.btnToolsSuperscript) {
 				apply = e.getSpans( selSt, selEnd, SuperscriptSpan.class ).length > 0;
 				btn.setOnClickListener(onSupBtnClick);
 			}else {
@@ -985,9 +1075,9 @@ public class EntryEditor extends ThemeActivity {
 			}
 
 			if(apply)
-				btn.setBackgroundColor( getColor( R.color.btnClicked ) );
+				btn.setBackgroundTintList( ColorStateList.valueOf( getColor( R.color.btnClicked ) ) );
 			else
-				btn.setBackgroundColor( getColor( android.R.color.transparent ) );
+				btn.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
 			btn.setTag( apply );
 		}
 	}
@@ -1010,7 +1100,7 @@ public class EntryEditor extends ThemeActivity {
 				e.setSpan( new RelativeSizeSpan( INDEX_PROPORTION ), selSt, selEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 			}
 			applySupSubButton( v.getId() );
-			applySupSubButton( R.id.btnSubscript );
+			applySupSubButton( btnSubScript.getId() );
 		}
 	};
 
@@ -1032,11 +1122,12 @@ public class EntryEditor extends ThemeActivity {
 				e.setSpan( new RelativeSizeSpan( INDEX_PROPORTION ), selSt, selEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 			}
 			applySupSubButton( v.getId() );
-			applySupSubButton( R.id.btnSuperscript );
+			applySupSubButton( btnSupScript.getId() );
 		}
 	};
 
 	private <T> void removeAllSpansInBounds(int selSt, int selEnd, Class<T> type){
+		//Utils.removeAllSpansInBounds( selSt, selEnd, type, mTextEditor.getText() );
 		Editable e = mTextEditor.getText();
 		if(e == null)
 			return;
@@ -1046,11 +1137,11 @@ public class EntryEditor extends ThemeActivity {
 		for(T span : spans){
 			int st = e.getSpanStart( span );
 			int end = e.getSpanEnd( span );
-			if(st < selSt){
-				arrayList.add( new SpanEntry<T>( span, st, selSt ) );
-			}
 			if(end > selEnd){
-				arrayList.add( new SpanEntry<T>( span, selEnd, end ) );
+				arrayList.add( new SpanEntry<>( span, selEnd, end, type ) );
+			}
+			if(st < selSt){
+				arrayList.add( new SpanEntry<>( span, st, selSt, type ) );
 			}
 			e.removeSpan( span );
 		}
@@ -1153,7 +1244,7 @@ public class EntryEditor extends ThemeActivity {
 		@Override
 		public void onClick(View v) {
 			int typeface = Typeface.BOLD;
-			if(v.getId() == R.id.btnItalic)
+			if(v.getId() == R.id.btnToolsItalic)
 				typeface = Typeface.ITALIC;
 
 			if( !( (boolean) v.getTag() ) ) {
@@ -1181,11 +1272,11 @@ public class EntryEditor extends ThemeActivity {
 				int end = s.getSpanEnd( span );
 
 				if(st < selSt){
-					SpanEntry<StyleSpan> se = new SpanEntry<>( new StyleSpan( span.getStyle() ), st, selSt );
+					SpanEntry<StyleSpan> se = new SpanEntry<>( new StyleSpan( span.getStyle() ), st, selSt, StyleSpan.class );
 					spansToApply.add( se );
 				}
 				if(end > selEnd){
-					SpanEntry<StyleSpan> se = new SpanEntry<>( new StyleSpan( span.getStyle() ), selEnd, end );
+					SpanEntry<StyleSpan> se = new SpanEntry<>( new StyleSpan( span.getStyle() ), selEnd, end, StyleSpan.class );
 					spansToApply.add(se);
 				}
 				s.removeSpan( span );
@@ -1213,7 +1304,7 @@ public class EntryEditor extends ThemeActivity {
 			OnColorSelected whatToDo = new OnColorSelected() {
 				@Override
 				public void onColorSelected(int color) {
-					btnBgColorPicker.setBackgroundTintList( ColorStateList.valueOf( color ) );
+					setImageButtonColor( color, btnBgColorPicker.getId() );
 					mTextEditor.setBackgroundColor( color );
 					getWindow().getDecorView().setBackgroundColor( color );
 					mEntry.getProperties().setBgColor( color );
@@ -1232,6 +1323,12 @@ public class EntryEditor extends ThemeActivity {
 		s.setSpan( new ForegroundColorSpan( color ), selSt, selEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 	}
 
+	private void setImageButtonColor(int color, int id){
+		ImageButton btn = findViewById( id );
+		Drawable d = btn.getDrawable();
+		d.setColorFilter( new PorterDuffColorFilter( color, PorterDuff.Mode.SRC_IN ) );
+	}
+
 	private final View.OnClickListener onClickOnSelectColorOfTextSegment = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
@@ -1239,6 +1336,7 @@ public class EntryEditor extends ThemeActivity {
 				@Override
 				public void onColorSelected(int color) {
 					applySpanColorToText( color, mSelectionBounds[0], mSelectionBounds[1] );
+					setBtnTextColorPickerColorAtBounds();
 				}
 			};
 			Editable s = mTextEditor.getText();
@@ -1387,11 +1485,11 @@ public class EntryEditor extends ThemeActivity {
 								e.removeSpan( span );
 							}
 							e.setSpan( new ForegroundColorSpan( color ), 0, e.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-							btnTextColorPicker.setBackgroundTintList( ColorStateList.valueOf( color ) );
 							mTextEditor.setTextColor( color );
 
 							mDefaultTextColor = color;
 							mEntry.getProperties().setDefaultTextColor( color );
+							setBtnTextColorPickerColorAtBounds();
 						}
 					} );
 			alertDialog.show();
@@ -1401,11 +1499,7 @@ public class EntryEditor extends ThemeActivity {
 	@Override
 	protected void onPostCreate(@Nullable Bundle savedInstanceState) {
 		super.onPostCreate( savedInstanceState );
-		btnBgColorPicker.setOnClickListener( btnBgColorPickerDefaultClickListener );
-		setBtnTextColorPickerBackground();
-		btnTextColorPicker.setOnClickListener( btnTextOnAllColor );
 
-		btnBgColorPicker.setBackgroundTintList( ColorStateList.valueOf( mEntry.getProperties().getBgColor() ) );
 		mTextEditor.setBackgroundColor( mEntry.getProperties().getBgColor() );
 		getWindow().getDecorView().setBackgroundColor( mEntry.getProperties().getBgColor() );
 	}
@@ -1413,7 +1507,10 @@ public class EntryEditor extends ThemeActivity {
 	public void plusTextSize(View view){
 		int ts = mEntry.getProperties().getTextSize();
 		if( ts < 45)
-			mEntry.getProperties().setTextSize( ts + 1 );
+			mEntry.getProperties().setTextSize( ts+1 );
+
+		setTextSizeInLbl( view );
+
 		setEditTextSize();
 	}
 
@@ -1421,12 +1518,13 @@ public class EntryEditor extends ThemeActivity {
 		int ts = mEntry.getProperties().getTextSize();
 		if( ts > 15 )
 			mEntry.getProperties().setTextSize( ts - 1 );
+
+		setTextSizeInLbl( view );
+
 		setEditTextSize();
 	}
 
 	private void setEditTextSize(){
-		TextView t = findViewById( R.id.textViewTextSize );
-		t.setText( String.format( Locale.ROOT, "%d", mEntry.getProperties().getTextSize() ) );
 		Editable e = mTextEditor.getText();
 		if(e == null)
 			return;
@@ -1437,7 +1535,7 @@ public class EntryEditor extends ThemeActivity {
 		for(RelativeSizeSpan span : spans){
 			int st = e.getSpanStart( span );
 			int end = e.getSpanEnd( span );
-			spanEntries.add( new SpanEntry<>( new RelativeSizeSpan( span.getSizeChange() ), st, end ) );
+			spanEntries.add( new SpanEntry<>( new RelativeSizeSpan( span.getSizeChange() ), st, end, RelativeSizeSpan.class ) );
 		}
 		removeAllSpansInBounds( 0, e.length(), AbsoluteSizeSpan.class );
 		removeAllSpansInBounds( 0, e.length(), RelativeSizeSpan.class );
@@ -1445,6 +1543,62 @@ public class EntryEditor extends ThemeActivity {
 		for(SpanEntry<RelativeSizeSpan> se : spanEntries){
 			e.setSpan( se.getSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 		}
+	}
+
+	private void setTextSizeInLbl(View view){
+		int ts = mEntry.getProperties().getTextSize();
+		View parent = (View) view.getRootView();
+		(( TextView ) parent.findViewById( R.id.textViewTextSize )).setText( String.format( Locale.ROOT, "%d", ts ) );
+	}
+
+	public void showTextSizePicker(View v){
+		PopupWindow window = new PopupWindow( this );
+		View view = getLayoutInflater().inflate( R.layout.tools_layout_textsize, null );
+		window.setContentView( view );
+		setTextSizeInLbl( view );
+
+		window.setEnterTransition( new Fade( Fade.IN ) );
+		window.setExitTransition( new Fade(Fade.OUT) );
+
+		Drawable d = getDrawable( R.drawable.button_rounded_corners );
+		d.setColorFilter( new PorterDuffColorFilter(getColor(R.color.gray), PorterDuff.Mode.SRC_IN) );
+		window.setBackgroundDrawable( d );
+
+		window.setFocusable( true );
+
+		window.showAtLocation( v, Gravity.CENTER_HORIZONTAL, (int) v.getX(), (int) (v.getY()) );
+	}
+
+	private Alignment getCurrentAlignment(){
+		Editable e = mTextEditor.getText();
+		if(mSelectionBounds[0] == mSelectionBounds[1] || e == null) {
+			return  mMainAlignment;
+		}
+
+		AlignmentSpan.Standard[] spans = e.getSpans( mSelectionBounds[0], mSelectionBounds[1], AlignmentSpan.Standard.class );
+		if(spans.length > 0)
+			return spans[0].getAlignment();
+		return mMainAlignment;
+	}
+
+	public void showTextAlignmentPicker(View v){
+		PopupWindow window = new PopupWindow( this );
+		View view = getLayoutInflater().inflate( R.layout.tools_layout_alignment, null );
+
+		resetAlignmentButtons( view );
+		setAlignmentButtonClicked( view, getCurrentAlignment() );
+
+		window.setContentView( view );
+		window.setEnterTransition( new Fade( Fade.IN ) );
+		window.setExitTransition( new Fade( Fade.OUT ) );
+
+		Drawable d = getDrawable( R.drawable.button_rounded_corners );
+		d.setColorFilter( new PorterDuffColorFilter(getColor(R.color.gray), PorterDuff.Mode.SRC_IN) );
+		window.setBackgroundDrawable( d );
+
+		window.setFocusable( true );
+
+		window.showAtLocation( v, Gravity.CENTER_HORIZONTAL, 0, (int) (v.getY()) );
 	}
 
 	private void createEntry(String name, Spannable text){
@@ -1507,13 +1661,18 @@ public class EntryEditor extends ThemeActivity {
 		mMediaToMove.clear();
 	}
 
-	private void resetAlignmentButtons(){
+	private void resetAlignmentButtons(View parent){
 		ImageButton btn;
 		int[] btnIds = new int[]{R.id.btnAlignLeft, R.id.btnAlignCenter, R.id.btnAlignRight, R.id.btnAlignJustify};
 		for(int id : btnIds){
-			btn = findViewById( id );
+			btn = parent.findViewById( id );
 			btn.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
 		}
+	}
+
+	private void setAlignmentButtonClicked(View parent, Alignment alignment){
+		parent.findViewById( getAlignmentButtonId( alignment ) )
+				.setBackgroundTintList( ColorStateList.valueOf( getColor( R.color.btnClicked ) ) );
 	}
 
 	public void chooseTextAlignment(View v){
@@ -1521,10 +1680,9 @@ public class EntryEditor extends ThemeActivity {
 		if(e == null)
 			return;
 		if(mSelectionBounds[0] != mSelectionBounds[1]){
-			setGravityOfSegment( v.getId() );
+			setGravityOfSegment( v.getId(), v );
 			return;
 		}
-		setAlignmentButtonClicked( v.getId() );
 
 		Layout.Alignment alignment = Layout.Alignment.ALIGN_NORMAL;
 		if(v.getId() == R.id.btnAlignCenter)
@@ -1539,18 +1697,13 @@ public class EntryEditor extends ThemeActivity {
 			e.removeSpan( span );
 		}
 		e.setSpan( new AlignmentSpan.Standard( alignment ), 0, e.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+
+		View root = v.getRootView();
+		resetAlignmentButtons( root );
+		setAlignmentButtonClicked( root, mMainAlignment );
 	}
 
-	private void setAlignmentButtonClicked(int id){
-		resetAlignmentButtons();
-		View v = findViewById( id );
-		if(super.isDarkTheme)
-			v.setBackgroundTintList( ColorStateList.valueOf( getColor( R.color.gray ) ) );
-		else
-			v.setBackgroundTintList( ColorStateList.valueOf( getColor( R.color.btnClicked ) ) );
-	}
-
-	private void setGravityOfSegment(int id){
+	private void setGravityOfSegment(int id, View v){
 		Editable e = mTextEditor.getText();
 		if(e == null)
 			return;
@@ -1564,6 +1717,12 @@ public class EntryEditor extends ThemeActivity {
 		int selEnd = mSelectionBounds[1];
 		removeAllSpansInBounds( selSt, selEnd, AlignmentSpan.Standard.class );
 		e.setSpan( new AlignmentSpan.Standard( alignment ), selSt, selEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+
+		if(v != null) {
+			View root = v.getRootView();
+			resetAlignmentButtons(root);
+			setAlignmentButtonClicked( root, alignment );
+		}
 	}
 
 	private void removeUnusedImages(){

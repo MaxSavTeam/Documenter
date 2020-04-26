@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.text.Html;
 import android.util.Log;
@@ -28,11 +29,9 @@ import com.maxsavitsky.documenter.data.types.Type;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -43,9 +42,11 @@ public class Utils {
 	@SuppressLint("StaticFieldLeak")
 	private static Context sContext;
 	private static File externalStoragePath;
+	private static SharedPreferences mDefaultSharedPreferences;
 
 	public static final String xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 	public static final String htmlHeader = "<!DOCTYPE html>\n";
+	public static final String APP_PREFERENCES = "main_settings";
 	private static final String THIS_TAG = MainActivity.TAG + " Utils";
 
 	public static Context getContext() {
@@ -55,6 +56,14 @@ public class Utils {
 	public static void setContext(Context context) {
 		sContext = context;
 		externalStoragePath = context.getApplicationContext().getExternalFilesDir( null );
+	}
+
+	public static SharedPreferences getDefaultSharedPreferences() {
+		return mDefaultSharedPreferences;
+	}
+
+	public static void setDefaultSharedPreferences(SharedPreferences defaultSharedPreferences) {
+		mDefaultSharedPreferences = defaultSharedPreferences;
 	}
 
 	public static File getExternalStoragePath() {
@@ -73,6 +82,28 @@ public class Utils {
 			}
 		}
 	}
+
+	/*public static  <T> void removeAllSpansInBounds(int selSt, int selEnd, Class<T> type, Spannable e){
+		if(e == null)
+			return;
+
+		ArrayList<SpanEntry<T>> arrayList = new ArrayList<>();
+		T[] spans = e.getSpans( selSt, selEnd, type );
+		for(T span : spans){
+			int st = e.getSpanStart( span );
+			int end = e.getSpanEnd( span );
+			if(st < selSt){
+				arrayList.add( new SpanEntry<T>( span, st, selSt ) );
+			}
+			if(end > selEnd){
+				arrayList.add( new SpanEntry<T>( span, selEnd, end ) );
+			}
+			e.removeSpan( span );
+		}
+		for(SpanEntry<T> se : arrayList){
+			e.setSpan( se.getSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+		}
+	}*/
 
 	/**
 	 * Check if category, document or entry exists

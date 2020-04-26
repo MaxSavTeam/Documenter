@@ -11,14 +11,14 @@
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="@dimen/peekHeight"
+        android:layout_marginBottom="@dimen/bottom_cycle_height"
         android:focusable="false"
         android:scrollbarSize="@dimen/scrollbars_size"
         android:scrollbarStyle="insideInset"
         android:scrollbars="vertical"
         tools:ignore="UselessParent">
 
-        <com.maxsavitsky.documenter.widget.TextEditor
+        <com.maxsavitsky.documenter.editor.TextEditor
             android:id="@+id/edittextEntry"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

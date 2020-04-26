@@ -2,14 +2,12 @@ package com.maxsavitsky.documenter.data.types;
 
 import android.graphics.Color;
 import android.text.Html;
-import android.text.Layout;
 import android.text.Layout.Alignment;
 import android.text.Spannable;
 import android.text.Spanned;
 import android.text.style.AlignmentSpan;
 import android.text.style.ImageSpan;
 import android.text.style.RelativeSizeSpan;
-import android.util.Pair;
 import android.view.Gravity;
 
 import androidx.annotation.NonNull;
@@ -232,7 +230,8 @@ public class Entry extends Type {
 					String[] strings = line.split( " " );
 					SpanEntry<AlignmentSpan.Standard> se = new SpanEntry<AlignmentSpan.Standard>( new AlignmentSpan.Standard( Alignment.valueOf( strings[ 0 ] ) ),
 							Integer.parseInt( strings[ 1 ] ),
-							Integer.parseInt( strings[ 2 ] ) );
+							Integer.parseInt( strings[ 2 ] ),
+							AlignmentSpan.Standard.class);
 					arrayList.add( se );
 				}
 			} catch (IOException e) {
@@ -256,7 +255,8 @@ public class Entry extends Type {
 					String[] strings = line.split( " " );
 					SpanEntry<RelativeSizeSpan> se = new SpanEntry<>( new RelativeSizeSpan( Float.parseFloat( strings[0] ) ),
 							Integer.parseInt( strings[ 1 ] ),
-							Integer.parseInt( strings[ 2 ] ) );
+							Integer.parseInt( strings[ 2 ] ),
+							RelativeSizeSpan.class);
 					arrayList.add( se );
 				}
 			} catch (IOException e) {
@@ -381,9 +381,23 @@ public class Entry extends Type {
 		for(SpanEntry<AlignmentSpan.Standard> se : getAlignments()){
 			spannable.setSpan( se.getSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 		}
+
 		for(SpanEntry<RelativeSizeSpan> se : getRelativeSpans()){
 			spannable.setSpan( se.getSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 		}
+
+		/*ForegroundColorSpan[] foregroundColorSpans = spannable.getSpans( 0, spannable.length(), ForegroundColorSpan.class );
+		ArrayList<SpanEntry<ForegroundColorSpan>> spanEntries = new ArrayList<>();
+		for(ForegroundColorSpan span : foregroundColorSpans){
+			spanEntries.add( new SpanEntry<>( span, spannable.getSpanStart( span ), spannable.getSpanEnd( span ), ForegroundColorSpan.class ) );
+			spannable.removeSpan( span );
+		}
+		spannable.setSpan( new ForegroundColorSpan( getProperties().getDefaultTextColor() ),
+				0, spannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+
+		for(SpanEntry<ForegroundColorSpan> se : spanEntries){
+			spannable.setSpan( se.getSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+		}*/
 
 		return spannable;
 	}

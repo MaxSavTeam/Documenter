@@ -2,8 +2,6 @@ package com.maxsavitsky.documenter.updates;
 
 import android.os.Environment;
 
-import com.maxsavitsky.documenter.updates.UpdatesChecker;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -11,10 +9,10 @@ import java.io.InputStream;
 import java.net.URL;
 
 public class UpdatesDownloader {
-	private final UpdatesChecker.VersionInfo mVersionInfo;
+	private final VersionInfo mVersionInfo;
 	private final UpdatesChecker.CheckResults mCheckResults;
 
-	public UpdatesDownloader(UpdatesChecker.VersionInfo versionInfo, UpdatesChecker.CheckResults checkResults) {
+	public UpdatesDownloader(VersionInfo versionInfo, UpdatesChecker.CheckResults checkResults) {
 		mVersionInfo = versionInfo;
 		mCheckResults = checkResults;
 	}

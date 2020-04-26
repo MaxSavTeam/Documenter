@@ -142,4 +142,25 @@
     <string name="to">to</string>
     <string name="replace_this_color">Replace this color</string>
     <string name="copy_content">Copy content</string>
+
+    <string-array name="tools_hints">
+        <item>Text size</item>
+        <item>Text alignment</item>
+        <item>Bold text</item>
+        <item>Italic text</item>
+        <item>Underlining</item>
+        <item>Strikethrough</item>
+        <item>Superscript</item>
+        <item>Subscript</item>
+        <item>Background color</item>
+        <item>Text color</item>
+        <item>Highlight color</item>
+        <item>Replace color</item>
+        <item>Insert image</item>
+    </string-array>
+
+    <string name="feedback">Feedback</string>
+    <string name="apparently_you_had_error">Apparently, you had a critical error (the application crashed). We are sorry. If you have not sent the report, please send now. It will help us greatly.</string>
+    <string name="necessary_update_title">Necessary update available</string>
+    <string name="necessary_update_text">We have released an important update. This means that this version was unsuccessful and there were serious problems in it. We ask you to be updated.</string>
 </resources>

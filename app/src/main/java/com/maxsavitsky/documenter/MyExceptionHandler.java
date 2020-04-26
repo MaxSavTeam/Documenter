@@ -48,7 +48,7 @@ public class MyExceptionHandler implements Thread.UncaughtExceptionHandler {
 		mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, pendingIntent);
 
 		mActivity.finish();
-		System.exit( 2 );
+		System.exit( 1 );
 	}
 
 	public void justWriteException(Thread t, Throwable tr){

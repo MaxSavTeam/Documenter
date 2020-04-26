@@ -1,4 +1,4 @@
-package com.maxsavitsky.documenter.widget;
+package com.maxsavitsky.documenter.editor;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -44,6 +44,8 @@ public class TextEditor extends AppCompatEditText {
 		mIgnoreChanges = true;
 		super.append( text );
 	}
+
+	
 
 	@Override
 	protected void onSelectionChanged(int selStart, int selEnd) {

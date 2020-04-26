@@ -35,6 +35,7 @@ import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Category;
 import com.maxsavitsky.documenter.updates.UpdatesChecker;
 import com.maxsavitsky.documenter.updates.UpdatesDownloader;
+import com.maxsavitsky.documenter.updates.VersionInfo;
 import com.maxsavitsky.documenter.utils.ApkInstaller;
 import com.maxsavitsky.documenter.utils.Utils;
 
@@ -189,12 +190,12 @@ public class CategoryList extends ThemeActivity {
 
 	private final UpdatesChecker.CheckResults mCheckResults = new UpdatesChecker.CheckResults() {
 		@Override
-		public void noUpdates(UpdatesChecker.VersionInfo versionInfo) {
+		public void noUpdates(VersionInfo versionInfo) {
 
 		}
 
 		@Override
-		public void updateAvailable(final UpdatesChecker.VersionInfo versionInfo) {
+		public void updateAvailable(final VersionInfo versionInfo) {
 			runOnUiThread( new Runnable() {
 				@Override
 				public void run() {
@@ -227,7 +228,28 @@ public class CategoryList extends ThemeActivity {
 		}
 
 		@Override
-		public void downloaded(File path, UpdatesChecker.VersionInfo versionInfo) {
+		public void onNecessaryUpdate(final VersionInfo versionInfo) {
+			runOnUiThread( new Runnable() {
+				@Override
+				public void run() {
+					AlertDialog.Builder builder = new AlertDialog.Builder( CategoryList.this, CategoryList.super.mAlertDialogStyle );
+					builder.setTitle( R.string.necessary_update_title );
+					builder.setMessage( R.string.necessary_update_text )
+							.setCancelable( false )
+							.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									download( versionInfo );
+									dialog.cancel();
+								}
+							} );
+					builder.create().show();
+				}
+			} );
+		}
+
+		@Override
+		public void downloaded(File path, VersionInfo versionInfo) {
 			if(mDownloadPd != null)
 				mDownloadPd.dismiss();
 
@@ -256,7 +278,7 @@ public class CategoryList extends ThemeActivity {
 	private ProgressDialog mDownloadPd = null;
 	private Thread downloadThread;
 
-	private void download(UpdatesChecker.VersionInfo versionInfo){
+	private void download(VersionInfo versionInfo){
 		final UpdatesDownloader downloader = new UpdatesDownloader( versionInfo, mCheckResults );
 		mDownloadPd = new ProgressDialog(this);
 		mDownloadPd.setMessage( getString( R.string.downloading ) );

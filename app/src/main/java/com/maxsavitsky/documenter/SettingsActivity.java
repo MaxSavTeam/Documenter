@@ -8,7 +8,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
-import android.preference.PreferenceManager;
 import android.text.Html;
 import android.view.MenuItem;
 import android.view.View;
@@ -35,6 +34,7 @@ import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.updates.UpdatesChecker;
 import com.maxsavitsky.documenter.updates.UpdatesDownloader;
+import com.maxsavitsky.documenter.updates.VersionInfo;
 import com.maxsavitsky.documenter.utils.ApkInstaller;
 import com.maxsavitsky.documenter.utils.Utils;
 
@@ -46,6 +46,7 @@ public class SettingsActivity extends ThemeActivity {
 
 	private boolean mMemoryAccessGranted = false;
 	private FirebaseAuth mAuth;
+	private SharedPreferences sp;
 
 	private void applyTheme() {
 		ActionBar actionBar = getSupportActionBar();
@@ -71,7 +72,7 @@ public class SettingsActivity extends ThemeActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
+		sp = Utils.getDefaultSharedPreferences();
 
 		super.onCreate( savedInstanceState );
 		setContentView( R.layout.activity_settings );
@@ -138,6 +139,12 @@ public class SettingsActivity extends ThemeActivity {
 		if(mAuth.getCurrentUser() != null)
 			mAuth.getCurrentUser().reload();
 		updateUserUi( mAuth.getCurrentUser() );
+	}
+
+	public void sendLastReport(View v){
+		String file = Utils.getExternalStoragePath().getPath() + "/" + sp.getString( "last_exception", "1" );
+		MainActivity.getInstance().sendLog( file );
+		sp.edit().remove( "last_exception" ).apply();
 	}
 
 	private void updateUserUi(FirebaseUser user) {
@@ -223,7 +230,7 @@ public class SettingsActivity extends ThemeActivity {
 
 	private final UpdatesChecker.CheckResults mCheckResults = new UpdatesChecker.CheckResults() {
 		@Override
-		public void noUpdates(UpdatesChecker.VersionInfo versionInfo) {
+		public void noUpdates(VersionInfo versionInfo) {
 			runOnUiThread( new Runnable() {
 				@Override
 				public void run() {
@@ -236,7 +243,7 @@ public class SettingsActivity extends ThemeActivity {
 		}
 
 		@Override
-		public void updateAvailable(final UpdatesChecker.VersionInfo versionInfo) {
+		public void updateAvailable(final VersionInfo versionInfo) {
 			runOnUiThread( new Runnable() {
 				@Override
 				public void run() {
@@ -266,7 +273,28 @@ public class SettingsActivity extends ThemeActivity {
 		}
 
 		@Override
-		public void downloaded(File path, UpdatesChecker.VersionInfo versionInfo) {
+		public void onNecessaryUpdate(final VersionInfo versionInfo) {
+			runOnUiThread( new Runnable() {
+				@Override
+				public void run() {
+					AlertDialog.Builder builder = new AlertDialog.Builder( SettingsActivity.this, SettingsActivity.super.mAlertDialogStyle );
+					builder.setTitle( R.string.necessary_update_title );
+					builder.setMessage( R.string.necessary_update_text )
+							.setCancelable( false )
+							.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									download( versionInfo );
+									dialog.cancel();
+								}
+							} );
+					builder.create().show();
+				}
+			} );
+		}
+
+		@Override
+		public void downloaded(File path, VersionInfo versionInfo) {
 			if ( mDownloadPd != null ) {
 				mDownloadPd.dismiss();
 			}
@@ -323,9 +351,9 @@ public class SettingsActivity extends ThemeActivity {
 
 	private Thread downloadThread;
 	private ProgressDialog mDownloadPd = null;
-	private UpdatesChecker.VersionInfo tempVersionInfo;
+	private VersionInfo tempVersionInfo;
 
-	private void download(UpdatesChecker.VersionInfo versionInfo) {
+	private void download(VersionInfo versionInfo) {
 		if ( !mMemoryAccessGranted ) {
 			if ( !isMemoryAccessGranted() ) {
 				tempVersionInfo = versionInfo;

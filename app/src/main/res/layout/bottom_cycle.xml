@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<HorizontalScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/bottom_cycle_height"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@color/gray"
+    android:layout_gravity="bottom"
+    android:scrollbars="none"
+    android:orientation="horizontal">
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:id="@+id/toolsLinearLayout"
+        android:layout_height="match_parent">
+        <ImageButton
+            android:id="@+id/btnToolsTextSize"
+            android:scaleType="fitCenter"
+            android:backgroundTint="@android:color/transparent"
+            android:layout_width="@dimen/bottom_cycle_height"
+            android:layout_height="@dimen/bottom_cycle_height"
+            android:onClick="showTextSizePicker"
+            android:src="@drawable/ic_text_size"
+            tools:ignore="ContentDescription" />
+
+        <ImageButton
+            android:layout_width="@dimen/bottom_cycle_height"
+            android:layout_height="@dimen/bottom_cycle_height"
+            android:id="@+id/btnToolsAlignment"
+            android:src="@drawable/ic_align_center_white"
+            android:scaleType="fitCenter"
+            android:onClick="showTextAlignmentPicker"
+            android:backgroundTint="@android:color/transparent"
+            tools:ignore="ContentDescription" />
+
+        <ImageButton
+            android:layout_width="@dimen/bottom_cycle_height"
+            android:layout_height="@dimen/bottom_cycle_height"
+            android:id="@+id/btnToolsBold"
+            android:scaleType="fitCenter"
+            android:backgroundTint="@android:color/transparent"
+            android:src="@drawable/ic_bold_white"
+            tools:ignore="ContentDescription" />
+
+        <ImageButton
+            android:layout_width="@dimen/bottom_cycle_height"
+            android:layout_height="@dimen/bottom_cycle_height"
+            android:id="@+id/btnToolsItalic"
+            android:src="@drawable/ic_italic_white"
+            android:scaleType="fitCenter"
+            android:backgroundTint="@android:color/transparent"
+            tools:ignore="ContentDescription" />
+
+        <ImageButton
+            android:layout_width="@dimen/bottom_cycle_height"
+            android:layout_height="@dimen/bottom_cycle_height"
+            android:id="@+id/btnToolsUnderline"
+            android:src="@drawable/ic_underline_white"
+            android:scaleType="fitCenter"
+            android:backgroundTint="@android:color/transparent"
+            tools:ignore="ContentDescription" />
+
+        <ImageButton
+            android:layout_width="@dimen/bottom_cycle_height"
+            android:layout_height="@dimen/bottom_cycle_height"
+            android:id="@+id/btnToolsStrike"
+            android:src="@drawable/ic_strikethrough_white"
+            android:scaleType="fitCenter"
+            android:backgroundTint="@android:color/transparent"
+            tools:ignore="ContentDescription" />
+
+        <ImageButton
+            android:layout_width="@dimen/bottom_cycle_height"
+            android:layout_height="@dimen/bottom_cycle_height"
+            android:id="@+id/btnToolsSuperscript"
+            android:src="@drawable/ic_superscript"
+            android:scaleType="fitCenter"
+            android:backgroundTint="@android:color/transparent"
+            tools:ignore="ContentDescription" />
+
+        <ImageButton
+            android:layout_width="@dimen/bottom_cycle_height"
+            android:layout_height="@dimen/bottom_cycle_height"
+            android:id="@+id/btnToolsSubscript"
+            android:src="@drawable/ic_subscript"
+            android:scaleType="fitCenter"
+            android:backgroundTint="@android:color/transparent"
+            tools:ignore="ContentDescription" />
+
+        <ImageButton
+            android:layout_width="@dimen/bottom_cycle_height"
+            android:layout_height="@dimen/bottom_cycle_height"
+            android:id="@+id/btnToolsBackgroundColor"
+            android:src="@drawable/ic_entry_background_color"
+            android:scaleType="fitCenter"
+            android:backgroundTint="@android:color/transparent"
+            tools:ignore="ContentDescription" />
+
+        <ImageButton
+            android:layout_width="@dimen/bottom_cycle_height"
+            android:layout_height="@dimen/bottom_cycle_height"
+            android:id="@+id/btnToolsTextColor"
+            android:src="@drawable/ic_text_color"
+            android:scaleType="fitCenter"
+            android:backgroundTint="@android:color/transparent"
+            tools:ignore="ContentDescription" />
+
+        <ImageButton
+            android:layout_width="@dimen/bottom_cycle_height"
+            android:layout_height="@dimen/bottom_cycle_height"
+            android:id="@+id/btnToolsHighlight"
+            android:src="@drawable/ic_text_highlight"
+            android:scaleType="fitCenter"
+            android:backgroundTint="@android:color/transparent"
+            tools:ignore="ContentDescription" />
+
+        <ImageButton
+            android:layout_width="@dimen/bottom_cycle_height"
+            android:layout_height="@dimen/bottom_cycle_height"
+            android:id="@+id/btnToolsReplaceColor"
+            android:src="@drawable/ic_change_color"
+            android:scaleType="fitCenter"
+            android:backgroundTint="@android:color/transparent"
+            tools:ignore="ContentDescription" />
+
+        <ImageButton
+            android:layout_width="@dimen/bottom_cycle_height"
+            android:layout_height="@dimen/bottom_cycle_height"
+            android:id="@+id/btnToolsInsertImage"
+            android:src="@drawable/ic_insert_photo"
+            android:scaleType="fitCenter"
+            android:onClick="pickImages"
+            android:backgroundTint="@android:color/transparent"
+            tools:ignore="ContentDescription" />
+    </LinearLayout>
+</HorizontalScrollView>

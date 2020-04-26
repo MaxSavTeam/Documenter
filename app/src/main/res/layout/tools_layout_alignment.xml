@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:text="@string/text_alignment"
+        android:textColor="@color/white"
+        android:textSize="18sp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/btnAlignLeft"
+            android:layout_width="@dimen/btnTextUtilsWidth"
+            android:layout_height="@dimen/btnTextUtilsWidth"
+            android:background="@drawable/rounded_corners"
+            android:onClick="chooseTextAlignment"
+            android:padding="5dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_align_left_white"
+            tools:ignore="ContentDescription" />
+
+        <ImageButton
+            android:id="@+id/btnAlignCenter"
+            android:layout_width="@dimen/btnTextUtilsWidth"
+            android:layout_height="@dimen/btnTextUtilsWidth"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/rounded_corners"
+            android:onClick="chooseTextAlignment"
+            android:padding="5dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_align_center_white"
+            tools:ignore="ContentDescription" />
+
+        <ImageButton
+            android:id="@+id/btnAlignRight"
+            android:layout_width="@dimen/btnTextUtilsWidth"
+            android:layout_height="@dimen/btnTextUtilsWidth"
+            android:background="@drawable/rounded_corners"
+            android:onClick="chooseTextAlignment"
+            android:padding="5dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_align_right_white"
+            tools:ignore="ContentDescription" />
+
+        <ImageButton
+            android:id="@+id/btnAlignJustify"
+            android:layout_width="@dimen/btnTextUtilsWidth"
+            android:layout_height="@dimen/btnTextUtilsWidth"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/rounded_corners"
+            android:onClick="chooseTextAlignment"
+            android:padding="5dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_align_justify"
+            android:visibility="gone"
+            tools:ignore="ContentDescription" />
+
+    </LinearLayout>
+
+</LinearLayout>

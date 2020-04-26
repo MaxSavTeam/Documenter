@@ -1,6 +1,5 @@
 package com.maxsavitsky.documenter.media.images;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
@@ -16,15 +15,14 @@ import java.io.File;
 public class ImageRenderer {
 	public static Drawable renderDrawable(String source){
 		Thread.currentThread().setName( "Drawable renderer thread" );
-		String path = source.startsWith( "file://" ) ? source.substring( "file://".length() ) : source;
-		File file = new File( path );
+		File file = new File( source );
 
 		Point size = Utils.getScreenSize();
 
 		BitmapFactory.Options options = new BitmapFactory.Options();
 		options.inJustDecodeBounds = true;
-		BitmapFactory.decodeFile(path, options); // get original sizes
-		Bitmap b = BitmapFactory.decodeFile( path );
+		BitmapFactory.decodeFile(source, options); // get original sizes
+		Bitmap b = BitmapFactory.decodeFile( source );
 		if(b == null || !file.exists()) {
 			Drawable d = Utils.getContext().getDrawable( R.drawable.image_not_found_or_damaged );
 			int w = d.getIntrinsicWidth();
@@ -36,7 +34,7 @@ public class ImageRenderer {
 			if(b == null)
 				msg += "bitmap render error\n";
 			if(!file.exists()){
-				msg += "file not found: " + path;
+				msg += "file not found: " + source;
 			}
 			new MyExceptionHandler( null ).justWriteException( Thread.currentThread(), new Throwable(msg) );
 			return d;
