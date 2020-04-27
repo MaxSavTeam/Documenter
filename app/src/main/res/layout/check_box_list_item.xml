@@ -10,7 +10,7 @@
         android:id="@+id/checkBoxInCheckboxItem"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="left"
+        android:layout_gravity="start"
         android:buttonTint="?colorAccent"
         android:clickable="false"
         android:gravity="center_vertical|end" />
@@ -21,7 +21,6 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_weight="0.7"
-        android:text="TextView"
         android:textColor="?attr/textColor"
         android:textSize="18sp" />
 
@@ -30,6 +29,5 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="TextView"
         android:visibility="gone" />
 </LinearLayout>
