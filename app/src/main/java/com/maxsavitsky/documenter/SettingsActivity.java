@@ -251,7 +251,7 @@ public class SettingsActivity extends ThemeActivity {
 						mCheckUpdatesDialog.dismiss();
 					}
 					AlertDialog.Builder builder = new AlertDialog.Builder( SettingsActivity.this, SettingsActivity.super.mAlertDialogStyle );
-					builder.setTitle( R.string.update_available )
+					builder.setTitle( getString(R.string.update_available) + ": " + versionInfo.getVersionName() )
 							.setCancelable( false )
 							.setMessage( R.string.would_you_like_to_download_and_install )
 							.setPositiveButton( R.string.yes, new DialogInterface.OnClickListener() {
@@ -278,7 +278,7 @@ public class SettingsActivity extends ThemeActivity {
 				@Override
 				public void run() {
 					AlertDialog.Builder builder = new AlertDialog.Builder( SettingsActivity.this, SettingsActivity.super.mAlertDialogStyle );
-					builder.setTitle( R.string.necessary_update_title );
+					builder.setTitle( getString(R.string.necessary_update_title) + ": " + versionInfo.getVersionName() );
 					builder.setMessage( R.string.necessary_update_text )
 							.setCancelable( false )
 							.setPositiveButton( "OK", new DialogInterface.OnClickListener() {

@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
@@ -200,7 +199,7 @@ public class CategoryList extends ThemeActivity {
 				@Override
 				public void run() {
 					AlertDialog.Builder builder = new AlertDialog.Builder( CategoryList.this, CategoryList.super.mAlertDialogStyle );
-					builder.setTitle( R.string.update_available )
+					builder.setTitle( getString(R.string.update_available) + ": " + versionInfo.getVersionName() )
 							.setCancelable( false )
 							.setMessage( R.string.would_you_like_to_download_and_install )
 							.setPositiveButton( R.string.yes, new DialogInterface.OnClickListener() {
@@ -233,7 +232,7 @@ public class CategoryList extends ThemeActivity {
 				@Override
 				public void run() {
 					AlertDialog.Builder builder = new AlertDialog.Builder( CategoryList.this, CategoryList.super.mAlertDialogStyle );
-					builder.setTitle( R.string.necessary_update_title );
+					builder.setTitle( getString(R.string.necessary_update_title) + ": " + versionInfo.getVersionName() );
 					builder.setMessage( R.string.necessary_update_text )
 							.setCancelable( false )
 							.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
@@ -310,7 +309,7 @@ public class CategoryList extends ThemeActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		sp = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
+		sp = Utils.getDefaultSharedPreferences();
 		setContentView(R.layout.activity_category_list);
 		Toolbar toolbar = findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);

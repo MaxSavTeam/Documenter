@@ -62,4 +62,8 @@ public class VersionInfo {
 	public boolean isNecessaryUpdate() {
 		return isNecessaryUpdate;
 	}
+
+	public String getVersionName() {
+		return mVersionName;
+	}
 }
