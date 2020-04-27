@@ -46,6 +46,11 @@ public class MainActivity extends ThemeActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		mExceptionHandler = new MyExceptionHandler( this );
+
+		Utils.setContext(this);
+		SharedPreferences sharedPreferences = getSharedPreferences( Utils.APP_PREFERENCES, Context.MODE_PRIVATE );
+		Utils.setDefaultSharedPreferences( sharedPreferences );
+
 		super.onCreate(savedInstanceState);
 		instance = this;
 		setContentView(R.layout.layout_onstartup);
@@ -61,10 +66,6 @@ public class MainActivity extends ThemeActivity {
 		}catch (Exception e){
 			e.printStackTrace();
 		}
-
-		Utils.setContext(this);
-		SharedPreferences sharedPreferences = getSharedPreferences( Utils.APP_PREFERENCES, Context.MODE_PRIVATE );
-		Utils.setDefaultSharedPreferences( sharedPreferences );
 
 		deleteInstalledApks();
 

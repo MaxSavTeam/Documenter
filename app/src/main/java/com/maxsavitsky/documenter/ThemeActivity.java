@@ -3,9 +3,10 @@ package com.maxsavitsky.documenter;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.maxsavitsky.documenter.utils.Utils;
 
 public class ThemeActivity extends AppCompatActivity {
 	protected int mAlertDialogStyle = R.style.AlertDialogDark;
@@ -21,7 +22,7 @@ public class ThemeActivity extends AppCompatActivity {
 	// only for themes
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+		SharedPreferences sharedPreferences = Utils.getDefaultSharedPreferences();
 		if(sharedPreferences.getBoolean( "dark_theme", false )){
 			setTheme( R.style.AppTheme_Dark );
 			mAlertDialogStyle = R.style.AlertDialogDark;
