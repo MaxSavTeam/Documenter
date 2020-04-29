@@ -1,23 +1,19 @@
 package com.maxsavitsky.documenter.data.types;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 
 import com.google.firebase.database.annotations.NotNull;
-import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.data.Info;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.XMLParser;
+
 import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-
-import javax.xml.parsers.ParserConfigurationException;
 
 public class Document extends Type implements Comparable{
 	private final String id;
@@ -41,6 +37,11 @@ public class Document extends Type implements Comparable{
 	@Override
 	public String getName() {
 		return name;
+	}
+
+	@Override
+	public String getType() {
+		return "Document";
 	}
 
 	public void setInfo(Info info) {

@@ -1,7 +1,5 @@
 package com.maxsavitsky.documenter.data.types;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 
 import com.maxsavitsky.documenter.data.Info;
@@ -15,8 +13,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-
-import javax.xml.parsers.ParserConfigurationException;
 
 public class Category extends Type {
 	private String mId;
@@ -115,6 +111,11 @@ public class Category extends Type {
 	@Override
 	public String getName() {
 		return mName;
+	}
+
+	@Override
+	public String getType() {
+		return "Category";
 	}
 
 	@NonNull

@@ -29,7 +29,7 @@ public class CloudBackupInstruments {
 		void exceptionOccurred(Exception e);
 	}
 
-	public static void createBackup(final BackupInterface cloudInterface) throws IOException {
+	public static void createBackup(final BackupInterface cloudInterface, String backupName, final long loadTime) throws IOException {
 		final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 		if ( user == null ) {
 			return;
@@ -43,19 +43,18 @@ public class CloudBackupInstruments {
 
 		StorageReference storageRef = FirebaseStorage.getInstance().getReference();
 
-		StorageReference backupRef = storageRef.child( user.getUid() + "/documenter/backups/latest_backup.zip" );
+		StorageReference backupRef = storageRef.child( user.getUid() + "/documenter/backups/" + backupName + ".zip" );
 		backupRef.putFile( Uri.fromFile( file ) )
 				.addOnSuccessListener( new OnSuccessListener<UploadTask.TaskSnapshot>() {
 					@Override
 					public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
 						DatabaseReference ref = FirebaseDatabase.getInstance()
 								.getReference( "documenter/" + user.getUid() + "/last_backup_time" );
-						final long time = System.currentTimeMillis();
-						ref.setValue( time )
+						ref.setValue( loadTime )
 								.addOnSuccessListener( new OnSuccessListener<Void>() {
 									@Override
 									public void onSuccess(Void aVoid) {
-										cloudInterface.successfully( time );
+										cloudInterface.successfully( loadTime );
 									}
 								} )
 								.addOnFailureListener( new OnFailureListener() {
@@ -76,12 +75,12 @@ public class CloudBackupInstruments {
 				} );
 	}
 
-	public static void restoreFromBackup(final BackupInterface cloudInterface) throws IOException {
+	public static void restoreFromBackup(final BackupInterface cloudInterface, String backupName) throws IOException {
 		final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 		if ( user == null ) {
 			return;
 		}
-		StorageReference ref = FirebaseStorage.getInstance().getReference().child( user.getUid() + "/documenter/backups/latest_backup.zip" );
+		StorageReference ref = FirebaseStorage.getInstance().getReference().child( user.getUid() + "/documenter/backups/" + backupName + ".zip" );
 		final File file = new File( Utils.getExternalStoragePath().getPath() + "/cloud_backup.zip" );
 		if ( !file.exists() ) {
 			file.createNewFile();

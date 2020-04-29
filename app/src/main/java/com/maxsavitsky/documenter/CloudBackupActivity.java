@@ -1,18 +1,14 @@
 package com.maxsavitsky.documenter;
 
-import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.Html;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,7 +16,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.content.ContextCompat;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -37,7 +32,6 @@ import com.maxsavitsky.documenter.utils.Utils;
 
 import java.io.IOException;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class CloudBackupActivity extends ThemeActivity {
@@ -263,7 +257,7 @@ public class CloudBackupActivity extends ThemeActivity {
 			@Override
 			public void run() {
 				try {
-					CloudBackupInstruments.restoreFromBackup( backupInterface );
+					CloudBackupInstruments.restoreFromBackup( backupInterface, "backup_" + mLastBackupTime );
 				} catch (IOException e) {
 					e.printStackTrace();
 					backupInterface.exceptionOccurred( e );

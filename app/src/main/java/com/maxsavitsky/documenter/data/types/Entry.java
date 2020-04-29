@@ -52,6 +52,11 @@ public class Entry extends Type {
 		return mName;
 	}
 
+	@Override
+	public String getType() {
+		return "Entry";
+	}
+
 	private Properties mProperties;
 
 	public Properties getProperties(){
