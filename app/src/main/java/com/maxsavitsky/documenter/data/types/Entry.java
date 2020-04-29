@@ -78,6 +78,8 @@ public class Entry extends Type {
 		this.mName = name;
 
 		this.mPathDir = Utils.getExternalStoragePath().getPath() + "/entries/" + id + "/";
+
+		Thread.currentThread().setName( "Entry " + id );
 	}
 
 	public void setInfo(Info info) {
@@ -379,11 +381,23 @@ public class Entry extends Type {
 		String text = loadText();
 		Spannable spannable = (Spannable) Html.fromHtml( text, new HtmlImageLoader(), null );
 		for(SpanEntry<AlignmentSpan.Standard> se : getAlignments()){
-			spannable.setSpan( se.getSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+			int st = se.getStart(), end = se.getEnd();
+			if(st < 0)
+				st = 0;
+			if(end > spannable.length())
+				end = spannable.length();
+
+			spannable.setSpan( se.getSpan(), st, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 		}
 
 		for(SpanEntry<RelativeSizeSpan> se : getRelativeSpans()){
-			spannable.setSpan( se.getSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+			int st = se.getStart(), end = se.getEnd();
+			if(st < 0)
+				st = 0;
+			if(end > spannable.length())
+				end = spannable.length();
+
+			spannable.setSpan( se.getSpan(), st, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 		}
 
 		/*ForegroundColorSpan[] foregroundColorSpans = spannable.getSpans( 0, spannable.length(), ForegroundColorSpan.class );
