@@ -17,7 +17,6 @@ public class SpanEntry<T> {
 	private final int mStart;
 	private final int mEnd;
 	private String mType;
-	private Class<T> mTClass;
 
 	private Integer mInt;
 	private Float mFloat;
@@ -29,7 +28,6 @@ public class SpanEntry<T> {
 		mSpan = span;
 		this.mStart = st;
 		this.mEnd = end;
-		mTClass = type;
 
 		mType = span.getClass().getName();
 		if ( span instanceof ForegroundColorSpan ) {
@@ -68,7 +66,7 @@ public class SpanEntry<T> {
 		}else if(mSpan instanceof RelativeSizeSpan ){
 			return (T) new RelativeSizeSpan( mFloat );
 		}
-		throw new RuntimeException( "Stub! Unknown class " + mType + "\nNeed " + mTClass.getName() );
+		throw new RuntimeException( "Stub! Unknown class " + mType + "\nNeed " + mType);
 	}
 
 	public int getStart() {
