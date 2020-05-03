@@ -26,7 +26,7 @@ import java.util.Comparator;
 
 public class DefaultChooseAdapter extends RecyclerView.Adapter<DefaultChooseAdapter.ViewHolder>{
 	private ArrayList<? extends Type> mElements;
-	private ArrayList<? extends Type> mStartElements;
+	private ArrayList<? extends Type> mStartElements = new ArrayList<>();
 	private LayoutInflater mLayoutInflater;
 	private View.OnClickListener mOnClickListener;
 	private Context mContext;
