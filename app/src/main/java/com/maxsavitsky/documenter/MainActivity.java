@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.text.Html;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -96,6 +97,7 @@ public class MainActivity extends ThemeActivity {
 				public void run() {
 					try {
 						initialize();
+						Log.i(TAG, "Initialized");
 					} catch (final Exception e) {
 						runOnUiThread( new Runnable() {
 							@Override

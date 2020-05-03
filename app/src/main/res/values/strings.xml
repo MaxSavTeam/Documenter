@@ -163,4 +163,5 @@
     <string name="apparently_you_had_error">Apparently, you had a critical error (the application crashed). We are sorry. If you have not sent the report, please send now. It will help us greatly.</string>
     <string name="necessary_update_title">Necessary update available</string>
     <string name="necessary_update_text">We have released an important update. This means that this version was unsuccessful and there were serious problems in it. We ask you to be updated.</string>
+    <string name="included_in">Included in</string>
 </resources>

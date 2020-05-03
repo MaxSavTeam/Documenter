@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,11 +29,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.maxsavitsky.documenter.adapters.DefaultChooseAdapter;
 import com.maxsavitsky.documenter.adapters.ListAdapter;
+import com.maxsavitsky.documenter.codes.Requests;
+import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Category;
 import com.maxsavitsky.documenter.data.types.Document;
-import com.maxsavitsky.documenter.codes.Requests;
-import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.XMLParser;
 
@@ -359,11 +358,10 @@ public class DocumentList extends ThemeActivity {
 
 				}
 			};
-			ChangeListAdapter2 changeListAdapter = new ChangeListAdapter2(
-					MainData.getDocumentsList(),
-					adapterOnClickListener, this, null );
+			DefaultChooseAdapter chooseAdapter = new DefaultChooseAdapter( MainData.getDocumentsList(), adapterOnClickListener, this );
+			chooseAdapter.setStartElements( mCategory.getDocuments() );
 
-			recyclerView.setAdapter( changeListAdapter );
+			recyclerView.setAdapter( chooseAdapter );
 		}
 	}
 
@@ -490,7 +488,7 @@ public class DocumentList extends ThemeActivity {
 		}
 
 		@Override
-		public void onBindViewHolder(@NonNull DefaultChooseAdapter.VH holder, int position) {
+		public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
 			if ( mDocumentMap.containsKey( mDocuments.get( position ).getId() ) ) {
 				holder.mCheckBox.setChecked( true );
 			} else {

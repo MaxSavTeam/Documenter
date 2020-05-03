@@ -1,12 +1,10 @@
 package com.maxsavitsky.documenter;
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,11 +27,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.maxsavitsky.documenter.adapters.DefaultChooseAdapter;
 import com.maxsavitsky.documenter.adapters.ListAdapter;
+import com.maxsavitsky.documenter.codes.Requests;
+import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.data.types.Entry;
-import com.maxsavitsky.documenter.codes.Requests;
-import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.XMLParser;
 
@@ -384,37 +382,14 @@ public class EntriesList extends ThemeActivity {
 				}
 			};
 
-			ChooseAdapter adapter = new ChooseAdapter( entries, onItemClick, this );
+			DefaultChooseAdapter adapter = new DefaultChooseAdapter( entries, onItemClick, this );
+			adapter.setStartElements( mDocument.getEntries() );
 			RecyclerView recyclerView = findViewById( R.id.recyclerViewChangeList );
 			LinearLayoutManager layoutManager = new LinearLayoutManager( this );
 			layoutManager.setOrientation( RecyclerView.VERTICAL );
 			recyclerView.setLayoutManager( layoutManager );
 
 			recyclerView.setAdapter( adapter );
-		}
-	}
-
-	private class ChooseAdapter extends DefaultChooseAdapter {
-		final ArrayList<Entry> mElements;
-
-		ChooseAdapter(ArrayList<Entry> elements, @Nullable View.OnClickListener onClickListener, Context context) {
-			super( elements, onClickListener, context );
-			mElements = elements;
-		}
-
-		@Override
-		public void onBindViewHolder(@NonNull VH holder, int position) {
-			boolean isHere = false;
-			Entry entry = mElements.get( position );
-			for(Entry entry1 : mDocument.getEntries()){
-				if(entry1.getId().equals( entry.getId() )){
-					isHere = true;
-					break;
-				}
-			}
-			holder.mCheckBox.setChecked( isHere );
-			holder.mId.setText( entry.getId() );
-			holder.mName.setText( entry.getName() );
 		}
 	}
 

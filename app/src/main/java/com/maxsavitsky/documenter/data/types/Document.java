@@ -44,6 +44,15 @@ public class Document extends Type implements Comparable{
 		return "Document";
 	}
 
+	public ArrayList<Category> getParentCategories(){
+		try {
+			return getCategoriesInWhichIncludedDocument();
+		} catch (IOException | SAXException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
 	public void setInfo(Info info) {
 		mInfo = info;
 	}
@@ -124,6 +133,12 @@ public class Document extends Type implements Comparable{
 	public void removeCategoryFromIncludedXml( String categoryId) throws IOException, SAXException {
 		ArrayList<Category> categories = getCategoriesInWhichIncludedDocument();
 		categories.remove( MainData.getCategoryWithId( categoryId ) );
+		for(int i = 0; i < categories.size(); i++){
+			if(categories.get( i ).getId().equals( categoryId )){
+				categories.remove( i );
+				break;
+			}
+		}
 		saveInWhichCategoriesDocumentWithIdIncludedIn( categories );
 	}
 

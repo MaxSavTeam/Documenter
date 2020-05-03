@@ -207,7 +207,8 @@ public class CloudBackupActivity extends ThemeActivity {
 			@Override
 			public void run() {
 				try {
-					CloudBackupInstruments.createBackup( backupInterface );
+					long time = System.currentTimeMillis();
+					CloudBackupInstruments.createBackup( backupInterface, "backup_" + time, time );
 				} catch (IOException e) {
 					e.printStackTrace();
 					backupInterface.exceptionOccurred( e );

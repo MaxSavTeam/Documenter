@@ -1,11 +1,9 @@
 package com.maxsavitsky.documenter.backup;
 
 import android.annotation.SuppressLint;
-import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.preference.PreferenceManager;
@@ -115,7 +113,8 @@ public class AutonomousCloudBackupper {
 			@Override
 			public void run() {
 				try {
-					CloudBackupInstruments.createBackup( backupInterface );
+					long time = System.currentTimeMillis();
+					CloudBackupInstruments.createBackup( backupInterface, "backup_" + time, time );
 				} catch (IOException e) {
 					e.printStackTrace();
 					backupInterface.exceptionOccurred( e );

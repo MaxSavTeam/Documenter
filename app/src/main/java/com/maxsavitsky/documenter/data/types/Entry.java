@@ -11,6 +11,7 @@ import android.text.style.RelativeSizeSpan;
 import android.view.Gravity;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.google.firebase.database.annotations.NotNull;
 import com.maxsavitsky.documenter.data.Info;
@@ -55,6 +56,16 @@ public class Entry extends Type {
 	@Override
 	public String getType() {
 		return "Entry";
+	}
+
+	@Nullable
+	public ArrayList<Document> getParentDocuments() {
+		try {
+			return getDocumentsInWhichIncludedThisEntry();
+		} catch (IOException | SAXException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	private Properties mProperties;

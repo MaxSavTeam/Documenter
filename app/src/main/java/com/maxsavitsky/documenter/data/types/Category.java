@@ -124,6 +124,25 @@ public class Category extends Type {
 		return "id=\"" + getId() + "\" name=\"" + getName() + "\"";
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if ( this == o ) {
+			return true;
+		}
+		if ( o == null || getClass() != o.getClass() ) {
+			return false;
+		}
+
+		Category category = (Category) o;
+
+		return mId.equals( category.getId() );
+	}
+
+	@Override
+	public int hashCode() {
+		return mId != null ? mId.hashCode() : 0;
+	}
+
 	public Properties readProperties() throws IOException, SAXException {
 		this.mProperties = XMLParser.newInstance().parseCategoryProperties( getId() );
 		return this.mProperties;
