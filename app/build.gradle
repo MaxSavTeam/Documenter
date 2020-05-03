@@ -38,7 +38,7 @@ android {
     }
     defaultConfig {
         applicationId "com.maxsavitsky.documenter"
-        minSdkVersion 23
+        minSdkVersion 22
         targetSdkVersion 29
         versionCode 38
 
