@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
@@ -384,7 +385,9 @@ public class CategoryList extends ThemeActivity {
 		} );
 
 		if(!isMemoryAccessGranted()){
-			requestPermissions( new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE }, 1 );
+			if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
+				requestPermissions( new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE }, 1 );
+			}
 		}else {
 			setupRecyclerView();
 			if(sp.getBoolean( "check_updates", true )) {
@@ -417,7 +420,9 @@ public class CategoryList extends ThemeActivity {
 							@Override
 							public void onClick(DialogInterface dialog, int which) {
 								dialog.cancel();
-								requestPermissions( new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE }, 1 );
+								if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
+									requestPermissions( new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE }, 1 );
+								}
 							}
 						} );
 				builder.create().show();

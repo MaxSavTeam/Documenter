@@ -27,9 +27,11 @@ import com.maxsavitsky.documenter.utils.Utils;
 import org.xml.sax.SAXException;
 
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 public class MainActivity extends ThemeActivity {
 	private String path;
@@ -128,18 +130,22 @@ public class MainActivity extends ThemeActivity {
 		findViewById( R.id.btnErrViewReport ).setOnClickListener( new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				FileReader fr = null;
+				FileInputStream inputStream = null;
 				String mes = "";
 				try{
-					fr  = new FileReader( new File(path) );
-					while(fr.ready()){
-						mes = String.format( "%s%c", mes, (char) fr.read() );
+					inputStream = new FileInputStream( new File(path) );
+					byte[] buffer = new byte[1024];
+					int len;
+					while((len = inputStream.read(buffer)) != -1){
+						if(len < 1024)
+							buffer = Arrays.copyOf(buffer, len);
+
+						mes = String.format( "%s%s", mes, new String(buffer, StandardCharsets.UTF_8 ) );
 					}
-					fr.close();
 				}catch (Exception e){
 					try {
-						if(fr != null)
-							fr.close();
+						if(inputStream != null)
+							inputStream.close();
 					}catch (IOException io){
 						//ignore
 					}

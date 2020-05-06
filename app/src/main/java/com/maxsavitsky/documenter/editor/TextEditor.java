@@ -1,13 +1,15 @@
 package com.maxsavitsky.documenter.editor;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 
 import androidx.appcompat.widget.AppCompatEditText;
 
-@SuppressLint("AppCompatCustomView")
+import com.maxsavitsky.documenter.MainActivity;
+
 public class TextEditor extends AppCompatEditText {
+	private final String TAG = MainActivity.TAG + " Editor";
 
 	private OnSelectionChanges listener = null;
 	private boolean mIgnoreChanges = false;
@@ -35,39 +37,38 @@ public class TextEditor extends AppCompatEditText {
 		void onSelectionChanged();
 	}
 
-	public void setTextW(CharSequence text){
+	public void setTextWithoutNotifying(CharSequence text){
 		mIgnoreChanges = true;
-		super.setText( text, BufferType.SPANNABLE );
+		Log.i(TAG, "setTextW mIgnoreChanges=" + true );
+		setText( text, BufferType.SPANNABLE );
 	}
 
 	public void appendW(CharSequence text){
 		mIgnoreChanges = true;
-		super.append( text );
+		append( text );
 	}
-
-	
 
 	@Override
 	protected void onSelectionChanged(int selStart, int selEnd) {
-		if ( selStart == selEnd ) {
-			if(listener != null) {
-				listener.onTextSelectionBreak( selStart );
-			}
-		} else {
-			if(listener != null) {
-				listener.onTextSelected( selStart, selEnd );
-			}
-		}
-		if(listener != null)
-			listener.onSelectionChanged();
 		super.onSelectionChanged( selStart, selEnd );
+		if(listener == null)
+			return;
+		if ( selStart == selEnd ) {
+			listener.onTextSelectionBreak( selStart );
+		} else {
+			listener.onTextSelected( selStart, selEnd );
+		}
+		listener.onSelectionChanged();
 	}
 
 	@Override
 	protected void onTextChanged(CharSequence text, int start, int lengthBefore, int lengthAfter) {
-		super.onTextChanged( text, start, lengthBefore, lengthAfter );
-		if(listener != null && !mIgnoreChanges) {
-			listener.onTextChanged( text, start, lengthBefore, lengthAfter);
+		if(text.toString().equals( "" ))
+			return;
+		Log.i(TAG, "onTextChanged mIgnoreChanges=" + mIgnoreChanges + "; text=" + text);
+		if(listener != null) {
+			if(!mIgnoreChanges)
+				listener.onTextChanged( text, start, lengthBefore, lengthAfter);
 		}
 		mIgnoreChanges = false;
 	}

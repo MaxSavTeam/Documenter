@@ -9,7 +9,6 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.maxsavitsky.documenter.MainActivity;
@@ -32,7 +31,7 @@ public class DefaultChooseAdapter extends RecyclerView.Adapter<DefaultChooseAdap
 	private Context mContext;
 	private static final String TAG = MainActivity.TAG + " DCAdapter";
 
-	public DefaultChooseAdapter(ArrayList<? extends Type> elements, @Nullable View.OnClickListener onClickListener, Context context) {
+	public DefaultChooseAdapter(ArrayList<? extends Type> elements, View.OnClickListener onClickListener, Context context) {
 		mElements = elements;
 		mLayoutInflater = LayoutInflater.from(context);
 		mContext = context;
@@ -44,10 +43,24 @@ public class DefaultChooseAdapter extends RecyclerView.Adapter<DefaultChooseAdap
 		mStartElements = startElements;
 	}
 
+	public ArrayList<? extends Type> getStartElements() {
+		return mStartElements;
+	}
+
+	public void reload(ArrayList<? extends Type> newElements){
+		mElements = newElements;
+		notifyDataSetChanged();
+	}
+
+	@NonNull
+	public View.OnClickListener getOnClickListener() {
+		return mOnClickListener;
+	}
+
 	@NonNull
 	@Override
 	public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-		View view = mLayoutInflater.inflate( R.layout.check_box_list_item, parent, false);
+		View view = mLayoutInflater.inflate( R.layout.check_box_list_item, null);
 		return new ViewHolder(view);
 	}
 

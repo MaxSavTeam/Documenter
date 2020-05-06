@@ -38,12 +38,12 @@ android {
     }
     defaultConfig {
         applicationId "com.maxsavitsky.documenter"
-        minSdkVersion 22
+        minSdkVersion 23
         targetSdkVersion 29
-        versionCode 38
+        versionCode 39
 
         verCode = versionCode
-        cleanVersionName = "1.8.2" + ".$versionCode" + (buildCode != -1 ? "." + buildCode.toString() : "")
+        cleanVersionName = "1.9.0" + ".$versionCode" + (buildCode != -1 ? "." + buildCode.toString() : "") + "-beta"
 
         versionName cleanVersionName + "+${formatDate("yyyyMMddHHmm")}"
         buildConfigField "String", "COMPILATION_DATE", "\"${getDate()}\""

@@ -94,8 +94,6 @@ public class Entry extends Type {
 		this.mName = name;
 
 		this.mPathDir = Utils.getExternalStoragePath().getPath() + "/entries/" + id + "/";
-
-		Thread.currentThread().setName( "Entry " + id );
 	}
 
 	public void setInfo(Info info) {

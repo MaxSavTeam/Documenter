@@ -29,6 +29,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.maxsavitsky.documenter.adapters.DefaultChooseAdapter;
 import com.maxsavitsky.documenter.adapters.ListAdapter;
+import com.maxsavitsky.documenter.adapters.SpinnersManager;
 import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.data.MainData;
@@ -362,6 +363,9 @@ public class DocumentList extends ThemeActivity {
 			chooseAdapter.setStartElements( mCategory.getDocuments() );
 
 			recyclerView.setAdapter( chooseAdapter );
+
+			SpinnersManager manager = new SpinnersManager( getApplicationContext(), "doc" );
+			manager.createWith( getWindow().getDecorView() );
 		}
 	}
 

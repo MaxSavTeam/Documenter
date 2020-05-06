@@ -27,6 +27,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.maxsavitsky.documenter.adapters.DefaultChooseAdapter;
 import com.maxsavitsky.documenter.adapters.ListAdapter;
+import com.maxsavitsky.documenter.adapters.SpinnersManager;
 import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.data.MainData;
@@ -390,6 +391,9 @@ public class EntriesList extends ThemeActivity {
 			recyclerView.setLayoutManager( layoutManager );
 
 			recyclerView.setAdapter( adapter );
+
+			SpinnersManager manager = new SpinnersManager( getApplicationContext(), "ent" );
+			manager.createWith( getWindow().getDecorView() );
 		}
 	}
 
