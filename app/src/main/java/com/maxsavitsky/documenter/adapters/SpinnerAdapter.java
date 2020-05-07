@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.maxsavitsky.documenter.R;
+import com.maxsavitsky.documenter.ThemeActivity;
 import com.maxsavitsky.documenter.data.types.Type;
 
 import java.util.ArrayList;
@@ -59,7 +60,9 @@ public class SpinnerAdapter implements android.widget.SpinnerAdapter {
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		@SuppressLint("ViewHolder") View view = LayoutInflater.from( mContext ).inflate( R.layout.spinner_item, null );
+		mContext.setTheme( ThemeActivity.CURRENT_THEME );
+		LayoutInflater inflater = LayoutInflater.from( mContext );
+		@SuppressLint({ "ViewHolder", "InflateParams" }) View view = inflater.inflate( R.layout.spinner_item, null );
 		(( TextView) view.findViewById( R.id.spinnerContent )).setText( mElements.get( position ).getName() );
 		return view;
 	}

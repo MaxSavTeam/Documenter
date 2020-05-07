@@ -17,7 +17,7 @@ public class ThemeActivity extends AppCompatActivity {
 
 	protected int BACKGROUND_COLOR;
 
-	protected int CURRENT_THEME;
+	public static int CURRENT_THEME;
 
 	// only for themes
 	@Override

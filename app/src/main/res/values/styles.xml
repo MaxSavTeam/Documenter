@@ -19,6 +19,8 @@
 
         <item name="app_icon">@mipmap/ic_documenter_icon_white</item>
         <item name="app_icon_round">@mipmap/ic_documenter_icon_white_round</item>
+
+        <item name="spinner_background">@color/white</item>
     </style>
 
     <style name="AppTheme.Dark">
@@ -39,6 +41,7 @@
 
         <item name="app_icon">@mipmap/ic_documenter_icon_black</item>
         <item name="app_icon_round">@mipmap/ic_documenter_icon_black_round</item>
+        <item name="spinner_background">@color/gray</item>
     </style>
 
     <style name="AlertDialogDark" parent="Theme.AppCompat.Light.Dialog">

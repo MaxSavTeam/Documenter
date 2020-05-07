@@ -58,8 +58,6 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.ColorInt;
-import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
@@ -141,11 +139,6 @@ public class EntryEditor extends ThemeActivity {
 	private void _finishActivity() {
 		Utils.clearTempFolder();
 		finish();
-	}
-
-	@ColorInt
-	private int getColorm(@ColorRes int color) {
-		return getResources().getColor( color );
 	}
 
 	private void backPressed() {
@@ -306,7 +299,7 @@ public class EntryEditor extends ThemeActivity {
 	}
 
 	private void setSpanWatcher() {
-		Log.i( TAG, "setSpanWatcher" );
+		/*Log.i( TAG, "setSpanWatcher" );
 		Editable e = mTextEditor.getText();
 		if ( e == null ) {
 			Log.i( TAG, "setSpanWatcher: returned because editable is null" );
@@ -333,7 +326,7 @@ public class EntryEditor extends ThemeActivity {
 			public void onSpanChanged(Spannable text, Object what, int ostart, int oend, int nstart, int nend) {
 
 			}
-		}, 0, e.length(), Spanned.SPAN_INCLUSIVE_INCLUSIVE );
+		}, 0, e.length(), Spanned.SPAN_INCLUSIVE_INCLUSIVE );*/
 	}
 
 
@@ -824,7 +817,7 @@ public class EntryEditor extends ThemeActivity {
 			btnTextColorPicker.setBackgroundTintList( ColorStateList.valueOf( c ) );
 			btnTextColorPicker.setOnClickListener( onClickOnSelectColorOfTextSegment );
 			final BackgroundColorSpan[] backgroundColorSpans = s.getSpans( start, end, BackgroundColorSpan.class );
-			final int editTextColor = (( ColorDrawable ) mTextEditor.getBackground()).getColorm();
+			final int editTextColor = (( ColorDrawable ) mTextEditor.getBackground()).getColor();
 			final int color = (backgroundColorSpans.length == 0 ? editTextColor : backgroundColorSpans[0].getBackgroundColor());
 			btnTextBackgroundColorPicker.setBackgroundTintList( ColorStateList.valueOf( color ) );
 			btnTextBackgroundColorPicker.setOnClickListener( new View.OnClickListener() {
@@ -843,7 +836,7 @@ public class EntryEditor extends ThemeActivity {
 							btnTextBackgroundColorPicker.setBackgroundTintList( ColorStateList.valueOf( color ) );
 						}
 					};
-					AlertDialog alertDialog = getColormPickerDialog( R.string.choose_text_background_of_segment, color, listener );
+					AlertDialog alertDialog = getColorPickerDialog( R.string.choose_text_background_of_segment, color, listener );
 					if(backgroundColorSpans.length > 0){
 						alertDialog.setButton( AlertDialog.BUTTON_NEUTRAL, getString( R.string.delete ), new DialogInterface.OnClickListener() {
 							@Override
@@ -882,10 +875,10 @@ public class EntryEditor extends ThemeActivity {
 			btnUnderline.setOnClickListener( null );
 			btnStrike.setOnClickListener( null );
 			setBtnTextColorPickerBackground();
-			btnBold.setBackgroundTintList( ColorStateList.valueOf( getColorm( android.R.color.transparent ) ) );
-			btnItalic.setBackgroundTintList( ColorStateList.valueOf( getColorm( android.R.color.transparent ) ) );
-			btnUnderline.setBackgroundTintList( ColorStateList.valueOf( getColorm( android.R.color.transparent ) ) );
-			btnStrike.setBackgroundTintList( ColorStateList.valueOf( getColorm( android.R.color.transparent ) ) );
+			btnBold.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
+			btnItalic.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
+			btnUnderline.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
+			btnStrike.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
 			mSelectionBounds = new int[]{newSelectionPosition, newSelectionPosition};
 
 			hideThisLayout( R.id.textBackgroundLayout );
@@ -965,7 +958,7 @@ public class EntryEditor extends ThemeActivity {
 							setImageButtonColor( color, btnTextHighlight.getId() );
 						}
 					};
-					AlertDialog alertDialog = getColormPickerDialog( R.string.choose_text_background_of_segment, backgroundColor, listener );
+					AlertDialog alertDialog = getColorPickerDialog( R.string.choose_text_background_of_segment, backgroundColor, listener );
 					if ( backgroundColorSpans.length > 0 ) {
 						alertDialog.setButton( AlertDialog.BUTTON_NEUTRAL, getString( R.string.delete ), new DialogInterface.OnClickListener() {
 							@Override
@@ -996,10 +989,10 @@ public class EntryEditor extends ThemeActivity {
 			btnTextColorPicker.setOnClickListener( btnTextOnAllColor );
 			setBtnTextColorPickerColorAtBounds();
 
-			btnBold.setBackgroundTintList( ColorStateList.valueOf( getColorm( android.R.color.transparent ) ) );
-			btnItalic.setBackgroundTintList( ColorStateList.valueOf( getColorm( android.R.color.transparent ) ) );
-			btnUnderline.setBackgroundTintList( ColorStateList.valueOf( getColorm( android.R.color.transparent ) ) );
-			btnStrike.setBackgroundTintList( ColorStateList.valueOf( getColorm( android.R.color.transparent ) ) );
+			btnBold.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
+			btnItalic.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
+			btnUnderline.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
+			btnStrike.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
 
 			btnTextHighlight.setOnClickListener( null );
 
@@ -1096,7 +1089,7 @@ public class EntryEditor extends ThemeActivity {
 		ImageButton btn = findViewById( id );
 
 		if ( mSelectionBounds[ 0 ] == mSelectionBounds[ 1 ] ) {
-			btn.setBackgroundTintList( ColorStateList.valueOf( getColorm( android.R.color.transparent ) ) );
+			btn.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
 			btn.setOnClickListener( null );
 		} else {
 			Editable e = mTextEditor.getText();
@@ -1115,9 +1108,9 @@ public class EntryEditor extends ThemeActivity {
 			}
 
 			if ( apply ) {
-				btn.setBackgroundTintList( ColorStateList.valueOf( getColorm( R.color.btnClicked ) ) );
+				btn.setBackgroundTintList( ColorStateList.valueOf( getColor( R.color.btnClicked ) ) );
 			} else {
-				btn.setBackgroundTintList( ColorStateList.valueOf( getColorm( android.R.color.transparent ) ) );
+				btn.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
 			}
 			btn.setTag( apply );
 		}
@@ -1215,31 +1208,31 @@ public class EntryEditor extends ThemeActivity {
 			}
 		}
 		if ( isBoldThere ) {
-			btnBold.setBackgroundTintList( ColorStateList.valueOf( getColorm( R.color.btnClicked ) ) );
+			btnBold.setBackgroundTintList( ColorStateList.valueOf( getColor( R.color.btnClicked ) ) );
 		} else {
-			btnBold.setBackgroundTintList( ColorStateList.valueOf( getColorm( android.R.color.transparent ) ) );
+			btnBold.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
 		}
 		btnBold.setTag( isBoldThere );
 
 		if ( isItalicThere ) {
-			btnItalic.setBackgroundTintList( ColorStateList.valueOf( getColorm( R.color.btnClicked ) ) );
+			btnItalic.setBackgroundTintList( ColorStateList.valueOf( getColor( R.color.btnClicked ) ) );
 		} else {
-			btnItalic.setBackgroundTintList( ColorStateList.valueOf( getColorm( android.R.color.transparent ) ) );
+			btnItalic.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
 		}
 		btnItalic.setTag( isItalicThere );
 
 		if ( isUnderlineThere ) {
-			btnUnderline.setBackgroundTintList( ColorStateList.valueOf( getColorm( R.color.btnClicked ) ) );
+			btnUnderline.setBackgroundTintList( ColorStateList.valueOf( getColor( R.color.btnClicked ) ) );
 		} else {
-			btnUnderline.setBackgroundTintList( ColorStateList.valueOf( getColorm( android.R.color.transparent ) ) );
+			btnUnderline.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
 		}
 		btnUnderline.setTag( isUnderlineThere );
 
 		btnStrike.setTag( isStrikeThere );
 		if ( isStrikeThere ) {
-			btnStrike.setBackgroundTintList( ColorStateList.valueOf( getColorm( R.color.btnClicked ) ) );
+			btnStrike.setBackgroundTintList( ColorStateList.valueOf( getColor( R.color.btnClicked ) ) );
 		} else {
-			btnStrike.setBackgroundTintList( ColorStateList.valueOf( getColorm( android.R.color.transparent ) ) );
+			btnStrike.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
 		}
 	}
 
@@ -1259,9 +1252,9 @@ public class EntryEditor extends ThemeActivity {
 			v.setTag( !isUnderline );
 			if ( !isUnderline ) { // apply
 				s.setSpan( new UnderlineSpan(), selSt, selEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-				v.setBackgroundTintList( ColorStateList.valueOf( getColorm( R.color.btnClicked ) ) );
+				v.setBackgroundTintList( ColorStateList.valueOf( getColor( R.color.btnClicked ) ) );
 			} else { //delete
-				v.setBackgroundTintList( ColorStateList.valueOf( getColorm( android.R.color.transparent ) ) );
+				v.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
 			}
 		}
 	};
@@ -1282,9 +1275,9 @@ public class EntryEditor extends ThemeActivity {
 			v.setTag( !isStrike );
 			if ( !isStrike ) { // apply
 				s.setSpan( new StrikethroughSpan(), selSt, selEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-				v.setBackgroundTintList( ColorStateList.valueOf( getColorm( R.color.btnClicked ) ) );
+				v.setBackgroundTintList( ColorStateList.valueOf( getColor( R.color.btnClicked ) ) );
 			} else { //delete
-				v.setBackgroundTintList( ColorStateList.valueOf( getColorm( android.R.color.transparent ) ) );
+				v.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
 			}
 		}
 	};
@@ -1300,11 +1293,11 @@ public class EntryEditor extends ThemeActivity {
 			if ( !( (boolean) v.getTag() ) ) {
 				applyTypeface( typeface, mSelectionBounds[ 0 ], mSelectionBounds[ 1 ], "apply" );
 				v.setTag( true );
-				v.setBackgroundTintList( ColorStateList.valueOf( getColorm( R.color.btnClicked ) ) );
+				v.setBackgroundTintList( ColorStateList.valueOf( getColor( R.color.btnClicked ) ) );
 			} else {
 				applyTypeface( typeface, mSelectionBounds[ 0 ], mSelectionBounds[ 1 ], "delete" );
 				v.setTag( false );
-				v.setBackgroundTintList( ColorStateList.valueOf( getColorm( android.R.color.transparent ) ) );
+				v.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
 			}
 		}
 	};
@@ -1362,7 +1355,7 @@ public class EntryEditor extends ThemeActivity {
 					mEntry.getProperties().setBgColor( color );
 				}
 			};
-			AlertDialog alertDialog = getColormPickerDialog( R.string.set_background_color, mEntry.getProperties().getBgColor(), whatToDo );
+			AlertDialog alertDialog = getColorPickerDialog( R.string.set_background_color, mEntry.getProperties().getBgColor(), whatToDo );
 			alertDialog.show();
 		}
 	};
@@ -1404,7 +1397,7 @@ public class EntryEditor extends ThemeActivity {
 					c = spans[ spans.length - 1 ].getForegroundColor();
 				}
 			}
-			AlertDialog alertDialog = getColormPickerDialog( R.string.set_text_color_of_selected_segment, c, onColorSelected );
+			AlertDialog alertDialog = getColorPickerDialog( R.string.set_text_color_of_selected_segment, c, onColorSelected );
 			alertDialog.show();
 		}
 	};
@@ -1449,14 +1442,14 @@ public class EntryEditor extends ThemeActivity {
 	}
 
 	private AlertDialog getReplaceColorPickerDialog(int colorToReplace, final OnColorSelected colorSelected) {
-		return getColormPickerDialog( R.string.replace_this_color, colorToReplace, colorSelected, true );
+		return getColorPickerDialog( R.string.replace_this_color, colorToReplace, colorSelected, true );
 	}
 
-	private AlertDialog getColormPickerDialog(int title, int defColor, final OnColorSelected colorSelected) {
-		return getColormPickerDialog( title, defColor, colorSelected, false );
+	private AlertDialog getColorPickerDialog(int title, int defColor, final OnColorSelected colorSelected) {
+		return getColorPickerDialog( title, defColor, colorSelected, false );
 	}
 
-	private AlertDialog getColormPickerDialog(int title, int defColor, final OnColorSelected colorSelected, final boolean offerReplacement) {
+	private AlertDialog getColorPickerDialog(int title, int defColor, final OnColorSelected colorSelected, final boolean offerReplacement) {
 		final ScrollView scrollView = (ScrollView) getLayoutInflater().inflate( R.layout.layout_color_picker, null );
 		//final LinearLayout scrollView = (LinearLayout) getLayoutInflater().inflate( R.layout.layout_color_picker, null );
 		final ColorPickerView colorPickerView = scrollView.findViewById( R.id.color_picker );
@@ -1531,7 +1524,7 @@ public class EntryEditor extends ThemeActivity {
 			}
 
 			final ForegroundColorSpan[] spans = e.getSpans( 0, e.length(), ForegroundColorSpan.class );
-			AlertDialog alertDialog = getColormPickerDialog( R.string.set_text_color_of_all_text,
+			AlertDialog alertDialog = getColorPickerDialog( R.string.set_text_color_of_all_text,
 					mDefaultTextColor,
 					new OnColorSelected() {
 						@Override
@@ -1621,7 +1614,7 @@ public class EntryEditor extends ThemeActivity {
 		}
 
 		Drawable d = getDrawable( R.drawable.button_rounded_corners );
-		d.setColorFilter( new PorterDuffColorFilter( getColorm( R.color.gray ), PorterDuff.Mode.SRC_IN ) );
+		d.setColorFilter( new PorterDuffColorFilter( getColor( R.color.gray ), PorterDuff.Mode.SRC_IN ) );
 		window.setBackgroundDrawable( d );
 
 		window.setFocusable( true );
@@ -1657,7 +1650,7 @@ public class EntryEditor extends ThemeActivity {
 		}
 
 		Drawable d = getDrawable( R.drawable.button_rounded_corners );
-		d.setColorFilter( new PorterDuffColorFilter( getColorm( R.color.gray ), PorterDuff.Mode.SRC_IN ) );
+		d.setColorFilter( new PorterDuffColorFilter( getColor( R.color.gray ), PorterDuff.Mode.SRC_IN ) );
 		window.setBackgroundDrawable( d );
 
 		window.setFocusable( true );
@@ -1731,13 +1724,13 @@ public class EntryEditor extends ThemeActivity {
 		int[] btnIds = new int[]{ R.id.btnAlignLeft, R.id.btnAlignCenter, R.id.btnAlignRight, R.id.btnAlignJustify };
 		for (int id : btnIds) {
 			btn = parent.findViewById( id );
-			btn.setBackgroundTintList( ColorStateList.valueOf( getColorm( android.R.color.transparent ) ) );
+			btn.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
 		}
 	}
 
 	private void setAlignmentButtonClicked(View parent, Alignment alignment) {
 		parent.findViewById( getAlignmentButtonId( alignment ) )
-				.setBackgroundTintList( ColorStateList.valueOf( getColorm( R.color.btnClicked ) ) );
+				.setBackgroundTintList( ColorStateList.valueOf( getColor( R.color.btnClicked ) ) );
 	}
 
 	public void chooseTextAlignment(View v) {
@@ -1901,7 +1894,7 @@ public class EntryEditor extends ThemeActivity {
 				name.setId( View.NO_ID );
 				name.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT ) );
 				name.requestFocus();
-				name.setTextColor( getColorm( super.mTextColor ) );
+				name.setTextColor( getColor( super.mTextColor ) );
 				name.setMaxLines( 1 );
 				AlertDialog.Builder builder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
 						.setView( name )

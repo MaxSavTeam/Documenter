@@ -14,7 +14,6 @@ import java.io.File;
 
 public class ImageRenderer {
 	public static Drawable renderDrawable(String source){
-		Thread.currentThread().setName( "Drawable renderer thread" );
 		File file = new File( source );
 
 		Point size = Utils.getScreenSize();

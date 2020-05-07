@@ -10,7 +10,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -55,6 +54,7 @@ public class DocumentList extends ThemeActivity {
 	private Map<String, Document> documentsToInclude = new HashMap<>();
 	private final ArrayList<String> documentsWhichWillBeExcluded = new ArrayList<>();
 	private int mSortOrder = 1; // 1 - по возрастанию; -1 -
+	private String mCurrentToolbar = "toolbar";
 
 	private void applyTheme() {
 		ActionBar actionBar = getSupportActionBar();
@@ -65,7 +65,10 @@ public class DocumentList extends ThemeActivity {
 	}
 
 	private void backPressed() {
-		finish();
+		if(mCurrentToolbar.equals( "toolbarChoose" ))
+			cancelClick.onClick( null );
+		else
+			finish();
 	}
 
 	final Comparator<Document> mDocumentComparator = new Comparator<Document>() {
@@ -268,6 +271,10 @@ public class DocumentList extends ThemeActivity {
 				item.setIcon( getDrawable(R.drawable.ic_sort_descending) );
 			}
 			setupRecyclerView();
+		}else if(itemId == R.id.item_cancel){
+			cancelClick.onClick( null );
+		}else if(itemId == R.id.item_apply){
+			applyClick.onClick( null );
 		}
 		return super.onOptionsItemSelected( item );
 	}
@@ -278,6 +285,7 @@ public class DocumentList extends ThemeActivity {
 	}
 
 	private ArrayList<Document> documentsToChange;
+	private View.OnClickListener applyClick, cancelClick;
 
 	private void prepareChooseRecyclerView() {
 		if ( MainData.getEntriesList().size() != 0 ) {
@@ -289,16 +297,20 @@ public class DocumentList extends ThemeActivity {
 
 			setContentView( R.layout.layout_choose_documents );
 
-			View.OnClickListener cancel = new View.OnClickListener() {
+			Toolbar toolbar = findViewById( R.id.toolbarChoose );
+			setSupportActionBar( toolbar );
+			toolbar.setTitle( "" );
+			mCurrentToolbar = "toolbarChoose";
+			invalidateOptionsMenu();
+
+			cancelClick = new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
 					restartActivity();
 				}
 			};
-			Button btnCancel = findViewById( R.id.btnCancel );
-			btnCancel.setOnClickListener( cancel );
 
-			View.OnClickListener apply = new View.OnClickListener() {
+			applyClick = new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
 					ArrayList<Document> oldDocuments = mCategory.getDocuments();
@@ -332,8 +344,6 @@ public class DocumentList extends ThemeActivity {
 					//Toast.makeText( DocumentList.this, documentsToInclude.toString(), Toast.LENGTH_LONG ).show();
 				}
 			};
-			Button btnApply = findViewById( R.id.btnApply );
-			btnApply.setOnClickListener( apply );
 
 			RecyclerView recyclerView = findViewById( R.id.recyclerViewChangeList );
 			LinearLayoutManager layoutManager = new LinearLayoutManager( this );
@@ -371,33 +381,37 @@ public class DocumentList extends ThemeActivity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate( R.menu.common_menu, menu );
-		getMenuInflater().inflate( R.menu.category_menu, menu );
-		MenuItem m = menu.findItem( R.id.item_common_remember_pos );
-		m.setChecked( mCategory.getProperties().isSaveLastPos() );
-		m.setOnMenuItemClickListener( new MenuItem.OnMenuItemClickListener() {
-			@Override
-			public boolean onMenuItemClick(MenuItem item) {
-				boolean isChecked = !item.isChecked();
-				item.setChecked( isChecked );
-				try {
-					mCategory.applySaveLastPos( isChecked );
-				} catch (final IOException | SAXException e) {
-					e.printStackTrace();
-					runOnUiThread( new Runnable() {
-						@Override
-						public void run() {
-							Utils.getErrorDialog( e, DocumentList.this ).show();
-						}
-					} );
+		if(mCurrentToolbar.equals( "toolbar" )) {
+			getMenuInflater().inflate( R.menu.common_menu, menu );
+			getMenuInflater().inflate( R.menu.category_menu, menu );
+			MenuItem m = menu.findItem( R.id.item_common_remember_pos );
+			m.setChecked( mCategory.getProperties().isSaveLastPos() );
+			m.setOnMenuItemClickListener( new MenuItem.OnMenuItemClickListener() {
+				@Override
+				public boolean onMenuItemClick(MenuItem item) {
+					boolean isChecked = !item.isChecked();
+					item.setChecked( isChecked );
+					try {
+						mCategory.applySaveLastPos( isChecked );
+					} catch (final IOException | SAXException e) {
+						e.printStackTrace();
+						runOnUiThread( new Runnable() {
+							@Override
+							public void run() {
+								Utils.getErrorDialog( e, DocumentList.this ).show();
+							}
+						} );
+					}
+					return true;
 				}
-				return true;
+			} );
+			if ( mCategory.getDocuments().size() == 0 ) {
+				menu.findItem( R.id.item_common_invert ).setVisible( false );
+				menu.findItem( R.id.item_common_sort_mode ).setVisible( false );
+				menu.findItem( R.id.item_common_parameters ).setVisible( false );
 			}
-		} );
-		if ( mCategory.getDocuments().size() == 0 ) {
-			menu.findItem( R.id.item_common_invert ).setVisible( false );
-			menu.findItem( R.id.item_common_sort_mode ).setVisible( false );
-			menu.findItem( R.id.item_common_parameters ).setVisible( false );
+		}else{
+			getMenuInflater().inflate( R.menu.choose_menu, menu );
 		}
 		return super.onCreateOptionsMenu( menu );
 	}

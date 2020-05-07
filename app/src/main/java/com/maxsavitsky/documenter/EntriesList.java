@@ -9,7 +9,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -51,6 +50,7 @@ public class EntriesList extends ThemeActivity {
 	private int mSortOrder = 1;
 	private SharedPreferences sp;
 	private boolean isFreeEntriesMode = false;
+	private String mCurrentToolbar = "toolbar";
 
 	private void applyTheme() {
 		ActionBar actionBar = getSupportActionBar();
@@ -61,7 +61,10 @@ public class EntriesList extends ThemeActivity {
 	}
 
 	private void backPressed() {
-		finish();
+		if(mCurrentToolbar.equals( "toolbarChoose" ))
+			cancelClick.onClick( null );
+		else
+			finish();
 	}
 
 	@Override
@@ -308,6 +311,12 @@ public class EntriesList extends ThemeActivity {
 			case R.id.item_edit_entries_list:
 				prepareChooseLayout();
 				break;
+			case R.id.item_cancel:
+				cancelClick.onClick( null );
+				break;
+			case R.id.item_apply:
+				applyClick.onClick( null );
+				break;
 		}
 		return super.onOptionsItemSelected( item );
 	}
@@ -319,24 +328,29 @@ public class EntriesList extends ThemeActivity {
 
 	private ArrayList<Entry> entriesToChange = new ArrayList<>();
 	private final Map<String, Entry> mDocumentEntriesMap = new HashMap<>();
+	private View.OnClickListener applyClick, cancelClick;
 
 	private void prepareChooseLayout() {
 		final ArrayList<Entry> entries = MainData.getEntriesList();
 		if ( !entries.isEmpty() ) {
 			setContentView( R.layout.layout_choose_documents );
 
+			Toolbar toolbar = findViewById( R.id.toolbarChoose );
+			setSupportActionBar( toolbar );
+			toolbar.setTitle( "" );
+			mCurrentToolbar = "toolbarChoose";
+			invalidateOptionsMenu();
+
 			entriesToChange = new ArrayList<>( mDocument.getEntries() );
 
-			View.OnClickListener cancel = new View.OnClickListener() {
+			cancelClick = new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
 					restartActivity();
 				}
 			};
-			Button btn = findViewById( R.id.btnCancel );
-			btn.setOnClickListener( cancel );
 
-			View.OnClickListener apply = new View.OnClickListener() {
+			applyClick = new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
 					ArrayList<Entry> documentEntries = mDocument.getEntries();
@@ -360,8 +374,6 @@ public class EntriesList extends ThemeActivity {
 					restartActivity();
 				}
 			};
-			btn = findViewById( R.id.btnApply );
-			btn.setOnClickListener( apply );
 
 			View.OnClickListener onItemClick = new View.OnClickListener() {
 				@Override
@@ -426,26 +438,30 @@ public class EntriesList extends ThemeActivity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		if ( isFreeEntriesMode ) {
-			getMenuInflater().inflate( R.menu.common_menu, menu );
-			menu.setGroupVisible( 0, false );
-			try {
-				if(MainData.getFreeEntries().size() != 0) {
-					menu.findItem( R.id.item_common_invert ).setVisible( true );
-					menu.findItem( R.id.item_common_sort_mode ).setVisible( true );
+		if(mCurrentToolbar.equals( "toolbar" )) {
+			if ( isFreeEntriesMode ) {
+				getMenuInflater().inflate( R.menu.common_menu, menu );
+				menu.setGroupVisible( 0, false );
+				try {
+					if ( MainData.getFreeEntries().size() != 0 ) {
+						menu.findItem( R.id.item_common_invert ).setVisible( true );
+						menu.findItem( R.id.item_common_sort_mode ).setVisible( true );
+					}
+				} catch (IOException | SAXException e) {
+					e.printStackTrace();
+					Utils.getErrorDialog( e, this ).show();
 				}
-			} catch (IOException | SAXException e) {
-				e.printStackTrace();
-				Utils.getErrorDialog( e, this ).show();
+			} else {
+				getMenuInflater().inflate( R.menu.common_menu, menu );
+				getMenuInflater().inflate( R.menu.document_menu, menu );
+				if ( mDocument.getEntries().size() == 0 ) {
+					menu.findItem( R.id.item_common_invert ).setVisible( false );
+					menu.findItem( R.id.item_common_sort_mode ).setVisible( false );
+					menu.findItem( R.id.item_common_parameters ).setVisible( false );
+				}
 			}
-		} else {
-			getMenuInflater().inflate( R.menu.common_menu, menu );
-			getMenuInflater().inflate( R.menu.document_menu, menu );
-			if(mDocument.getEntries().size() == 0){
-				menu.findItem( R.id.item_common_invert ).setVisible( false );
-				menu.findItem( R.id.item_common_sort_mode ).setVisible( false );
-				menu.findItem( R.id.item_common_parameters ).setVisible( false );
-			}
+		}else{
+			getMenuInflater().inflate( R.menu.choose_menu, menu );
 		}
 		return super.onCreateOptionsMenu( menu );
 	}

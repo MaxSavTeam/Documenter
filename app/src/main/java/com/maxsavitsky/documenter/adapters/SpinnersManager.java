@@ -62,6 +62,7 @@ public class SpinnersManager {
 		mCategories.addAll( MainData.getCategoriesList() );
 
 		spinnerCat.setAdapter( new SpinnerAdapter( mCategories, mContext ) );
+		spinnerCat.setSelection( 0 );
 		spinnerCat.setOnItemSelectedListener( new AdapterView.OnItemSelectedListener() {
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
