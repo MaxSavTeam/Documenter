@@ -52,7 +52,7 @@ public class UpdatesChecker {
 			mCheckResults.exceptionOccurred( e );
 			return;
 		}
-		if ( info.getVersionCode() > BuildConfig.VERSION_CODE && info.getMinSdk() >= Build.VERSION.SDK_INT ) {
+		if ( info.getVersionCode() > BuildConfig.VERSION_CODE && info.getMinSdk() <= Build.VERSION.SDK_INT ) {
 			if ( info.isNecessaryUpdate() ) {
 				mCheckResults.onNecessaryUpdate( info );
 			} else {
