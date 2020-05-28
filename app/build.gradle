@@ -25,7 +25,7 @@ android {
         }
     }
     compileSdkVersion 29
-    buildToolsVersion "29.0.2"
+    buildToolsVersion "30.0.0 rc4"
 
     def buildPropFile = file('build.properties')
     if (buildPropFile.canRead()) {
@@ -40,10 +40,10 @@ android {
         applicationId "com.maxsavitsky.documenter"
         minSdkVersion 23
         targetSdkVersion 29
-        versionCode 41
+        versionCode 42
 
         verCode = versionCode
-        cleanVersionName = "1.9.1" + ".$versionCode" + (buildCode != -1 ? "." + buildCode.toString() : "")
+        cleanVersionName = "1.9.2" + ".$versionCode" + (buildCode != -1 ? "." + buildCode.toString() : "")
 
         versionName cleanVersionName + "+${formatDate("yyyyMMddHHmm")}"
         buildConfigField "String", "COMPILATION_DATE", "\"${getDate()}\""
