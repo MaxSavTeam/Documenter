@@ -2,7 +2,6 @@ package com.maxsavitsky.documenter.updates;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.preference.PreferenceManager;
 
 import androidx.annotation.NonNull;
@@ -52,7 +51,7 @@ public class UpdatesChecker {
 			mCheckResults.exceptionOccurred( e );
 			return;
 		}
-		if ( info.getVersionCode() > BuildConfig.VERSION_CODE && info.getMinSdk() <= Build.VERSION.SDK_INT ) {
+		if ( info.getVersionCode() > BuildConfig.VERSION_CODE ) {
 			if ( info.isNecessaryUpdate() ) {
 				mCheckResults.onNecessaryUpdate( info );
 			} else {
