@@ -39,13 +39,13 @@
         android:visibility="gone" />
 
     <TextView
-        android:layout_gravity="start|center_horizontal"
         android:id="@+id/lblAdditionalInfo"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_gravity="start|center_horizontal"
         android:layout_weight="1"
-        android:visibility="gone"
         android:focusable="false"
         android:maxLines="11"
-        android:textColor="@color/gray" />
+        android:textColor="@color/gray"
+        android:visibility="gone" />
 </LinearLayout>
