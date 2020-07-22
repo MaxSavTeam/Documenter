@@ -1,6 +1,7 @@
 package com.maxsavitsky.documenter;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -9,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,7 +27,6 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.maxsavitsky.documenter.adapters.ListAdapter;
 import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.codes.Results;
@@ -38,6 +37,7 @@ import com.maxsavitsky.documenter.updates.UpdatesDownloader;
 import com.maxsavitsky.documenter.updates.VersionInfo;
 import com.maxsavitsky.documenter.utils.ApkInstaller;
 import com.maxsavitsky.documenter.utils.Utils;
+import com.maxsavitsky.documenter.widget.FabButton;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -307,6 +307,24 @@ public class CategoryList extends ThemeActivity {
 		downloadThread.start();
 	}
 
+	public static void initializeFabButtons(final Activity activity){
+		activity.findViewById( R.id.fabFreeEntries).setOnClickListener( new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent(activity, EntriesList.class);
+				intent.putExtra( "free_mode", true );
+				activity.startActivityForResult( intent, Requests.FREE_ENTRIES );
+			}
+		} );
+		activity.findViewById( R.id.fabSettings ).setOnClickListener( new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent( activity, SettingsActivity.class );
+				activity.startActivityForResult( intent, Requests.SETTINGS );
+			}
+		} );
+	}
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -315,9 +333,7 @@ public class CategoryList extends ThemeActivity {
 		Toolbar toolbar = findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 
-		//applyTheme();
-		Log.d( "TAG", "started" );
-		FloatingActionButton fab = findViewById(R.id.fabCreateCategory);
+		FabButton fab = findViewById(R.id.fabCreateNew);
 		fab.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
@@ -360,21 +376,7 @@ public class CategoryList extends ThemeActivity {
 				return true;
 			}
 		} );
-		findViewById( R.id.fabFreeEntries).setOnClickListener( new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Intent intent = new Intent(CategoryList.this, EntriesList.class);
-				intent.putExtra( "free_mode", true );
-				startActivityForResult( intent, Requests.FREE_ENTRIES );
-			}
-		} );
-		findViewById( R.id.fabSettings ).setOnClickListener( new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Intent intent = new Intent( CategoryList.this, SettingsActivity.class );
-				startActivityForResult( intent, Requests.SETTINGS );
-			}
-		} );
+		initializeFabButtons( this );
 		findViewById( R.id.fabSettings ).setOnLongClickListener( new View.OnLongClickListener() {
 			@Override
 			public boolean onLongClick(View v) {

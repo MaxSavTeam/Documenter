@@ -23,7 +23,6 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.maxsavitsky.documenter.adapters.DefaultChooseAdapter;
 import com.maxsavitsky.documenter.adapters.ListAdapter;
 import com.maxsavitsky.documenter.adapters.SpinnersManager;
@@ -33,6 +32,7 @@ import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.utils.Utils;
+import com.maxsavitsky.documenter.widget.FabButton;
 import com.maxsavitsky.documenter.xml.XMLParser;
 
 import org.xml.sax.SAXException;
@@ -140,7 +140,7 @@ public class EntriesList extends ThemeActivity {
 		sp = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
 		final Intent intent = getIntent();
 		isFreeEntriesMode = intent.getBooleanExtra( "free_mode", false );
-		FloatingActionButton floatingActionButton = findViewById( R.id.fabFreeEntries );
+		FabButton floatingActionButton = findViewById( R.id.fabFreeEntries );
 		if ( !isFreeEntriesMode ) {
 			mDocument = MainData.getDocumentWithId( intent.getStringExtra( "id" ) );
 			try {
@@ -157,7 +157,7 @@ public class EntriesList extends ThemeActivity {
 		invalidateOptionsMenu();
 		applyTheme();
 
-		FloatingActionButton fab = findViewById( R.id.fabCreateEntry );
+		FabButton fab = findViewById( R.id.fabCreateNew );
 		fab.setOnClickListener( new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -168,21 +168,7 @@ public class EntriesList extends ThemeActivity {
 				startActivityForResult( intent1, Requests.CREATE_ENTRY );
 			}
 		} );
-		floatingActionButton.setOnClickListener( new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Intent intent = new Intent( EntriesList.this, EntriesList.class );
-				intent.putExtra( "free_mode", true );
-				startActivityForResult( intent, Requests.FREE_ENTRIES );
-			}
-		} );
-		findViewById( R.id.fabSettings ).setOnClickListener( new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Intent intent = new Intent( EntriesList.this, SettingsActivity.class );
-				startActivityForResult( intent, Requests.SETTINGS );
-			}
-		} );
+		CategoryList.initializeFabButtons( this );
 
 		setupRecyclerView();
 

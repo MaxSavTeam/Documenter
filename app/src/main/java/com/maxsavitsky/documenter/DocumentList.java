@@ -25,7 +25,6 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.maxsavitsky.documenter.adapters.DefaultChooseAdapter;
 import com.maxsavitsky.documenter.adapters.ListAdapter;
 import com.maxsavitsky.documenter.adapters.SpinnersManager;
@@ -35,6 +34,7 @@ import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Category;
 import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.utils.Utils;
+import com.maxsavitsky.documenter.widget.FabButton;
 import com.maxsavitsky.documenter.xml.XMLParser;
 
 import org.xml.sax.SAXException;
@@ -438,28 +438,15 @@ public class DocumentList extends ThemeActivity {
 
 		applyTheme();
 
-		FloatingActionButton fab = findViewById( R.id.fabCreateDocument );
+		FabButton fab = findViewById( R.id.fabCreateNew );
 		fab.setOnClickListener( new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
 				startActivityForResult( new Intent( DocumentList.this, CreateDocument.class ).putExtra( "parent_id", mCategory.getId() ), Requests.CREATE_DOCUMENT );
 			}
 		} );
-		findViewById( R.id.fabFreeEntries ).setOnClickListener( new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Intent intent = new Intent( DocumentList.this, EntriesList.class );
-				intent.putExtra( "free_mode", true );
-				startActivityForResult( intent, Requests.FREE_ENTRIES );
-			}
-		} );
-		findViewById( R.id.fabSettings ).setOnClickListener( new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Intent intent = new Intent( DocumentList.this, SettingsActivity.class );
-				startActivityForResult( intent, Requests.SETTINGS );
-			}
-		} );
+
+		CategoryList.initializeFabButtons( this );
 
 		try {
 			mCategory.readProperties();

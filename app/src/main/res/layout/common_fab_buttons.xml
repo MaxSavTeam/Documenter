@@ -4,32 +4,36 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <LinearLayout
+    <com.maxsavitsky.documenter.widget.FabMenu
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="90dp"
-        android:layout_marginEnd="@dimen/fab_margin"
-        android:orientation="vertical"
-        android:layout_gravity="bottom|end">
+        android:layout_gravity="end|bottom"
+        app:menu_icon="@drawable/ic_more_horiz_24"
+        android:layout_margin="@dimen/fab_margin"
+        android:id="@+id/fab_menu"
+        app:menu_colorNormal="?fabButtonColor">
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
+        <com.maxsavitsky.documenter.widget.FabButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:borderWidth="0dp"
-            app:srcCompat="@drawable/ic_settings"
-            android:backgroundTint="?attr/fabButtonColor"
-            android:layout_marginTop="@dimen/fab_margin"
-            android:id="@+id/fabSettings" />
+            app:fab_label="@string/settings"
+            android:id="@+id/fabSettings"
+            android:src="@drawable/ic_settings_24" />
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
+        <com.maxsavitsky.documenter.widget.FabButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:src="@drawable/ic_free_entry_24"
             android:id="@+id/fabFreeEntries"
-            app:borderWidth="0dp"
-            android:layout_marginTop="@dimen/fab_margin"
-            android:backgroundTint="?attr/fabButtonColor"
-            app:srcCompat="@drawable/ic_free_entry"/>
+            app:fab_label="@string/free_entries" />
 
-    </LinearLayout>
+        <com.maxsavitsky.documenter.widget.FabButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/fabCreateNew"
+            android:src="@drawable/ic_plus_24"
+            app:fab_label="@string/create_new" />
+
+    </com.maxsavitsky.documenter.widget.FabMenu>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

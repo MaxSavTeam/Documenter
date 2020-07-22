@@ -24,8 +24,8 @@ android {
             }
         }
     }
-    compileSdkVersion 29
-    buildToolsVersion "30.0.0 rc4"
+    compileSdkVersion 30
+    buildToolsVersion "30.0.1"
 
     def buildPropFile = file('build.properties')
     if (buildPropFile.canRead()) {
@@ -39,11 +39,11 @@ android {
     defaultConfig {
         applicationId "com.maxsavitsky.documenter"
         minSdkVersion 23
-        targetSdkVersion 29
-        versionCode 42
+        targetSdkVersion 30
+        versionCode 44
 
         verCode = versionCode
-        cleanVersionName = "1.9.2" + ".$versionCode" + (buildCode != -1 ? "." + buildCode.toString() : "")
+        cleanVersionName = "1.10.0" + ".$versionCode" + (buildCode != -1 ? "." + buildCode.toString() : "")
 
         versionName cleanVersionName + "+${formatDate("yyyyMMddHHmm")}"
         buildConfigField "String", "COMPILATION_DATE", "\"${getDate()}\""
@@ -66,6 +66,7 @@ android {
             FirebasePerformance {
                 instrumentationEnabled false
             }
+            versionNameSuffix '-dev'
         }
     }
     lintOptions{
@@ -104,15 +105,16 @@ dependencies {
     implementation 'androidx.navigation:navigation-fragment:2.2.2'
     implementation 'androidx.navigation:navigation-ui:2.2.2'
 
-    implementation 'com.android.support:design:29.0.0'
+    implementation 'com.android.support:design:30.0.0'
     implementation files('libs/quadflask.colorpicker.aar')
+    implementation 'com.github.clans:fab:1.6.4'
 
     implementation 'com.android.support:multidex:1.0.3'
 
-    implementation 'com.google.firebase:firebase-core:17.4.0'
+    implementation 'com.google.firebase:firebase-core:17.4.4'
     implementation 'com.firebaseui:firebase-ui-auth:6.2.0'
-    implementation 'com.google.firebase:firebase-auth:19.3.1'
+    implementation 'com.google.firebase:firebase-auth:19.3.2'
     implementation 'com.google.firebase:firebase-storage:19.1.1'
-    implementation 'com.google.firebase:firebase-database:19.3.0'
+    implementation 'com.google.firebase:firebase-database:19.3.1'
     implementation 'com.google.firebase:firebase-perf:19.0.7'
 }
