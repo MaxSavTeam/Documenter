@@ -172,4 +172,11 @@
 
     <string name="all">All</string>
     <string name="create_new">Create new</string>
+
+    <string-array name="theme_states">
+        <item>Light</item>
+        <item>Dark</item>
+        <item>As in the system</item>
+    </string-array>
+    <string name="theme">Theme</string>
 </resources>

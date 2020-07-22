@@ -168,4 +168,11 @@
 
     <string name="all">Все</string>
     <string name="create_new">Создать</string>
+
+    <string-array name="theme_states">
+        <item>Светлая</item>
+        <item>Тёмная</item>
+        <item>Как в системе</item>
+    </string-array>
+    <string name="theme">Тема</string>
 </resources>

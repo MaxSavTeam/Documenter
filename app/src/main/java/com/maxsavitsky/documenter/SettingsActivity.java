@@ -37,6 +37,7 @@ import com.maxsavitsky.documenter.updates.UpdatesDownloader;
 import com.maxsavitsky.documenter.updates.VersionInfo;
 import com.maxsavitsky.documenter.utils.ApkInstaller;
 import com.maxsavitsky.documenter.utils.Utils;
+import com.maxsavitsky.documenter.widget.ButtonWithDropdown;
 
 import java.io.File;
 import java.io.IOException;
@@ -83,6 +84,19 @@ public class SettingsActivity extends ThemeActivity {
 		applyTheme();
 
 		( (TextView) findViewById( R.id.txtVersion ) ).setText( String.format( Locale.ROOT, "%s: %s", getString( R.string.version ), BuildConfig.VERSION_NAME ) );
+
+		ButtonWithDropdown button = findViewById( R.id.theme_dropdown_button );
+		String[] elements = getResources().getStringArray( R.array.theme_states );
+		button.setElements( elements );
+		button.setSelection( Utils.getDefaultSharedPreferences().getInt( "theme_state", 2 ) );
+		button.setOnItemSelectedListener( new ButtonWithDropdown.OnItemSelectedListener() {
+			@Override
+			public void onItemSelected(int index) {
+				Utils.getDefaultSharedPreferences().edit().putInt( "theme_state", index ).apply();
+				setResult( Results.RESTART_APP );
+				finish();
+			}
+		} );
 
 		final Switch swDarkHeader = findViewById( R.id.swDarkTheme );
 		swDarkHeader.setChecked( sp.getBoolean( "dark_theme", false ) );
