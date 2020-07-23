@@ -40,7 +40,7 @@ android {
         applicationId "com.maxsavitsky.documenter"
         minSdkVersion 23
         targetSdkVersion 30
-        versionCode 44
+        versionCode 46
 
         verCode = versionCode
         cleanVersionName = "1.10.0"
@@ -56,10 +56,7 @@ android {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            shrinkResources true
-            FirebasePerformance {
-                instrumentationEnabled true
-            }
+            //shrinkResources true
         }
         debug {
             debuggable true

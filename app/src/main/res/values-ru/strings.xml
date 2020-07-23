@@ -55,7 +55,7 @@
     
     <string name="color_history">История цветов</string>
     <string name="set_background_color">Установить цвет фона</string>
-    <string name="keep_screen_on">Оставьте экран включенным</string>
+    <string name="keep_screen_on">Оставить экран включенным</string>
     <string name="dark_theme">Темная тема</string>
     <string name="checking_for_updates">Проверка обновлений…</string>
     <string name="update_available">Доступны обновления</string>
