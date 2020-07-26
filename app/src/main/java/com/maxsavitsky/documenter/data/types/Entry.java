@@ -246,8 +246,8 @@ public class Entry extends Type {
 					String[] strings = line.split( " " );
 					SpanEntry<AlignmentSpan.Standard> se = new SpanEntry<AlignmentSpan.Standard>( new AlignmentSpan.Standard( Alignment.valueOf( strings[ 0 ] ) ),
 							Integer.parseInt( strings[ 1 ] ),
-							Integer.parseInt( strings[ 2 ] ),
-							AlignmentSpan.Standard.class);
+							Integer.parseInt( strings[ 2 ] )
+					);
 					arrayList.add( se );
 				}
 			} catch (IOException e) {
@@ -271,8 +271,8 @@ public class Entry extends Type {
 					String[] strings = line.split( " " );
 					SpanEntry<RelativeSizeSpan> se = new SpanEntry<>( new RelativeSizeSpan( Float.parseFloat( strings[0] ) ),
 							Integer.parseInt( strings[ 1 ] ),
-							Integer.parseInt( strings[ 2 ] ),
-							RelativeSizeSpan.class);
+							Integer.parseInt( strings[ 2 ] )
+					);
 					arrayList.add( se );
 				}
 			} catch (IOException e) {

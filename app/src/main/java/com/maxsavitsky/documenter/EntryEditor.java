@@ -163,7 +163,8 @@ public class EntryEditor extends ThemeActivity {
 		if ( firstCondition || secondCondition ) {
 			showExitAlertDialog();
 		} else {
-			setResult( Results.OK );
+			ScrollView scrollView = findViewById( R.id.scrollView );
+			setResult( Results.OK, new Intent().putExtra( "scroll_position", scrollView.getScrollY() ) );
 			_finishActivity();
 		}
 	}
@@ -181,7 +182,8 @@ public class EntryEditor extends ThemeActivity {
 				.setPositiveButton( R.string.yes, new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
-						setResult( Results.OK );
+						ScrollView scrollView = findViewById( R.id.scrollView );
+						setResult( Results.OK, new Intent().putExtra( "scroll_position", scrollView.getScrollY() ) );
 						_finishActivity();
 					}
 				} ).setNeutralButton( R.string.save_and_exit, new DialogInterface.OnClickListener() {
@@ -645,6 +647,16 @@ public class EntryEditor extends ThemeActivity {
 					}
 
 					calculateMainAlignment();
+
+					scrollView.post( new Runnable() {
+						@Override
+						public void run() {
+							View focusView = getWindow().getDecorView().findFocus();
+							if(focusView != null)
+								focusView.clearFocus();
+							scrollView.scrollTo( 0, getIntent().getIntExtra( "scroll_position", 0 ) );
+						}
+					} );
 				}
 			} );
 		}
@@ -1076,7 +1088,7 @@ public class EntryEditor extends ThemeActivity {
 			if ( span.getForegroundColor() == oldColor ) {
 				int st = e.getSpanStart( span );
 				int end = e.getSpanEnd( span );
-				apply.add( new SpanEntry<>( new ForegroundColorSpan( newColor ), st, end, ForegroundColorSpan.class ) );
+				apply.add( new SpanEntry<>( new ForegroundColorSpan( newColor ), st, end ) );
 				e.removeSpan( span );
 			}
 		}
@@ -1175,10 +1187,10 @@ public class EntryEditor extends ThemeActivity {
 			int st = e.getSpanStart( span );
 			int end = e.getSpanEnd( span );
 			if ( end > selEnd ) {
-				arrayList.add( new SpanEntry<>( span, selEnd, end, type ) );
+				arrayList.add( new SpanEntry<>( span, selEnd, end ) );
 			}
 			if ( st < selSt ) {
-				arrayList.add( new SpanEntry<>( span, st, selSt, type ) );
+				arrayList.add( new SpanEntry<>( span, st, selSt ) );
 			}
 			e.removeSpan( span );
 		}
@@ -1316,11 +1328,11 @@ public class EntryEditor extends ThemeActivity {
 				int end = s.getSpanEnd( span );
 
 				if ( st < selSt ) {
-					SpanEntry<StyleSpan> se = new SpanEntry<>( new StyleSpan( span.getStyle() ), st, selSt, StyleSpan.class );
+					SpanEntry<StyleSpan> se = new SpanEntry<>( new StyleSpan( span.getStyle() ), st, selSt );
 					spansToApply.add( se );
 				}
 				if ( end > selEnd ) {
-					SpanEntry<StyleSpan> se = new SpanEntry<>( new StyleSpan( span.getStyle() ), selEnd, end, StyleSpan.class );
+					SpanEntry<StyleSpan> se = new SpanEntry<>( new StyleSpan( span.getStyle() ), selEnd, end );
 					spansToApply.add( se );
 				}
 				s.removeSpan( span );
@@ -1586,7 +1598,7 @@ public class EntryEditor extends ThemeActivity {
 		for (RelativeSizeSpan span : spans) {
 			int st = e.getSpanStart( span );
 			int end = e.getSpanEnd( span );
-			spanEntries.add( new SpanEntry<>( new RelativeSizeSpan( span.getSizeChange() ), st, end, RelativeSizeSpan.class ) );
+			spanEntries.add( new SpanEntry<>( new RelativeSizeSpan( span.getSizeChange() ), st, end ) );
 		}
 		removeAllSpansInBounds( 0, e.length(), AbsoluteSizeSpan.class );
 		removeAllSpansInBounds( 0, e.length(), RelativeSizeSpan.class );
@@ -1957,7 +1969,8 @@ public class EntryEditor extends ThemeActivity {
 				try {
 					mEntry.saveProperties( mEntry.getProperties() );
 					mEntry.saveContent( mTextEditor.getText() );
-					setResult( Results.REOPEN, new Intent().putExtra( "id", mEntry.getId() ) );
+					ScrollView scrollView = findViewById( R.id.scrollView );
+					setResult( Results.REOPEN, new Intent().putExtra( "id", mEntry.getId() ).putExtra( "scroll_position", scrollView.getScrollY() ) );
 				} catch (Exception ex) {
 					ex.printStackTrace();
 					Utils.getErrorDialog( ex, this ).show();

@@ -16,7 +16,7 @@ public class SpanEntry<T> {
 	private final T mSpan;
 	private final int mStart;
 	private final int mEnd;
-	private String mType;
+	private final String mType;
 
 	private Integer mInt;
 	private Float mFloat;
@@ -24,7 +24,7 @@ public class SpanEntry<T> {
 	private String mString;
 	private Drawable mDrawable;
 
-	public SpanEntry(T span, int st, int end, Class<T> type) {
+	public SpanEntry(T span, int st, int end) {
 		mSpan = span;
 		this.mStart = st;
 		this.mEnd = end;

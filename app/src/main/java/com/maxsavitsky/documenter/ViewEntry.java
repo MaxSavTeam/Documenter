@@ -32,10 +32,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.maxsavitsky.documenter.adapters.ListAdapter;
-import com.maxsavitsky.documenter.data.MainData;
-import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.codes.Results;
+import com.maxsavitsky.documenter.data.MainData;
+import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.data.types.Type;
 import com.maxsavitsky.documenter.media.images.HtmlImageLoader;
 import com.maxsavitsky.documenter.utils.SpanEntry;
@@ -165,6 +165,7 @@ public class ViewEntry extends ThemeActivity {
 			Intent intent = new Intent( this, EntryEditor.class );
 			intent.putExtra( "type", "edit" );
 			intent.putExtra( "id", mEntry.getId() );
+			intent.putExtra( "scroll_position", mScrollView.getScrollY() );
 			startActivityForResult( intent, Requests.EDIT_ENTRY );
 		} else if ( itemId == R.id.item_copy_content ) {
 			prepareCopyToLayout();
@@ -226,6 +227,18 @@ public class ViewEntry extends ThemeActivity {
 			if(resultCode == Results.REOPEN){
 				setResult( resultCode, data );
 				finish();
+			}else if(resultCode == Results.OK){
+				if(data != null){
+					int scrollPos = data.getIntExtra( "scroll_position", -1 );
+					if(scrollPos != -1){
+						mScrollView.post( new Runnable() {
+							@Override
+							public void run() {
+								mScrollView.scrollTo( 0, scrollPos );
+							}
+						} );
+					}
+				}
 			}
 		}
 		super.onActivityResult( requestCode, resultCode, data );
@@ -324,11 +337,21 @@ public class ViewEntry extends ThemeActivity {
 				@Override
 				public void run() {
 					t.setText( spannable );
-					if(mEntry.getProperties().isSaveLastPos()){
+					int scrollPos = getIntent().getIntExtra( "scroll_position", -1 );
+					if(scrollPos == -1) {
+						if ( mEntry.getProperties().isSaveLastPos() ) {
+							mScrollView.post( new Runnable() {
+								@Override
+								public void run() {
+									mScrollView.smoothScrollTo( 0, mEntry.getProperties().getScrollPosition() );
+								}
+							} );
+						}
+					}else{
 						mScrollView.post( new Runnable() {
 							@Override
 							public void run() {
-								mScrollView.smoothScrollTo(0, mEntry.getProperties().getScrollPosition() );
+								mScrollView.smoothScrollTo( 0, scrollPos );
 							}
 						} );
 					}

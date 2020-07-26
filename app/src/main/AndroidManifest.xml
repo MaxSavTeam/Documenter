@@ -51,7 +51,6 @@
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".CategoryList"
-            android:label="@string/title_activity_category_list"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize" />
         <activity

@@ -179,4 +179,5 @@
         <item>As in the system</item>
     </string-array>
     <string name="theme">Theme</string>
+    <string name="maxsav_team_copyright" translatable="false">© MaxSav Team, 2020</string>
 </resources>
