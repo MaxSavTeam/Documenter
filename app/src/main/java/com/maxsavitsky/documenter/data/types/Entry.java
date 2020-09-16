@@ -381,6 +381,9 @@ public class Entry extends Type {
 		byte[] buffer = new byte[1024];
 		int c;
 		while(((c = fileInputStream.read(buffer))) != -1){
+			if(Thread.currentThread().isInterrupted()){
+				throw new IOException("Thread is interrupted");
+			}
 			if(c < 1024){
 				buffer = Arrays.copyOf(buffer, c);
 			}

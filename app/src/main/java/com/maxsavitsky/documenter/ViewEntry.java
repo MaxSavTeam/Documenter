@@ -1,5 +1,6 @@
 package com.maxsavitsky.documenter;
 
+import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -299,64 +300,51 @@ public class ViewEntry extends ThemeActivity {
 		void loaded(Spannable spannable);
 	}
 
+	private static final int SCROLL_ANIMATION_SPEED = 500;
+
 	private final TextLoaderCallback mCallback = new TextLoaderCallback() {
 		@Override
 		public void loaded(final String text) {
-			new Thread( new Runnable() {
-				@Override
-				public void run() {
-					final TextView t = findViewById( R.id.textViewContent );
-					final Spannable spannable = (Spannable) Html.fromHtml(text, new HtmlImageLoader(), null);
-					ArrayList<SpanEntry<AlignmentSpan.Standard>> spanEntries = mEntry.getAlignments();
-					for(SpanEntry<AlignmentSpan.Standard> se : spanEntries){
-						spannable.setSpan( se.getSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-					}
-					t.post( new Runnable() {
-						@Override
-						public void run() {
-							t.setText( spannable );
-							if(mEntry.getProperties().isSaveLastPos()){
-								mScrollView.post( new Runnable() {
-									@Override
-									public void run() {
-										mScrollView.smoothScrollTo(0, mEntry.getProperties().getScrollPosition() );
-									}
-								} );
-							}
-							mProgressDialog.dismiss();
-						}
-					} );
+			new Thread( ()->{
+				final TextView t = findViewById( R.id.textViewContent );
+				final Spannable spannable = (Spannable) Html.fromHtml(text, new HtmlImageLoader(), null);
+				ArrayList<SpanEntry<AlignmentSpan.Standard>> spanEntries = mEntry.getAlignments();
+				for(SpanEntry<AlignmentSpan.Standard> se : spanEntries){
+					spannable.setSpan( se.getSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 				}
+				t.post( ()->{
+					t.setText( spannable );
+					if(mEntry.getProperties().isSaveLastPos()){
+						mScrollView.post( ()->{
+							ObjectAnimator.ofInt( mScrollView, "scrollY", mEntry.getProperties().getScrollPosition() ).setDuration( 100 ).start();
+							//mScrollView.smoothScrollTo(0, mEntry.getProperties().getScrollPosition() );
+						} );
+					}
+					mProgressDialog.dismiss();
+				} );
 			} ).start();
 		}
 
 		@Override
 		public void loaded(final Spannable spannable) {
 			final TextView t = findViewById( R.id.textViewContent );
-			runOnUiThread( new Runnable() {
-				@Override
-				public void run() {
-					t.setText( spannable );
-					int scrollPos = getIntent().getIntExtra( "scroll_position", -1 );
-					if(scrollPos == -1) {
-						if ( mEntry.getProperties().isSaveLastPos() ) {
-							mScrollView.post( new Runnable() {
-								@Override
-								public void run() {
-									mScrollView.smoothScrollTo( 0, mEntry.getProperties().getScrollPosition() );
-								}
-							} );
-						}
-					}else{
-						mScrollView.post( new Runnable() {
-							@Override
-							public void run() {
-								mScrollView.smoothScrollTo( 0, scrollPos );
-							}
+			runOnUiThread( ()->{
+				t.setText( spannable );
+				int scrollPos = getIntent().getIntExtra( "scroll_position", -1 );
+				if(scrollPos == -1) {
+					if ( mEntry.getProperties().isSaveLastPos() ) {
+						mScrollView.post( ()->{
+							ObjectAnimator.ofInt( mScrollView, "scrollY", mEntry.getProperties().getScrollPosition() ).setDuration( SCROLL_ANIMATION_SPEED ).start();
+							//mScrollView.smoothScrollTo( 0, mEntry.getProperties().getScrollPosition());
 						} );
 					}
-					mProgressDialog.dismiss();
+				}else{
+					mScrollView.post( ()->{
+						ObjectAnimator.ofInt( mScrollView, "scrollY", scrollPos ).setDuration( SCROLL_ANIMATION_SPEED ).start();
+						//mScrollView.smoothScrollTo( 0, scrollPos );
+					} );
 				}
+				mProgressDialog.dismiss();
 			} );
 		}
 
@@ -411,24 +399,16 @@ public class ViewEntry extends ThemeActivity {
 				}
 			}
 		} );
-		findViewById( R.id.fabUpView ).setOnClickListener( new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				mScrollView.smoothScrollTo( 0, 0 );
-			}
-		} );
+		findViewById( R.id.fabUpView ).setOnClickListener( v->mScrollView.smoothScrollTo( 0, 0 ) );
 
 		getWindow().getDecorView().setBackgroundColor( mEntry.getProperties().getBgColor() );
-		final Thread loadThread = new Thread( new Runnable() {
-			@Override
-			public void run() {
-				try {
-					//ArrayList<String> array = mEntry.loadTextLines();
-					mCallback.loaded( mEntry.loadAndPrepareText() );
-				} catch (IOException e) {
-					e.printStackTrace();
-					mCallback.exceptionOccurred( e );
-				}
+		final Thread loadThread = new Thread( ()->{
+			try {
+				//ArrayList<String> array = mEntry.loadTextLines();
+				mCallback.loaded( mEntry.loadAndPrepareText() );
+			} catch (IOException e) {
+				e.printStackTrace();
+				mCallback.exceptionOccurred( e );
 			}
 		} );
 		mProgressDialog = new ProgressDialog(this);
@@ -437,13 +417,10 @@ public class ViewEntry extends ThemeActivity {
 		mProgressDialog.setCancelable( false );
 		mProgressDialog.setButton( ProgressDialog.BUTTON_NEUTRAL,
 				getResources().getString( R.string.cancel ),
-				new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						loadThread.interrupt();
-						dialog.cancel();
-						backPressed();
-					}
+				(dialog, which)->{
+					loadThread.interrupt();
+					dialog.cancel();
+					backPressed();
 				} );
 		mProgressDialog.show();
 		loadThread.start();
