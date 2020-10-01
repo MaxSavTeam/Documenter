@@ -1,4 +1,4 @@
-package com.maxsavitsky.documenter;
+package com.maxsavitsky.documenter.ui;
 
 import android.Manifest;
 import android.app.Activity;
@@ -27,17 +27,19 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.maxsavitsky.documenter.R;
+import com.maxsavitsky.documenter.ThemeActivity;
 import com.maxsavitsky.documenter.adapters.ListAdapter;
 import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Category;
+import com.maxsavitsky.documenter.ui.widget.FabButton;
 import com.maxsavitsky.documenter.updates.UpdatesChecker;
 import com.maxsavitsky.documenter.updates.UpdatesDownloader;
 import com.maxsavitsky.documenter.updates.VersionInfo;
 import com.maxsavitsky.documenter.utils.ApkInstaller;
 import com.maxsavitsky.documenter.utils.Utils;
-import com.maxsavitsky.documenter.widget.FabButton;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -51,7 +53,7 @@ public class CategoryList extends ThemeActivity {
 	private void applyTheme(){
 		ActionBar actionBar = getSupportActionBar();
 		if (actionBar != null) {
-			actionBar.setTitle(R.string.title_activity_category_list);
+			actionBar.setTitle( R.string.title_activity_category_list);
 			Utils.applyDefaultActionBarStyle(actionBar);
 			actionBar.setDisplayHomeAsUpEnabled( false );
 		}

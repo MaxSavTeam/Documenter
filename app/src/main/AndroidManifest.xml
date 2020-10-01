@@ -22,39 +22,39 @@
         android:requestLegacyExternalStorage="true"
         tools:targetApi="n">
         <activity
-            android:name=".CloudBackupActivity"
+            android:name=".ui.CloudBackupActivity"
             android:label="@string/title_activity_cloud_backup" />
         <activity android:name=".ThemeActivity" />
-        <activity android:name=".SettingsActivity" />
+        <activity android:name=".ui.SettingsActivity" />
         <activity
-            android:name=".EntryEditor"
+            android:name=".ui.EntryEditor"
             android:label="@string/title_activity_create_entry"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".ViewEntry"
+            android:name=".ui.ViewEntry"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
         <activity
-            android:name=".EntriesList"
+            android:name=".ui.EntriesList"
             android:label="@string/title_activity_entries_list"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".DocumentList"
+            android:name=".ui.DocumentList"
             android:label="@string/title_activity_document_list"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".CreateDocument"
+            android:name=".ui.CreateDocument"
             android:label="@string/title_activity_create_document"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".CategoryList"
+            android:name=".ui.CategoryList"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".CreateCategory"
+            android:name=".ui.CreateCategory"
             android:label="@string/title_activity_create_category"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize" />

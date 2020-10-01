@@ -7,7 +7,7 @@
     android:layout_marginTop="?attr/actionBarSize"
     android:orientation="vertical"
     android:padding="7dp"
-    tools:context=".SettingsActivity">
+    tools:context=".ui.SettingsActivity">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -225,7 +225,7 @@
                         android:textSize="20sp"
                         android:text="@string/theme" />
 
-                    <com.maxsavitsky.documenter.widget.ButtonWithDropdown
+                    <com.maxsavitsky.documenter.ui.widget.ButtonWithDropdown
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textColor="?textColor"

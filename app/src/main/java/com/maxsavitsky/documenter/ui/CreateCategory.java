@@ -1,4 +1,4 @@
-package com.maxsavitsky.documenter;
+package com.maxsavitsky.documenter.ui;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -17,12 +17,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.maxsavitsky.documenter.R;
+import com.maxsavitsky.documenter.ThemeActivity;
 import com.maxsavitsky.documenter.adapters.DefaultChooseAdapter;
-import com.maxsavitsky.documenter.data.types.Category;
-import com.maxsavitsky.documenter.data.types.Document;
+import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.data.Info;
 import com.maxsavitsky.documenter.data.MainData;
-import com.maxsavitsky.documenter.codes.Results;
+import com.maxsavitsky.documenter.data.types.Category;
+import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.utils.Utils;
 
 import java.util.ArrayList;
@@ -50,7 +52,7 @@ public class CreateCategory extends ThemeActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_create_category);
+		setContentView( R.layout.activity_create_category);
 		Toolbar toolbar = findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 

@@ -1,4 +1,4 @@
-package com.maxsavitsky.documenter.widget;
+package com.maxsavitsky.documenter.ui.widget;
 
 import android.content.Context;
 import android.util.AttributeSet;

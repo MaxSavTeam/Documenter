@@ -1,4 +1,4 @@
-package com.maxsavitsky.documenter;
+package com.maxsavitsky.documenter.ui;
 
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
@@ -32,6 +32,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.maxsavitsky.documenter.R;
+import com.maxsavitsky.documenter.ThemeActivity;
 import com.maxsavitsky.documenter.adapters.ListAdapter;
 import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.codes.Results;

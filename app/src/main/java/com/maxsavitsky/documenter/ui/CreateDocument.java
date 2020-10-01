@@ -1,4 +1,4 @@
-package com.maxsavitsky.documenter;
+package com.maxsavitsky.documenter.ui;
 
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -15,13 +15,15 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.maxsavitsky.documenter.R;
+import com.maxsavitsky.documenter.ThemeActivity;
 import com.maxsavitsky.documenter.adapters.DefaultChooseAdapter;
+import com.maxsavitsky.documenter.codes.Results;
+import com.maxsavitsky.documenter.data.Info;
+import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Category;
 import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.data.types.Entry;
-import com.maxsavitsky.documenter.data.Info;
-import com.maxsavitsky.documenter.data.MainData;
-import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.XMLParser;
 
@@ -38,7 +40,7 @@ public class CreateDocument extends ThemeActivity {
 	private void applyTheme(){
 		ActionBar actionBar = getSupportActionBar();
 		if (actionBar != null) {
-			actionBar.setTitle(getString(R.string.title_activity_create_document ));
+			actionBar.setTitle(getString( R.string.title_activity_create_document ));
 			Utils.applyDefaultActionBarStyle( actionBar );
 		}
 	}

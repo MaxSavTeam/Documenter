@@ -1,4 +1,4 @@
-package com.maxsavitsky.documenter.editor;
+package com.maxsavitsky.documenter.ui.editor;
 
 import android.content.Context;
 import android.util.AttributeSet;

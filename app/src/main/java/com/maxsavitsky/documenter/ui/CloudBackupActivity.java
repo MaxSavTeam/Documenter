@@ -1,4 +1,4 @@
-package com.maxsavitsky.documenter;
+package com.maxsavitsky.documenter.ui;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -24,6 +24,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.maxsavitsky.documenter.R;
+import com.maxsavitsky.documenter.ThemeActivity;
 import com.maxsavitsky.documenter.backup.AutonomousCloudBackupper;
 import com.maxsavitsky.documenter.backup.BackupInterface;
 import com.maxsavitsky.documenter.backup.CloudBackupInstruments;

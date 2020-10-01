@@ -18,7 +18,7 @@
         android:scrollbars="vertical"
         tools:ignore="UselessParent">
 
-        <com.maxsavitsky.documenter.editor.TextEditor
+        <com.maxsavitsky.documenter.ui.editor.TextEditor
             android:id="@+id/edittextEntry"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
