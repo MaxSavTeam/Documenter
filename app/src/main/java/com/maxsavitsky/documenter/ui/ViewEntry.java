@@ -202,23 +202,28 @@ public class ViewEntry extends ThemeActivity {
 			findViewById( R.id.txtCopyNothingToShow ).setVisibility( View.VISIBLE );
 		}else {
 			Collections.sort( entryArrayList, Utils.getSortByNamesComparator() );
-			View.OnClickListener onItemChose = new View.OnClickListener() {
+			ListAdapter.AdapterCallback adapterCallback = new ListAdapter.AdapterCallback() {
 				@Override
-				public void onClick(View v) {
+				public void onClick(Type type) {
 					Intent intent = new Intent();
-					String id = ( (TextView) v.findViewById( R.id.lblHiddenTypeId ) ).getText().toString();
+					String id = type.getId();
 					intent.putExtra( "type", "copy" );
 					intent.putExtra( "from_id", mEntry.getId() );
 					intent.putExtra( "to_id", id );
 					setResult( Results.COPY_TO_ACTION, intent );
 					finish();
 				}
+
+				@Override
+				public void onLongClick(Type type) {
+
+				}
 			};
 
 			LinearLayoutManager linearLayoutManager = new LinearLayoutManager( this );
 			linearLayoutManager.setOrientation( RecyclerView.VERTICAL );
 
-			ListAdapter listAdapter = new ListAdapter( this, entryArrayList, onItemChose );
+			ListAdapter listAdapter = new ListAdapter( this, entryArrayList, adapterCallback );
 			rc.setLayoutManager( linearLayoutManager );
 			rc.setAdapter( listAdapter );
 		}

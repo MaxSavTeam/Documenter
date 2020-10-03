@@ -34,6 +34,7 @@ import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Category;
+import com.maxsavitsky.documenter.data.types.Type;
 import com.maxsavitsky.documenter.ui.widget.FabButton;
 import com.maxsavitsky.documenter.updates.UpdatesChecker;
 import com.maxsavitsky.documenter.updates.UpdatesDownloader;
@@ -145,7 +146,7 @@ public class CategoryList extends ThemeActivity {
 		}else {
 			if( categories.size() > 1)
 				Collections.sort( categories, mCategoryComparator );
-			ListAdapter adapter = new ListAdapter(this, categories, onCategoryClick);
+			ListAdapter adapter = new ListAdapter(this, categories, mAdapterCallback );
 			recyclerView.setLayoutManager(lay);
 			recyclerView.setAdapter(adapter);
 			recyclerView.setVisibility(View.VISIBLE);
@@ -154,15 +155,18 @@ public class CategoryList extends ThemeActivity {
 		}
 	}
 
-	private final View.OnClickListener onCategoryClick = new View.OnClickListener() {
+	private final ListAdapter.AdapterCallback mAdapterCallback = new ListAdapter.AdapterCallback() {
 		@Override
-		public void onClick(View v) {
+		public void onClick(Type type) {
 			Intent intent = new Intent(CategoryList.this, DocumentList.class);
-			TextView t = v.findViewById(R.id.lblHiddenTypeId );
-			String id = t.getText().toString();
-			intent.putExtra("category_uid", id);
+			intent.putExtra("category_uid", type.getId());
 			//startActivity(intent);
 			startActivityForResult( intent, Requests.DOCUMENT_LIST );
+		}
+
+		@Override
+		public void onLongClick(Type type) {
+
 		}
 	};
 

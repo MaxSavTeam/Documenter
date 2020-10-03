@@ -5,7 +5,7 @@ import java.util.Date;
 import java.util.Locale;
 
 public class Info {
-	private int timeStamp;
+	private int timeStamp = 0;
 
 	public Info(int timeStamp) {
 		this.timeStamp = timeStamp;

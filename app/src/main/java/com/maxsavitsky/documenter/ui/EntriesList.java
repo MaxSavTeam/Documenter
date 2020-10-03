@@ -33,6 +33,7 @@ import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.data.types.Entry;
+import com.maxsavitsky.documenter.data.types.Type;
 import com.maxsavitsky.documenter.ui.widget.FabButton;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.XMLParser;
@@ -112,7 +113,7 @@ public class EntriesList extends ThemeActivity {
 			LinearLayoutManager linearLayoutManager = new LinearLayoutManager( this );
 			linearLayoutManager.setOrientation( RecyclerView.VERTICAL );
 
-			ListAdapter rvAdapter = new ListAdapter( this, mEntries, onItemClick );
+			ListAdapter rvAdapter = new ListAdapter( this, mEntries, mAdapterCallback );
 
 			recyclerView.setLayoutManager( linearLayoutManager );
 			recyclerView.setAdapter( rvAdapter );
@@ -122,11 +123,20 @@ public class EntriesList extends ThemeActivity {
 		}
 	}
 
-	final View.OnClickListener onItemClick = new View.OnClickListener() {
+	private final ListAdapter.AdapterCallback mAdapterCallback = new ListAdapter.AdapterCallback() {
 		@Override
-		public void onClick(View v) {
+		public void onClick(Type type) {
+			Intent intent = new Intent( EntriesList.this, EntryHtmlViewer.class );
+			String id = type.getId();
+			intent.putExtra( "id", id );
+			intent.putExtra( "free_mode", isFreeEntriesMode );
+			startActivityForResult( intent, Requests.VIEW_ENTRY );
+		}
+
+		@Override
+		public void onLongClick(Type type) {
 			Intent intent = new Intent( EntriesList.this, ViewEntry.class );
-			String id = ( (TextView) v.findViewById( R.id.lblHiddenTypeId ) ).getText().toString();
+			String id = type.getId();
 			intent.putExtra( "id", id );
 			intent.putExtra( "free_mode", isFreeEntriesMode );
 			startActivityForResult( intent, Requests.VIEW_ENTRY );

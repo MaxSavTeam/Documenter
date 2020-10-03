@@ -12,4 +12,5 @@
     <attr name="app_icon" format="reference" />
     <attr name="app_icon_round" format="string" />
     <attr name="spinner_background" format="color" />
+    <attr name="toolbarBackgroundColor" format="color" />
 </resources>

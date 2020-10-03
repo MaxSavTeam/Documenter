@@ -35,6 +35,7 @@ import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Category;
 import com.maxsavitsky.documenter.data.types.Document;
+import com.maxsavitsky.documenter.data.types.Type;
 import com.maxsavitsky.documenter.ui.widget.FabButton;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.XMLParser;
@@ -101,7 +102,7 @@ public class DocumentList extends ThemeActivity {
 			if ( mDocuments.size() > 1 ) {
 				Collections.sort( mDocuments, mDocumentComparator );
 			}
-			ListAdapter mAdapter = new ListAdapter( this, mDocuments, mOnClickListener );
+			ListAdapter mAdapter = new ListAdapter( this, mDocuments, mAdapterCallback );
 			recyclerView.setLayoutManager( lay );
 			recyclerView.setAdapter( mAdapter );
 			recyclerView.setVisibility( View.VISIBLE );
@@ -110,14 +111,17 @@ public class DocumentList extends ThemeActivity {
 		}
 	}
 
-	private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
+	private final ListAdapter.AdapterCallback mAdapterCallback = new ListAdapter.AdapterCallback() {
 		@Override
-		public void onClick(View v) {
+		public void onClick(Type type) {
 			Intent intent = new Intent( DocumentList.this, EntriesList.class );
-			TextView t = v.findViewById( R.id.lblHiddenTypeId );
-			String id = t.getText().toString();
-			intent.putExtra( "id", id );
+			intent.putExtra( "id", type.getId() );
 			startActivityForResult( intent, Requests.ENTRIES_LIST );
+		}
+
+		@Override
+		public void onLongClick(Type type) {
+
 		}
 	};
 

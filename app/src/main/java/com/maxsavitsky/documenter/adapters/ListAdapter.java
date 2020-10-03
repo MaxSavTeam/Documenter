@@ -1,7 +1,6 @@
 package com.maxsavitsky.documenter.adapters;
 
 import android.content.Context;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,20 +10,24 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.maxsavitsky.documenter.R;
-import com.maxsavitsky.documenter.data.types.Category;
 import com.maxsavitsky.documenter.data.types.Type;
 
 import java.util.ArrayList;
 
 public class ListAdapter extends RecyclerView.Adapter<ListAdapter.VHolder> {
-	private ArrayList<? extends Type> mElements;
-	private LayoutInflater mLayoutInflater;
-	private View.OnClickListener mOnClickListener;
+	private final ArrayList<? extends Type> mElements;
+	private final LayoutInflater mLayoutInflater;
+	private final AdapterCallback mCallback;
 
-	public ListAdapter(Context context, ArrayList<? extends Type> data, View.OnClickListener onClickListener){
+	public interface AdapterCallback{
+		void onClick(Type type);
+		void onLongClick(Type type);
+	}
+
+	public ListAdapter(Context context, ArrayList<? extends Type> data, AdapterCallback adapterCallback){
 		mElements = data;
 		mLayoutInflater = LayoutInflater.from( context );
-		mOnClickListener = onClickListener;
+		mCallback = adapterCallback;
 	}
 
 	@NonNull
@@ -38,9 +41,15 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.VHolder> {
 	public void onBindViewHolder(@NonNull VHolder holder, int position) {
 		holder.id.setText( mElements.get( position ).getId() );
 		holder.name.setText( mElements.get( position ).getName() );
+
+		holder.itemView.setOnClickListener( v->mCallback.onClick( mElements.get( position ) ) );
+		holder.itemView.setOnLongClickListener( v->{
+			mCallback.onLongClick( mElements.get( position ) );
+			return true;
+		} );
 	}
 
-	class VHolder extends RecyclerView.ViewHolder{
+	static class VHolder extends RecyclerView.ViewHolder{
 		final TextView id;
 		final TextView name;
 
@@ -48,7 +57,6 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.VHolder> {
 			super( itemView );
 			id = itemView.findViewById( R.id.lblHiddenTypeId );
 			name = itemView.findViewById( R.id.lblTypeName );
-			itemView.setOnClickListener( mOnClickListener );
 		}
 	}
 

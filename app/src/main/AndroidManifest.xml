@@ -15,12 +15,14 @@
         android:allowBackup="false"
         android:icon="@mipmap/ic_documenter_icon_white"
         android:label="@string/app_name"
+        android:requestLegacyExternalStorage="true"
+        android:preserveLegacyExternalStorage="true"
         android:resizeableActivity="false"
         android:roundIcon="@mipmap/ic_documenter_icon_white_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:requestLegacyExternalStorage="true"
         tools:targetApi="n">
+        <activity android:name=".ui.EntryHtmlViewer" />
         <activity
             android:name=".ui.CloudBackupActivity"
             android:label="@string/title_activity_cloud_backup" />
