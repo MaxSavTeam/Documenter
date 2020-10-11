@@ -74,9 +74,9 @@ import com.maxsavitsky.documenter.ThemeActivity;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.data.Info;
 import com.maxsavitsky.documenter.data.MainData;
+import com.maxsavitsky.documenter.data.html.HtmlImageLoader;
 import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.data.types.Entry;
-import com.maxsavitsky.documenter.media.images.HtmlImageLoader;
 import com.maxsavitsky.documenter.media.images.ImageRenderer;
 import com.maxsavitsky.documenter.ui.editor.TextEditor;
 import com.maxsavitsky.documenter.utils.ChangeEntry;
@@ -1033,7 +1033,6 @@ public class EntryEditor extends ThemeActivity {
 			if ( lengthAfter == 0 ) {
 				btnReplaceColor.setOnClickListener( null );
 			}
-			Log.i( TAG, "onTextChanged text=" + text );
 		}
 
 		@Override

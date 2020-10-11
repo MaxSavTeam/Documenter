@@ -19,7 +19,8 @@ import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.data.Info;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.TextLoader;
-import com.maxsavitsky.documenter.media.images.HtmlImageLoader;
+import com.maxsavitsky.documenter.data.html.HtmlImageLoader;
+import com.maxsavitsky.documenter.data.html.HtmlSpanRender;
 import com.maxsavitsky.documenter.utils.SpanEntry;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.XMLParser;
@@ -38,6 +39,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 public class Entry extends Type {
 
@@ -406,40 +409,21 @@ public class Entry extends Type {
 			element.attr( "style", styleAttr + "text-align:" + element.attr( "align" ) + ";" );
 			element.removeAttr( "align" );
 		}
-		Log.i( TAG, "prepareDivs: " + doc.html() );
-		return doc.html();
+		doc.outputSettings().syntax( org.jsoup.nodes.Document.OutputSettings.Syntax.xml );
+		String html = doc.html().replaceAll( ";=\"\"", "" );
+		Log.i( TAG, "prepareDivs: \n" + html );
+		return html;
 	}
 
 	public Spannable loadAndPrepareText() throws IOException {
-		String text = prepareDivs( loadText() );
-		Spannable spannable = (Spannable) Html.fromHtml( text, new HtmlImageLoader(), null );
-		Log.i( TAG, "loadAndPrepareText: found alignments " + spannable.getSpans( 0, spannable.length(), Alignment.class ).length + " " +
-				spannable.getSpans( 0, spannable.length(), AlignmentSpan.class ).length );
-		for (SpanEntry<AlignmentSpan.Standard> se : getAlignments()) {
-			int st = se.getStart(), end = se.getEnd();
-			if ( st < 0 ) {
-				st = 0;
-			}
-			if ( end > spannable.length() ) {
-				end = spannable.length();
-			}
-
-			spannable.setSpan( se.getSpan(), st, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+		String text = loadText();
+		HtmlSpanRender render = new HtmlSpanRender( text, new HtmlImageLoader() );
+		try {
+			return (Spannable) render.get();
+		} catch (SAXException | ParserConfigurationException e) {
+			e.printStackTrace();
+			throw new RuntimeException( e );
 		}
-
-		for (SpanEntry<RelativeSizeSpan> se : getRelativeSpans()) {
-			int st = se.getStart(), end = se.getEnd();
-			if ( st < 0 ) {
-				st = 0;
-			}
-			if ( end > spannable.length() ) {
-				end = spannable.length();
-			}
-
-			spannable.setSpan( se.getSpan(), st, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-		}
-
-		return spannable;
 	}
 
 	public void addDocumentToIncluded(String documentId) throws IOException, SAXException {

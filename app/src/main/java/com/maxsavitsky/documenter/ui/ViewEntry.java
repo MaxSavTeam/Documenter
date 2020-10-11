@@ -38,9 +38,9 @@ import com.maxsavitsky.documenter.adapters.ListAdapter;
 import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.data.MainData;
+import com.maxsavitsky.documenter.data.html.HtmlImageLoader;
 import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.data.types.Type;
-import com.maxsavitsky.documenter.media.images.HtmlImageLoader;
 import com.maxsavitsky.documenter.utils.SpanEntry;
 import com.maxsavitsky.documenter.utils.Utils;
 

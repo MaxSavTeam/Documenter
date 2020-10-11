@@ -65,7 +65,6 @@ public class TextEditor extends AppCompatEditText {
 	protected void onTextChanged(CharSequence text, int start, int lengthBefore, int lengthAfter) {
 		if(text.toString().equals( "" ))
 			return;
-		Log.i(TAG, "onTextChanged mIgnoreChanges=" + mIgnoreChanges + "; text=" + text);
 		if(listener != null) {
 			if(!mIgnoreChanges)
 				listener.onTextChanged( text, start, lengthBefore, lengthAfter);

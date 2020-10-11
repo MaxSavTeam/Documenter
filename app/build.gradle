@@ -94,15 +94,14 @@ task rollbackUpdate(type: Exec){
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.google.android.material:material:1.2.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.2'
     implementation 'androidx.navigation:navigation-fragment:2.3.0'
     implementation 'androidx.navigation:navigation-ui:2.3.0'
 
     implementation 'com.android.support:design:30.0.0'
-    implementation files('libs/quadflask.colorpicker.aar')
     implementation 'com.github.clans:fab:1.6.4'
     implementation 'org.jsoup:jsoup:1.11.2'
 
