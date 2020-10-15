@@ -135,7 +135,7 @@ public class EntriesList extends ThemeActivity {
 
 		@Override
 		public void onLongClick(Type type) {
-			Intent intent = new Intent( EntriesList.this, ViewEntry.class );
+			Intent intent = new Intent( EntriesList.this, EntryViewer.class );
 			String id = type.getId();
 			intent.putExtra( "id", id );
 			intent.putExtra( "free_mode", isFreeEntriesMode );
@@ -415,7 +415,7 @@ public class EntriesList extends ThemeActivity {
 		if ( requestCode == Requests.VIEW_ENTRY || requestCode == Requests.CREATE_ENTRY ) {
 			if ( resultCode == Results.REOPEN ) {
 				setupRecyclerView();
-				Intent intent = new Intent( this, ViewEntry.class );
+				Intent intent = new Intent( this, EntryViewer.class );
 				if ( data != null ) {
 					intent.putExtras( data );
 				}

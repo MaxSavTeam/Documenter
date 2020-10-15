@@ -53,7 +53,7 @@ import java.util.Collections;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-public class ViewEntry extends ThemeActivity {
+public class EntryViewer extends ThemeActivity {
 
 	private Entry mEntry;
 	private SharedPreferences sp;
@@ -108,7 +108,7 @@ public class ViewEntry extends ThemeActivity {
 							newName = newName.trim();
 							if ( !newName.isEmpty() && !newName.equals( mEntry.getName() ) ) {
 								if ( Utils.isNameExist( newName, "ent" ) ) {
-									Toast.makeText( ViewEntry.this, R.string.this_name_already_exist, Toast.LENGTH_SHORT ).show();
+									Toast.makeText( EntryViewer.this, R.string.this_name_already_exist, Toast.LENGTH_SHORT ).show();
 									return;
 								}
 								MainData.removeEntryWithId( mEntry.getId() );
@@ -121,7 +121,7 @@ public class ViewEntry extends ThemeActivity {
 								setResult( Results.NEED_TO_REFRESH );
 								resultSet = true;
 							} else {
-								Toast.makeText( ViewEntry.this, R.string.invalid_name, Toast.LENGTH_SHORT ).show();
+								Toast.makeText( EntryViewer.this, R.string.invalid_name, Toast.LENGTH_SHORT ).show();
 							}
 						}
 					} )
@@ -146,12 +146,12 @@ public class ViewEntry extends ThemeActivity {
 									setResult( Results.NEED_TO_REFRESH );
 									finish();
 								} else {
-									Toast.makeText( ViewEntry.this, "Failed", Toast.LENGTH_SHORT ).show();
+									Toast.makeText( EntryViewer.this, "Failed", Toast.LENGTH_SHORT ).show();
 								}
 							} catch (Exception e) {
 								e.printStackTrace();
-								Toast.makeText( ViewEntry.this, "onOptionsItemSelected", Toast.LENGTH_LONG ).show();
-								Utils.getErrorDialog( e, ViewEntry.this ).show();
+								Toast.makeText( EntryViewer.this, "onOptionsItemSelected", Toast.LENGTH_LONG ).show();
+								Utils.getErrorDialog( e, EntryViewer.this ).show();
 							}
 						}
 					} ).setNeutralButton( R.string.cancel, new DialogInterface.OnClickListener() {
@@ -276,7 +276,7 @@ public class ViewEntry extends ThemeActivity {
 						runOnUiThread( new Runnable() {
 							@Override
 							public void run() {
-								Utils.getErrorDialog( e, ViewEntry.this ).show();
+								Utils.getErrorDialog( e, EntryViewer.this ).show();
 							}
 						} );
 					}
@@ -360,7 +360,7 @@ public class ViewEntry extends ThemeActivity {
 
 		@Override
 		public void exceptionOccurred(Exception e) {
-			Utils.getErrorDialog( e, ViewEntry.this ).show();
+			Utils.getErrorDialog( e, EntryViewer.this ).show();
 		}
 	};
 
