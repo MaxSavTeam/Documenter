@@ -22,7 +22,6 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:targetApi="n">
-        <activity android:name=".ui.EntryHtmlViewer" />
         <activity
             android:name=".ui.CloudBackupActivity"
             android:label="@string/title_activity_cloud_backup" />

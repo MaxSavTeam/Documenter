@@ -21,7 +21,6 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.VHolder> {
 
 	public interface AdapterCallback{
 		void onClick(Type type);
-		void onLongClick(Type type);
 	}
 
 	public ListAdapter(Context context, ArrayList<? extends Type> data, AdapterCallback adapterCallback){
@@ -43,10 +42,6 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.VHolder> {
 		holder.name.setText( mElements.get( position ).getName() );
 
 		holder.itemView.setOnClickListener( v->mCallback.onClick( mElements.get( position ) ) );
-		holder.itemView.setOnLongClickListener( v->{
-			mCallback.onLongClick( mElements.get( position ) );
-			return true;
-		} );
 	}
 
 	static class VHolder extends RecyclerView.ViewHolder{

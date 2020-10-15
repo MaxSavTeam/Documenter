@@ -132,15 +132,6 @@ public class EntriesList extends ThemeActivity {
 			intent.putExtra( "free_mode", isFreeEntriesMode );
 			startActivityForResult( intent, Requests.VIEW_ENTRY );
 		}
-
-		@Override
-		public void onLongClick(Type type) {
-			Intent intent = new Intent( EntriesList.this, EntryViewer.class );
-			String id = type.getId();
-			intent.putExtra( "id", id );
-			intent.putExtra( "free_mode", isFreeEntriesMode );
-			startActivityForResult( intent, Requests.VIEW_ENTRY );
-		}
 	};
 
 	@Override
