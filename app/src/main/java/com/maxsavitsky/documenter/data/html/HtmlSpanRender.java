@@ -199,7 +199,7 @@ class TagHandler extends DefaultHandler {
 						continue;
 					}
 					if ( "px".equals( p.second ) ) {
-						addSpanToEnd( new AbsoluteSizeSpan( p.first.intValue() ) );
+						addSpanToEnd( new AbsoluteSizeSpan( p.first.intValue(), true ) );
 					} else if ( "em".equals( p.second ) ) {
 						addSpanToEnd( new RelativeSizeSpan( p.first.floatValue() ) );
 					}

@@ -126,7 +126,7 @@ public class EntriesList extends ThemeActivity {
 	private final ListAdapter.AdapterCallback mAdapterCallback = new ListAdapter.AdapterCallback() {
 		@Override
 		public void onClick(Type type) {
-			Intent intent = new Intent( EntriesList.this, EntryHtmlViewer.class );
+			Intent intent = new Intent( EntriesList.this, EntryViewer.class );
 			String id = type.getId();
 			intent.putExtra( "id", id );
 			intent.putExtra( "free_mode", isFreeEntriesMode );
