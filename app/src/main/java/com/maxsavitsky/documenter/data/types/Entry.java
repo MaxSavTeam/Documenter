@@ -8,7 +8,6 @@ import android.text.Spanned;
 import android.text.style.AlignmentSpan;
 import android.text.style.ImageSpan;
 import android.text.style.RelativeSizeSpan;
-import android.util.Log;
 import android.view.Gravity;
 
 import androidx.annotation.NonNull;
@@ -19,15 +18,10 @@ import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.data.Info;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.TextLoader;
-import com.maxsavitsky.documenter.data.html.HtmlImageLoader;
-import com.maxsavitsky.documenter.data.html.HtmlSpanRender;
 import com.maxsavitsky.documenter.utils.SpanEntry;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.XMLParser;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.xml.sax.SAXException;
 
 import java.io.BufferedReader;
@@ -39,8 +33,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-
-import javax.xml.parsers.ParserConfigurationException;
 
 public class Entry extends Type {
 
@@ -383,47 +375,8 @@ public class Entry extends Type {
 		saveProperties();
 	}
 
-	public ArrayList<String> loadTextLines() throws IOException {
-		BufferedReader br = new BufferedReader( new FileReader( new File( mPathDir + "text" ) ) );
-		String line;
-		ArrayList<String> strings = new ArrayList<>();
-		while ( ( line = br.readLine() ) != null ) {
-			if ( Thread.currentThread().isInterrupted() ) {
-				break;
-			}
-			strings.add( line );
-		}
-
-		return strings;
-	}
-
 	public String loadText() throws IOException {
 		return TextLoader.getInstance().loadTextSync( new File( mPathDir + "text" ) );
-	}
-
-	private String prepareDivs(String text) {
-		org.jsoup.nodes.Document doc = Jsoup.parse( text );
-		Elements elements = doc.select( "div[align]" );
-		for (Element element : elements) {
-			String styleAttr = element.attr( "style" );
-			element.attr( "style", styleAttr + "text-align:" + element.attr( "align" ) + ";" );
-			element.removeAttr( "align" );
-		}
-		doc.outputSettings().syntax( org.jsoup.nodes.Document.OutputSettings.Syntax.xml );
-		String html = doc.html().replaceAll( ";=\"\"", "" );
-		Log.i( TAG, "prepareDivs: \n" + html );
-		return html;
-	}
-
-	public Spannable loadAndPrepareText() throws IOException {
-		String text = loadText();
-		HtmlSpanRender render = new HtmlSpanRender( text, new HtmlImageLoader() );
-		try {
-			return (Spannable) render.get();
-		} catch (SAXException | ParserConfigurationException e) {
-			e.printStackTrace();
-			throw new RuntimeException( e );
-		}
 	}
 
 	public void addDocumentToIncluded(String documentId) throws IOException, SAXException {

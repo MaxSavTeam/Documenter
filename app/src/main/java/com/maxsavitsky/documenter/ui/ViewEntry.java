@@ -11,8 +11,8 @@ import android.preference.PreferenceManager;
 import android.text.Html;
 import android.text.Spannable;
 import android.text.Spanned;
+import android.text.method.LinkMovementMethod;
 import android.text.style.AlignmentSpan;
-import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -39,6 +39,7 @@ import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.html.HtmlImageLoader;
+import com.maxsavitsky.documenter.data.html.HtmlSpanRender;
 import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.data.types.Type;
 import com.maxsavitsky.documenter.utils.SpanEntry;
@@ -49,6 +50,8 @@ import org.xml.sax.SAXException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 public class ViewEntry extends ThemeActivity {
 
@@ -392,8 +395,9 @@ public class ViewEntry extends ThemeActivity {
 		sp = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
 
 		TextView textView = findViewById(R.id.textViewContent);
-		textView.setTextSize( TypedValue.COMPLEX_UNIT_DIP, mEntry.getProperties().getTextSize() );
+		//textView.setTextSize( TypedValue.COMPLEX_UNIT_DIP, mEntry.getProperties().getTextSize() );
 		textView.setTextColor( mEntry.getProperties().getDefaultTextColor() );
+		textView.setMovementMethod( LinkMovementMethod.getInstance() );
 
 		mScrollView = findViewById( R.id.viewEntryScrollView );
 		mScrollView.setOnScrollChangeListener( new View.OnScrollChangeListener() {
@@ -412,8 +416,13 @@ public class ViewEntry extends ThemeActivity {
 		final Thread loadThread = new Thread( ()->{
 			try {
 				//ArrayList<String> array = mEntry.loadTextLines();
-				mCallback.loaded( mEntry.loadAndPrepareText() );
-			} catch (IOException e) {
+				String text = mEntry.loadText();
+				mCallback.loaded( (Spannable) HtmlSpanRender.get(
+						text,
+						new HtmlImageLoader(),
+						null
+				) );
+			} catch (SAXException | ParserConfigurationException | IOException e) {
 				e.printStackTrace();
 				mCallback.exceptionOccurred( e );
 			}

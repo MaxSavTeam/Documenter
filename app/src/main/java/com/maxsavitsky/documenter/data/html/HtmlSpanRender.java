@@ -10,12 +10,15 @@ import android.text.Spanned;
 import android.text.style.AbsoluteSizeSpan;
 import android.text.style.AlignmentSpan;
 import android.text.style.BackgroundColorSpan;
+import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.ImageSpan;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.SubscriptSpan;
 import android.text.style.SuperscriptSpan;
+import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
 
 import com.maxsavitsky.documenter.MainActivity;
@@ -43,11 +46,10 @@ import javax.xml.parsers.SAXParserFactory;
 
 public class HtmlSpanRender {
 	private static final String TAG = MainActivity.TAG + " HtmlRender";
-	private final Html.ImageGetter mImageGetter;
-	private final String mSource;
 
-	public HtmlSpanRender(String source, Html.ImageGetter imageGetter) {
-		mImageGetter = imageGetter;
+	private HtmlSpanRender(){}
+
+	public static Spanned get(String source, Html.ImageGetter imageGetter, TagHandler.OnImageClick onImageClick) throws IOException, SAXException, ParserConfigurationException {
 		Document doc = Jsoup.parse( source );
 		Elements elements = doc.select( "div[align]" );
 		for (Element element : elements) {
@@ -57,13 +59,11 @@ public class HtmlSpanRender {
 		}
 
 		doc.outputSettings().syntax( Document.OutputSettings.Syntax.xml ).prettyPrint( false );
-		mSource = Parser.unescapeEntities( doc.html(), false ).replaceAll( ";=\"\"", "" );
-	}
+		source = Parser.unescapeEntities( doc.html(), false ).replaceAll( ";=\"\"", "" );
 
-	public Spanned get() throws IOException, SAXException, ParserConfigurationException {
-		TagHandler tagHandler = new TagHandler( mImageGetter );
+		TagHandler tagHandler = new TagHandler( imageGetter, onImageClick );
 		SAXParserFactory.newInstance().newSAXParser()
-				.parse( new ByteArrayInputStream( mSource.getBytes( StandardCharsets.UTF_8 ) ),
+				.parse( new ByteArrayInputStream( source.getBytes( StandardCharsets.UTF_8 ) ),
 						tagHandler );
 		return tagHandler.getSpanned();
 	}
@@ -77,11 +77,21 @@ class TagHandler extends DefaultHandler {
 	private int currentTag = 0;
 	private final SpannableStringBuilder mSpannableStringBuilder;
 	private final Html.ImageGetter mImageGetter;
+	private final OnImageClick mOnImageClick;
 
-	public TagHandler(Html.ImageGetter imageGetter) {
+	public interface OnImageClick{
+		void onClick(View v, String src);
+	}
+
+	public TagHandler(Html.ImageGetter imageGetter, OnImageClick onImageClick) {
 		mSpannableStringBuilder = new SpannableStringBuilder();
 		mStack = new Stack<>();
 		mImageGetter = imageGetter;
+		mOnImageClick = onImageClick;
+	}
+
+	private int len(){
+		return mSpannableStringBuilder.length();
 	}
 
 	public Spanned getSpanned() {
@@ -98,7 +108,15 @@ class TagHandler extends DefaultHandler {
 				String src = attributes.getValue( "src" );
 				int len = mSpannableStringBuilder.length();
 				mSpannableStringBuilder.append( "\uFFFC" );
-				mSpannableStringBuilder.setSpan( new ImageSpan( mImageGetter.getDrawable( src ), src ), len, mSpannableStringBuilder.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+				mSpannableStringBuilder.setSpan( new ImageSpan( mImageGetter.getDrawable( src ), src ), len, len(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+				if(mOnImageClick != null) {
+					mSpannableStringBuilder.setSpan( new ClickableSpan() {
+						@Override
+						public void onClick(@NonNull View widget) {
+							mOnImageClick.onClick( widget, src );
+						}
+					}, len, len(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+				}
 			} else if ( qName.equals( "br" ) ) {
 				mSpannableStringBuilder.append( "\n" );
 			}

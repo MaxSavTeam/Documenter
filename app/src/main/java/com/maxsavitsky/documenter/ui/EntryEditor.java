@@ -75,6 +75,7 @@ import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.data.Info;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.html.HtmlImageLoader;
+import com.maxsavitsky.documenter.data.html.HtmlSpanRender;
 import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.media.images.ImageRenderer;
@@ -94,6 +95,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 import static com.maxsavitsky.documenter.codes.Requests.PICK_IMAGE;
 
@@ -545,22 +548,17 @@ public class EntryEditor extends ThemeActivity {
 		mProgressDialogOnTextLoad.setMessage( getResources().getString( R.string.entry_is_loading ) );
 		mProgressDialogOnTextLoad.setCancelable( false );
 		mProgressDialogOnTextLoad.show();
-		new Thread( new Runnable() {
-			@Override
-			public void run() {
-				Spannable loadedSpannable;
-				mStartLoadTextTime = System.currentTimeMillis();
-				Log.v( "TextLoader", "Start" );
-				try {
-					loadedSpannable = entry.loadAndPrepareText();
-				} catch (final IOException e) {
-					mOnLoadedTextListener.exceptionOccurred( e );
-					Log.v( "TextLoader", "exception = " + e.toString() );
-					return;
-				}
-				Log.v( "TextLoader", "Text loaded" );
-				mOnLoadedTextListener.loaded( loadedSpannable, entry );
+		new Thread( ()->{
+			Spannable loadedSpannable;
+			mStartLoadTextTime = System.currentTimeMillis();
+			try {
+				String text = mEntry.loadText();
+				loadedSpannable = (Spannable) HtmlSpanRender.get( text, new HtmlImageLoader(), null );
+			} catch (final IOException | SAXException | ParserConfigurationException e) {
+				mOnLoadedTextListener.exceptionOccurred( e );
+				return;
 			}
+			mOnLoadedTextListener.loaded( loadedSpannable, entry );
 		} ).start();
 	}
 
