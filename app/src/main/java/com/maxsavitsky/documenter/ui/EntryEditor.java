@@ -54,6 +54,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -127,6 +128,7 @@ public class EntryEditor extends ThemeActivity {
 	private final float INDEX_PROPORTION = 0.75f;
 	private final int DEFAULT_TOOLS_COLOR = Color.WHITE;
 	private final String TAG = MainActivity.TAG + " EntryEditor";
+	private ArrayList<HtmlSpanRender.WidgetParam> mWidgetParams = new ArrayList<>();
 
 	private interface OnLoadedTextListener {
 		void loaded(Spannable spannable, Entry entry);
@@ -553,7 +555,8 @@ public class EntryEditor extends ThemeActivity {
 			mStartLoadTextTime = System.currentTimeMillis();
 			try {
 				String text = mEntry.loadText();
-				loadedSpannable = (Spannable) HtmlSpanRender.get( text, new HtmlImageLoader(), null );
+				loadedSpannable = (Spannable) HtmlSpanRender.get( new HtmlSpanRender.Initialization( EntryEditor.this, mRenderCallback )
+						.setSource( text ) );
 			} catch (final IOException | SAXException | ParserConfigurationException e) {
 				mOnLoadedTextListener.exceptionOccurred( e );
 				return;
@@ -561,6 +564,32 @@ public class EntryEditor extends ThemeActivity {
 			mOnLoadedTextListener.loaded( loadedSpannable, entry );
 		} ).start();
 	}
+
+	private final HtmlSpanRender.RenderCallback mRenderCallback = new HtmlSpanRender.RenderCallback() {
+		@Override
+		public void onImageClick(View view, String src) {
+
+		}
+
+		@Override
+		public int getLineHeight() {
+			return mTextEditor.getLineHeight();
+		}
+
+		@Override
+		public boolean drawView(View view) {
+			runOnUiThread( ()->{
+				RelativeLayout relativeLayout = findViewById( R.id.entry_editor_relative_layout );
+				relativeLayout.addView( view );
+			} );
+			return true;
+		}
+
+		@Override
+		public void viewsArrayDone(ArrayList<HtmlSpanRender.WidgetParam> widgetParams) {
+			mWidgetParams = widgetParams;
+		}
+	};
 
 	private void readColorHistory() {
 		String history = sp.getString( "color_history", null );
@@ -653,8 +682,9 @@ public class EntryEditor extends ThemeActivity {
 						@Override
 						public void run() {
 							View focusView = getWindow().getDecorView().findFocus();
-							if(focusView != null)
+							if ( focusView != null ) {
 								focusView.clearFocus();
+							}
 							scrollView.scrollTo( 0, getIntent().getIntExtra( "scroll_position", 0 ) );
 						}
 					} );
@@ -812,129 +842,54 @@ public class EntryEditor extends ThemeActivity {
 		}
 	}
 
-	/*final TextEditor.OnSelectionChanges mOnSelectionChanges = new TextEditor.OnSelectionChanges() {
-		@Override
-		public void onTextSelected(int start, int end) {
-			Editable s = mTextEditor.getText();
-			if(s == null)
-				return;
-			mTextEditor.clearComposingText();
-			ForegroundColorSpan[] foregroundColorSpans = s.getSpans( start, end, ForegroundColorSpan.class );
-			int c;
-			if(foregroundColorSpans.length != 0){
-				c = foregroundColorSpans[foregroundColorSpans.length-1].getForegroundColor();
-			}else{
-				c = Color.BLACK;
-			}
-			mSelectionBounds = new int[]{start, end};
-			btnTextColorPicker.setBackgroundTintList( ColorStateList.valueOf( c ) );
-			btnTextColorPicker.setOnClickListener( onClickOnSelectColorOfTextSegment );
-			final BackgroundColorSpan[] backgroundColorSpans = s.getSpans( start, end, BackgroundColorSpan.class );
-			final int editTextColor = (( ColorDrawable ) mTextEditor.getBackground()).getColor();
-			final int color = (backgroundColorSpans.length == 0 ? editTextColor : backgroundColorSpans[0].getBackgroundColor());
-			btnTextBackgroundColorPicker.setBackgroundTintList( ColorStateList.valueOf( color ) );
-			btnTextBackgroundColorPicker.setOnClickListener( new View.OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					OnColorSelected listener = new OnColorSelected() {
-						@Override
-						public void onColorSelected(int color) {
-							Editable e = mTextEditor.getText();
-							if(e == null)
-								return;
-							int selSt = mSelectionBounds[0];
-							int selEnd = mSelectionBounds[1];
-							removeAllSpansInBounds( mSelectionBounds[0], mSelectionBounds[1], BackgroundColorSpan.class );
-							e.setSpan( new BackgroundColorSpan( color ), selSt, selEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-							btnTextBackgroundColorPicker.setBackgroundTintList( ColorStateList.valueOf( color ) );
-						}
-					};
-					AlertDialog alertDialog = getColorPickerDialog( R.string.choose_text_background_of_segment, color, listener );
-					if(backgroundColorSpans.length > 0){
-						alertDialog.setButton( AlertDialog.BUTTON_NEUTRAL, getString( R.string.delete ), new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								Editable e = mTextEditor.getText();
-								if(e == null)
-									return;
-								removeAllSpansInBounds( mSelectionBounds[0], mSelectionBounds[1], BackgroundColorSpan.class );
-								btnTextBackgroundColorPicker.setBackgroundTintList( ColorStateList.valueOf( editTextColor ) );
-							}
-						} );
-					}
-					alertDialog.show();
-				}
-			} );
-			applyStyleBtnState( start, end );
-			btnBold.setOnClickListener(onTextAppearanceClick);
-			btnItalic.setOnClickListener(onTextAppearanceClick);
-			btnUnderline.setOnClickListener( onUnderlineBtnClick );
-			btnStrike.setOnClickListener( onStrikeBtnClick );
+	private boolean isLineAffectedByWidget(int line){
+		for(HtmlSpanRender.WidgetParam widgetParam : mWidgetParams){
+			if(widgetParam.firstAffectedLine <= line && line <= widgetParam.lastAffectedLine)
+				return true;
+		}
+		return false;
+	}
 
-			showThisLayout( R.id.textBackgroundLayout );
-
-			AlignmentSpan.Standard[] spans = s.getSpans( mSelectionBounds[0], mSelectionBounds[1], AlignmentSpan.Standard.class );
-			if(spans.length > 0){
-				Layout.Alignment a = spans[0].getAlignment();
-				setAlignmentButtonClicked( getAlignmentButtonId( a ) );
+	private int findFirstNotAffectedLine(int line){
+		int nextLine = -1, previousLine = -1;
+		for(int i = line + 1; i < mTextEditor.getLineCount(); i++){
+			if(!isLineAffectedByWidget( i )) {
+				nextLine = i;
+				break;
 			}
 		}
-
-		@Override
-		public void onTextSelectionBreak(int newSelectionPosition) {
-			btnTextColorPicker.setOnClickListener( btnTextOnAllColor );
-			btnBold.setOnClickListener( null );
-			btnItalic.setOnClickListener( null );
-			btnUnderline.setOnClickListener( null );
-			btnStrike.setOnClickListener( null );
-			setBtnTextColorPickerBackground();
-			btnBold.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
-			btnItalic.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
-			btnUnderline.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
-			btnStrike.setBackgroundTintList( ColorStateList.valueOf( getColor( android.R.color.transparent ) ) );
-			mSelectionBounds = new int[]{newSelectionPosition, newSelectionPosition};
-
-			hideThisLayout( R.id.textBackgroundLayout );
-
-			if(mTextEditor.getText() != null && mTextEditor.getText().getSpans( newSelectionPosition, newSelectionPosition, AlignmentSpan.Standard.class ).length > 0)
-				setAlignmentButtonClicked(
-						getAlignmentButtonId(
-								mTextEditor.getText().getSpans( newSelectionPosition, newSelectionPosition, AlignmentSpan.Standard.class )[0].getAlignment()
-						)
-				);
+		for(int i = line - 1; i >= 0; i--){
+			if(!isLineAffectedByWidget( i )){
+				previousLine = i;
+				break;
+			}
+		}
+		if(nextLine != -1 && previousLine != -1){
+			if(Math.abs( line - nextLine ) < Math.abs( line - previousLine ))
+				return nextLine;
 			else
-				setAlignmentButtonClicked( getAlignmentButtonId( mMainAlignment ) );
+				return previousLine;
+		}else if( nextLine == -1 && previousLine == -1 ){
+			mTextEditor.appendW( "\n" );
+			return mTextEditor.getLineCount() - 1;
+		}else{
+			return nextLine != -1 ? nextLine : previousLine;
 		}
-
-		@Override
-		public void onTextChanged(CharSequence text, final int start, final int lengthBefore, final int lengthAfter) {
-			Editable e = mTextEditor.getText();
-			if(lengthAfter > lengthBefore){
-				int len = lengthAfter - lengthBefore;
-				int end = start + len;
-				if(e == null)
-					return;
-
-				e.setSpan( new ForegroundColorSpan( mDefaultTextColor ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-				e.setSpan( new AlignmentSpan.Standard( mMainAlignment ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-				e.setSpan( new AbsoluteSizeSpan( mEntry.getProperties().getTextSize(), true ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-			}
-			if(lengthAfter == 0){
-				findViewById( R.id.btnReplaceColor ).setOnClickListener( null );
-			}
-		}
-
-		@Override
-		public void onSelectionChanged() {
-			applySupSubButton( R.id.btnSuperscript );
-			applySupSubButton( R.id.btnSubscript );
-			setButtonReplaceColorAppearance();
-		}
-	};*/
+	}
 
 	final TextEditor.OnSelectionChanges mOnSelectionChanges = new TextEditor.OnSelectionChanges() {
 		@Override
 		public void onTextSelected(final int start, final int end) {
+			int startLine = mTextEditor.getLayout().getLineForOffset( start );
+			int endLine = mTextEditor.getLayout().getLineForOffset( end );
+			for(int i = startLine; i <= endLine; i++ ){
+				if(isLineAffectedByWidget( i )){
+					int newLine = findFirstNotAffectedLine( i );
+					mTextEditor.setCursorToLine( newLine );
+					return;
+				}
+			}
+
 			mTextEditor.clearComposingText();
 			mSelectionBounds = new int[]{ start, end };
 
@@ -992,6 +947,12 @@ public class EntryEditor extends ThemeActivity {
 
 		@Override
 		public void onTextSelectionBreak(int newSelectionPosition) {
+			int line = mTextEditor.getCurrentLine();
+			if(isLineAffectedByWidget( line )){
+				mTextEditor.setCursorToLine( findFirstNotAffectedLine( line ) );
+				return;
+			}
+
 			mSelectionBounds = new int[]{ newSelectionPosition, newSelectionPosition };
 
 			btnBold.setOnClickListener( null );

@@ -118,11 +118,6 @@ public class DocumentList extends ThemeActivity {
 			intent.putExtra( "id", type.getId() );
 			startActivityForResult( intent, Requests.ENTRIES_LIST );
 		}
-
-		@Override
-		public void onLongClick(Type type) {
-
-		}
 	};
 
 	@Override

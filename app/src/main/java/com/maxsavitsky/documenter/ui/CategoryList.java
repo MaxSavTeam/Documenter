@@ -163,11 +163,6 @@ public class CategoryList extends ThemeActivity {
 			//startActivity(intent);
 			startActivityForResult( intent, Requests.DOCUMENT_LIST );
 		}
-
-		@Override
-		public void onLongClick(Type type) {
-
-		}
 	};
 
 	@Override

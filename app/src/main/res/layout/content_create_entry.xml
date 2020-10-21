@@ -18,19 +18,26 @@
         android:scrollbars="vertical"
         tools:ignore="UselessParent">
 
-        <com.maxsavitsky.documenter.ui.editor.TextEditor
-            android:id="@+id/edittextEntry"
+        <RelativeLayout
+            android:id="@+id/entry_editor_relative_layout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="wrap_content">
 
-            android:background="@null"
-            android:ems="10"
-            android:gravity="start|top"
-            android:hint="@string/enter_your_minds_here"
-            android:inputType="textMultiLine"
-            android:scrollbars="vertical"
-            android:textIsSelectable="true"
-            android:textSize="22sp" />
+            <com.maxsavitsky.documenter.ui.editor.TextEditor
+                android:id="@+id/edittextEntry"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+
+                android:background="@null"
+                android:ems="10"
+                android:gravity="start|top"
+                android:hint="@string/enter_your_minds_here"
+                android:inputType="textMultiLine"
+                android:scrollbars="vertical"
+                android:textIsSelectable="true"
+                android:textSize="22sp" />
+
+        </RelativeLayout>
 
     </ScrollView>
 

@@ -1,6 +1,10 @@
 package com.maxsavitsky.documenter.data.html;
 
+import android.app.Activity;
+import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Point;
+import android.graphics.drawable.Drawable;
 import android.text.Editable;
 import android.text.Html;
 import android.text.Layout;
@@ -16,8 +20,11 @@ import android.text.style.ImageSpan;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.SubscriptSpan;
 import android.text.style.SuperscriptSpan;
+import android.view.Display;
 import android.view.View;
+import android.widget.Button;
 
+import androidx.annotation.IntRange;
 import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
 
@@ -38,7 +45,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -47,9 +56,57 @@ import javax.xml.parsers.SAXParserFactory;
 public class HtmlSpanRender {
 	private static final String TAG = MainActivity.TAG + " HtmlRender";
 
-	private HtmlSpanRender(){}
+	private HtmlSpanRender() {}
 
-	public static Spanned get(String source, Html.ImageGetter imageGetter, TagHandler.OnImageClick onImageClick) throws IOException, SAXException, ParserConfigurationException {
+	public static class Initialization {
+		private boolean openImages = true;
+		private String source;
+		private final RenderCallback mRenderCallback;
+		private final Html.ImageGetter mImageGetter = new HtmlImageLoader();
+		private final Activity mActivity;
+
+		public Initialization(@NonNull Activity context, @NonNull RenderCallback renderCallback) {
+			mRenderCallback = renderCallback;
+			mActivity = context;
+		}
+
+		public Context getViewsContext() {
+			return mActivity;
+		}
+
+		public Activity getActivity() {
+			return mActivity;
+		}
+
+		public boolean isOpenImages() {
+			return openImages;
+		}
+
+		public Initialization setOpenImages(boolean openImages) {
+			this.openImages = openImages;
+			return this;
+		}
+
+		public String getSource() {
+			return source;
+		}
+
+		public Initialization setSource(String source) {
+			this.source = source;
+			return this;
+		}
+
+		public RenderCallback getRenderCallback() {
+			return mRenderCallback;
+		}
+
+		public Html.ImageGetter getImageGetter() {
+			return mImageGetter;
+		}
+	}
+
+	public static Spanned get(Initialization initialization) throws IOException, SAXException, ParserConfigurationException {
+		String source = initialization.getSource();
 		Document doc = Jsoup.parse( source );
 		Elements elements = doc.select( "div[align]" );
 		for (Element element : elements) {
@@ -57,17 +114,40 @@ public class HtmlSpanRender {
 			element.attr( "style", styleAttr + "text-align:" + element.attr( "align" ) + ";" );
 			element.removeAttr( "align" );
 		}
+		elements.select( "img" ).after( "<br>" );
 
 		doc.outputSettings().syntax( Document.OutputSettings.Syntax.xml ).prettyPrint( false );
 		source = Parser.unescapeEntities( doc.html(), false ).replaceAll( ";=\"\"", "" );
+		initialization.setSource( source );
 
-		TagHandler tagHandler = new TagHandler( imageGetter, onImageClick );
+		TagHandler tagHandler = new TagHandler( initialization );
 		SAXParserFactory.newInstance().newSAXParser()
 				.parse( new ByteArrayInputStream( source.getBytes( StandardCharsets.UTF_8 ) ),
 						tagHandler );
 		return tagHandler.getSpanned();
 	}
 
+	public interface RenderCallback {
+		void onImageClick(View view, String src);
+
+		@IntRange(from = 1)
+		int getLineHeight();
+
+		default boolean drawView(View view) {return false;}
+
+		default void viewsArrayDone(ArrayList<WidgetParam> widgetParams){}
+	}
+
+	public static class WidgetParam{
+		public final int firstAffectedLine, lastAffectedLine;
+		public final View view;
+
+		public WidgetParam(int from, int to, View view) {
+			this.firstAffectedLine = from;
+			this.lastAffectedLine = to;
+			this.view = view;
+		}
+	}
 }
 
 class TagHandler extends DefaultHandler {
@@ -77,20 +157,19 @@ class TagHandler extends DefaultHandler {
 	private int currentTag = 0;
 	private final SpannableStringBuilder mSpannableStringBuilder;
 	private final Html.ImageGetter mImageGetter;
-	private final OnImageClick mOnImageClick;
+	private final HtmlSpanRender.RenderCallback mRenderCallback;
 
-	public interface OnImageClick{
-		void onClick(View v, String src);
-	}
+	private final HtmlSpanRender.Initialization mInitialization;
 
-	public TagHandler(Html.ImageGetter imageGetter, OnImageClick onImageClick) {
+	public TagHandler(HtmlSpanRender.Initialization initialization) {
 		mSpannableStringBuilder = new SpannableStringBuilder();
 		mStack = new Stack<>();
-		mImageGetter = imageGetter;
-		mOnImageClick = onImageClick;
+		mInitialization = initialization;
+		mImageGetter = mInitialization.getImageGetter();
+		mRenderCallback = mInitialization.getRenderCallback();
 	}
 
-	private int len(){
+	private int len() {
 		return mSpannableStringBuilder.length();
 	}
 
@@ -104,24 +183,85 @@ class TagHandler extends DefaultHandler {
 			return;
 		}
 		if ( isSingle( qName ) ) {
-			if ( qName.equals( "img" ) ) {
-				String src = attributes.getValue( "src" );
-				int len = mSpannableStringBuilder.length();
-				mSpannableStringBuilder.append( "\uFFFC" );
-				mSpannableStringBuilder.setSpan( new ImageSpan( mImageGetter.getDrawable( src ), src ), len, len(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-				if(mOnImageClick != null) {
-					mSpannableStringBuilder.setSpan( new ClickableSpan() {
-						@Override
-						public void onClick(@NonNull View widget) {
-							mOnImageClick.onClick( widget, src );
-						}
-					}, len, len(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-				}
-			} else if ( qName.equals( "br" ) ) {
-				mSpannableStringBuilder.append( "\n" );
-			}
+			processSingleElement( qName, attributes );
 		} else {
 			processBlockElement( qName, attributes );
+		}
+	}
+
+	private static class SetElement {
+		final int line;
+		final int drawableHeight;
+
+		public SetElement(int line, int drawableHeight) {
+			this.line = line;
+			this.drawableHeight = drawableHeight;
+		}
+	}
+
+	private final Set<SetElement> mImagesSet = new HashSet<>();
+	private int linesCount = 0;
+	private final ArrayList<HtmlSpanRender.WidgetParam> mWidgetParams = new ArrayList<>();
+
+	private void processSingleElement(String element, Attributes attributes) {
+		if ( element.equals( "img" ) ) {
+			String src = attributes.getValue( "src" );
+			/*if(len() == 0 || mSpannableStringBuilder.charAt( len()-1 ) != '\n')
+				mSpannableStringBuilder.append( "\n" );*/
+			mSpannableStringBuilder.append( "\uFFFC" );
+			linesCount++;
+			Drawable drawable = mImageGetter.getDrawable( src );
+			mImagesSet.add( new SetElement( linesCount, drawable.getBounds().bottom ) );
+			mSpannableStringBuilder.setSpan( new ImageSpan( drawable, src ), len() - 1, len(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+			//mImagesSet.add( new SetElement( mSpannableStringBuilder ) )
+			if ( mRenderCallback != null ) {
+				mSpannableStringBuilder.setSpan( new ClickableSpan() {
+					@Override
+					public void onClick(@NonNull View widget) {
+						widget.setTransitionName( "html_image" );
+						mRenderCallback.onImageClick( widget, src );
+					}
+				}, len() - 1, len(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+			}
+		} else if ( element.equals( "br" ) ) {
+			mSpannableStringBuilder.append( "\n" );
+			linesCount++;
+		} else if ( element.equals( "button" ) ) {
+			Button button = new Button( mInitialization.getViewsContext() );
+			button.setText( attributes.getValue( "text" ) );
+
+			drawView( button );
+		}
+	}
+
+	private void drawView(View view){
+		Display display = mInitialization.getActivity().getWindowManager().getDefaultDisplay();
+		Point size = new Point();
+		display.getSize( size );
+		view.measure( size.x, size.y );
+		int measureHeight = view.getMeasuredHeight();
+
+		int lineHeight = mRenderCallback.getLineHeight();
+		int simpleLinesCount = linesCount;
+		int imagesLinesHeight = 0;
+		for (SetElement setElement : mImagesSet) {
+			if ( setElement.line > linesCount ) {
+				break;
+			}
+			imagesLinesHeight += setElement.drawableHeight;
+			simpleLinesCount--;
+		}
+		view.setY( simpleLinesCount * lineHeight + imagesLinesHeight + 20 );
+
+		if ( mRenderCallback.drawView( view ) ) {
+			int newLines = measureHeight / lineHeight;
+			if ( newLines * lineHeight < measureHeight ) {
+				newLines++;
+			}
+			mWidgetParams.add( new HtmlSpanRender.WidgetParam( linesCount, linesCount + newLines, view ) );
+			linesCount += newLines;
+			for (int i = 0; i < newLines; i++)
+				mSpannableStringBuilder.append( "\n" );
 		}
 	}
 
@@ -157,7 +297,7 @@ class TagHandler extends DefaultHandler {
 	}
 
 	private boolean isSingle(String element) {
-		return element.equals( "img" ) || element.equals( "br" );
+		return element.equals( "img" ) || element.equals( "br" ) || element.equals( "button" );
 	}
 
 	private boolean isIgnorable(String element) {
@@ -213,13 +353,15 @@ class TagHandler extends DefaultHandler {
 					}
 					break;
 				case "text-align":
-					Layout.Alignment alignment = Layout.Alignment.ALIGN_NORMAL;
+					Layout.Alignment alignment = null;
 					if ( value.equals( "center" ) ) {
 						alignment = Layout.Alignment.ALIGN_CENTER;
 					} else if ( value.equals( "right" ) ) {
 						alignment = Layout.Alignment.ALIGN_OPPOSITE;
 					}
-					addSpanToEnd( new AlignmentSpan.Standard( alignment ) );
+					if ( alignment != null ) {
+						addSpanToEnd( new AlignmentSpan.Standard( alignment ) );
+					}
 					break;
 			}
 		}
@@ -254,7 +396,7 @@ class TagHandler extends DefaultHandler {
 	@Override
 	public void characters(char[] ch, int start, int length) {
 		if ( !mStack.empty() ) {
-			mSpannableStringBuilder.append( new String( ch, start, length ) );
+			mSpannableStringBuilder.append( new String( ch, start, length ).replaceAll( "\n", "" ) );
 		}
 	}
 
@@ -282,6 +424,11 @@ class TagHandler extends DefaultHandler {
 		int elementTag = mStack.peek().tag;
 		mStack.pop();
 		closeElement( elementTag );
+	}
+
+	@Override
+	public void endDocument() {
+		mRenderCallback.viewsArrayDone( mWidgetParams );
 	}
 }
 

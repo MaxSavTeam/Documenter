@@ -1,8 +1,8 @@
 package com.maxsavitsky.documenter.ui.editor;
 
 import android.content.Context;
+import android.text.Layout;
 import android.util.AttributeSet;
-import android.util.Log;
 
 import androidx.appcompat.widget.AppCompatEditText;
 
@@ -13,6 +13,7 @@ public class TextEditor extends AppCompatEditText {
 
 	private OnSelectionChanges listener = null;
 	private boolean mIgnoreChanges = false;
+	private boolean initialized = false;
 
 	public TextEditor(Context context) {
 		super( context );
@@ -38,8 +39,8 @@ public class TextEditor extends AppCompatEditText {
 	}
 
 	public void setTextWithoutNotifying(CharSequence text){
+		initialized = true;
 		mIgnoreChanges = true;
-		Log.i(TAG, "setTextW mIgnoreChanges=" + true );
 		setText( text, BufferType.SPANNABLE );
 	}
 
@@ -48,10 +49,19 @@ public class TextEditor extends AppCompatEditText {
 		append( text );
 	}
 
+	public boolean isInitialized() {
+		return initialized;
+	}
+
+	public TextEditor setInitialized(boolean initialized) {
+		this.initialized = initialized;
+		return this;
+	}
+
 	@Override
 	protected void onSelectionChanged(int selStart, int selEnd) {
 		super.onSelectionChanged( selStart, selEnd );
-		if(listener == null)
+		if(listener == null || !initialized)
 			return;
 		if ( selStart == selEnd ) {
 			listener.onTextSelectionBreak( selStart );
@@ -63,6 +73,8 @@ public class TextEditor extends AppCompatEditText {
 
 	@Override
 	protected void onTextChanged(CharSequence text, int start, int lengthBefore, int lengthAfter) {
+		if(!initialized)
+			return;
 		if(text.toString().equals( "" ))
 			return;
 		if(listener != null) {
@@ -70,5 +82,16 @@ public class TextEditor extends AppCompatEditText {
 				listener.onTextChanged( text, start, lengthBefore, lengthAfter);
 		}
 		mIgnoreChanges = false;
+	}
+
+	public int getCurrentLine(){
+		Layout layout = getLayout();
+		if(layout == null)
+			return -1;
+		return layout.getLineForOffset( getSelectionStart() );
+	}
+
+	public void setCursorToLine(int line){
+		setSelection( getLayout().getLineStart( line ) );
 	}
 }

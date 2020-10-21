@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -61,17 +62,18 @@ public class EntryViewer extends ThemeActivity {
 	private ScrollView mScrollView;
 	private boolean isFreeMode = false;
 
-	private void applyTheme(){
+	private void applyTheme() {
 		ActionBar actionBar = getSupportActionBar();
 		if ( actionBar != null ) {
-			Utils.applyDefaultActionBarStyle(actionBar);
+			Utils.applyDefaultActionBarStyle( actionBar );
 			actionBar.setTitle( mEntry.getName() );
 		}
 	}
 
-	private void backPressed(){
-		if(!resultSet)
+	private void backPressed() {
+		if ( !resultSet ) {
 			setResult( Results.OK );
+		}
 		mEntry.getProperties().setScrollPosition( mScrollView.getScrollY() );
 		try {
 			mEntry.saveProperties();
@@ -179,15 +181,16 @@ public class EntryViewer extends ThemeActivity {
 		return super.onOptionsItemSelected( item );
 	}
 
-	private void prepareCopyToLayout(){
+	private void prepareCopyToLayout() {
 		setContentView( R.layout.layout_copy_to );
 		getWindow().getDecorView().setBackgroundColor( super.BACKGROUND_COLOR );
 		ArrayList<Type> entryArrayList = new ArrayList<>();
 		ArrayList<Entry> mainEntries = MainData.getEntriesList();
-		for(int i = 0; i < mainEntries.size(); i++){
+		for (int i = 0; i < mainEntries.size(); i++) {
 			Type entry = mainEntries.get( i );
-			if(!entry.getId().equals( mEntry.getId() ))
+			if ( !entry.getId().equals( mEntry.getId() ) ) {
 				entryArrayList.add( entry );
+			}
 		}
 		findViewById( R.id.btnCopyCancel ).setOnClickListener( new View.OnClickListener() {
 			@Override
@@ -200,10 +203,10 @@ public class EntryViewer extends ThemeActivity {
 			}
 		} );
 		RecyclerView rc = findViewById( R.id.rcCopyTo );
-		if(entryArrayList.size() == 0){
+		if ( entryArrayList.size() == 0 ) {
 			rc.setVisibility( View.GONE );
 			findViewById( R.id.txtCopyNothingToShow ).setVisibility( View.VISIBLE );
-		}else {
+		} else {
 			Collections.sort( entryArrayList, Utils.getSortByNamesComparator() );
 			ListAdapter.AdapterCallback adapterCallback = new ListAdapter.AdapterCallback() {
 				@Override
@@ -215,11 +218,6 @@ public class EntryViewer extends ThemeActivity {
 					intent.putExtra( "to_id", id );
 					setResult( Results.COPY_TO_ACTION, intent );
 					finish();
-				}
-
-				@Override
-				public void onLongClick(Type type) {
-
 				}
 			};
 
@@ -234,14 +232,14 @@ public class EntryViewer extends ThemeActivity {
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-		if(requestCode == Requests.EDIT_ENTRY){
-			if(resultCode == Results.REOPEN){
+		if ( requestCode == Requests.EDIT_ENTRY ) {
+			if ( resultCode == Results.REOPEN ) {
 				setResult( resultCode, data );
 				finish();
-			}else if(resultCode == Results.OK){
-				if(data != null){
+			} else if ( resultCode == Results.OK ) {
+				if ( data != null ) {
 					int scrollPos = data.getIntExtra( "scroll_position", -1 );
-					if(scrollPos != -1){
+					if ( scrollPos != -1 ) {
 						mScrollView.post( new Runnable() {
 							@Override
 							public void run() {
@@ -257,10 +255,11 @@ public class EntryViewer extends ThemeActivity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		if(menu != null)
+		if ( menu != null ) {
 			menu.clear();
+		}
 		getMenuInflater().inflate( R.menu.entry_menu, menu );
-		if(!isFreeMode) {
+		if ( !isFreeMode ) {
 			getMenuInflater().inflate( R.menu.common_menu, menu );
 			MenuItem item = menu.findItem( R.id.item_common_remember_pos );
 			item.setChecked( mEntry.getProperties().isSaveLastPos() );
@@ -291,22 +290,24 @@ public class EntryViewer extends ThemeActivity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		if(sp.getBoolean( "keep_screen_on", true )){
-			getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		if ( sp.getBoolean( "keep_screen_on", true ) ) {
+			getWindow().addFlags( WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON );
 		}
 	}
 
 	@Override
 	protected void onPause() {
 		super.onPause();
-		getWindow().clearFlags( WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		getWindow().clearFlags( WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON );
 	}
 
 	private ProgressDialog mProgressDialog;
 
-	private interface TextLoaderCallback{
+	private interface TextLoaderCallback {
 		void exceptionOccurred(Exception e);
+
 		void loaded(String text);
+
 		void loaded(Spannable spannable);
 	}
 
@@ -317,14 +318,14 @@ public class EntryViewer extends ThemeActivity {
 		public void loaded(final String text) {
 			new Thread( ()->{
 				final TextView t = findViewById( R.id.textViewContent );
-				final Spannable spannable = (Spannable) Html.fromHtml(text, new HtmlImageLoader(), null);
+				final Spannable spannable = (Spannable) Html.fromHtml( text, new HtmlImageLoader(), null );
 				ArrayList<SpanEntry<AlignmentSpan.Standard>> spanEntries = mEntry.getAlignments();
-				for(SpanEntry<AlignmentSpan.Standard> se : spanEntries){
+				for (SpanEntry<AlignmentSpan.Standard> se : spanEntries) {
 					spannable.setSpan( se.getSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 				}
 				t.post( ()->{
 					t.setText( spannable );
-					if(mEntry.getProperties().isSaveLastPos()){
+					if ( mEntry.getProperties().isSaveLastPos() ) {
 						mScrollView.post( ()->{
 							ObjectAnimator.ofInt( mScrollView, "scrollY", mEntry.getProperties().getScrollPosition() ).setDuration( 100 ).start();
 							//mScrollView.smoothScrollTo(0, mEntry.getProperties().getScrollPosition() );
@@ -341,14 +342,14 @@ public class EntryViewer extends ThemeActivity {
 			runOnUiThread( ()->{
 				t.setText( spannable );
 				int scrollPos = getIntent().getIntExtra( "scroll_position", -1 );
-				if(scrollPos == -1) {
+				if ( scrollPos == -1 ) {
 					if ( mEntry.getProperties().isSaveLastPos() ) {
 						mScrollView.post( ()->{
 							ObjectAnimator.ofInt( mScrollView, "scrollY", mEntry.getProperties().getScrollPosition() ).setDuration( SCROLL_ANIMATION_SPEED ).start();
 							//mScrollView.smoothScrollTo( 0, mEntry.getProperties().getScrollPosition());
 						} );
 					}
-				}else{
+				} else {
 					mScrollView.post( ()->{
 						ObjectAnimator.ofInt( mScrollView, "scrollY", scrollPos ).setDuration( SCROLL_ANIMATION_SPEED ).start();
 						//mScrollView.smoothScrollTo( 0, scrollPos );
@@ -364,15 +365,36 @@ public class EntryViewer extends ThemeActivity {
 		}
 	};
 
-	private void hideUpButton(){
+	private void hideUpButton() {
 		FloatingActionButton fab = findViewById( R.id.fabUpView );
 		fab.animate().setDuration( 500 ).scaleX( 0 ).scaleY( 0 ).start();
 	}
 
-	private void showUpButton(){
+	private void showUpButton() {
 		FloatingActionButton fab = findViewById( R.id.fabUpView );
 		fab.animate().setDuration( 500 ).scaleX( 1 ).scaleY( 1 ).start();
 	}
+
+	private final HtmlSpanRender.RenderCallback mRenderCallback = new HtmlSpanRender.RenderCallback() {
+		@Override
+		public void onImageClick(View view, String src) {
+
+		}
+
+		@Override
+		public int getLineHeight() {
+			return ( (TextView) findViewById( R.id.textViewContent ) ).getLineHeight();
+		}
+
+		@Override
+		public boolean drawView(View view) {
+			runOnUiThread( ()->{
+				RelativeLayout relativeLayout = findViewById( R.id.viewer_relative_layout );
+				relativeLayout.addView( view );
+			} );
+			return true;
+		}
+	};
 
 	@SuppressLint("ClickableViewAccessibility")
 	@Override
@@ -383,18 +405,18 @@ public class EntryViewer extends ThemeActivity {
 		setSupportActionBar( toolbar );
 		Intent intent = getIntent();
 		mEntry = MainData.getEntryWithId( intent.getStringExtra( "id" ) );
-		try{
+		try {
 			mEntry.readProperties();
-		}catch (Exception e){
+		} catch (Exception e) {
 			Utils.getErrorDialog( e, this ).show();
 		}
 		applyTheme();
-		isFreeMode = intent.getBooleanExtra("free_mode", false);
+		isFreeMode = intent.getBooleanExtra( "free_mode", false );
 		invalidateOptionsMenu();
 
 		sp = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
 
-		TextView textView = findViewById(R.id.textViewContent);
+		TextView textView = findViewById( R.id.textViewContent );
 		//textView.setTextSize( TypedValue.COMPLEX_UNIT_DIP, mEntry.getProperties().getTextSize() );
 		textView.setTextColor( mEntry.getProperties().getDefaultTextColor() );
 		textView.setMovementMethod( LinkMovementMethod.getInstance() );
@@ -418,16 +440,15 @@ public class EntryViewer extends ThemeActivity {
 				//ArrayList<String> array = mEntry.loadTextLines();
 				String text = mEntry.loadText();
 				mCallback.loaded( (Spannable) HtmlSpanRender.get(
-						text,
-						new HtmlImageLoader(),
-						null
+						new HtmlSpanRender.Initialization( EntryViewer.this, mRenderCallback )
+								.setSource( text )
 				) );
 			} catch (SAXException | ParserConfigurationException | IOException e) {
 				e.printStackTrace();
 				mCallback.exceptionOccurred( e );
 			}
 		} );
-		mProgressDialog = new ProgressDialog(this);
+		mProgressDialog = new ProgressDialog( this );
 		mProgressDialog.setTitle( R.string.loading );
 		mProgressDialog.setMessage( getResources().getString( R.string.entry_is_loading ) );
 		mProgressDialog.setCancelable( false );
