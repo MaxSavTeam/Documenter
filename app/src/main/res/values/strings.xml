@@ -2,7 +2,7 @@
     <item name="color_int_in_history" type="id" />
     <item name="color_pos_in_history" type="id" />
 
-    <string name="resources_url" translatable="false">https://res.maxsav.team</string>
+    <string name="resources_url" translatable="false">https://res.maxsavteam.com</string>
     <string name="app_name" translatable="false">Documenter</string>
     <string name="plus" translatable="false">+</string>
     <string name="minus" translatable="false">-</string>
