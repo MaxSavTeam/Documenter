@@ -97,8 +97,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 import static com.maxsavitsky.documenter.codes.Requests.PICK_IMAGE;
 
 public class EntryEditor extends ThemeActivity {
@@ -555,9 +553,10 @@ public class EntryEditor extends ThemeActivity {
 			mStartLoadTextTime = System.currentTimeMillis();
 			try {
 				String text = mEntry.loadText();
-				loadedSpannable = (Spannable) HtmlSpanRender.get( new HtmlSpanRender.Initialization( EntryEditor.this, mRenderCallback )
-						.setSource( text ) );
-			} catch (final IOException | SAXException | ParserConfigurationException e) {
+				/*loadedSpannable = (Spannable) HtmlSpanRender.get( new HtmlSpanRender.Initialization( EntryEditor.this, mRenderCallback )
+						.setSource( text ) );*/
+				loadedSpannable = mEntry.loadAndPrepareText();
+			} catch (final IOException e) {
 				mOnLoadedTextListener.exceptionOccurred( e );
 				return;
 			}

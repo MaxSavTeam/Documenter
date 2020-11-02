@@ -8,6 +8,7 @@ import android.text.Spanned;
 import android.text.style.AlignmentSpan;
 import android.text.style.ImageSpan;
 import android.text.style.RelativeSizeSpan;
+import android.util.Log;
 import android.view.Gravity;
 
 import androidx.annotation.NonNull;
@@ -18,10 +19,14 @@ import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.data.Info;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.TextLoader;
+import com.maxsavitsky.documenter.data.html.HtmlImageLoader;
 import com.maxsavitsky.documenter.utils.SpanEntry;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.XMLParser;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.xml.sax.SAXException;
 
 import java.io.BufferedReader;
@@ -140,7 +145,7 @@ public class Entry extends Type {
 			file.createNewFile();
 		}
 
-		/*saveAllAlignments( text.getSpans( 0, text.length(), AlignmentSpan.Standard.class ), text );
+		saveAllAlignments( text.getSpans( 0, text.length(), AlignmentSpan.Standard.class ), text );
 		for (AlignmentSpan.Standard span : text.getSpans( 0, text.length(), AlignmentSpan.Standard.class )) {
 			text.removeSpan( span );
 		}
@@ -148,7 +153,7 @@ public class Entry extends Type {
 		saveAllRelativeSpans( text.getSpans( 0, text.length(), RelativeSizeSpan.class ), text );
 		for (RelativeSizeSpan span : text.getSpans( 0, text.length(), RelativeSizeSpan.class )) {
 			text.removeSpan( span );
-		}*/
+		}
 
 		String htmlText = null;
 		if ( android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N ) {
@@ -379,6 +384,50 @@ public class Entry extends Type {
 		return TextLoader.getInstance().loadTextSync( new File( mPathDir + "text" ) );
 	}
 
+	private String prepareDivs(String text) {
+		org.jsoup.nodes.Document doc = Jsoup.parse( text );
+		Elements elements = doc.select( "div[align]" );
+		for (Element element : elements) {
+			String styleAttr = element.attr( "style" );
+			element.attr( "style", styleAttr + "text-align:" + element.attr( "align" ) + ";" );
+			element.removeAttr( "align" );
+		}
+		Log.i( TAG, "prepareDivs: " + doc.html() );
+		return doc.html();
+	}
+
+	public Spannable loadAndPrepareText() throws IOException {
+		String text = prepareDivs( loadText() );
+		Spannable spannable = (Spannable) Html.fromHtml( text, new HtmlImageLoader(), null );
+		Log.i( TAG, "loadAndPrepareText: found alignments " + spannable.getSpans( 0, spannable.length(), Alignment.class ).length + " " +
+				spannable.getSpans( 0, spannable.length(), AlignmentSpan.class ).length );
+		for (SpanEntry<AlignmentSpan.Standard> se : getAlignments()) {
+			int st = se.getStart(), end = se.getEnd();
+			if ( st < 0 ) {
+				st = 0;
+			}
+			if ( end > spannable.length() ) {
+				end = spannable.length();
+			}
+
+			spannable.setSpan( se.getSpan(), st, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+		}
+
+		for (SpanEntry<RelativeSizeSpan> se : getRelativeSpans()) {
+			int st = se.getStart(), end = se.getEnd();
+			if ( st < 0 ) {
+				st = 0;
+			}
+			if ( end > spannable.length() ) {
+				end = spannable.length();
+			}
+
+			spannable.setSpan( se.getSpan(), st, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+		}
+
+		return spannable;
+	}
+
 	public void addDocumentToIncluded(String documentId) throws IOException, SAXException {
 		ArrayList<Document> documents = getDocumentsInWhichIncludedThisEntry();
 		for (Document document : documents) {
@@ -485,14 +534,14 @@ public class Entry extends Type {
 			mTextAlignment = textAlignment;
 		}
 
-		public Properties(Properties properties) {
-			this.textSize = properties.getTextSize();
-			this.bgColor = properties.getBgColor();
-			this.textColor = properties.getTextColor();
-			this.mScrollPosition = properties.getScrollPosition();
-			this.mTextAlignment = properties.getTextAlignment();
-			this.mSaveLastPos = properties.isSaveLastPos();
-			this.mDefaultTextColor = properties.getDefaultTextColor();
+		public Properties(Properties other) {
+			this.textSize = other.textSize;
+			this.bgColor = other.bgColor;
+			this.textColor = other.textColor;
+			this.mScrollPosition = other.mScrollPosition;
+			this.mTextAlignment = other.mTextAlignment;
+			this.mSaveLastPos = other.mSaveLastPos;
+			this.mDefaultTextColor = other.mDefaultTextColor;
 		}
 
 		public int getScrollPosition() {

@@ -52,8 +52,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 public class EntryViewer extends ThemeActivity {
 
 	private Entry mEntry;
@@ -437,13 +435,8 @@ public class EntryViewer extends ThemeActivity {
 		getWindow().getDecorView().setBackgroundColor( mEntry.getProperties().getBgColor() );
 		final Thread loadThread = new Thread( ()->{
 			try {
-				//ArrayList<String> array = mEntry.loadTextLines();
-				String text = mEntry.loadText();
-				mCallback.loaded( (Spannable) HtmlSpanRender.get(
-						new HtmlSpanRender.Initialization( EntryViewer.this, mRenderCallback )
-								.setSource( text )
-				) );
-			} catch (SAXException | ParserConfigurationException | IOException e) {
+				mCallback.loaded( mEntry.loadAndPrepareText() );
+			} catch (IOException e) {
 				e.printStackTrace();
 				mCallback.exceptionOccurred( e );
 			}
