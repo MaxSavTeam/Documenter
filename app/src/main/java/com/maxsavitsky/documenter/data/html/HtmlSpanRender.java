@@ -206,8 +206,8 @@ class TagHandler extends DefaultHandler {
 	private void processSingleElement(String element, Attributes attributes) {
 		if ( element.equals( "img" ) ) {
 			String src = attributes.getValue( "src" );
-			/*if(len() == 0 || mSpannableStringBuilder.charAt( len()-1 ) != '\n')
-				mSpannableStringBuilder.append( "\n" );*/
+			if(len() != 0 && mSpannableStringBuilder.charAt( len()-1 ) != '\n')
+				mSpannableStringBuilder.append( "\n" );
 			mSpannableStringBuilder.append( "\uFFFC" );
 			linesCount++;
 			Drawable drawable = mImageGetter.getDrawable( src );
@@ -421,9 +421,11 @@ class TagHandler extends DefaultHandler {
 		if ( isIgnorable( qName ) || isSingle( qName ) ) {
 			return;
 		}
-		int elementTag = mStack.peek().tag;
+		StackElement stackElement = mStack.peek();
 		mStack.pop();
-		closeElement( elementTag );
+		closeElement( stackElement.tag );
+		if(stackElement.element.equals( "p" ) )
+			mSpannableStringBuilder.append( "\n\n" );
 	}
 
 	@Override
