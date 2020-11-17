@@ -22,7 +22,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:targetApi="n">
-        <activity android:name=".AfterExceptionActivity"></activity>
+        <activity android:name=".AfterExceptionActivity"
+            android:process=":exception_process"/>
         <activity
             android:name=".ui.CloudBackupActivity"
             android:label="@string/title_activity_cloud_backup" />

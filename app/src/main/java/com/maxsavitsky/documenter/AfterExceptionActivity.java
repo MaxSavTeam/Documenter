@@ -4,9 +4,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Html;
-import android.view.View;
+import android.util.Log;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,8 +15,10 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-public class AfterExceptionActivity extends ThemeActivity {
+public class AfterExceptionActivity extends AppCompatActivity {
 	private String path;
+
+	private static final String TAG = MainActivity.TAG + " ErrHandler";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -23,6 +26,8 @@ public class AfterExceptionActivity extends ThemeActivity {
 		setContentView( R.layout.activity_errhandler );
 
 		path = getIntent().getStringExtra( "path" );
+
+		Log.i( TAG, "onCreate: path=" + path );
 
 		findViewById( R.id.btnErrSendReport ).setOnClickListener( v->MainActivity.getInstance().sendLog(path) );
 		findViewById( R.id.btnErrViewReport ).setOnClickListener( v->{
@@ -58,12 +63,7 @@ public class AfterExceptionActivity extends ThemeActivity {
 			builder.create().show();
 		} );
 
-		findViewById( R.id.btnErrRestartApp ).setOnClickListener( new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				restartApp();
-			}
-		} );
+		findViewById( R.id.btnErrRestartApp ).setOnClickListener( v->restartApp() );
 		AlertDialog.Builder builder = new AlertDialog.Builder( this )
 				.setTitle( R.string.please )
 				.setMessage( Html.fromHtml( getResources().getString( R.string.send_report_dialog_mes ) ) )
