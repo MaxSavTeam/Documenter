@@ -18,13 +18,13 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 
 import com.maxsavitsky.documenter.MainActivity;
-import com.maxsavitsky.documenter.MyExceptionHandler;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Category;
 import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.data.types.Type;
+import com.maxsavitsky.exceptionhandler.ExceptionHandler;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -409,10 +409,10 @@ public class Utils {
 	public static AlertDialog getErrorDialog(Exception e, Context context, boolean silentWriteToFile, boolean showSendLogButton) {
 		File stacktraceFile = null;
 		if(showSendLogButton){
-			stacktraceFile = new MyExceptionHandler( null ).prepareLog( Thread.currentThread(), e );
+			stacktraceFile = ExceptionHandler.prepareLogToSend( Thread.currentThread(), e );
 		}else {
 			if ( silentWriteToFile )
-				new MyExceptionHandler( null ).justWriteException( Thread.currentThread(), e );
+				ExceptionHandler.justWriteException( Thread.currentThread(), e );
 		}
 
 		e.printStackTrace();

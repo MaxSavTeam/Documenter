@@ -6,9 +6,9 @@ import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 
-import com.maxsavitsky.documenter.MyExceptionHandler;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.utils.Utils;
+import com.maxsavitsky.exceptionhandler.ExceptionHandler;
 
 import java.io.File;
 
@@ -35,7 +35,7 @@ public class ImageRenderer {
 			if(!file.exists()){
 				msg += "file not found: " + source;
 			}
-			new MyExceptionHandler( null ).justWriteException( Thread.currentThread(), new Throwable(msg) );
+			ExceptionHandler.justWriteException( Thread.currentThread(), new Throwable(msg) );
 			return d;
 		}
 		Drawable d = new BitmapDrawable(Utils.getContext().getResources(), b);
