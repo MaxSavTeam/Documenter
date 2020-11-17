@@ -29,17 +29,10 @@
         android:scrollbarSize="@dimen/scrollbars_size"
         android:scrollbarStyle="insideInset">
 
-        <RelativeLayout
-            android:id="@+id/viewer_relative_layout"
+        <TextView
+            android:id="@+id/textViewContent"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:id="@+id/textViewContent"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-        </RelativeLayout>
+            android:layout_height="wrap_content" />
 
     </ScrollView>
 

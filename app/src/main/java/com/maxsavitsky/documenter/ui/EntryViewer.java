@@ -8,18 +8,14 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.text.Html;
 import android.text.Spannable;
-import android.text.Spanned;
-import android.text.method.LinkMovementMethod;
-import android.text.style.AlignmentSpan;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.EditText;
-import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -39,11 +35,8 @@ import com.maxsavitsky.documenter.adapters.ListAdapter;
 import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.data.MainData;
-import com.maxsavitsky.documenter.data.html.HtmlImageLoader;
-import com.maxsavitsky.documenter.data.html.HtmlSpanRender;
 import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.data.types.Type;
-import com.maxsavitsky.documenter.utils.SpanEntry;
 import com.maxsavitsky.documenter.utils.Utils;
 
 import org.xml.sax.SAXException;
@@ -75,7 +68,7 @@ public class EntryViewer extends ThemeActivity {
 		mEntry.getProperties().setScrollPosition( mScrollView.getScrollY() );
 		try {
 			mEntry.saveProperties();
-			finishAndRemoveTask();
+			super.onBackPressed();
 		} catch (IOException e) {
 			Utils.getErrorDialog( e, this ).show();
 		}
@@ -304,35 +297,12 @@ public class EntryViewer extends ThemeActivity {
 	private interface TextLoaderCallback {
 		void exceptionOccurred(Exception e);
 
-		void loaded(String text);
-
 		void loaded(Spannable spannable);
 	}
 
 	private static final int SCROLL_ANIMATION_SPEED = 500;
 
 	private final TextLoaderCallback mCallback = new TextLoaderCallback() {
-		@Override
-		public void loaded(final String text) {
-			new Thread( ()->{
-				final TextView t = findViewById( R.id.textViewContent );
-				final Spannable spannable = (Spannable) Html.fromHtml( text, new HtmlImageLoader(), null );
-				ArrayList<SpanEntry<AlignmentSpan.Standard>> spanEntries = mEntry.getAlignments();
-				for (SpanEntry<AlignmentSpan.Standard> se : spanEntries) {
-					spannable.setSpan( se.getSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-				}
-				t.post( ()->{
-					t.setText( spannable );
-					if ( mEntry.getProperties().isSaveLastPos() ) {
-						mScrollView.post( ()->{
-							ObjectAnimator.ofInt( mScrollView, "scrollY", mEntry.getProperties().getScrollPosition() ).setDuration( 100 ).start();
-							//mScrollView.smoothScrollTo(0, mEntry.getProperties().getScrollPosition() );
-						} );
-					}
-					mProgressDialog.dismiss();
-				} );
-			} ).start();
-		}
 
 		@Override
 		public void loaded(final Spannable spannable) {
@@ -373,7 +343,7 @@ public class EntryViewer extends ThemeActivity {
 		fab.animate().setDuration( 500 ).scaleX( 1 ).scaleY( 1 ).start();
 	}
 
-	private final HtmlSpanRender.RenderCallback mRenderCallback = new HtmlSpanRender.RenderCallback() {
+	/*private final HtmlSpanRender.RenderCallback mRenderCallback = new HtmlSpanRender.RenderCallback() {
 		@Override
 		public void onImageClick(View view, String src) {
 
@@ -392,7 +362,7 @@ public class EntryViewer extends ThemeActivity {
 			} );
 			return true;
 		}
-	};
+	};*/
 
 	@SuppressLint("ClickableViewAccessibility")
 	@Override
@@ -415,9 +385,9 @@ public class EntryViewer extends ThemeActivity {
 		sp = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
 
 		TextView textView = findViewById( R.id.textViewContent );
-		//textView.setTextSize( TypedValue.COMPLEX_UNIT_DIP, mEntry.getProperties().getTextSize() );
+		textView.setTextSize( TypedValue.COMPLEX_UNIT_DIP, mEntry.getProperties().getTextSize() );
 		textView.setTextColor( mEntry.getProperties().getDefaultTextColor() );
-		textView.setMovementMethod( LinkMovementMethod.getInstance() );
+		//textView.setMovementMethod( LinkMovementMethod.getInstance() );
 
 		mScrollView = findViewById( R.id.viewEntryScrollView );
 		mScrollView.setOnScrollChangeListener( new View.OnScrollChangeListener() {
