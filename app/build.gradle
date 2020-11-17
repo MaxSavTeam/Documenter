@@ -25,7 +25,7 @@ android {
         }
     }
     compileSdkVersion 30
-    buildToolsVersion "30.0.1"
+    buildToolsVersion "30.0.2"
 
     def buildPropFile = file('build.properties')
     if (buildPropFile.canRead()) {
@@ -40,10 +40,10 @@ android {
         applicationId "com.maxsavitsky.documenter"
         minSdkVersion 23
         targetSdkVersion 30
-        versionCode 49
+        versionCode 50
 
         verCode = versionCode
-        cleanVersionName = "1.11.2"
+        cleanVersionName = "1.11.3"
 
         versionName cleanVersionName
         buildConfigField "String", "COMPILATION_DATE", "\"${getDate()}\""
@@ -104,6 +104,8 @@ dependencies {
     implementation 'com.android.support:design:30.0.0'
     implementation 'com.github.clans:fab:1.6.4'
     implementation 'org.jsoup:jsoup:1.13.1'
+
+    implementation 'com.github.MaxSavTeam:ExceptionHandler-Library:0.3.0'
 
     implementation 'com.android.support:multidex:1.0.3'
 
