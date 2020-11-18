@@ -191,66 +191,39 @@ public class CategoryList extends ThemeActivity {
 
 	private final UpdatesChecker.CheckResults mCheckResults = new UpdatesChecker.CheckResults() {
 		@Override
-		public void noUpdates(VersionInfo versionInfo) {
+		public void noUpdates() {
 
 		}
 
 		@Override
-		public void updateAvailable(final VersionInfo versionInfo) {
-			runOnUiThread( new Runnable() {
-				@Override
-				public void run() {
-					AlertDialog.Builder builder = new AlertDialog.Builder( CategoryList.this, CategoryList.super.mAlertDialogStyle );
-					builder.setTitle( getString(R.string.update_available) + ": " + versionInfo.getVersionName() )
-							.setCancelable( false )
-							.setMessage( R.string.would_you_like_to_download_and_install )
-							.setPositiveButton( R.string.yes, new DialogInterface.OnClickListener() {
-								@Override
-								public void onClick(DialogInterface dialog, int which) {
-									download( versionInfo );
-									dialog.cancel();
-								}
-							} )
-							.setNegativeButton( R.string.no, new DialogInterface.OnClickListener() {
-								@Override
-								public void onClick(DialogInterface dialog, int which) {
-									dialog.cancel();
-								}
-							} )
-							.setNeutralButton( R.string.ignore_this_update, new DialogInterface.OnClickListener() {
-								@Override
-								public void onClick(DialogInterface dialog, int which) {
-									sp.edit().putInt( "ignore_update", versionInfo.getBuildCode() ).apply();
-								}
-							} );
-					builder.create().show();
-				}
-			} );
-		}
-
-		@Override
-		public void onNecessaryUpdate(final VersionInfo versionInfo) {
-			runOnUiThread( new Runnable() {
-				@Override
-				public void run() {
-					AlertDialog.Builder builder = new AlertDialog.Builder( CategoryList.this, CategoryList.super.mAlertDialogStyle );
-					builder.setTitle( getString(R.string.necessary_update_title) + ": " + versionInfo.getVersionName() );
+		public void onUpdateAvailable(final VersionInfo versionInfo) {
+			runOnUiThread( ()->{
+				AlertDialog.Builder builder = new AlertDialog.Builder( CategoryList.this, CategoryList.super.mAlertDialogStyle );
+				if(versionInfo.isImportant()){
+					builder.setTitle( String.format( getString(R.string.necessary_update_title), versionInfo.getVersionName() ) );
 					builder.setMessage( R.string.necessary_update_text )
 							.setCancelable( false )
-							.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
-								@Override
-								public void onClick(DialogInterface dialog, int which) {
-									download( versionInfo );
-									dialog.cancel();
-								}
+							.setPositiveButton( "OK", (dialog, which)->{
+								download( versionInfo );
+								dialog.cancel();
 							} );
-					builder.create().show();
+				}else{
+					builder.setTitle( String.format( getString(R.string.update_available), versionInfo.getVersionName() ) )
+							.setCancelable( false )
+							.setMessage( R.string.would_you_like_to_download_and_install )
+							.setPositiveButton( R.string.yes, (dialog, which)->{
+								download( versionInfo );
+								dialog.cancel();
+							} )
+							.setNegativeButton( R.string.no, (dialog, which)->dialog.cancel() )
+							.setNeutralButton( R.string.ignore_this_update, (dialog, which)->sp.edit().putInt( "ignore_update", versionInfo.getVersionCode() ).apply() );
 				}
+				builder.create().show();
 			} );
 		}
 
 		@Override
-		public void downloaded(File path, VersionInfo versionInfo) {
+		public void onDownloaded(File path) {
 			if(mDownloadPd != null)
 				mDownloadPd.dismiss();
 
@@ -258,19 +231,16 @@ public class CategoryList extends ThemeActivity {
 		}
 
 		@Override
-		public void exceptionOccurred(Exception e) {
+		public void onException(Exception e) {
 
 		}
 
 		@Override
 		public void onDownloadProgress(final int bytesCount, final int totalBytesCount) {
-			runOnUiThread( new Runnable() {
-				@Override
-				public void run() {
-					mDownloadPd.setIndeterminate( false );
-					mDownloadPd.setMax( 100 );
-					mDownloadPd.setProgress( bytesCount * 100 / totalBytesCount );
-				}
+			runOnUiThread( ()->{
+				mDownloadPd.setIndeterminate( false );
+				mDownloadPd.setMax( 100 );
+				mDownloadPd.setProgress( bytesCount * 100 / totalBytesCount );
 			} );
 		}
 	};
@@ -290,21 +260,11 @@ public class CategoryList extends ThemeActivity {
 			@Override
 			public void onClick(final DialogInterface dialog, int which) {
 				downloadThread.interrupt();
-				runOnUiThread( new Runnable() {
-					@Override
-					public void run() {
-						dialog.cancel();
-					}
-				} );
+				runOnUiThread( dialog::cancel );
 			}
 		} );
 		mDownloadPd.show();
-		downloadThread = new Thread( new Runnable() {
-			@Override
-			public void run() {
-				downloader.download();
-			}
-		} );
+		downloadThread = new Thread( downloader::download );
 		downloadThread.start();
 	}
 
@@ -394,7 +354,7 @@ public class CategoryList extends ThemeActivity {
 		}else {
 			setupRecyclerView();
 			if(sp.getBoolean( "check_updates", true )) {
-				final UpdatesChecker checker = new UpdatesChecker( this, mCheckResults );
+				final UpdatesChecker checker = new UpdatesChecker( mCheckResults );
 				new Thread( new Runnable() {
 					@Override
 					public void run() {

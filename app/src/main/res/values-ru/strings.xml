@@ -58,7 +58,7 @@
     <string name="keep_screen_on">Оставить экран включенным</string>
     <string name="dark_theme">Темная тема</string>
     <string name="checking_for_updates">Проверка обновлений…</string>
-    <string name="update_available">Доступны обновления</string>
+    <string name="update_available">Доступно обновление до версии %s</string>
     <string name="would_you_like_to_download_and_install">Хотите скачать и установить?</string>
     <string name="check_for_updates">Проверить наличие обновлений</string>
     <string name="app_is_up_to_date">Это последняя версия</string>
@@ -156,8 +156,8 @@
 
     <string name="feedback">Обратная связь</string>
     <string name="apparently_you_had_error">Видимо, у Вас произошла критическая ошибка (приложение вылетело). Мы извиняемся. Если Вы не отправили отчёт, отправьте, пожалуйста, сейчас. Это сильно нам поможет.</string>
-    <string name="necessary_update_title">Важное обновление доступно</string>
-    <string name="necessary_update_text">Мы выпустили важное обновление.  Это значит, что данная версия оказалась неудачной и в ней нашлись серьёзные проблемы. Мы просим Вас обновится.</string>
+    <string name="necessary_update_title">Важное обновление %s доступно</string>
+    <string name="necessary_update_text">Мы выпустили важное обновление.  Это значит, что данная версия оказалась неудачной и в ней нашлись серьёзные проблемы. Либо же мы обновили нашу серверную часть, и она стала несовместимой для работы с этой версией. Мы просим Вас обновится.</string>
     <string name="included_in">Входит в</string>
 
     <string name="show_from">Показывать из</string>

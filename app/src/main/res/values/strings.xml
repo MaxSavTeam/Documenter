@@ -66,7 +66,7 @@
     <string name="keep_screen_on">Keep screen on</string>
     <string name="dark_theme">Dark theme</string>
     <string name="checking_for_updates">Checking for updates…</string>
-    <string name="update_available">Update available</string>
+    <string name="update_available">Update to version %s available</string>
     <string name="would_you_like_to_download_and_install">Would you like to download and install?</string>
     <string name="check_for_updates">Check for updates</string>
     <string name="app_is_up_to_date">App is up to date</string>
@@ -161,8 +161,8 @@
 
     <string name="feedback">Feedback</string>
     <string name="apparently_you_had_error">Apparently, you had a critical error (the application crashed). We are sorry. If you have not sent the report, please send now. It will help us greatly.</string>
-    <string name="necessary_update_title">Necessary update available</string>
-    <string name="necessary_update_text">We have released an important update. This means that this version was unsuccessful and there were serious problems in it. We ask you to be updated.</string>
+    <string name="necessary_update_title">Necessary update %s available</string>
+    <string name="necessary_update_text">We have released an important update. This means that this version was unsuccessful and there were serious problems in it. Or, we have updated our server side, and it has become incompatible with this version. We ask you to update.</string>
     <string name="included_in">Included in</string>
 
     <string name="show_from">Show from</string>

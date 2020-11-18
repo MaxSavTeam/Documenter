@@ -154,12 +154,13 @@ public class SettingsActivity extends ThemeActivity {
 		} );
 
 		mAuth = FirebaseAuth.getInstance();
-		if(mAuth.getCurrentUser() != null)
+		if ( mAuth.getCurrentUser() != null ) {
 			mAuth.getCurrentUser().reload();
+		}
 		updateUserUi( mAuth.getCurrentUser() );
 	}
 
-	public void sendLastReport(View v){
+	public void sendLastReport(View v) {
 		String file = Utils.getExternalStoragePath().getPath() + "/" + sp.getString( "last_exception", "1" );
 		MainActivity.getInstance().sendLog( file );
 		sp.edit().remove( "last_exception" ).apply();
@@ -172,18 +173,18 @@ public class SettingsActivity extends ThemeActivity {
 			findViewById( R.id.layout_not_authorised_backup ).setVisibility( View.VISIBLE );
 			findViewById( R.id.lblLoggedIn ).setVisibility( View.GONE );
 		} else {
-			if(user.isEmailVerified()) {
+			if ( user.isEmailVerified() ) {
 				findViewById( R.id.layout_authorised_backup ).setVisibility( View.VISIBLE );
 				findViewById( R.id.layout_not_authorised_backup ).setVisibility( View.GONE );
 				findViewById( R.id.layout_email_not_verified ).setVisibility( View.GONE );
-			}else{
+			} else {
 				findViewById( R.id.layout_authorised_backup ).setVisibility( View.GONE );
 				findViewById( R.id.layout_not_authorised_backup ).setVisibility( View.GONE );
 				findViewById( R.id.layout_email_not_verified ).setVisibility( View.VISIBLE );
 			}
-			TextView textViewLoggedIn = findViewById(R.id.lblLoggedIn);
+			TextView textViewLoggedIn = findViewById( R.id.lblLoggedIn );
 			textViewLoggedIn.setVisibility( View.VISIBLE );
-			textViewLoggedIn.setText( String.format( "%s %s", getString(R.string.logged_in), user.getEmail() ) );
+			textViewLoggedIn.setText( String.format( "%s %s", getString( R.string.logged_in ), user.getEmail() ) );
 		}
 	}
 
@@ -202,14 +203,14 @@ public class SettingsActivity extends ThemeActivity {
 							updateUserUi( mAuth.getCurrentUser() );
 						}
 					} );
-		}else if(v.getId() == R.id.btnSendVerification){
+		} else if ( v.getId() == R.id.btnSendVerification ) {
 			FirebaseUser user = mAuth.getCurrentUser();
-			if(user != null) {
+			if ( user != null ) {
 				user.sendEmailVerification()
 						.addOnCompleteListener( new OnCompleteListener<Void>() {
 							@Override
 							public void onComplete(@NonNull Task<Void> task) {
-								if(task.isSuccessful()){
+								if ( task.isSuccessful() ) {
 									Toast.makeText( SettingsActivity.this, "Email sent", Toast.LENGTH_SHORT ).show();
 								}
 							}
@@ -218,8 +219,8 @@ public class SettingsActivity extends ThemeActivity {
 		}
 	}
 
-	public void cloudBackupParams(View v){
-		Intent intent = new Intent(this, CloudBackupActivity.class);
+	public void cloudBackupParams(View v) {
+		Intent intent = new Intent( this, CloudBackupActivity.class );
 		startActivityForResult( intent, Requests.CLOUD_BACKUP_PARAMS );
 	}
 
@@ -228,11 +229,11 @@ public class SettingsActivity extends ThemeActivity {
 		super.onActivityResult( requestCode, resultCode, data );
 		if ( requestCode == Requests.SIGN_IN ) {
 			updateUserUi( mAuth.getCurrentUser() );
-			if(mAuth.getCurrentUser() != null && !mAuth.getCurrentUser().isEmailVerified()){
+			if ( mAuth.getCurrentUser() != null && !mAuth.getCurrentUser().isEmailVerified() ) {
 				mAuth.getCurrentUser().sendEmailVerification();
 			}
 		}
-		if(resultCode == Results.RESTART_APP){
+		if ( resultCode == Results.RESTART_APP ) {
 			setResult( resultCode );
 			finish();
 		}
@@ -248,71 +249,44 @@ public class SettingsActivity extends ThemeActivity {
 
 	private final UpdatesChecker.CheckResults mCheckResults = new UpdatesChecker.CheckResults() {
 		@Override
-		public void noUpdates(VersionInfo versionInfo) {
-			runOnUiThread( new Runnable() {
-				@Override
-				public void run() {
-					if ( mCheckUpdatesDialog != null ) {
-						mCheckUpdatesDialog.dismiss();
-					}
-					Toast.makeText( SettingsActivity.this, R.string.app_is_up_to_date, Toast.LENGTH_LONG ).show();
+		public void noUpdates() {
+			runOnUiThread( ()->{
+				if ( mCheckUpdatesDialog != null ) {
+					mCheckUpdatesDialog.dismiss();
 				}
+				Toast.makeText( SettingsActivity.this, R.string.app_is_up_to_date, Toast.LENGTH_LONG ).show();
 			} );
 		}
 
 		@Override
-		public void updateAvailable(final VersionInfo versionInfo) {
-			runOnUiThread( new Runnable() {
-				@Override
-				public void run() {
-					if ( mCheckUpdatesDialog != null ) {
-						mCheckUpdatesDialog.dismiss();
-					}
-					AlertDialog.Builder builder = new AlertDialog.Builder( SettingsActivity.this, SettingsActivity.super.mAlertDialogStyle );
-					builder.setTitle( getString(R.string.update_available) + ": " + versionInfo.getVersionName() )
-							.setCancelable( false )
-							.setMessage( R.string.would_you_like_to_download_and_install )
-							.setPositiveButton( R.string.yes, new DialogInterface.OnClickListener() {
-								@Override
-								public void onClick(DialogInterface dialog, int which) {
-									download( versionInfo );
-									dialog.cancel();
-								}
-							} )
-							.setNegativeButton( R.string.no, new DialogInterface.OnClickListener() {
-								@Override
-								public void onClick(DialogInterface dialog, int which) {
-									dialog.cancel();
-								}
-							} );
-					builder.create().show();
-				}
-			} );
-		}
-
-		@Override
-		public void onNecessaryUpdate(final VersionInfo versionInfo) {
-			runOnUiThread( new Runnable() {
-				@Override
-				public void run() {
-					AlertDialog.Builder builder = new AlertDialog.Builder( SettingsActivity.this, SettingsActivity.super.mAlertDialogStyle );
-					builder.setTitle( getString(R.string.necessary_update_title) + ": " + versionInfo.getVersionName() );
+		public void onUpdateAvailable(final VersionInfo versionInfo) {
+			runOnUiThread( ()->{
+				AlertDialog.Builder builder = new AlertDialog.Builder( SettingsActivity.this, SettingsActivity.super.mAlertDialogStyle );
+				if(versionInfo.isImportant()){
+					builder.setTitle( String.format( getString(R.string.necessary_update_title), versionInfo.getVersionName() ) );
 					builder.setMessage( R.string.necessary_update_text )
 							.setCancelable( false )
-							.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
-								@Override
-								public void onClick(DialogInterface dialog, int which) {
-									download( versionInfo );
-									dialog.cancel();
-								}
+							.setPositiveButton( "OK", (dialog, which)->{
+								download( versionInfo );
+								dialog.cancel();
 							} );
-					builder.create().show();
+				}else{
+					builder.setTitle( String.format( getString(R.string.update_available), versionInfo.getVersionName() ) )
+							.setCancelable( false )
+							.setMessage( R.string.would_you_like_to_download_and_install )
+							.setPositiveButton( R.string.yes, (dialog, which)->{
+								download( versionInfo );
+								dialog.cancel();
+							} )
+							.setNegativeButton( R.string.no, (dialog, which)->dialog.cancel() )
+							.setNeutralButton( R.string.ignore_this_update, (dialog, which)->sp.edit().putInt( "ignore_update", versionInfo.getVersionCode() ).apply() );
 				}
+				builder.create().show();
 			} );
 		}
 
 		@Override
-		public void downloaded(File path, VersionInfo versionInfo) {
+		public void onDownloaded(File path) {
 			if ( mDownloadPd != null ) {
 				mDownloadPd.dismiss();
 			}
@@ -321,34 +295,23 @@ public class SettingsActivity extends ThemeActivity {
 
 		@Override
 		public void onDownloadProgress(final int bytesCount, final int totalBytesCount) {
-			runOnUiThread( new Runnable() {
-				@Override
-				public void run() {
-					mDownloadPd.setIndeterminate( false );
-					mDownloadPd.setMax( 100 );
-					mDownloadPd.setProgress( bytesCount * 100 / totalBytesCount );
-				}
+			runOnUiThread( ()->{
+				mDownloadPd.setIndeterminate( false );
+				mDownloadPd.setMax( 100 );
+				mDownloadPd.setProgress( bytesCount * 100 / totalBytesCount );
 			} );
 		}
 
 		@Override
-		public void exceptionOccurred(final Exception e) {
-			runOnUiThread( new Runnable() {
-				@Override
-				public void run() {
-					runOnUiThread( new Runnable() {
-						@Override
-						public void run() {
-							if ( mCheckUpdatesDialog != null ) {
-								mCheckUpdatesDialog.dismiss();
-							}
-							if ( mDownloadPd != null ) {
-								mDownloadPd.dismiss();
-							}
-							Utils.getErrorDialog( e, SettingsActivity.this ).show();
-						}
-					} );
+		public void onException(final Exception e) {
+			runOnUiThread( ()->{
+				if ( mCheckUpdatesDialog != null ) {
+					mCheckUpdatesDialog.dismiss();
 				}
+				if ( mDownloadPd != null ) {
+					mDownloadPd.dismiss();
+				}
+				Utils.getErrorDialog( e, SettingsActivity.this ).show();
 			} );
 		}
 	};
@@ -358,7 +321,7 @@ public class SettingsActivity extends ThemeActivity {
 		mCheckUpdatesDialog.setMessage( getResources().getString( R.string.checking_for_updates ) );
 		mCheckUpdatesDialog.setCancelable( false );
 		mCheckUpdatesDialog.show();
-		final UpdatesChecker checker = new UpdatesChecker( this, mCheckResults );
+		final UpdatesChecker checker = new UpdatesChecker( mCheckResults );
 		new Thread( new Runnable() {
 			@Override
 			public void run() {
@@ -415,7 +378,7 @@ public class SettingsActivity extends ThemeActivity {
 			return;
 		}
 		final ProgressDialog pd = new ProgressDialog( this );
-		pd.setMessage( Html.fromHtml( getString(R.string.restoring_please_donot_close_app) ) );
+		pd.setMessage( Html.fromHtml( getString( R.string.restoring_please_donot_close_app ) ) );
 		pd.setCancelable( false );
 		final BackupInterface backupInterface = new BackupInterface() {
 			@Override
@@ -505,7 +468,7 @@ public class SettingsActivity extends ThemeActivity {
 	private void createMyBackup() {
 		final File outputFile = new File( Environment.getExternalStorageDirectory().getPath() + "/documenter_backup.zip" );
 		final ProgressDialog pd = new ProgressDialog( this );
-		pd.setMessage( Html.fromHtml( getString(R.string.creating_backup) ) );
+		pd.setMessage( Html.fromHtml( getString( R.string.creating_backup ) ) );
 		pd.setCancelable( false );
 		final BackupInterface backupInterface = new BackupInterface() {
 			@Override

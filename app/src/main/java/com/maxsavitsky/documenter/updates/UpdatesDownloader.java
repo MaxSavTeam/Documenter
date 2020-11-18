@@ -54,7 +54,7 @@ public class UpdatesDownloader {
 			in.close();
 			os.close();
 
-			mCheckResults.downloaded( file, mVersionInfo );
+			mCheckResults.onDownloaded( file );
 
 		}catch (IOException e){
 			try{
@@ -67,7 +67,7 @@ public class UpdatesDownloader {
 					os.close();
 			}catch (IOException ignored){}
 
-			mCheckResults.exceptionOccurred( e );
+			mCheckResults.onException( e );
 		}
 	}
 }
