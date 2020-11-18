@@ -4,8 +4,11 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Point;
+import android.net.Uri;
+import android.os.StrictMode;
 import android.text.Html;
 import android.util.Log;
 import android.view.Display;
@@ -81,6 +84,22 @@ public class Utils {
 				Log.i(THIS_TAG, "removed " + s);
 			}
 		}
+	}
+
+	public static void sendLog(Context context, String path){
+		Intent newIntent = new Intent( Intent.ACTION_SEND );
+		newIntent.setType( "message/rfc822" );
+		newIntent.putExtra( Intent.EXTRA_EMAIL, new String[]{ "maxsavhelp@gmail.com" } );
+		newIntent.putExtra( Intent.EXTRA_SUBJECT, "Error in documenter" );
+		newIntent.putExtra( Intent.EXTRA_STREAM, Uri.parse( "file://" + path ) );
+		newIntent.putExtra( Intent.EXTRA_TEXT, "Log file attached." );
+		StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+		StrictMode.setVmPolicy( builder.build() );
+		context.startActivity( newIntent );
+	}
+
+	public static void sendLog(String path){
+		sendLog( sContext, path );
 	}
 
 	/*public static  <T> void removeAllSpansInBounds(int selSt, int selEnd, Class<T> type, Spannable e){
@@ -426,12 +445,7 @@ public class Utils {
 				} ).setCancelable( false );
 		if(showSendLogButton){
 			final File finalStacktraceFile = stacktraceFile;
-			builder.setNeutralButton( R.string.send_report, new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					MainActivity.getInstance().sendLog( finalStacktraceFile.getPath() );
-				}
-			} );
+			builder.setNeutralButton( R.string.send_report, (dialog, which)->sendLog( finalStacktraceFile.getPath() ) );
 		}
 
 		return builder.create();

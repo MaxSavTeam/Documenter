@@ -3,10 +3,8 @@ package com.maxsavitsky.documenter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -171,23 +169,6 @@ public class MainActivity extends ThemeActivity {
 		Intent intent = new Intent( this, MainActivity.class );
 		startActivity( intent );
 		this.finish();
-	}
-
-	public void sendLog(String logPath) {
-		Intent newIntent = new Intent( Intent.ACTION_SEND );
-		newIntent.setType( "message/rfc822" );
-		newIntent.putExtra( Intent.EXTRA_EMAIL, new String[]{ "maxsavhelp@gmail.com" } );
-		newIntent.putExtra( Intent.EXTRA_SUBJECT, "Error in documenter" );
-		newIntent.putExtra( Intent.EXTRA_STREAM, Uri.parse( "file://" + logPath ) );
-		newIntent.putExtra( Intent.EXTRA_TEXT, "Log file attached." );
-		StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
-		StrictMode.setVmPolicy( builder.build() );
-		try {
-			startActivity( newIntent );
-		} catch (Exception e) {
-			Utils.getErrorDialog( e, this, true, false ).show();
-			e.printStackTrace();
-		}
 	}
 
 	@Override

@@ -1,6 +1,5 @@
 package com.maxsavitsky.documenter;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Html;
@@ -8,6 +7,8 @@ import android.util.Log;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.maxsavitsky.documenter.utils.Utils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,7 +30,7 @@ public class AfterExceptionActivity extends AppCompatActivity {
 
 		Log.i( TAG, "onCreate: path=" + path );
 
-		findViewById( R.id.btnErrSendReport ).setOnClickListener( v->MainActivity.getInstance().sendLog(path) );
+		findViewById( R.id.btnErrSendReport ).setOnClickListener( v->Utils.sendLog(this, path) );
 		findViewById( R.id.btnErrViewReport ).setOnClickListener( v->{
 			FileInputStream inputStream = null;
 			String mes = "";
@@ -54,12 +55,7 @@ public class AfterExceptionActivity extends AppCompatActivity {
 			}
 			AlertDialog.Builder builder = new AlertDialog.Builder( this )
 					.setCancelable( false )
-					.setNeutralButton( "OK", new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							dialog.cancel();
-						}
-					} ).setMessage( mes );
+					.setNeutralButton( "OK", (dialog, which)->dialog.cancel() ).setMessage( mes );
 			builder.create().show();
 		} );
 
@@ -67,13 +63,12 @@ public class AfterExceptionActivity extends AppCompatActivity {
 		AlertDialog.Builder builder = new AlertDialog.Builder( this )
 				.setTitle( R.string.please )
 				.setMessage( Html.fromHtml( getResources().getString( R.string.send_report_dialog_mes ) ) )
-				.setCancelable( false ).setPositiveButton( "OK", new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.cancel();
-						MainActivity.getInstance().sendLog(path);
-					}
-				} );
+				.setCancelable( false )
+				.setPositiveButton( "OK", (dialog, which)->{
+					dialog.cancel();
+					Utils.sendLog(this, path);
+				} )
+				.setNegativeButton( "Hide", ((dialog, which)->dialog.cancel() ) );
 
 		builder.create().show();
 	}

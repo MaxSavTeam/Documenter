@@ -29,7 +29,6 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.maxsavitsky.documenter.BuildConfig;
-import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.ThemeActivity;
 import com.maxsavitsky.documenter.backup.BackupInstruments;
@@ -162,7 +161,7 @@ public class SettingsActivity extends ThemeActivity {
 
 	public void sendLastReport(View v) {
 		String file = Utils.getExternalStoragePath().getPath() + "/" + sp.getString( "last_exception", "1" );
-		MainActivity.getInstance().sendLog( file );
+		Utils.sendLog( this, file );
 		sp.edit().remove( "last_exception" ).apply();
 	}
 
