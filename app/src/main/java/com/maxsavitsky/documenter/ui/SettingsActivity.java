@@ -63,7 +63,7 @@ public class SettingsActivity extends ThemeActivity {
 	@Override
 	public void onBackPressed() {
 		setResult( Results.OK );
-		finish();
+		super.onBackPressed();
 	}
 
 	@Override
@@ -382,25 +382,9 @@ public class SettingsActivity extends ThemeActivity {
 		final BackupInterface backupInterface = new BackupInterface() {
 			@Override
 			public void onSuccess(long timeOfCreation) {
-				runOnUiThread( new Runnable() {
-					@Override
-					public void run() {
-						pd.dismiss();
-					}
-				} );
+				runOnUiThread( pd::dismiss );
 				setResult( Results.RESTART_APP );
 				finish();
-			}
-
-			@Override
-			public void onFailed() {
-				runOnUiThread( new Runnable() {
-					@Override
-					public void run() {
-						pd.dismiss();
-						Toast.makeText( SettingsActivity.this, R.string.something_gone_wrong, Toast.LENGTH_SHORT ).show();
-					}
-				} );
 			}
 
 			@Override
@@ -477,17 +461,6 @@ public class SettingsActivity extends ThemeActivity {
 					public void run() {
 						pd.dismiss();
 						Toast.makeText( SettingsActivity.this, R.string.successfully, Toast.LENGTH_SHORT ).show();
-					}
-				} );
-			}
-
-			@Override
-			public void onFailed() {
-				runOnUiThread( new Runnable() {
-					@Override
-					public void run() {
-						pd.dismiss();
-						Toast.makeText( SettingsActivity.this, R.string.something_gone_wrong, Toast.LENGTH_SHORT ).show();
 					}
 				} );
 			}

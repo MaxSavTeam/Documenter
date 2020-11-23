@@ -87,26 +87,10 @@ public class AutonomousCloudBackupper {
 			}
 
 			@Override
-			public void onFailed() {
-				manager.cancelAll();
-				new Handler( Looper.getMainLooper() ).post( new Runnable() {
-					@Override
-					public void run() {
-						Toast.makeText( mContext, R.string.backup_error, Toast.LENGTH_LONG ).show();
-					}
-				} );
-			}
-
-			@Override
 			public void onException(Exception e) {
 				manager.cancelAll();
 				e.printStackTrace();
-				new Handler( Looper.getMainLooper() ).post( new Runnable() {
-					@Override
-					public void run() {
-						Toast.makeText( mContext, R.string.backup_error, Toast.LENGTH_LONG ).show();
-					}
-				} );
+				new Handler( Looper.getMainLooper() ).post( ()->Toast.makeText( mContext, R.string.backup_error, Toast.LENGTH_LONG ).show() );
 			}
 		};
 		new Thread( new Runnable() {
