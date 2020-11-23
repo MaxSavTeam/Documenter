@@ -1,15 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
     tools:context=".ui.EntryViewer">
 
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
+        android:theme="@style/AppTheme.AppBarOverlay"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
@@ -20,21 +27,103 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <ScrollView
+    <com.maxsavitsky.documenter.ui.widget.CustomScrollView
         android:id="@+id/viewEntryScrollView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="?attr/actionBarSize"
+        android:layout_height="0dp"
         android:scrollIndicators="end|right"
         android:scrollbarSize="@dimen/scrollbars_size"
-        android:scrollbarStyle="insideInset">
+        android:scrollbarStyle="insideInset"
+        app:layout_constraintBottom_toTopOf="@+id/speedLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/appBarLayout2">
 
         <TextView
             android:id="@+id/textViewContent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-    </ScrollView>
+    </com.maxsavitsky.documenter.ui.widget.CustomScrollView>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/speedLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?android:windowBackground"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="3dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/speed"
+            android:textColor="?textColor"
+            android:textSize="18sp" />
+
+        <Button
+            android:id="@+id/speed_button_0"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/speed_buttons_size"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
+            android:backgroundTint="?android:windowBackground"
+            android:text="@string/_0"
+            android:textColor="?textColor"
+            android:textSize="@dimen/speed_buttons_text_size" />
+
+        <Button
+            android:id="@+id/speed_button_1"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/speed_buttons_size"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
+            android:backgroundTint="?android:windowBackground"
+            android:text="@string/_1"
+            android:textColor="?textColor"
+            android:textSize="@dimen/speed_buttons_text_size" />
+
+        <Button
+            android:id="@+id/speed_button_2"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/speed_buttons_size"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
+            android:backgroundTint="?android:windowBackground"
+            android:text="@string/_2"
+            android:textColor="?textColor"
+            android:textSize="@dimen/speed_buttons_text_size" />
+
+        <Button
+            android:id="@+id/speed_button_3"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/speed_buttons_size"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
+            android:backgroundTint="?android:windowBackground"
+            android:text="@string/_3"
+            android:textColor="?textColor"
+            android:textSize="@dimen/speed_buttons_text_size" />
+
+        <Button
+            android:id="@+id/speed_button_close"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/speed_buttons_size"
+            android:layout_gravity="end"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:text="@string/X"
+            android:textColor="@color/colorRed"
+            android:textSize="@dimen/speed_buttons_text_size" />
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabUpView"
@@ -46,7 +135,13 @@
         android:scaleX="0"
         android:scaleY="0"
         android:src="@drawable/ic_expand_less"
-        app:borderWidth="0dp" />
+        app:borderWidth="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/speedLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
 
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

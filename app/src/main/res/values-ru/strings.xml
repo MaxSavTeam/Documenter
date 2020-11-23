@@ -175,4 +175,6 @@
         <item>Как в системе</item>
     </string-array>
     <string name="theme">Тема</string>
+    <string name="speed">Скорость</string>
+    <string name="autoscroll">Автопрокручивание</string>
 </resources>

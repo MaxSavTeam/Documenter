@@ -180,4 +180,11 @@
     </string-array>
     <string name="theme">Theme</string>
     <string name="maxsav_team_copyright" translatable="false">© MaxSav Team, 2020</string>
+    <string name="speed">Speed</string>
+    <string name="_0" translatable="false">0</string>
+    <string name="_1" translatable="false">1</string>
+    <string name="_2" translatable="false">2</string>
+    <string name="_3" translatable="false">3</string>
+    <string name="X" translatable="false">×</string>
+    <string name="autoscroll">Autoscroll</string>
 </resources>

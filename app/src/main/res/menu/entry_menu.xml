@@ -11,6 +11,11 @@
         android:icon="@drawable/ic_edit_text"
         app:showAsAction="ifRoom"/>
 
+    <item android:id="@+id/item_auto_scroll"
+        android:title="@string/autoscroll"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/ic_autoscroll" />
+
     <item android:id="@+id/item_copy_content"
         android:title="@string/copy_content"
         android:icon="@drawable/ic_copy"

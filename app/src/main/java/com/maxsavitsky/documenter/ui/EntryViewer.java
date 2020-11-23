@@ -6,17 +6,20 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.Spannable;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.animation.LinearInterpolator;
+import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,6 +40,7 @@ import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.data.types.Type;
+import com.maxsavitsky.documenter.ui.widget.CustomScrollView;
 import com.maxsavitsky.documenter.utils.Utils;
 
 import org.xml.sax.SAXException;
@@ -50,8 +54,14 @@ public class EntryViewer extends ThemeActivity {
 	private Entry mEntry;
 	private SharedPreferences sp;
 	private boolean resultSet = false;
-	private ScrollView mScrollView;
+	private CustomScrollView mScrollView;
 	private boolean isFreeMode = false;
+	private final int[] mSpeedButtonIds = new int[]{
+			R.id.speed_button_0,
+			R.id.speed_button_1,
+			R.id.speed_button_2,
+			R.id.speed_button_3
+	};
 
 	private void applyTheme() {
 		ActionBar actionBar = getSupportActionBar();
@@ -84,6 +94,8 @@ public class EntryViewer extends ThemeActivity {
 		int itemId = item.getItemId();
 		if ( itemId == android.R.id.home ) {
 			backPressed();
+		}else if(itemId == R.id.item_auto_scroll){
+			findViewById( R.id.speedLayout ).setVisibility( View.VISIBLE );
 		} else if ( itemId == R.id.item_edit_entry_name ) {
 			AlertDialog changeNameDialog;
 			final EditText editText = new EditText( this );
@@ -221,6 +233,43 @@ public class EntryViewer extends ThemeActivity {
 		}
 	}
 
+	private int getColorFromAttr(int attr) {
+		TypedValue value = new TypedValue();
+		getTheme().resolveAttribute( attr, value, true );
+		return value.data;
+	}
+
+	private void setSpeedButtonColors() {
+		for (int id : mSpeedButtonIds) {
+			Button button = findViewById( id );
+			button.setTextColor( getColorFromAttr( R.attr.textColor ) );
+			button.setBackgroundTintList( ColorStateList.valueOf( getColorFromAttr( android.R.attr.windowBackground ) ) );
+			button.setOnClickListener( view->{
+				setSpeedButtonColors();
+				Button b = (Button) view;
+				b.setTextColor( getColorFromAttr( android.R.attr.windowBackground ) );
+				b.setBackgroundTintList( ColorStateList.valueOf( getColorFromAttr( R.attr.textColor ) ) );
+				startScroll( Integer.parseInt( b.getText().toString() ) );
+			} );
+		}
+	}
+
+	private ObjectAnimator mScrollAnimator;
+	private int mScrollSpeed = 0;
+
+	private void startScroll(int speed){
+		if(mScrollAnimator != null)
+			mScrollAnimator.cancel();
+		mScrollSpeed = speed;
+		if(speed != 0) {
+			mScrollAnimator = ObjectAnimator.ofInt( mScrollView, "scrollY", mScrollView.getMaxVerticalScroll() );
+			int r = ( mScrollView.getMaxVerticalScroll() - mScrollView.getScrollY() ) / speed * 10;
+			mScrollAnimator.setDuration( r );
+			mScrollAnimator.setInterpolator( new LinearInterpolator() );
+			mScrollAnimator.start();
+		}
+	}
+
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
 		if ( requestCode == Requests.EDIT_ENTRY ) {
@@ -336,11 +385,13 @@ public class EntryViewer extends ThemeActivity {
 	private void hideUpButton() {
 		FloatingActionButton fab = findViewById( R.id.fabUpView );
 		fab.animate().setDuration( 500 ).scaleX( 0 ).scaleY( 0 ).start();
+		fab.setEnabled( false );
 	}
 
 	private void showUpButton() {
 		FloatingActionButton fab = findViewById( R.id.fabUpView );
 		fab.animate().setDuration( 500 ).scaleX( 1 ).scaleY( 1 ).start();
+		fab.setEnabled( true );
 	}
 
 	/*private final HtmlSpanRender.RenderCallback mRenderCallback = new HtmlSpanRender.RenderCallback() {
@@ -400,7 +451,26 @@ public class EntryViewer extends ThemeActivity {
 				}
 			}
 		} );
+		mScrollView.setOnTouchListener( new View.OnTouchListener() {
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				if(event.getAction() == MotionEvent.ACTION_DOWN){
+					if(mScrollAnimator != null)
+						mScrollAnimator.cancel();
+				}else if(event.getAction() == MotionEvent.ACTION_UP){
+					startScroll( mScrollSpeed );
+				}
+				return false;
+			}
+		} );
 		findViewById( R.id.fabUpView ).setOnClickListener( v->mScrollView.smoothScrollTo( 0, 0 ) );
+
+		setSpeedButtonColors();
+		findViewById( R.id.speed_button_0 ).performClick();
+		findViewById( R.id.speed_button_close ).setOnClickListener( view->{
+			findViewById( R.id.speedLayout ).setVisibility( View.GONE );
+			startScroll( 0 );
+		} );
 
 		getWindow().getDecorView().setBackgroundColor( mEntry.getProperties().getBgColor() );
 		final Thread loadThread = new Thread( ()->{
