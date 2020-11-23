@@ -1,19 +1,14 @@
 package com.maxsavitsky.documenter.backup;
 
-import android.os.Environment;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
 import com.maxsavitsky.documenter.MainActivity;
-import com.maxsavitsky.documenter.R;
-import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.utils.Utils;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.zip.ZipEntry;
@@ -56,7 +51,7 @@ public class BackupInstruments {
 		zis.closeEntry();
 		zis.close();
 		if(backupInterface != null)
-			backupInterface.successfully( System.currentTimeMillis() );
+			backupInterface.onSuccess( System.currentTimeMillis() );
 	}
 
 	public static void createBackupToFile(File path, @Nullable BackupInterface backupInterface) throws IOException {
@@ -80,7 +75,7 @@ public class BackupInstruments {
 		long end = System.currentTimeMillis();
 		Log.i( THIS_TAG, "packed in " + ((end - startTime) / 1000) + "s" );
 		if(backupInterface != null)
-			backupInterface.successfully( System.currentTimeMillis() );
+			backupInterface.onSuccess( System.currentTimeMillis() );
 	}
 
 	private static void myPack(File path, String fileName, ZipOutputStream out) throws IOException {

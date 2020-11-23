@@ -381,7 +381,7 @@ public class SettingsActivity extends ThemeActivity {
 		pd.setCancelable( false );
 		final BackupInterface backupInterface = new BackupInterface() {
 			@Override
-			public void successfully(long timeOfCreation) {
+			public void onSuccess(long timeOfCreation) {
 				runOnUiThread( new Runnable() {
 					@Override
 					public void run() {
@@ -393,7 +393,7 @@ public class SettingsActivity extends ThemeActivity {
 			}
 
 			@Override
-			public void failed() {
+			public void onFailed() {
 				runOnUiThread( new Runnable() {
 					@Override
 					public void run() {
@@ -404,7 +404,7 @@ public class SettingsActivity extends ThemeActivity {
 			}
 
 			@Override
-			public void exceptionOccurred(final Exception e) {
+			public void onException(final Exception e) {
 				runOnUiThread( new Runnable() {
 					@Override
 					public void run() {
@@ -421,7 +421,7 @@ public class SettingsActivity extends ThemeActivity {
 					BackupInstruments.restoreFromBackup( file, backupInterface );
 				} catch (IOException e) {
 					e.printStackTrace();
-					backupInterface.exceptionOccurred( e );
+					backupInterface.onException( e );
 				}
 			}
 		} ).start();
@@ -471,7 +471,7 @@ public class SettingsActivity extends ThemeActivity {
 		pd.setCancelable( false );
 		final BackupInterface backupInterface = new BackupInterface() {
 			@Override
-			public void successfully(long timeOfCreation) {
+			public void onSuccess(long timeOfCreation) {
 				runOnUiThread( new Runnable() {
 					@Override
 					public void run() {
@@ -482,7 +482,7 @@ public class SettingsActivity extends ThemeActivity {
 			}
 
 			@Override
-			public void failed() {
+			public void onFailed() {
 				runOnUiThread( new Runnable() {
 					@Override
 					public void run() {
@@ -493,7 +493,7 @@ public class SettingsActivity extends ThemeActivity {
 			}
 
 			@Override
-			public void exceptionOccurred(final Exception e) {
+			public void onException(final Exception e) {
 				runOnUiThread( new Runnable() {
 					@Override
 					public void run() {
@@ -511,7 +511,7 @@ public class SettingsActivity extends ThemeActivity {
 					BackupInstruments.createBackupToFile( outputFile, backupInterface );
 				} catch (IOException e) {
 					e.printStackTrace();
-					backupInterface.exceptionOccurred( e );
+					backupInterface.onException( e );
 				}
 			}
 		} ).start();

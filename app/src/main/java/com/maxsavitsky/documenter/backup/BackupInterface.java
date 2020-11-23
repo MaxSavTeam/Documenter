@@ -1,9 +1,7 @@
 package com.maxsavitsky.documenter.backup;
 
 public interface BackupInterface {
-	void successfully(long timeOfCreation);
+	void onSuccess(long timeOfCreation);
 
-	void failed();
-
-	void exceptionOccurred(final Exception e);
+	void onException(final Exception e);
 }

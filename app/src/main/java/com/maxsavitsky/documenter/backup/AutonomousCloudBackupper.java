@@ -82,12 +82,12 @@ public class AutonomousCloudBackupper {
 
 		final BackupInterface backupInterface = new BackupInterface() {
 			@Override
-			public void successfully(long timeOfCreation) {
+			public void onSuccess(long timeOfCreation) {
 				manager.cancelAll();
 			}
 
 			@Override
-			public void failed() {
+			public void onFailed() {
 				manager.cancelAll();
 				new Handler( Looper.getMainLooper() ).post( new Runnable() {
 					@Override
@@ -98,7 +98,7 @@ public class AutonomousCloudBackupper {
 			}
 
 			@Override
-			public void exceptionOccurred(Exception e) {
+			public void onException(Exception e) {
 				manager.cancelAll();
 				e.printStackTrace();
 				new Handler( Looper.getMainLooper() ).post( new Runnable() {
@@ -117,7 +117,7 @@ public class AutonomousCloudBackupper {
 					CloudBackupInstruments.createBackup( backupInterface, "backup_" + time, time );
 				} catch (IOException e) {
 					e.printStackTrace();
-					backupInterface.exceptionOccurred( e );
+					backupInterface.onException( e );
 				}
 			}
 		} ).start();

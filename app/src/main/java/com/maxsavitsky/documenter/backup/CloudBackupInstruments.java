@@ -21,14 +21,6 @@ import java.io.IOException;
 
 public class CloudBackupInstruments {
 
-	public interface CloudInterface {
-		void successfully(long timeOfCreation);
-
-		void failed();
-
-		void exceptionOccurred(Exception e);
-	}
-
 	public static void createBackup(final BackupInterface cloudInterface, String backupName, final long loadTime) throws IOException {
 		final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 		if ( user == null ) {
@@ -54,13 +46,13 @@ public class CloudBackupInstruments {
 								.addOnSuccessListener( new OnSuccessListener<Void>() {
 									@Override
 									public void onSuccess(Void aVoid) {
-										cloudInterface.successfully( loadTime );
+										cloudInterface.onSuccess( loadTime );
 									}
 								} )
 								.addOnFailureListener( new OnFailureListener() {
 									@Override
 									public void onFailure(@NonNull Exception e) {
-										cloudInterface.exceptionOccurred( e );
+										cloudInterface.onException( e );
 									}
 								} );
 						file.delete();
@@ -70,7 +62,7 @@ public class CloudBackupInstruments {
 					@Override
 					public void onFailure(@NonNull Exception e) {
 						e.printStackTrace();
-						cloudInterface.exceptionOccurred( e );
+						cloudInterface.onException( e );
 					}
 				} );
 	}
@@ -92,17 +84,17 @@ public class CloudBackupInstruments {
 					public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
 						try {
 							BackupInstruments.restoreFromBackup( file, null );
-							cloudInterface.successfully( 0 );
+							cloudInterface.onSuccess( 0 );
 						} catch (IOException e) {
 							e.printStackTrace();
-							cloudInterface.exceptionOccurred( e );
+							cloudInterface.onException( e );
 						}
 					}
 				} )
 				.addOnFailureListener( new OnFailureListener() {
 					@Override
 					public void onFailure(@NonNull Exception e) {
-						cloudInterface.exceptionOccurred( e );
+						cloudInterface.onException( e );
 					}
 				} );
 	}

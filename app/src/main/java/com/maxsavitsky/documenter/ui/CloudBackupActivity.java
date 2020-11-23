@@ -46,19 +46,15 @@ public class CloudBackupActivity extends ThemeActivity {
 		}
 	}
 
-	private void backPressed() {
-		finish();
-	}
-
 	@Override
 	public void onBackPressed() {
-		backPressed();
+		super.onBackPressed();
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 		if ( item.getItemId() == android.R.id.home ) {
-			backPressed();
+			onBackPressed();
 		}
 		return super.onOptionsItemSelected( item );
 	}
@@ -78,7 +74,6 @@ public class CloudBackupActivity extends ThemeActivity {
 
 		applyTheme();
 
-
 		( (TextView) findViewById( R.id.lblCloud1 ) ).setText( Html.fromHtml( getString( R.string.cloud_backup_activity_text1 ) ) );
 
 		final ProgressDialog pd = new ProgressDialog( this );
@@ -86,7 +81,7 @@ public class CloudBackupActivity extends ThemeActivity {
 		pd.setButton( ProgressDialog.BUTTON_NEUTRAL, getString( R.string.cancel ), new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				backPressed();
+				onBackPressed();
 			}
 		} );
 		pd.show();
@@ -100,7 +95,7 @@ public class CloudBackupActivity extends ThemeActivity {
 			public void failed() {
 				pd.dismiss();
 				Toast.makeText( CloudBackupActivity.this, R.string.something_gone_wrong, Toast.LENGTH_SHORT ).show();
-				backPressed();
+				onBackPressed();
 			}
 		};
 
@@ -156,14 +151,11 @@ public class CloudBackupActivity extends ThemeActivity {
 		final String[] strings = getResources().getStringArray( R.array.auto_backup_states );
 		AlertDialog.Builder builder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
 				.setTitle( R.string.auto_backup )
-				.setSingleChoiceItems( strings, sp.getInt( "auto_backup_state", 0 ), new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						sp.edit().putInt( "auto_backup_state", which ).apply();
-						t.setText( strings[ which ] );
-						AutonomousCloudBackupper.getInstance().stateChanged();
-						dialog.dismiss();
-					}
+				.setSingleChoiceItems( strings, sp.getInt( "auto_backup_state", 0 ), (dialog, which)->{
+					sp.edit().putInt( "auto_backup_state", which ).apply();
+					t.setText( strings[ which ] );
+					AutonomousCloudBackupper.getInstance().stateChanged();
+					dialog.dismiss();
 				} );
 		builder.create().show();
 	}
@@ -176,45 +168,31 @@ public class CloudBackupActivity extends ThemeActivity {
 
 		final BackupInterface backupInterface = new BackupInterface() {
 			@Override
-			public void successfully(long timeOfCreation) {
-				runOnUiThread( new Runnable() {
-					@Override
-					public void run() {
-						pd.dismiss();
-						Toast.makeText( CloudBackupActivity.this, R.string.successfully, Toast.LENGTH_SHORT ).show();
-						AutonomousCloudBackupper.getInstance().stateChanged();
-					}
+			public void onSuccess(long timeOfCreation) {
+				runOnUiThread( ()->{
+					pd.dismiss();
+					Toast.makeText( CloudBackupActivity.this, R.string.successfully, Toast.LENGTH_SHORT ).show();
 				} );
+				AutonomousCloudBackupper.getInstance().stateChanged();
 			}
 
 			@Override
-			public void failed() {
-
-			}
-
-			@Override
-			public void exceptionOccurred(final Exception e) {
-				runOnUiThread( new Runnable() {
-					@Override
-					public void run() {
-						pd.dismiss();
-						Utils.getErrorDialog( e, CloudBackupActivity.this ).show();
-					}
+			public void onException(final Exception e) {
+				runOnUiThread( ()->{
+					pd.dismiss();
+					Utils.getErrorDialog( e, CloudBackupActivity.this ).show();
 				} );
 			}
 		};
 
 		pd.show();
-		new Thread( new Runnable() {
-			@Override
-			public void run() {
-				try {
-					long time = System.currentTimeMillis();
-					CloudBackupInstruments.createBackup( backupInterface, "backup_" + time, time );
-				} catch (IOException e) {
-					e.printStackTrace();
-					backupInterface.exceptionOccurred( e );
-				}
+		new Thread( ()->{
+			try {
+				long time = System.currentTimeMillis();
+				CloudBackupInstruments.createBackup( backupInterface, "backup_" + time, time );
+			} catch (IOException e) {
+				e.printStackTrace();
+				backupInterface.onException( e );
 			}
 		} ).start();
 	}
@@ -227,30 +205,19 @@ public class CloudBackupActivity extends ThemeActivity {
 
 		final BackupInterface backupInterface = new BackupInterface() {
 			@Override
-			public void successfully(long timeOfCreation) {
-				runOnUiThread( new Runnable() {
-					@Override
-					public void run() {
-						pd.dismiss();
-						setResult( Results.RESTART_APP );
-						finish();
-					}
+			public void onSuccess(long timeOfCreation) {
+				runOnUiThread( ()->{
+					pd.dismiss();
+					setResult( Results.RESTART_APP );
+					onBackPressed();
 				} );
 			}
 
 			@Override
-			public void failed() {
-
-			}
-
-			@Override
-			public void exceptionOccurred(final Exception e) {
-				runOnUiThread( new Runnable() {
-					@Override
-					public void run() {
-						pd.dismiss();
-						Utils.getErrorDialog( e, CloudBackupActivity.this ).show();
-					}
+			public void onException(final Exception e) {
+				runOnUiThread( ()->{
+					pd.dismiss();
+					Utils.getErrorDialog( e, CloudBackupActivity.this ).show();
 				} );
 			}
 		};
@@ -263,7 +230,7 @@ public class CloudBackupActivity extends ThemeActivity {
 					CloudBackupInstruments.restoreFromBackup( backupInterface, "backup_" + mLastBackupTime );
 				} catch (IOException e) {
 					e.printStackTrace();
-					backupInterface.exceptionOccurred( e );
+					backupInterface.onException( e );
 				}
 			}
 		} ).start();
