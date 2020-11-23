@@ -54,7 +54,6 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.PopupWindow;
-import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -67,7 +66,6 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
 import com.flask.colorpicker.ColorPickerView;
-import com.flask.colorpicker.OnColorChangedListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.R;
@@ -76,7 +74,6 @@ import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.data.Info;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.html.HtmlImageLoader;
-import com.maxsavitsky.documenter.data.html.HtmlSpanRender;
 import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.media.images.ImageRenderer;
@@ -126,7 +123,6 @@ public class EntryEditor extends ThemeActivity {
 	private final float INDEX_PROPORTION = 0.75f;
 	private final int DEFAULT_TOOLS_COLOR = Color.WHITE;
 	private final String TAG = MainActivity.TAG + " EntryEditor";
-	private ArrayList<HtmlSpanRender.WidgetParam> mWidgetParams = new ArrayList<>();
 
 	private interface OnLoadedTextListener {
 		void loaded(Spannable spannable, Entry entry);
@@ -179,25 +175,14 @@ public class EntryEditor extends ThemeActivity {
 		AlertDialog.Builder builder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
 				.setTitle( R.string.confirmation )
 				.setMessage( R.string.create_entry_exit_mes ).setCancelable( false )
-				.setNegativeButton( R.string.cancel, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.cancel();
-					}
-				} )
-				.setPositiveButton( R.string.yes, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						ScrollView scrollView = findViewById( R.id.scrollView );
-						setResult( Results.OK, new Intent().putExtra( "scroll_position", scrollView.getScrollY() ) );
-						_finishActivity();
-					}
-				} ).setNeutralButton( R.string.save_and_exit, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.cancel();
-						saveEntry();
-					}
+				.setNegativeButton( R.string.cancel, (dialog, which)->dialog.cancel() )
+				.setPositiveButton( R.string.yes, (dialog, which)->{
+					ScrollView scrollView = findViewById( R.id.scrollView );
+					setResult( Results.OK, new Intent().putExtra( "scroll_position", scrollView.getScrollY() ) );
+					_finishActivity();
+				} ).setNeutralButton( R.string.save_and_exit, (dialog, which)->{
+					dialog.cancel();
+					saveEntry();
 				} );
 
 		builder.create().show();
@@ -306,38 +291,6 @@ public class EntryEditor extends ThemeActivity {
 		mHistoryIterator = mHistory.size() - 1;
 	}
 
-	private void setSpanWatcher() {
-		/*Log.i( TAG, "setSpanWatcher" );
-		Editable e = mTextEditor.getText();
-		if ( e == null ) {
-			Log.i( TAG, "setSpanWatcher: returned because editable is null" );
-			return;
-		}
-		Log.i( TAG, "SpanWatcher set" );
-		removeAllSpansInBounds( 0, e.length(), SpanWatcher.class );
-		e.setSpan( new SpanWatcher() {
-			@Override
-			public void onSpanAdded(Spannable text, Object what, int start, int end) {
-				if ( !( what instanceof SpanWatcher ) ) {
-					saveTextChange();
-				}
-			}
-
-			@Override
-			public void onSpanRemoved(Spannable text, Object what, int start, int end) {
-				if ( !( what instanceof SpanWatcher ) ) {
-					saveTextChange();
-				}
-			}
-
-			@Override
-			public void onSpanChanged(Spannable text, Object what, int ostart, int oend, int nstart, int nend) {
-
-			}
-		}, 0, e.length(), Spanned.SPAN_INCLUSIVE_INCLUSIVE );*/
-	}
-
-
 	private void hideUpButton() {
 		FloatingActionButton fab = findViewById( R.id.fabUp );
 		fab.animate().setDuration( 500 ).scaleX( 0 ).scaleY( 0 ).start();
@@ -361,12 +314,7 @@ public class EntryEditor extends ThemeActivity {
 			@Override
 			public void loaded(Spannable spannable, Entry entry) {
 				mTextEditor.setSelection( changeEntry.getCursorPosition() );
-				runOnUiThread( new Runnable() {
-					@Override
-					public void run() {
-						( (ScrollView) findViewById( R.id.scrollView ) ).setScrollY( changeEntry.getScrollY() );
-					}
-				} );
+				runOnUiThread( ()->( (ScrollView) findViewById( R.id.scrollView ) ).setScrollY( changeEntry.getScrollY() ) );
 			}
 
 			@Override
@@ -378,16 +326,13 @@ public class EntryEditor extends ThemeActivity {
 				Utils.getErrorDialog( e, EntryEditor.this ).show();
 			}
 		};
-		new Thread( new Runnable() {
-			@Override
-			public void run() {
-				try {
-					setTextInEditor( source );
-					listener.loaded( null, null );
-				} catch (Exception e) {
-					listener.exceptionOccurred( e );
-					e.printStackTrace();
-				}
+		new Thread( ()->{
+			try {
+				setTextInEditor( source );
+				listener.loaded( null, null );
+			} catch (Exception e) {
+				listener.exceptionOccurred( e );
+				e.printStackTrace();
 			}
 		} ).start();
 	}
@@ -475,26 +420,20 @@ public class EntryEditor extends ThemeActivity {
 		}
 		invalidateOptionsMenu();
 		applyTheme();
-		findViewById( R.id.fabUp ).setOnClickListener( new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				ScrollView scrollView = findViewById( R.id.scrollView );
-				scrollView.smoothScrollTo( 0, 0 );
-			}
+		findViewById( R.id.fabUp ).setOnClickListener( v->{
+			ScrollView scrollView = findViewById( R.id.scrollView );
+			scrollView.smoothScrollTo( 0, 0 );
 		} );
 		readColorHistory();
 
 		ScrollView scrollView = findViewById( R.id.scrollView );
 		scrollView.setSmoothScrollingEnabled( true );
 		if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
-			scrollView.setOnScrollChangeListener( new View.OnScrollChangeListener() {
-				@Override
-				public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
-					if ( oldScrollY > scrollY && scrollY > 5 ) {
-						showUpButton();
-					} else if ( scrollY <= 5 || oldScrollY < scrollY ) {
-						hideUpButton();
-					}
+			scrollView.setOnScrollChangeListener( (v, scrollX, scrollY, oldScrollX, oldScrollY)->{
+				if ( oldScrollY > scrollY && scrollY > 5 ) {
+					showUpButton();
+				} else if ( scrollY <= 5 || oldScrollY < scrollY ) {
+					hideUpButton();
 				}
 			} );
 		}
@@ -502,12 +441,9 @@ public class EntryEditor extends ThemeActivity {
 		setEditTextSize();
 		FloatingActionButton fab = findViewById( R.id.fabSaveEntry );
 		fab.setOnClickListener( saveEntry );
-		fab.setOnLongClickListener( new View.OnLongClickListener() {
-			@Override
-			public boolean onLongClick(View v) {
-				Toast.makeText( EntryEditor.this, "id: " + mId, Toast.LENGTH_SHORT ).show();
-				return true;
-			}
+		fab.setOnLongClickListener( v->{
+			Toast.makeText( EntryEditor.this, "id: " + mId, Toast.LENGTH_SHORT ).show();
+			return true;
 		} );
 		Utils.showKeyboard( mTextEditor, this );
 
@@ -563,32 +499,6 @@ public class EntryEditor extends ThemeActivity {
 			mOnLoadedTextListener.loaded( loadedSpannable, entry );
 		} ).start();
 	}
-
-	private final HtmlSpanRender.RenderCallback mRenderCallback = new HtmlSpanRender.RenderCallback() {
-		@Override
-		public void onImageClick(View view, String src) {
-
-		}
-
-		@Override
-		public int getLineHeight() {
-			return mTextEditor.getLineHeight();
-		}
-
-		@Override
-		public boolean drawView(View view) {
-			runOnUiThread( ()->{
-				RelativeLayout relativeLayout = findViewById( R.id.entry_editor_relative_layout );
-				relativeLayout.addView( view );
-			} );
-			return true;
-		}
-
-		@Override
-		public void viewsArrayDone(ArrayList<HtmlSpanRender.WidgetParam> widgetParams) {
-			mWidgetParams = widgetParams;
-		}
-	};
 
 	private void readColorHistory() {
 		String history = sp.getString( "color_history", null );
@@ -661,7 +571,6 @@ public class EntryEditor extends ThemeActivity {
 					mTextEditor.setScrollY( entry.getProperties().getScrollPosition() );
 					mStartEditable = mTextEditor.getText();
 					setEditTextSize();
-					setSpanWatcher();
 					mProgressDialogOnTextLoad.cancel();
 					final double end = System.currentTimeMillis();
 					final double seconds = ( end - mStartLoadTextTime ) / 1000;
@@ -841,54 +750,9 @@ public class EntryEditor extends ThemeActivity {
 		}
 	}
 
-	private boolean isLineAffectedByWidget(int line){
-		for(HtmlSpanRender.WidgetParam widgetParam : mWidgetParams){
-			if(widgetParam.firstAffectedLine <= line && line <= widgetParam.lastAffectedLine)
-				return true;
-		}
-		return false;
-	}
-
-	private int findFirstNotAffectedLine(int line){
-		int nextLine = -1, previousLine = -1;
-		for(int i = line + 1; i < mTextEditor.getLineCount(); i++){
-			if(!isLineAffectedByWidget( i )) {
-				nextLine = i;
-				break;
-			}
-		}
-		for(int i = line - 1; i >= 0; i--){
-			if(!isLineAffectedByWidget( i )){
-				previousLine = i;
-				break;
-			}
-		}
-		if(nextLine != -1 && previousLine != -1){
-			if(Math.abs( line - nextLine ) < Math.abs( line - previousLine ))
-				return nextLine;
-			else
-				return previousLine;
-		}else if( nextLine == -1 && previousLine == -1 ){
-			mTextEditor.appendW( "\n" );
-			return mTextEditor.getLineCount() - 1;
-		}else{
-			return nextLine != -1 ? nextLine : previousLine;
-		}
-	}
-
 	final TextEditor.OnSelectionChanges mOnSelectionChanges = new TextEditor.OnSelectionChanges() {
 		@Override
 		public void onTextSelected(final int start, final int end) {
-			int startLine = mTextEditor.getLayout().getLineForOffset( start );
-			int endLine = mTextEditor.getLayout().getLineForOffset( end );
-			for(int i = startLine; i <= endLine; i++ ){
-				if(isLineAffectedByWidget( i )){
-					int newLine = findFirstNotAffectedLine( i );
-					mTextEditor.setCursorToLine( newLine );
-					return;
-				}
-			}
-
 			mTextEditor.clearComposingText();
 			mSelectionBounds = new int[]{ start, end };
 
@@ -946,12 +810,6 @@ public class EntryEditor extends ThemeActivity {
 
 		@Override
 		public void onTextSelectionBreak(int newSelectionPosition) {
-			int line = mTextEditor.getCurrentLine();
-			if(isLineAffectedByWidget( line )){
-				mTextEditor.setCursorToLine( findFirstNotAffectedLine( line ) );
-				return;
-			}
-
 			mSelectionBounds = new int[]{ newSelectionPosition, newSelectionPosition };
 
 			btnBold.setOnClickListener( null );
@@ -974,7 +832,6 @@ public class EntryEditor extends ThemeActivity {
 
 		@Override
 		public void onTextChanged(CharSequence text, int start, int lengthBefore, int lengthAfter) {
-			setSpanWatcher();
 			Editable e = mTextEditor.getText();
 			if ( lengthAfter > lengthBefore ) {
 				int len = lengthAfter - lengthBefore;
@@ -1392,14 +1249,11 @@ public class EntryEditor extends ThemeActivity {
 					public boolean onLongClick(final View v) {
 						PopupMenu popupMenu = new PopupMenu( EntryEditor.this, v );
 						popupMenu.getMenu().add( EntryEditor.this.getString( R.string.delete ) );
-						popupMenu.setOnMenuItemClickListener( new PopupMenu.OnMenuItemClickListener() {
-							@Override
-							public boolean onMenuItemClick(MenuItem item) {
-								mColorHistory.remove( (int) v.getTag( R.id.color_pos_in_history ) );
-								saveColorHistory();
-								initializeColorButtons( (View) v.getParent(), clickListener );
-								return true;
-							}
+						popupMenu.setOnMenuItemClickListener( item->{
+							mColorHistory.remove( (int) v.getTag( R.id.color_pos_in_history ) );
+							saveColorHistory();
+							initializeColorButtons( (View) v.getParent(), clickListener );
+							return true;
 						} );
 						popupMenu.show();
 						return true;
@@ -1423,7 +1277,6 @@ public class EntryEditor extends ThemeActivity {
 
 	private AlertDialog getColorPickerDialog(int title, int defColor, final OnColorSelected colorSelected, final boolean offerReplacement) {
 		final ScrollView scrollView = (ScrollView) getLayoutInflater().inflate( R.layout.layout_color_picker, null );
-		//final LinearLayout scrollView = (LinearLayout) getLayoutInflater().inflate( R.layout.layout_color_picker, null );
 		final ColorPickerView colorPickerView = scrollView.findViewById( R.id.color_picker );
 		colorPickerView.setColor( defColor, true );
 		final boolean[] fromBtn = { false };
@@ -1435,51 +1288,37 @@ public class EntryEditor extends ThemeActivity {
 			scrollView.findViewById( R.id.layout_to_color )
 					.setBackgroundColor( defColor );
 
-			colorPickerView.addOnColorChangedListener( new OnColorChangedListener() {
-				@Override
-				public void onColorChanged(int i) {
-					fromBtn[ 0 ] = false;
-					scrollView.findViewById( R.id.layout_to_color )
-							.setBackgroundColor( i );
-				}
+			colorPickerView.addOnColorChangedListener( i->{
+				fromBtn[ 0 ] = false;
+				scrollView.findViewById( R.id.layout_to_color )
+						.setBackgroundColor( i );
 			} );
 		}
 		final AlertDialog.Builder builder = new AlertDialog.Builder( EntryEditor.this )
 				.setTitle( title )
 				.setView( scrollView )
-				.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						int color = colorPickerView.getSelectedColor();
-						if ( !fromBtn[ 0 ] ) {
-							addColorToHistory( color );
-						}
-						colorSelected.onColorSelected( color );
-						dialog.cancel();
+				.setPositiveButton( "OK", (dialog, which)->{
+					int color = colorPickerView.getSelectedColor();
+					if ( !fromBtn[ 0 ] ) {
+						addColorToHistory( color );
 					}
-				} ).setNegativeButton( R.string.cancel, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.cancel();
-					}
-				} );
+					colorSelected.onColorSelected( color );
+					dialog.cancel();
+				} ).setNegativeButton( R.string.cancel, (dialog, which)->dialog.cancel() );
 		final AlertDialog alertDialog = builder.create();
 		if ( mColorHistory.size() == 0 ) {
 			scrollView.findViewById( R.id.layoutColorsHistory ).setVisibility( View.GONE );
 		} else {
-			initializeColorButtons( scrollView, new View.OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					int color = (int) v.getTag( R.id.color_int_in_history );
-					if ( offerReplacement ) {
-						fromBtn[ 0 ] = true;
-						colorPickerView.setColor( color, true );
-						scrollView.findViewById( R.id.layout_to_color )
-								.setBackgroundColor( color );
-					} else {
-						alertDialog.cancel();
-						colorSelected.onColorSelected( color );
-					}
+			initializeColorButtons( scrollView, v->{
+				int color = (int) v.getTag( R.id.color_int_in_history );
+				if ( offerReplacement ) {
+					fromBtn[ 0 ] = true;
+					colorPickerView.setColor( color, true );
+					scrollView.findViewById( R.id.layout_to_color )
+							.setBackgroundColor( color );
+				} else {
+					alertDialog.cancel();
+					colorSelected.onColorSelected( color );
 				}
 			} );
 		}
@@ -1498,19 +1337,16 @@ public class EntryEditor extends ThemeActivity {
 			final ForegroundColorSpan[] spans = e.getSpans( 0, e.length(), ForegroundColorSpan.class );
 			AlertDialog alertDialog = getColorPickerDialog( R.string.set_text_color_of_all_text,
 					mDefaultTextColor,
-					new OnColorSelected() {
-						@Override
-						public void onColorSelected(int color) {
-							for (ForegroundColorSpan span : spans) {
-								e.removeSpan( span );
-							}
-							e.setSpan( new ForegroundColorSpan( color ), 0, e.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-							mTextEditor.setTextColor( color );
-
-							mDefaultTextColor = color;
-							mEntry.getProperties().setDefaultTextColor( color );
-							setBtnTextColorPickerColorAtBounds();
+					color->{
+						for (ForegroundColorSpan span : spans) {
+							e.removeSpan( span );
 						}
+						e.setSpan( new ForegroundColorSpan( color ), 0, e.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+						mTextEditor.setTextColor( color );
+
+						mDefaultTextColor = color;
+						mEntry.getProperties().setDefaultTextColor( color );
+						setBtnTextColorPickerColorAtBounds();
 					} );
 			alertDialog.show();
 		}
@@ -1585,7 +1421,7 @@ public class EntryEditor extends ThemeActivity {
 			window.setExitTransition( new Fade( Fade.OUT ) );
 		}
 
-		Drawable d = getDrawable( R.drawable.button_rounded_corners );
+		Drawable d = ContextCompat.getDrawable( this, R.drawable.button_rounded_corners );
 		d.setColorFilter( new PorterDuffColorFilter( getColor( R.color.gray ), PorterDuff.Mode.SRC_IN ) );
 		window.setBackgroundDrawable( d );
 
@@ -1621,7 +1457,7 @@ public class EntryEditor extends ThemeActivity {
 			window.setExitTransition( new Fade( Fade.OUT ) );
 		}
 
-		Drawable d = getDrawable( R.drawable.button_rounded_corners );
+		Drawable d = ContextCompat.getDrawable( this, R.drawable.button_rounded_corners );
 		d.setColorFilter( new PorterDuffColorFilter( getColor( R.color.gray ), PorterDuff.Mode.SRC_IN ) );
 		window.setBackgroundDrawable( d );
 
@@ -1658,7 +1494,7 @@ public class EntryEditor extends ThemeActivity {
 		try {
 			copyTempFiles();
 			replaceTempImagesInSpans();
-			mEntry.saveInWhichDocumentsIncludedThisEntry( new ArrayList<Document>() );
+			mEntry.saveInWhichDocumentsIncludedThisEntry( new ArrayList<>() );
 			mEntry.saveContent( text );
 			mEntry.setAndSaveInfo( new Info( (int) System.currentTimeMillis() ) );
 			if ( !mWithoutDoc ) {
@@ -1885,19 +1721,11 @@ public class EntryEditor extends ThemeActivity {
 												.setTitle( R.string.warning )
 												.setMessage( getResources().getString( R.string.this_name_already_exist ) + "\n" +
 														getResources().getString( R.string.do_you_want_to_continue ) )
-												.setPositiveButton( R.string.yes, new DialogInterface.OnClickListener() {
-													@Override
-													public void onClick(DialogInterface dialog, int which) {
-														createEntry( n, mTextEditor.getText() );
-														dialog.dismiss();
-													}
+												.setPositiveButton( R.string.yes, (dialog1, which1)->{
+													createEntry( n, mTextEditor.getText() );
+													dialog1.dismiss();
 												} )
-												.setNegativeButton( R.string.no, new DialogInterface.OnClickListener() {
-													@Override
-													public void onClick(DialogInterface dialog, int which) {
-														dialog.dismiss();
-													}
-												} );
+												.setNegativeButton( R.string.no, (dialog12, which12)->dialog12.dismiss() );
 										builder1.create().show();
 									} else {
 										createEntry( n, mTextEditor.getText() );
@@ -1905,20 +1733,11 @@ public class EntryEditor extends ThemeActivity {
 								}
 							}
 						} )
-						.setNegativeButton( R.string.cancel, new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								dialog.cancel();
-							}
-						} ).setCancelable( false );
+						.setNegativeButton( R.string.cancel, (dialog, which)->dialog.cancel() )
+						.setCancelable( false );
 
 				alertDialog = builder.create();
-				alertDialog.setOnShowListener( new DialogInterface.OnShowListener() {
-					@Override
-					public void onShow(DialogInterface dialog) {
-						Utils.showKeyboard( name, EntryEditor.this );
-					}
-				} );
+				alertDialog.setOnShowListener( dialog->Utils.showKeyboard( name, EntryEditor.this ) );
 				alertDialog.show();
 			} else {
 				mTextEditor.requestFocus();
