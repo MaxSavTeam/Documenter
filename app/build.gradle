@@ -1,7 +1,6 @@
 import java.text.SimpleDateFormat
 
 apply plugin: 'com.android.application'
-apply plugin: 'androidx.navigation.safeargs'
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.firebase-perf'
 
@@ -11,21 +10,12 @@ String projectPath = ""
 int buildCode = -1;
 
 android {
-    signingConfigs {
-        release {
-            def verfile = file('keystore.properties')
-            if (verfile.canRead()) {
-                Properties properties = new Properties();
-                properties.load(new FileInputStream(verfile))
-                storeFile file("${properties['STOREFILE']}")
-                storePassword = "${properties['STOREPASS']}"
-                keyPassword = "${properties['KEYPASS']}"
-                keyAlias = "${properties['KEY']}"
-            }
-        }
-    }
     compileSdkVersion 30
-    buildToolsVersion "30.0.2"
+    buildToolsVersion '30.0.3'
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
 
     def buildPropFile = file('build.properties')
     if (buildPropFile.canRead()) {
@@ -100,10 +90,10 @@ task rollbackUpdate(type: Exec) {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
     implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'com.google.android.material:material:1.2.1'
+    implementation 'com.google.android.material:material:1.3.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
-    implementation 'androidx.navigation:navigation-fragment:2.3.1'
-    implementation 'androidx.navigation:navigation-ui:2.3.1'
+    implementation 'androidx.navigation:navigation-fragment:2.3.3'
+    implementation 'androidx.navigation:navigation-ui:2.3.3'
 
     implementation 'com.android.support:design:30.0.0'
     implementation 'com.github.clans:fab:1.6.4'
@@ -113,10 +103,10 @@ dependencies {
 
     implementation 'com.android.support:multidex:1.0.3'
 
-    implementation 'com.google.firebase:firebase-core:18.0.0'
+    implementation 'com.google.firebase:firebase-core:18.0.2'
     implementation 'com.firebaseui:firebase-ui-auth:6.2.0'
-    implementation 'com.google.firebase:firebase-auth:20.0.0'
-    implementation 'com.google.firebase:firebase-storage:19.2.0'
-    implementation 'com.google.firebase:firebase-database:19.5.1'
-    implementation 'com.google.firebase:firebase-perf:19.0.9'
+    implementation 'com.google.firebase:firebase-auth:20.0.2'
+    implementation 'com.google.firebase:firebase-storage:19.2.1'
+    implementation 'com.google.firebase:firebase-database:19.6.0'
+    implementation 'com.google.firebase:firebase-perf:19.1.1'
 }
