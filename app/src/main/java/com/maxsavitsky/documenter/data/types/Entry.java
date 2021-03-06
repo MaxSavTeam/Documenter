@@ -14,7 +14,6 @@ import android.view.Gravity;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.google.firebase.database.annotations.NotNull;
 import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.data.Info;
 import com.maxsavitsky.documenter.data.MainData;
@@ -624,7 +623,6 @@ public class Entry extends Type {
 			return result;
 		}
 
-		@NotNull
 		@Override
 		public String toString() {
 			return "Properties{" +

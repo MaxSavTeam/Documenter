@@ -17,7 +17,6 @@ import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.Editable;
@@ -73,7 +72,6 @@ import com.maxsavitsky.documenter.ThemeActivity;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.data.Info;
 import com.maxsavitsky.documenter.data.MainData;
-import com.maxsavitsky.documenter.data.html.HtmlImageLoader;
 import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.media.images.ImageRenderer;
@@ -102,7 +100,7 @@ public class EntryEditor extends ThemeActivity {
 	private Entry mEntry, mCopyToEntry;
 	private String mId;
 	private String title = "Create new entry";
-	private Entry.Properties mStartProperties;
+	private Entry.Properties tempProperties;
 	private TextEditor mTextEditor;
 	private ImageButton btnBgColorPicker, btnTextColorPicker;
 	private ImageButton btnSubScript, btnSupScript;
@@ -154,14 +152,15 @@ public class EntryEditor extends ThemeActivity {
 			mTextEditor.clearComposingText();
 			t = Html.toHtml( trim( mTextEditor.getText() ) );
 		}
-		boolean firstCondition = type.equals( "create" )
-				&& mTextEditor.getText() != null && !mTextEditor.getText().toString().equals( "" );
+		boolean firstCondition = type.equals( "create" ) &&
+				!mTextEditor.getText().toString().isEmpty() &&
+				!tempProperties.equals( new Entry.Properties() );
 
-		boolean secondCondition = type.equals( "edit" )
-				&& ( !t.equals( mOriginalText ) || !mStartProperties.equals( mEntry.getProperties() ) );
+		Log.i( TAG, "backPressed: " + (mTextEditor.getText().hashCode()) );
 
-		/*AlertDialog.Builder builder = new AlertDialog.Builder( this ).setMessage( !t.equals( mOriginalText ) + "\n\n" + t + "\n\n" + mOriginalText );
-		builder.create().show();*/
+		boolean secondCondition = type.equals( "edit" );
+				//&& ( !t.equals( mOriginalText ) || !mStartProperties.equals( mEntry.getProperties() ) );
+
 		if ( firstCondition || secondCondition ) {
 			showExitAlertDialog();
 		} else {
@@ -342,7 +341,7 @@ public class EntryEditor extends ThemeActivity {
 		backPressed();
 	}
 
-	ProgressDialog mProgressDialogOnTextLoad;
+	private ProgressDialog mProgressDialogOnTextLoad;
 	private long mStartLoadTextTime;
 	private boolean mWithoutDoc = false;
 
@@ -382,41 +381,46 @@ public class EntryEditor extends ThemeActivity {
 			_finishActivity();
 			return;
 		}
-		if ( type.equals( "edit" ) ) {
-			mEntry = MainData.getEntryWithId( getIntent().getStringExtra( "id" ) );
-			try {
-				mEntry.readProperties();
-			} catch (IOException | SAXException e) {
-				Utils.getErrorDialog( e, this ).show();
-				return;
-			}
-			mId = mEntry.getId();
-			mStartProperties = new Entry.Properties( mEntry.getProperties() );
-			mDefaultTextColor = mEntry.getProperties().getDefaultTextColor();
-			mTextEditor.setTextColor( mDefaultTextColor );
-			setImageButtonColor( mEntry.getProperties().getBgColor(), btnBgColorPicker.getId() );
-			getWindow().getDecorView().setBackgroundColor( mEntry.getProperties().getBgColor() );
+		switch ( type ) {
+			case "edit":
+				mEntry = MainData.getEntryWithId( getIntent().getStringExtra( "id" ) );
+				try {
+					mEntry.readProperties();
+				} catch (IOException | SAXException e) {
+					Utils.getErrorDialog( e, this ).show();
+					return;
+				}
+				mId = mEntry.getId();
+				tempProperties = new Entry.Properties( mEntry.getProperties() );
+				mDefaultTextColor = mEntry.getProperties().getDefaultTextColor();
+				mTextEditor.setTextColor( mDefaultTextColor );
+				setImageButtonColor( mEntry.getProperties().getBgColor(), btnBgColorPicker.getId() );
+				getWindow().getDecorView().setBackgroundColor( mEntry.getProperties().getBgColor() );
 
-			title = getResources().getString( R.string.edit_entry ) + ": " + mEntry.getName();
+				title = getResources().getString( R.string.edit_entry ) + ": " + mEntry.getName();
 
-			loadTextFromEntryInEditor( mId );
-		} else if ( type.equals( "create" ) ) {
-			title = getResources().getString( R.string.create_new_entry );
-			mWithoutDoc = getIntent().getBooleanExtra( "without_doc", false );
-			if ( !mWithoutDoc ) {
-				mDocument = MainData.getDocumentWithId( getIntent().getStringExtra( "id" ) );
-			}
-			mEntry = new Entry( "temp_entry", "" );
-			mId = Utils.generateUniqueId() + "_ent";
-			hideUpButton();
-		} else if ( type.equals( "copy" ) ) {
-			String toId = startIntent.getStringExtra( "to_id" );
-			String fromId = startIntent.getStringExtra( "from_id" );
-			mEntry = MainData.getEntryWithId( fromId );
-			mCopyToEntry = MainData.getEntryWithId( toId );
-			title = getResources().getString( R.string.edit_entry ) + ": " + mCopyToEntry.getName();
-			loadTextFromEntryInEditor( fromId );
-
+				loadTextFromEntryInEditor( mId );
+				break;
+			case "create":
+				title = getResources().getString( R.string.create_new_entry );
+				mWithoutDoc = getIntent().getBooleanExtra( "without_doc", false );
+				if ( !mWithoutDoc ) {
+					mDocument = MainData.getDocumentWithId( getIntent().getStringExtra( "id" ) );
+				}
+				mEntry = new Entry( "temp_entry", "" );
+				tempProperties = new Entry.Properties();
+				mId = Utils.generateUniqueId() + "_ent";
+				hideUpButton();
+				break;
+			case "copy":
+				String toId = startIntent.getStringExtra( "to_id" );
+				String fromId = startIntent.getStringExtra( "from_id" );
+				mEntry = MainData.getEntryWithId( fromId );
+				tempProperties = new Entry.Properties( mEntry.getProperties() );
+				mCopyToEntry = MainData.getEntryWithId( toId );
+				title = getResources().getString( R.string.edit_entry ) + ": " + mCopyToEntry.getName();
+				loadTextFromEntryInEditor( fromId );
+				break;
 		}
 		invalidateOptionsMenu();
 		applyTheme();
@@ -455,22 +459,16 @@ public class EntryEditor extends ThemeActivity {
 		for (int i = 0; i < layout.getChildCount(); i++) {
 			View v = layout.getChildAt( i );
 			v.setTag( i );
-			v.setOnLongClickListener( new View.OnLongClickListener() {
-				@Override
-				public boolean onLongClick(View v) {
-					final int tag = (int) v.getTag();
-					runOnUiThread( new Runnable() {
-						@Override
-						public void run() {
-							String[] s = getResources().getStringArray( R.array.tools_hints );
-							Toast t = Toast.makeText( EntryEditor.this, s[ tag ], Toast.LENGTH_LONG );
-							t.setGravity( Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0 );
-							t.show();
-						}
-					} );
+			v.setOnLongClickListener( v1->{
+				final int tag = (int) v1.getTag();
+				runOnUiThread( ()->{
+					String[] s = getResources().getStringArray( R.array.tools_hints );
+					Toast t = Toast.makeText( EntryEditor.this, s[ tag ], Toast.LENGTH_LONG );
+					t.setGravity( Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0 );
+					t.show();
+				} );
 
-					return true;
-				}
+				return true;
 			} );
 		}
 	}
@@ -486,9 +484,6 @@ public class EntryEditor extends ThemeActivity {
 			Spannable loadedSpannable;
 			mStartLoadTextTime = System.currentTimeMillis();
 			try {
-				String text = mEntry.loadText();
-				/*loadedSpannable = (Spannable) HtmlSpanRender.get( new HtmlSpanRender.Initialization( EntryEditor.this, mRenderCallback )
-						.setSource( text ) );*/
 				loadedSpannable = mEntry.loadAndPrepareText();
 			} catch (final IOException e) {
 				mOnLoadedTextListener.exceptionOccurred( e );
@@ -529,19 +524,6 @@ public class EntryEditor extends ThemeActivity {
 		sp.edit().putString( "color_history", save ).apply();
 	}
 
-	private void setTextInEditor(String text) {
-		Editable e = mTextEditor.getText();
-		if ( e != null ) {
-			e.clear();
-		}
-
-		Spannable spannable = (Spannable) Html.fromHtml( text, new HtmlImageLoader(), null );
-		for (SpanEntry<AlignmentSpan.Standard> se : mEntry.getAlignments()) {
-			spannable.setSpan( se.getSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-		}
-		mTextEditor.setTextWithoutNotifying( spannable );
-	}
-
 	private void setTextInEditor(Spannable spannable) {
 		Editable e = mTextEditor.getText();
 		if ( e != null ) {
@@ -562,50 +544,41 @@ public class EntryEditor extends ThemeActivity {
 
 			mOriginalText = Html.toHtml( trim( spannable ) );
 
-			runOnUiThread( new Runnable() {
-				@Override
-				public void run() {
-					setTextInEditor( spannable );
-					mTextEditor.setScrollY( entry.getProperties().getScrollPosition() );
-					mStartEditable = mTextEditor.getText();
-					setEditTextSize();
-					mProgressDialogOnTextLoad.cancel();
-					final double end = System.currentTimeMillis();
-					final double seconds = ( end - mStartLoadTextTime ) / 1000;
-					Log.v( TAG + "L", "Text loaded after " + seconds );
-					ScrollView scrollView = findViewById( R.id.scrollView );
-					WindowManager w = (WindowManager) getSystemService( Context.WINDOW_SERVICE );
-					Display d = w.getDefaultDisplay();
-					Point p = new Point();
-					d.getSize( p );
-					if ( scrollView.getHeight() <= p.y ) {
-						hideUpButton();
-					}
-
-					calculateMainAlignment();
-
-					scrollView.post( new Runnable() {
-						@Override
-						public void run() {
-							View focusView = getWindow().getDecorView().findFocus();
-							if ( focusView != null ) {
-								focusView.clearFocus();
-							}
-							scrollView.scrollTo( 0, getIntent().getIntExtra( "scroll_position", 0 ) );
-						}
-					} );
+			runOnUiThread( ()->{
+				setTextInEditor( spannable );
+				mTextEditor.setScrollY( entry.getProperties().getScrollPosition() );
+				mStartEditable = mTextEditor.getText();
+				setEditTextSize();
+				mProgressDialogOnTextLoad.cancel();
+				final double end = System.currentTimeMillis();
+				final double seconds1 = ( end - mStartLoadTextTime ) / 1000;
+				Log.v( TAG + "L", "Text loaded after " + seconds1 );
+				ScrollView scrollView = findViewById( R.id.scrollView );
+				WindowManager w = (WindowManager) getSystemService( Context.WINDOW_SERVICE );
+				Display d = w.getDefaultDisplay();
+				Point p = new Point();
+				d.getSize( p );
+				if ( scrollView.getHeight() <= p.y ) {
+					hideUpButton();
 				}
+
+				calculateMainAlignment();
+
+				scrollView.post( ()->{
+					View focusView = getWindow().getDecorView().findFocus();
+					if ( focusView != null ) {
+						focusView.clearFocus();
+					}
+					scrollView.scrollTo( 0, getIntent().getIntExtra( "scroll_position", 0 ) );
+				} );
 			} );
 		}
 
 		@Override
 		public void exceptionOccurred(final Exception e) {
-			runOnUiThread( new Runnable() {
-				@Override
-				public void run() {
-					mProgressDialogOnTextLoad.cancel();
-					Utils.getErrorDialog( e, EntryEditor.this ).show();
-				}
+			runOnUiThread( ()->{
+				mProgressDialogOnTextLoad.cancel();
+				Utils.getErrorDialog( e, EntryEditor.this ).show();
 			} );
 		}
 	};
@@ -637,14 +610,7 @@ public class EntryEditor extends ThemeActivity {
 			builder.setTitle( R.string.warning )
 					.setMessage( R.string.image_picker_warning_memory_not_accessed )
 					.setCancelable( true )
-					.setPositiveButton( R.string.request, new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
-								requestPermissions( new String[]{ Manifest.permission.READ_EXTERNAL_STORAGE }, 100 );
-							}
-						}
-					} )
+					.setPositiveButton( R.string.request, (dialog, which)->requestPermissions( new String[]{ Manifest.permission.READ_EXTERNAL_STORAGE }, 100 ) )
 					.create()
 					.show();
 			return;
@@ -770,38 +736,32 @@ public class EntryEditor extends ThemeActivity {
 			final BackgroundColorSpan[] backgroundColorSpans = s.getSpans( start, end, BackgroundColorSpan.class );
 			final int editTextColor = ( (ColorDrawable) mTextEditor.getBackground() ).getColor();
 			final int backgroundColor = ( backgroundColorSpans.length == 0 ? editTextColor : backgroundColorSpans[ 0 ].getBackgroundColor() );
-			btnTextHighlight.setOnClickListener( new View.OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					OnColorSelected listener = new OnColorSelected() {
+			btnTextHighlight.setOnClickListener( v->{
+				OnColorSelected listener = color->{
+					Editable e = mTextEditor.getText();
+					if ( e == null ) {
+						return;
+					}
+					int selSt = mSelectionBounds[ 0 ];
+					int selEnd = mSelectionBounds[ 1 ];
+					removeAllSpansInBounds( mSelectionBounds[ 0 ], mSelectionBounds[ 1 ], BackgroundColorSpan.class );
+					e.setSpan( new BackgroundColorSpan( color ), selSt, selEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+					setImageButtonColor( color, btnTextHighlight.getId() );
+				};
+				AlertDialog alertDialog = getColorPickerDialog( R.string.choose_text_background_of_segment, backgroundColor, listener );
+				if ( backgroundColorSpans.length > 0 ) {
+					alertDialog.setButton( AlertDialog.BUTTON_NEUTRAL, getString( R.string.delete ), new DialogInterface.OnClickListener() {
 						@Override
-						public void onColorSelected(int color) {
+						public void onClick(DialogInterface dialog, int which) {
 							Editable e = mTextEditor.getText();
 							if ( e == null ) {
 								return;
 							}
-							int selSt = mSelectionBounds[ 0 ];
-							int selEnd = mSelectionBounds[ 1 ];
 							removeAllSpansInBounds( mSelectionBounds[ 0 ], mSelectionBounds[ 1 ], BackgroundColorSpan.class );
-							e.setSpan( new BackgroundColorSpan( color ), selSt, selEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-							setImageButtonColor( color, btnTextHighlight.getId() );
 						}
-					};
-					AlertDialog alertDialog = getColorPickerDialog( R.string.choose_text_background_of_segment, backgroundColor, listener );
-					if ( backgroundColorSpans.length > 0 ) {
-						alertDialog.setButton( AlertDialog.BUTTON_NEUTRAL, getString( R.string.delete ), new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								Editable e = mTextEditor.getText();
-								if ( e == null ) {
-									return;
-								}
-								removeAllSpansInBounds( mSelectionBounds[ 0 ], mSelectionBounds[ 1 ], BackgroundColorSpan.class );
-							}
-						} );
-					}
-					alertDialog.show();
+					} );
 				}
+				alertDialog.show();
 			} );
 			setImageButtonColor( backgroundColor, btnTextHighlight.getId() );
 		}
@@ -840,7 +800,7 @@ public class EntryEditor extends ThemeActivity {
 
 				e.setSpan( new ForegroundColorSpan( mDefaultTextColor ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 				e.setSpan( new AlignmentSpan.Standard( mMainAlignment ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-				e.setSpan( new AbsoluteSizeSpan( mEntry.getProperties().getTextSize(), true ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+				e.setSpan( new AbsoluteSizeSpan( tempProperties.getTextSize(), true ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 			}
 			saveTextChange();
 			if ( lengthAfter == 0 ) {
@@ -968,7 +928,7 @@ public class EntryEditor extends ThemeActivity {
 		}
 	}
 
-	private View.OnClickListener onSupBtnClick = new View.OnClickListener() {
+	private final View.OnClickListener onSupBtnClick = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
 			boolean isApplied = (boolean) v.getTag();
@@ -991,7 +951,7 @@ public class EntryEditor extends ThemeActivity {
 		}
 	};
 
-	private View.OnClickListener onSubBtnClick = new View.OnClickListener() {
+	private final View.OnClickListener onSubBtnClick = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
 			boolean isApplied = (boolean) v.getTag();
@@ -1198,14 +1158,11 @@ public class EntryEditor extends ThemeActivity {
 	private final View.OnClickListener btnBgColorPickerDefaultClickListener = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
-			OnColorSelected whatToDo = new OnColorSelected() {
-				@Override
-				public void onColorSelected(int color) {
-					setImageButtonColor( color, btnBgColorPicker.getId() );
-					mTextEditor.setBackgroundColor( color );
-					getWindow().getDecorView().setBackgroundColor( color );
-					mEntry.getProperties().setBgColor( color );
-				}
+			OnColorSelected whatToDo = color->{
+				setImageButtonColor( color, btnBgColorPicker.getId() );
+				mTextEditor.setBackgroundColor( color );
+				getWindow().getDecorView().setBackgroundColor( color );
+				tempProperties.setBgColor( color );
 			};
 			AlertDialog alertDialog = getColorPickerDialog( R.string.set_background_color, mEntry.getProperties().getBgColor(), whatToDo );
 			alertDialog.show();
@@ -1230,12 +1187,9 @@ public class EntryEditor extends ThemeActivity {
 	private final View.OnClickListener onClickOnSelectColorOfTextSegment = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
-			OnColorSelected onColorSelected = new OnColorSelected() {
-				@Override
-				public void onColorSelected(int color) {
-					applySpanColorToText( color, mSelectionBounds[ 0 ], mSelectionBounds[ 1 ] );
-					setBtnTextColorPickerColorAtBounds();
-				}
+			OnColorSelected onColorSelected = color->{
+				applySpanColorToText( color, mSelectionBounds[ 0 ], mSelectionBounds[ 1 ] );
+				setBtnTextColorPickerColorAtBounds();
 			};
 			Editable s = mTextEditor.getText();
 			int c;
@@ -1361,7 +1315,7 @@ public class EntryEditor extends ThemeActivity {
 						mTextEditor.setTextColor( color );
 
 						mDefaultTextColor = color;
-						mEntry.getProperties().setDefaultTextColor( color );
+						tempProperties.setDefaultTextColor( color );
 						setBtnTextColorPickerColorAtBounds();
 					} );
 			alertDialog.show();
@@ -1388,9 +1342,9 @@ public class EntryEditor extends ThemeActivity {
 	}
 
 	public void minusTextSize(View view) {
-		int ts = mEntry.getProperties().getTextSize();
+		int ts = tempProperties.getTextSize();
 		if ( ts > 15 ) {
-			mEntry.getProperties().setTextSize( ts - 1 );
+			tempProperties.setTextSize( ts - 1 );
 		}
 
 		setTextSizeInLbl( view );
@@ -1404,7 +1358,7 @@ public class EntryEditor extends ThemeActivity {
 			return;
 		}
 
-		AbsoluteSizeSpan absoluteSizeSpan = new AbsoluteSizeSpan( mEntry.getProperties().getTextSize(), true );
+		AbsoluteSizeSpan absoluteSizeSpan = new AbsoluteSizeSpan( tempProperties.getTextSize(), true );
 		RelativeSizeSpan[] spans = e.getSpans( 0, e.length(), RelativeSizeSpan.class );
 		ArrayList<SpanEntry<RelativeSizeSpan>> spanEntries = new ArrayList<>();
 		for (RelativeSizeSpan span : spans) {
@@ -1421,7 +1375,7 @@ public class EntryEditor extends ThemeActivity {
 	}
 
 	private void setTextSizeInLbl(View view) {
-		int ts = mEntry.getProperties().getTextSize();
+		int ts = tempProperties.getTextSize();
 		View parent = (View) view.getRootView();
 		( (TextView) parent.findViewById( R.id.textViewTextSize ) ).setText( String.format( Locale.ROOT, "%d", ts ) );
 	}
@@ -1480,7 +1434,6 @@ public class EntryEditor extends ThemeActivity {
 
 	private void createEntry(String name, Spannable text) {
 		mTextEditor.clearComposingText();
-		Entry.Properties props = mEntry.getProperties();
 		mEntry = new Entry( mId, name );
 		ArrayList<Entry> entries = MainData.getEntriesList();
 		entries.add( mEntry );
@@ -1491,8 +1444,7 @@ public class EntryEditor extends ThemeActivity {
 			file.mkdirs();
 		}
 		try {
-			mEntry.setProperties( props );
-			mEntry.saveProperties();
+			mEntry.saveProperties( tempProperties );
 		} catch (IOException e) {
 			Utils.getErrorDialog( e, this ).show();
 			return;
@@ -1707,88 +1659,92 @@ public class EntryEditor extends ThemeActivity {
 		mTextEditor.setTextWithoutNotifying( trim( mTextEditor.getText() ) );
 		removeAllSpansInBounds( 0, e.length(), SpanWatcher.class );
 
-		if ( type.equals( "create" ) ) {
-			if ( e.length() != 0 ) {
-				AlertDialog alertDialog;
-				final EditText name = new EditText( this );
-				name.setId( View.NO_ID );
-				name.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT ) );
-				name.requestFocus();
-				name.setTextColor( getColor( super.mTextColor ) );
-				name.setMaxLines( 1 );
-				AlertDialog.Builder builder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
-						.setView( name )
-						.setTitle( R.string.enter_name )
-						.setMessage( R.string.name_yours_minds )
-						.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								dialog.cancel();
-								final String n = name.getText().toString();
-								if ( n.isEmpty() || n.trim().equals( "" ) ) {
-									Toast.makeText( EntryEditor.this, R.string.invalid_name, Toast.LENGTH_SHORT ).show();
-								} else {
-									if ( Utils.isNameExist( n, "ent" ) ) {
-										AlertDialog.Builder builder1 = new AlertDialog.Builder( EntryEditor.this )
-												.setTitle( R.string.warning )
-												.setMessage( getResources().getString( R.string.this_name_already_exist ) + "\n" +
-														getResources().getString( R.string.do_you_want_to_continue ) )
-												.setPositiveButton( R.string.yes, (dialog1, which1)->{
-													createEntry( n, mTextEditor.getText() );
-													dialog1.dismiss();
-												} )
-												.setNegativeButton( R.string.no, (dialog12, which12)->dialog12.dismiss() );
-										builder1.create().show();
+		switch ( type ) {
+			case "create":
+				if ( e.length() != 0 ) {
+					AlertDialog alertDialog;
+					final EditText name = new EditText( this );
+					name.setId( View.NO_ID );
+					name.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT ) );
+					name.requestFocus();
+					name.setTextColor( getColor( super.mTextColor ) );
+					name.setMaxLines( 1 );
+					AlertDialog.Builder builder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
+							.setView( name )
+							.setTitle( R.string.enter_name )
+							.setMessage( R.string.name_yours_minds )
+							.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									dialog.cancel();
+									final String n = name.getText().toString();
+									if ( n.isEmpty() || n.trim().equals( "" ) ) {
+										Toast.makeText( EntryEditor.this, R.string.invalid_name, Toast.LENGTH_SHORT ).show();
 									} else {
-										createEntry( n, mTextEditor.getText() );
+										if ( Utils.isNameExist( n, "ent" ) ) {
+											AlertDialog.Builder builder1 = new AlertDialog.Builder( EntryEditor.this )
+													.setTitle( R.string.warning )
+													.setMessage( getResources().getString( R.string.this_name_already_exist ) + "\n" +
+															getResources().getString( R.string.do_you_want_to_continue ) )
+													.setPositiveButton( R.string.yes, (dialog1, which1)->{
+														createEntry( n, mTextEditor.getText() );
+														dialog1.dismiss();
+													} )
+													.setNegativeButton( R.string.no, (dialog12, which12)->dialog12.dismiss() );
+											builder1.create().show();
+										} else {
+											createEntry( n, mTextEditor.getText() );
+										}
 									}
 								}
-							}
-						} )
-						.setNegativeButton( R.string.cancel, (dialog, which)->dialog.cancel() )
-						.setCancelable( false );
+							} )
+							.setNegativeButton( R.string.cancel, (dialog, which)->dialog.cancel() )
+							.setCancelable( false );
 
-				alertDialog = builder.create();
-				alertDialog.setOnShowListener( dialog->Utils.showKeyboard( name, EntryEditor.this ) );
-				alertDialog.show();
-			} else {
-				mTextEditor.requestFocus();
-			}
-		} else if ( type.equals( "edit" ) ) {
-			removeUnusedImages();
-			if ( e.length() != 0 ) {
-				try {
-					mEntry.saveProperties( mEntry.getProperties() );
-					mEntry.saveContent( mTextEditor.getText() );
-					ScrollView scrollView = findViewById( R.id.scrollView );
-					setResult( Results.REOPEN, new Intent().putExtra( "id", mEntry.getId() ).putExtra( "scroll_position", scrollView.getScrollY() ) );
-				} catch (Exception ex) {
-					ex.printStackTrace();
-					Utils.getErrorDialog( ex, this ).show();
-					return;
+					alertDialog = builder.create();
+					alertDialog.setOnShowListener( dialog->Utils.showKeyboard( name, EntryEditor.this ) );
+					alertDialog.show();
+				} else {
+					mTextEditor.requestFocus();
 				}
-				_finishActivity();
-			}
-		} else if ( type.equals( "copy" ) ) {
-			removeUnusedImages();
-			if ( e.length() != 0 ) {
-				copyContentFiles();
-				replaceImages();
-				try {
-					mCopyToEntry.saveProperties( mEntry.getProperties() );
-					mCopyToEntry.saveContent( mTextEditor.getText() );
-
-					setResult( Results.REOPEN, new Intent().putExtra( "id", mCopyToEntry.getId() ) );
+				break;
+			case "edit":
+				removeUnusedImages();
+				if ( e.length() != 0 ) {
+					try {
+						mEntry.saveProperties( tempProperties );
+						mEntry.saveContent( mTextEditor.getText() );
+						ScrollView scrollView = findViewById( R.id.scrollView );
+						setResult( Results.REOPEN, new Intent().putExtra( "id", mEntry.getId() ).putExtra( "scroll_position", scrollView.getScrollY() ) );
+					} catch (Exception ex) {
+						ex.printStackTrace();
+						Utils.getErrorDialog( ex, this ).show();
+						return;
+					}
 					_finishActivity();
-				} catch (IOException ex) {
-					ex.printStackTrace();
-					Utils.getErrorDialog( ex, this ).show();
 				}
-			}
+				break;
+			case "copy":
+				removeUnusedImages();
+				if ( e.length() != 0 ) {
+					copyContentFiles();
+					replaceImages();
+					try {
+						mCopyToEntry.saveProperties( tempProperties );
+						mCopyToEntry.saveContent( mTextEditor.getText() );
+
+						setResult( Results.REOPEN, new Intent().putExtra( "id", mCopyToEntry.getId() ) );
+						_finishActivity();
+					} catch (IOException ex) {
+						ex.printStackTrace();
+						Utils.getErrorDialog( ex, this ).show();
+					}
+				}
+				break;
 		}
 	}
 
-	final View.OnClickListener saveEntry = new View.OnClickListener() {
+	private final View.OnClickListener saveEntry = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
 			mTextEditor.clearComposingText();
