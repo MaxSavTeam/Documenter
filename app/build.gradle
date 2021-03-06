@@ -7,7 +7,7 @@ apply plugin: 'com.google.firebase.firebase-perf'
 String cleanVersionName = ""
 int verCode = 0
 String projectPath = ""
-int buildCode = -1;
+int buildCode = -1
 
 android {
     compileSdkVersion 30
@@ -30,10 +30,10 @@ android {
         applicationId "com.maxsavitsky.documenter"
         minSdkVersion 23
         targetSdkVersion 30
-        versionCode 54
+        versionCode 56
 
         verCode = versionCode
-        cleanVersionName = "1.14.0"
+        cleanVersionName = "1.15.0"
 
         versionName cleanVersionName
         buildConfigField "String", "COMPILATION_DATE", "\"${getDate()}\""
@@ -46,7 +46,7 @@ android {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            //shrinkResources true
+            shrinkResources true
         }
         debug {
             debuggable true
@@ -60,14 +60,9 @@ android {
     }
 }
 
-static def String formatDate(String format) {
-    SimpleDateFormat dateFormat = new SimpleDateFormat(format)
-    return dateFormat.format(new Date())
-}
-
 static String getDate() {
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
-    simpleDateFormat.setTimeZone(TimeZone.getTimeZone("GMT+3"));
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss")
+    simpleDateFormat.setTimeZone(TimeZone.getTimeZone("GMT+3"))
     return simpleDateFormat.format(new Date())
 }
 
