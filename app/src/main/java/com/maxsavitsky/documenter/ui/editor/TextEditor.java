@@ -61,7 +61,7 @@ public class TextEditor extends AppCompatEditText {
 	@Override
 	protected void onSelectionChanged(int selStart, int selEnd) {
 		super.onSelectionChanged( selStart, selEnd );
-		if(listener == null || !initialized)
+		if(listener == null)// || !initialized)
 			return;
 		if ( selStart == selEnd ) {
 			listener.onTextSelectionBreak( selStart );

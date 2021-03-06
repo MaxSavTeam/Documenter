@@ -428,15 +428,13 @@ public class EntryEditor extends ThemeActivity {
 
 		ScrollView scrollView = findViewById( R.id.scrollView );
 		scrollView.setSmoothScrollingEnabled( true );
-		if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
-			scrollView.setOnScrollChangeListener( (v, scrollX, scrollY, oldScrollX, oldScrollY)->{
-				if ( oldScrollY > scrollY && scrollY > 5 ) {
-					showUpButton();
-				} else if ( scrollY <= 5 || oldScrollY < scrollY ) {
-					hideUpButton();
-				}
-			} );
-		}
+		scrollView.setOnScrollChangeListener( (v, scrollX, scrollY, oldScrollX, oldScrollY)->{
+			if ( oldScrollY > scrollY && scrollY > 5 ) {
+				showUpButton();
+			} else if ( scrollY <= 5 || oldScrollY < scrollY ) {
+				hideUpButton();
+			}
+		} );
 
 		setEditTextSize();
 		FloatingActionButton fab = findViewById( R.id.fabSaveEntry );
@@ -502,7 +500,7 @@ public class EntryEditor extends ThemeActivity {
 
 	private void readColorHistory() {
 		String history = sp.getString( "color_history", null );
-		if ( history != null ) {
+		if ( history != null && !history.isEmpty() ) {
 			String[] strings = history.split( ";" );
 			for (String str : strings) {
 				mColorHistory.add( Integer.parseInt( str ) );
@@ -868,29 +866,54 @@ public class EntryEditor extends ThemeActivity {
 		int selSt = mSelectionBounds[ 0 ];
 		int selEnd = mSelectionBounds[ 1 ];
 		ForegroundColorSpan[] spans = e.getSpans( selSt, selEnd, ForegroundColorSpan.class );
-		if ( spans.length > 0 ) {
-			final int colorToReplace = spans[ 0 ].getForegroundColor();
-			setImageButtonColor( colorToReplace, btnReplaceColor.getId() );
-			btnReplaceColor.setOnClickListener( new View.OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					OnColorSelected onColorSelected = new OnColorSelected() {
-						@Override
-						public void onColorSelected(int color) {
-							if ( colorToReplace != color ) {
-								replaceColor( colorToReplace, color );
-								setButtonReplaceColorAppearance();
-							}
-						}
-					};
-					AlertDialog alertDialog = getReplaceColorPickerDialog( colorToReplace, onColorSelected );
-					alertDialog.show();
+		int colorToReplace;
+		OnColorSelected onColorSelected;
+		if(spans.length > 0){
+			colorToReplace = spans[ 0 ].getForegroundColor();
+			onColorSelected = color->{
+				if ( colorToReplace != color ) {
+					replaceColor( colorToReplace, color );
+					setButtonReplaceColorAppearance();
 				}
-			} );
-		} else {
-			btnReplaceColor.setOnClickListener( null );
-			setImageButtonColor( DEFAULT_TOOLS_COLOR, btnReplaceColor.getId() );
+			};
+		}else{
+			colorToReplace = Color.BLACK;
+			onColorSelected = color -> {
+				if(color != colorToReplace){
+					ForegroundColorSpan[] allSpans = e.getSpans( 0, e.length(), ForegroundColorSpan.class );
+					int[] startPositions = new int[e.length() + 1];
+					int[] endPositions = new int[e.length() + 1];
+					for(ForegroundColorSpan span : allSpans){
+						startPositions[e.getSpanStart( span )]++;
+						endPositions[e.getSpanEnd( span )]++;
+					}
+					int cnt = 0;
+					ArrayList<SpanEntry<ForegroundColorSpan>> spansToApply = new ArrayList<>();
+					int st = 0;
+					for(int i = 0; i < startPositions.length; i++){
+						boolean wasZero = cnt == 0;
+						cnt += startPositions[i] - endPositions[i];
+						if(!wasZero && cnt == 0){
+							st = i;
+						}else if(wasZero && cnt != 0){
+							spansToApply.add(new SpanEntry<>( new ForegroundColorSpan( color ), st, i ));
+						}
+					}
+					if(cnt == 0){
+						spansToApply.add(new SpanEntry<>( new ForegroundColorSpan( color ), st, e.length() ));
+					}
+					for(SpanEntry<ForegroundColorSpan> entry : spansToApply){
+						e.setSpan( entry.getSpan(), entry.getStart(), entry.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+					}
+					setButtonReplaceColorAppearance();
+				}
+			};
 		}
+		setImageButtonColor( colorToReplace, btnReplaceColor.getId() );
+		btnReplaceColor.setOnClickListener( v->{
+			AlertDialog alertDialog = getReplaceColorPickerDialog( colorToReplace, onColorSelected );
+			alertDialog.show();
+		} );
 	}
 
 	private void replaceColor(int oldColor, int newColor) {
@@ -1311,15 +1334,8 @@ public class EntryEditor extends ThemeActivity {
 		} else {
 			initializeColorButtons( scrollView, v->{
 				int color = (int) v.getTag( R.id.color_int_in_history );
-				if ( offerReplacement ) {
-					fromBtn[ 0 ] = true;
-					colorPickerView.setColor( color, true );
-					scrollView.findViewById( R.id.layout_to_color )
-							.setBackgroundColor( color );
-				} else {
-					alertDialog.cancel();
-					colorSelected.onColorSelected( color );
-				}
+				colorSelected.onColorSelected( color );
+				alertDialog.cancel();
 			} );
 		}
 
@@ -1341,7 +1357,7 @@ public class EntryEditor extends ThemeActivity {
 						for (ForegroundColorSpan span : spans) {
 							e.removeSpan( span );
 						}
-						e.setSpan( new ForegroundColorSpan( color ), 0, e.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+						e.setSpan( new ForegroundColorSpan( color ), 0, e.length()-1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 						mTextEditor.setTextColor( color );
 
 						mDefaultTextColor = color;
@@ -1416,10 +1432,8 @@ public class EntryEditor extends ThemeActivity {
 		window.setContentView( view );
 		setTextSizeInLbl( view );
 
-		if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
-			window.setEnterTransition( new Fade( Fade.IN ) );
-			window.setExitTransition( new Fade( Fade.OUT ) );
-		}
+		window.setEnterTransition( new Fade( Fade.IN ) );
+		window.setExitTransition( new Fade( Fade.OUT ) );
 
 		Drawable d = ContextCompat.getDrawable( this, R.drawable.button_rounded_corners );
 		d.setColorFilter( new PorterDuffColorFilter( getColor( R.color.gray ), PorterDuff.Mode.SRC_IN ) );
@@ -1452,10 +1466,8 @@ public class EntryEditor extends ThemeActivity {
 
 		window.setContentView( view );
 
-		if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
-			window.setEnterTransition( new Fade( Fade.IN ) );
-			window.setExitTransition( new Fade( Fade.OUT ) );
-		}
+		window.setEnterTransition( new Fade( Fade.IN ) );
+		window.setExitTransition( new Fade( Fade.OUT ) );
 
 		Drawable d = ContextCompat.getDrawable( this, R.drawable.button_rounded_corners );
 		d.setColorFilter( new PorterDuffColorFilter( getColor( R.color.gray ), PorterDuff.Mode.SRC_IN ) );
