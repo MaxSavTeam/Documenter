@@ -88,18 +88,22 @@ public class SettingsActivity extends ThemeActivity {
 
 		( (TextView) findViewById( R.id.txtVersion ) ).setText( String.format( Locale.ROOT, "%s: %s", getString( R.string.version ), BuildConfig.VERSION_NAME ) );
 
+		SharedPreferences sp = Utils.getDefaultSharedPreferences();
+
 		ButtonWithDropdown button = findViewById( R.id.theme_dropdown_button );
 		String[] elements = getResources().getStringArray( R.array.theme_states );
 		button.setElements( elements );
-		button.setSelection( Utils.getDefaultSharedPreferences().getInt( "theme_state", 2 ) );
-		button.setOnItemSelectedListener( new ButtonWithDropdown.OnItemSelectedListener() {
-			@Override
-			public void onItemSelected(int index) {
-				Utils.getDefaultSharedPreferences().edit().putInt( "theme_state", index ).apply();
-				setResult( Results.RESTART_APP );
-				finish();
-			}
+		button.setSelection( sp.getInt( "theme_state", 2 ) );
+		button.setOnItemSelectedListener( index->{
+			sp.edit().putInt( "theme_state", index ).apply();
+			setResult( Results.RESTART_APP );
+			finish();
 		} );
+
+		ButtonWithDropdown updatesChannelButton = findViewById( R.id.updates_channel_dropdown_button );
+		updatesChannelButton.setElements( getResources().getStringArray( R.array.updates_channels ) );
+		updatesChannelButton.setSelection( sp.getInt( "updates_channel", 0 ) );
+		updatesChannelButton.setOnItemSelectedListener( index->sp.edit().putInt( "updates_channel", index ).apply() );
 
 		final Switch swDarkHeader = findViewById( R.id.swDarkTheme );
 		swDarkHeader.setChecked( sp.getBoolean( "dark_theme", false ) );
@@ -260,26 +264,18 @@ public class SettingsActivity extends ThemeActivity {
 		@Override
 		public void onUpdateAvailable(final VersionInfo versionInfo) {
 			runOnUiThread( ()->{
-				AlertDialog.Builder builder = new AlertDialog.Builder( SettingsActivity.this, SettingsActivity.super.mAlertDialogStyle );
-				if(versionInfo.isImportant()){
-					builder.setTitle( String.format( getString(R.string.necessary_update_title), versionInfo.getVersionName() ) );
-					builder.setMessage( R.string.necessary_update_text )
-							.setCancelable( false )
-							.setPositiveButton( "OK", (dialog, which)->{
-								download( versionInfo );
-								dialog.cancel();
-							} );
-				}else{
-					builder.setTitle( String.format( getString(R.string.update_available), versionInfo.getVersionName() ) )
-							.setCancelable( false )
-							.setMessage( R.string.would_you_like_to_download_and_install )
-							.setPositiveButton( R.string.yes, (dialog, which)->{
-								download( versionInfo );
-								dialog.cancel();
-							} )
-							.setNegativeButton( R.string.no, (dialog, which)->dialog.cancel() )
-							.setNeutralButton( R.string.ignore_this_update, (dialog, which)->sp.edit().putInt( "ignore_update", versionInfo.getVersionCode() ).apply() );
+				if ( mCheckUpdatesDialog != null ) {
+					mCheckUpdatesDialog.dismiss();
 				}
+				AlertDialog.Builder builder = new AlertDialog.Builder( SettingsActivity.this, SettingsActivity.super.mAlertDialogStyle );
+				builder.setTitle( String.format( getString(R.string.update_available), versionInfo.getVersionName() ) )
+						.setCancelable( false )
+						.setMessage( R.string.would_you_like_to_download_and_install )
+						.setPositiveButton( R.string.yes, (dialog, which)->{
+							download( versionInfo );
+							dialog.cancel();
+						} )
+						.setNegativeButton( R.string.no, (dialog, which)->dialog.cancel() );
 				builder.create().show();
 			} );
 		}
@@ -321,12 +317,7 @@ public class SettingsActivity extends ThemeActivity {
 		mCheckUpdatesDialog.setCancelable( false );
 		mCheckUpdatesDialog.show();
 		final UpdatesChecker checker = new UpdatesChecker( mCheckResults );
-		new Thread( new Runnable() {
-			@Override
-			public void run() {
-				checker.runCheck();
-			}
-		} ).start();
+		new Thread( checker::runCheck ).start();
 	}
 
 	private Thread downloadThread;

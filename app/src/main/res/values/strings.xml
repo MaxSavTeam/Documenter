@@ -66,7 +66,7 @@
     <string name="keep_screen_on">Keep screen on</string>
     <string name="dark_theme">Dark theme</string>
     <string name="checking_for_updates">Checking for updates…</string>
-    <string name="update_available">Update to version %s available</string>
+    <string name="update_available">Update %s available</string>
     <string name="would_you_like_to_download_and_install">Would you like to download and install?</string>
     <string name="check_for_updates">Check for updates</string>
     <string name="app_is_up_to_date">App is up to date</string>
@@ -187,4 +187,10 @@
     <string name="_3" translatable="false">3</string>
     <string name="X" translatable="false">×</string>
     <string name="autoscroll">Autoscroll</string>
+    <string name="updates_channel">Updates channel</string>
+
+    <string-array name="updates_channels">
+        <item>Stable</item>
+        <item>Beta</item>
+    </string-array>
 </resources>

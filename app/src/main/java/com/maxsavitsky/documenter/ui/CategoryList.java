@@ -199,25 +199,14 @@ public class CategoryList extends ThemeActivity {
 		public void onUpdateAvailable(final VersionInfo versionInfo) {
 			runOnUiThread( ()->{
 				AlertDialog.Builder builder = new AlertDialog.Builder( CategoryList.this, CategoryList.super.mAlertDialogStyle );
-				if(versionInfo.isImportant()){
-					builder.setTitle( String.format( getString(R.string.necessary_update_title), versionInfo.getVersionName() ) );
-					builder.setMessage( R.string.necessary_update_text )
-							.setCancelable( false )
-							.setPositiveButton( "OK", (dialog, which)->{
-								download( versionInfo );
-								dialog.cancel();
-							} );
-				}else{
-					builder.setTitle( String.format( getString(R.string.update_available), versionInfo.getVersionName() ) )
-							.setCancelable( false )
-							.setMessage( R.string.would_you_like_to_download_and_install )
-							.setPositiveButton( R.string.yes, (dialog, which)->{
-								download( versionInfo );
-								dialog.cancel();
-							} )
-							.setNegativeButton( R.string.no, (dialog, which)->dialog.cancel() )
-							.setNeutralButton( R.string.ignore_this_update, (dialog, which)->sp.edit().putInt( "ignore_update", versionInfo.getVersionCode() ).apply() );
-				}
+				builder.setTitle( String.format( getString(R.string.update_available), versionInfo.getVersionName() ) )
+						.setCancelable( false )
+						.setMessage( R.string.would_you_like_to_download_and_install )
+						.setPositiveButton( R.string.yes, (dialog, which)->{
+							download( versionInfo );
+							dialog.cancel();
+						} )
+						.setNegativeButton( R.string.no, (dialog, which)->dialog.cancel() );
 				builder.create().show();
 			} );
 		}

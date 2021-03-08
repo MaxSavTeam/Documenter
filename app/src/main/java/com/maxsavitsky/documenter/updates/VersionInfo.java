@@ -5,7 +5,7 @@ public class VersionInfo {
 	private String mVersionName = "";
 	private String mDownloadUrl = "";
 	private int mUpdateSize = -1;
-	private boolean mImportant = false;
+	private int revision = 0;
 
 	public VersionInfo() {}
 
@@ -41,12 +41,11 @@ public class VersionInfo {
 		mUpdateSize = updateSize;
 	}
 
-	public boolean isImportant() {
-		return mImportant;
+	public int getRevision() {
+		return revision;
 	}
 
-	public VersionInfo setImportant(boolean important) {
-		mImportant = important;
-		return this;
+	public void setRevision(int revision) {
+		this.revision = revision;
 	}
 }

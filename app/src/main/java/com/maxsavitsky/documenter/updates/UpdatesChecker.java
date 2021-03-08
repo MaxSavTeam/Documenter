@@ -1,12 +1,17 @@
 package com.maxsavitsky.documenter.updates;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.maxsavitsky.documenter.BuildConfig;
+import com.maxsavitsky.documenter.MainActivity;
+import com.maxsavitsky.documenter.utils.Utils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,6 +19,7 @@ import java.net.URL;
 
 public class UpdatesChecker {
 
+	public static final String TAG = MainActivity.TAG + " UpdatesChecker";
 	private final Thread mThread;
 	private final CheckResults mCheckResults;
 
@@ -36,51 +42,44 @@ public class UpdatesChecker {
 
 	private void check(String result) {
 		try {
-			JSONObject jsonObject = new JSONObject(result);
-			if(jsonObject.getString( "status" ).equals( "OK" )){
-				if(jsonObject.getBoolean( "result" )){
-					VersionInfo versionInfo = new VersionInfo();
-					versionInfo.setVersionName( jsonObject.getString( "version" ) );
-					versionInfo.setVersionCode( jsonObject.getInt( "versionCode" ) );
-					versionInfo.setDownloadUrl( jsonObject.getString( "downloadLink" ) );
-					versionInfo.setUpdateSize( jsonObject.getInt( "updateSize" ) );
-					versionInfo.setImportant( jsonObject.getBoolean( "important" ) );
-					mCheckResults.onUpdateAvailable( versionInfo );
-				}else{
-					mCheckResults.noUpdates();
-				}
-			}else{
+			JSONObject jsonObject = new JSONObject( result );
+			if ( jsonObject.getBoolean( "updateExists" ) ) {
+				VersionInfo versionInfo = new VersionInfo();
+				versionInfo.setVersionName( jsonObject.getString( "versionName" ) );
+				versionInfo.setVersionCode( jsonObject.getInt( "versionCode" ) );
+				versionInfo.setDownloadUrl( jsonObject.getString( "downloadLink" ) );
+				versionInfo.setUpdateSize( jsonObject.getInt( "updateSize" ) );
+				versionInfo.setRevision( jsonObject.getInt( "revision" ) );
+				Log.i( TAG, "check: " + versionInfo.getVersionCode() );
+				mCheckResults.onUpdateAvailable( versionInfo );
+			} else {
 				mCheckResults.noUpdates();
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
+			Log.i( TAG, "check: " + e );
+			mCheckResults.onException( e );
 		}
 	}
 
 	public void runCheck() {
-		URL url;
-		InputStream inputStream = null;
 		try {
-			String data = "";
-			url = new URL( "https://maxsavteam.000webhostapp.com/checkForUpdates.php?appPackage=" + BuildConfig.APPLICATION_ID
-					+ "&versionCode=" + BuildConfig.VERSION_CODE );
-			inputStream = url.openConnection().getInputStream();
-			int b = inputStream.read();
-			while ( b != -1 && !mThread.isInterrupted() ) {
-				data = String.format( "%s%c", data, (char) b );
-				b = inputStream.read();
+			URL url = new URL( "https://updates.maxsavteam.com/checkForUpdates?appPackage=" + BuildConfig.APPLICATION_ID +
+					"&code=" + BuildConfig.VERSION_CODE +
+					"&revision=" + Utils.getDefaultSharedPreferences().getInt( "updates_channel", 0 )
+			);
+			InputStream inputStream = url.openStream();
+			byte[] buffer = new byte[1024];
+			int len;
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+			while(!mThread.isInterrupted() && (len = inputStream.read(buffer)) != -1){
+				outputStream.write( buffer, 0, len );
 			}
 			inputStream.close();
 			if ( !mThread.isInterrupted() ) {
-				check( data );
+				check( outputStream.toString() );
 			}
-		} catch (IOException e) {
-			try {
-				if ( inputStream != null ) {
-					inputStream.close();
-				}
-			} catch (IOException ignored) {
-			}
+		}catch (IOException e){
 			mCheckResults.onException( e );
 		}
 	}

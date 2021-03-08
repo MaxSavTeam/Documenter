@@ -58,7 +58,7 @@
     <string name="keep_screen_on">Оставить экран включенным</string>
     <string name="dark_theme">Темная тема</string>
     <string name="checking_for_updates">Проверка обновлений…</string>
-    <string name="update_available">Доступно обновление до версии %s</string>
+    <string name="update_available">Доступно обновление %s</string>
     <string name="would_you_like_to_download_and_install">Хотите скачать и установить?</string>
     <string name="check_for_updates">Проверить наличие обновлений</string>
     <string name="app_is_up_to_date">Это последняя версия</string>
@@ -177,4 +177,5 @@
     <string name="theme">Тема</string>
     <string name="speed">Скорость</string>
     <string name="autoscroll">Автопрокручивание</string>
+    <string name="updates_channel">Канал обновлений</string>
 </resources>
