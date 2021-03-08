@@ -179,7 +179,7 @@
         <item>As in the system</item>
     </string-array>
     <string name="theme">Theme</string>
-    <string name="maxsav_team_copyright" translatable="false">© MaxSav Team, 2020</string>
+    <string name="maxsav_team_copyright" translatable="false">© MaxSav Team, 2021</string>
     <string name="speed">Speed</string>
     <string name="_0" translatable="false">0</string>
     <string name="_1" translatable="false">1</string>
