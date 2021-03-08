@@ -33,7 +33,7 @@ android {
         versionCode 56
 
         verCode = versionCode
-        cleanVersionName = "1.15.0"
+        cleanVersionName = "1.15.0-beta"
 
         versionName cleanVersionName
         buildConfigField "String", "COMPILATION_DATE", "\"${getDate()}\""
