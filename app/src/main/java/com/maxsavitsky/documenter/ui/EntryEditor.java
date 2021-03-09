@@ -695,6 +695,8 @@ public class EntryEditor extends ThemeActivity {
 		ImageSpan imageSpan = new ImageSpan( d, file.getPath() );
 
 		e.setSpan( imageSpan, s, s + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+
+		mTextEditor.invalidate();
 	}
 
 	private void setBtnTextColorPickerColorAtBounds() {
