@@ -687,16 +687,16 @@ public class EntryEditor extends ThemeActivity {
 			e = mTextEditor.getText();
 		} else {
 			s = mSelectionBounds[ 0 ];
-			e.insert( s, " " );
+			e.insert( s, " \n" );
 		}
 
-		Drawable d = ImageRenderer.renderDrawable( file.getPath() );
+		Drawable d = ImageRenderer.renderDrawable( file.getPath(), mTextEditor.getWidth() );
 
 		ImageSpan imageSpan = new ImageSpan( d, file.getPath() );
 
 		e.setSpan( imageSpan, s, s + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 
-		mTextEditor.invalidate();
+		mTextEditor.postInvalidate();
 	}
 
 	private void setBtnTextColorPickerColorAtBounds() {
