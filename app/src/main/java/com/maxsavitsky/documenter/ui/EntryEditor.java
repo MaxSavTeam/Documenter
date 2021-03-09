@@ -1,5 +1,7 @@
 package com.maxsavitsky.documenter.ui;
 
+import static com.maxsavitsky.documenter.codes.Requests.PICK_IMAGE;
+
 import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -91,8 +93,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-
-import static com.maxsavitsky.documenter.codes.Requests.PICK_IMAGE;
 
 public class EntryEditor extends ThemeActivity {
 	private Document mDocument;
@@ -392,10 +392,9 @@ public class EntryEditor extends ThemeActivity {
 				}
 				mId = mEntry.getId();
 				tempProperties = new Entry.Properties( mEntry.getProperties() );
-				mDefaultTextColor = mEntry.getProperties().getDefaultTextColor();
+				mDefaultTextColor = tempProperties.getDefaultTextColor();
 				mTextEditor.setTextColor( mDefaultTextColor );
-				setImageButtonColor( mEntry.getProperties().getBgColor(), btnBgColorPicker.getId() );
-				getWindow().getDecorView().setBackgroundColor( mEntry.getProperties().getBgColor() );
+				setImageButtonColor( tempProperties.getBgColor(), btnBgColorPicker.getId() );
 
 				title = getResources().getString( R.string.edit_entry ) + ": " + mEntry.getName();
 
@@ -422,6 +421,10 @@ public class EntryEditor extends ThemeActivity {
 				loadTextFromEntryInEditor( fromId );
 				break;
 		}
+
+		mTextEditor.setBackgroundColor( tempProperties.getBgColor() );
+		getWindow().getDecorView().setBackgroundColor( tempProperties.getBgColor() );
+
 		invalidateOptionsMenu();
 		applyTheme();
 		findViewById( R.id.fabUp ).setOnClickListener( v->{
@@ -1164,7 +1167,7 @@ public class EntryEditor extends ThemeActivity {
 				getWindow().getDecorView().setBackgroundColor( color );
 				tempProperties.setBgColor( color );
 			};
-			AlertDialog alertDialog = getColorPickerDialog( R.string.set_background_color, mEntry.getProperties().getBgColor(), whatToDo );
+			AlertDialog alertDialog = getColorPickerDialog( R.string.set_background_color, tempProperties.getBgColor(), whatToDo );
 			alertDialog.show();
 		}
 	};
@@ -1322,18 +1325,10 @@ public class EntryEditor extends ThemeActivity {
 		}
 	};
 
-	@Override
-	protected void onPostCreate(@Nullable Bundle savedInstanceState) {
-		super.onPostCreate( savedInstanceState );
-
-		mTextEditor.setBackgroundColor( mEntry.getProperties().getBgColor() );
-		getWindow().getDecorView().setBackgroundColor( mEntry.getProperties().getBgColor() );
-	}
-
 	public void plusTextSize(View view) {
-		int ts = mEntry.getProperties().getTextSize();
+		int ts = tempProperties.getTextSize();
 		if ( ts < 45 ) {
-			mEntry.getProperties().setTextSize( ts + 1 );
+			tempProperties.setTextSize( ts + 1 );
 		}
 
 		setTextSizeInLbl( view );
