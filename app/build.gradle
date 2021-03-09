@@ -30,10 +30,10 @@ android {
         applicationId "com.maxsavitsky.documenter"
         minSdkVersion 23
         targetSdkVersion 30
-        versionCode 56
+        versionCode 57
 
         verCode = versionCode
-        cleanVersionName = "1.15.0-beta"
+        cleanVersionName = "1.15.0-beta2"
 
         versionName cleanVersionName
         buildConfigField "String", "COMPILATION_DATE", "\"${getDate()}\""
@@ -72,7 +72,7 @@ static String getDate() {
 task releaseUpdate {
     doLast {
         exec {
-            commandLine("cmd", "/c", "groovy", "${projectPath}app\\after_build_tasks.groovy", 'afterBuildTask', cleanVersionName, verCode, buildCode)
+            commandLine("cmd", "/c", "groovy", "${projectPath}app\\after_build_tasks.groovy", 'release', cleanVersionName)
         }
     }
 }
