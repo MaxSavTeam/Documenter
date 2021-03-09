@@ -47,6 +47,8 @@ android {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             shrinkResources true
+
+            resValue "string", "app_name", "Documenter"
         }
         debug {
             debuggable true
@@ -56,6 +58,7 @@ android {
                 instrumentationEnabled false
             }
             versionNameSuffix '-dev'
+            resValue "string", "app_name", "Documenter Dev"
         }
     }
 }
