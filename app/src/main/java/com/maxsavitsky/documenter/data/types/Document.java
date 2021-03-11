@@ -2,7 +2,6 @@ package com.maxsavitsky.documenter.data.types;
 
 import androidx.annotation.NonNull;
 
-import com.google.firebase.database.annotations.NotNull;
 import com.maxsavitsky.documenter.data.Info;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.utils.Utils;
@@ -167,7 +166,7 @@ public class Document extends Type implements Comparable{
 	}
 
 	@Override
-	public int compareTo(@NotNull Object o) {
+	public int compareTo(@NonNull Object o) {
 		Document document = (Document) o;
 		return getName().compareTo( document.getName() );
 	}
