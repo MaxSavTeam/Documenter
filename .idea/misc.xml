@@ -4,7 +4,9 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/AndroidStudio/Documenter/app/src/main/res/layout/activity_create_entry.xml" value="0.20457650273224043" />
+        <entry key="..\:/AndroidStudio/Documenter/app/src/main/res/layout/activity_view_entry.xml" value="0.10787557908669755" />
         <entry key="..\:/AndroidStudio/Documenter/app/src/main/res/layout/bottom_cycle.xml" value="0.20457650273224043" />
+        <entry key="..\:/AndroidStudio/Documenter/app/src/main/res/layout/content_create_entry.xml" value="0.10787557908669755" />
         <entry key="..\:/AndroidStudio/Documenter/app/src/main/res/layout/content_settings2.xml" value="0.22" />
         <entry key="..\:/AndroidStudio/Documenter/app/src/main/res/layout/tools_layout_textsize.xml" value="0.16086065573770492" />
       </map>

@@ -33,7 +33,6 @@
         android:layout_height="0dp"
         android:scrollIndicators="end|right"
         android:scrollbarSize="@dimen/scrollbars_size"
-        android:scrollbarStyle="insideInset"
         app:layout_constraintBottom_toTopOf="@+id/speedLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

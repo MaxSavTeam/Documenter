@@ -475,7 +475,7 @@ public class EntryViewer extends ThemeActivity {
 		getWindow().getDecorView().setBackgroundColor( mEntry.getProperties().getBgColor() );
 		final Thread loadThread = new Thread( ()->{
 			try {
-				mCallback.loaded( mEntry.loadAndPrepareText() );
+				mCallback.loaded( mEntry.loadAndPrepareText(Utils.getScreenSize().x ) );
 			} catch (IOException e) {
 				e.printStackTrace();
 				mCallback.exceptionOccurred( e );

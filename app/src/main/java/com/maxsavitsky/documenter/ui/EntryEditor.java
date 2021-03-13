@@ -484,15 +484,13 @@ public class EntryEditor extends ThemeActivity {
 		mProgressDialogOnTextLoad.setCancelable( false );
 		mProgressDialogOnTextLoad.show();
 		new Thread( ()->{
-			Spannable loadedSpannable;
 			mStartLoadTextTime = System.currentTimeMillis();
 			try {
-				loadedSpannable = mEntry.loadAndPrepareText();
+				Spannable loadedSpannable = entry.loadAndPrepareText( Utils.getScreenSize().x );
+				mOnLoadedTextListener.loaded( loadedSpannable, entry );
 			} catch (final IOException e) {
 				mOnLoadedTextListener.exceptionOccurred( e );
-				return;
 			}
-			mOnLoadedTextListener.loaded( loadedSpannable, entry );
 		} ).start();
 	}
 

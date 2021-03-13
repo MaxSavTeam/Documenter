@@ -396,8 +396,12 @@ public class Entry extends Type {
 	}
 
 	public Spannable loadAndPrepareText() throws IOException {
+		return loadAndPrepareText(0);
+	}
+
+	public Spannable loadAndPrepareText(int imagesMaxWidth) throws IOException {
 		String text = prepareDivs( loadText() );
-		Spannable spannable = (Spannable) Html.fromHtml( text, new HtmlImageLoader(), null );
+		Spannable spannable = (Spannable) Html.fromHtml( text, new HtmlImageLoader(imagesMaxWidth), null );
 		Log.i( TAG, "loadAndPrepareText: found alignments " + spannable.getSpans( 0, spannable.length(), Alignment.class ).length + " " +
 				spannable.getSpans( 0, spannable.length(), AlignmentSpan.class ).length );
 		for (SpanEntry<AlignmentSpan.Standard> se : getAlignments()) {
