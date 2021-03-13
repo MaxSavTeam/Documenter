@@ -30,10 +30,10 @@ android {
         applicationId "com.maxsavitsky.documenter"
         minSdkVersion 23
         targetSdkVersion 30
-        versionCode 58
+        versionCode 59
 
         verCode = versionCode
-        cleanVersionName = "1.15.0"
+        cleanVersionName = "1.15.1"
 
         versionName cleanVersionName
         buildConfigField "String", "COMPILATION_DATE", "\"${getDate()}\""
@@ -67,6 +67,14 @@ static String getDate() {
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss")
     simpleDateFormat.setTimeZone(TimeZone.getTimeZone("GMT+3"))
     return simpleDateFormat.format(new Date())
+}
+
+afterEvaluate {
+    assembleRelease.doLast {
+        exec {
+            commandLine("cmd", "/c", "groovy", "${projectPath}app\\after_build_tasks.groovy", 'copyUpdate', cleanVersionName)
+        }
+    }
 }
 
 task releaseUpdate {
