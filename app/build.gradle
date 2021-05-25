@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat
 
 String projectPath = ""
 int buildCode = -1
+String globalVersionName = ""
 
 android {
     compileSdkVersion 30
@@ -28,6 +29,8 @@ android {
         targetSdkVersion 30
         versionCode 60
         versionName "1.16.0"
+
+        globalVersionName = versionName
         
         buildConfigField "String", "COMPILATION_DATE", "\"${getDate()}\""
         buildConfigField "int", "BUILD_CODE", "${buildCode}"
@@ -70,7 +73,7 @@ static String getDate() {
 afterEvaluate {
     assembleRelease.doLast {
         exec {
-            commandLine("cmd", "/c", "groovy", "${projectPath}app\\after_build_tasks.groovy", 'copyUpdate', versionName)
+            commandLine("cmd", "/c", "groovy", "${projectPath}app\\after_build_tasks.groovy", 'copyUpdate', globalVersionName)
         }
     }
 }
@@ -78,7 +81,7 @@ afterEvaluate {
 task releaseUpdate {
     doLast {
         exec {
-            commandLine("cmd", "/c", "groovy", "${projectPath}app\\after_build_tasks.groovy", 'release', versionName)
+            commandLine("cmd", "/c", "groovy", "${projectPath}app\\after_build_tasks.groovy", 'release', globalVersionName)
         }
     }
 }
