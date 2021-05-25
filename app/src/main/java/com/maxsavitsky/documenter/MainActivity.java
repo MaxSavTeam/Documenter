@@ -9,7 +9,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 
@@ -19,7 +18,6 @@ import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.ui.CategoryList;
 import com.maxsavitsky.documenter.utils.Utils;
-import com.maxsavitsky.exceptionhandler.ExceptionHandler;
 
 import org.xml.sax.SAXException;
 
@@ -29,7 +27,6 @@ import java.math.BigDecimal;
 
 public class MainActivity extends ThemeActivity {
 	public static final String TAG = "Documenter";
-	private ExceptionHandler mExceptionHandler;
 
 	private static MainActivity instance;
 
@@ -39,8 +36,6 @@ public class MainActivity extends ThemeActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		mExceptionHandler = new ExceptionHandler( this, AfterExceptionActivity.class );
-
 		Utils.setContext( this );
 		SharedPreferences sharedPreferences = getSharedPreferences( Utils.APP_PREFERENCES, Context.MODE_PRIVATE );
 		Utils.setDefaultSharedPreferences( sharedPreferences );
@@ -48,12 +43,6 @@ public class MainActivity extends ThemeActivity {
 		super.onCreate( savedInstanceState );
 		instance = this;
 		setContentView( R.layout.layout_onstartup );
-		Thread.setDefaultUncaughtExceptionHandler( new Thread.UncaughtExceptionHandler() {
-			@Override
-			public void uncaughtException(@NonNull Thread t, @NonNull Throwable e) {
-				mExceptionHandler.uncaughtException( t, e );
-			}
-		} );
 		try {
 			Toolbar toolbar = findViewById( R.id.toolbar );
 			setSupportActionBar( toolbar );

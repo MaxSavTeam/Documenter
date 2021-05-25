@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.firebase-perf'
+apply plugin: 'com.google.firebase.crashlytics'
 
 import java.text.SimpleDateFormat
 
@@ -114,4 +115,5 @@ dependencies {
     implementation 'com.google.firebase:firebase-storage:20.0.0'
     implementation 'com.google.firebase:firebase-database:20.0.0'
     implementation 'com.google.firebase:firebase-perf:20.0.0'
+    implementation 'com.google.firebase:firebase-crashlytics:18.0.0'
 }
