@@ -6,7 +6,6 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.Spannable;
@@ -18,8 +17,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.LinearInterpolator;
-import android.widget.Button;
 import android.widget.EditText;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -56,12 +55,6 @@ public class EntryViewer extends ThemeActivity {
 	private boolean resultSet = false;
 	private CustomScrollView mScrollView;
 	private boolean isFreeMode = false;
-	private final int[] mSpeedButtonIds = new int[]{
-			R.id.speed_button_0,
-			R.id.speed_button_1,
-			R.id.speed_button_2,
-			R.id.speed_button_3
-	};
 
 	private void applyTheme() {
 		ActionBar actionBar = getSupportActionBar();
@@ -96,6 +89,7 @@ public class EntryViewer extends ThemeActivity {
 			backPressed();
 		}else if(itemId == R.id.item_auto_scroll){
 			findViewById( R.id.speedLayout ).setVisibility( View.VISIBLE );
+			startScroll( ((SeekBar) findViewById( R.id.speedSeekBar )).getProgress() );
 		} else if ( itemId == R.id.item_edit_entry_name ) {
 			AlertDialog changeNameDialog;
 			final EditText editText = new EditText( this );
@@ -233,25 +227,25 @@ public class EntryViewer extends ThemeActivity {
 		}
 	}
 
-	private int getColorFromAttr(int attr) {
-		TypedValue value = new TypedValue();
-		getTheme().resolveAttribute( attr, value, true );
-		return value.data;
-	}
+	private void setupSpeedSeekBar(){
+		SeekBar seekBar = findViewById( R.id.speedSeekBar );
+		seekBar.setProgress( 1 );
+		seekBar.setOnSeekBarChangeListener( new SeekBar.OnSeekBarChangeListener() {
+			@Override
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				startScroll( progress );
+			}
 
-	private void setSpeedButtonColors() {
-		for (int id : mSpeedButtonIds) {
-			Button button = findViewById( id );
-			button.setTextColor( getColorFromAttr( R.attr.textColor ) );
-			button.setBackgroundTintList( ColorStateList.valueOf( getColorFromAttr( android.R.attr.windowBackground ) ) );
-			button.setOnClickListener( view->{
-				setSpeedButtonColors();
-				Button b = (Button) view;
-				b.setTextColor( getColorFromAttr( android.R.attr.windowBackground ) );
-				b.setBackgroundTintList( ColorStateList.valueOf( getColorFromAttr( R.attr.textColor ) ) );
-				startScroll( Integer.parseInt( b.getText().toString() ) );
-			} );
-		}
+			@Override
+			public void onStartTrackingTouch(SeekBar seekBar) {
+
+			}
+
+			@Override
+			public void onStopTrackingTouch(SeekBar seekBar) {
+
+			}
+		} );
 	}
 
 	private ObjectAnimator mScrollAnimator;
@@ -263,7 +257,7 @@ public class EntryViewer extends ThemeActivity {
 		mScrollSpeed = speed;
 		if(speed != 0) {
 			mScrollAnimator = ObjectAnimator.ofInt( mScrollView, "scrollY", mScrollView.getMaxVerticalScroll() );
-			int r = ( mScrollView.getMaxVerticalScroll() - mScrollView.getScrollY() ) / speed * 10;
+			int r = (int) (( mScrollView.getMaxVerticalScroll() - mScrollView.getScrollY() ) / speed * 20);
 			mScrollAnimator.setDuration( r );
 			mScrollAnimator.setInterpolator( new LinearInterpolator() );
 			mScrollAnimator.start();
@@ -394,27 +388,6 @@ public class EntryViewer extends ThemeActivity {
 		fab.setEnabled( true );
 	}
 
-	/*private final HtmlSpanRender.RenderCallback mRenderCallback = new HtmlSpanRender.RenderCallback() {
-		@Override
-		public void onImageClick(View view, String src) {
-
-		}
-
-		@Override
-		public int getLineHeight() {
-			return ( (TextView) findViewById( R.id.textViewContent ) ).getLineHeight();
-		}
-
-		@Override
-		public boolean drawView(View view) {
-			runOnUiThread( ()->{
-				RelativeLayout relativeLayout = findViewById( R.id.viewer_relative_layout );
-				relativeLayout.addView( view );
-			} );
-			return true;
-		}
-	};*/
-
 	@SuppressLint("ClickableViewAccessibility")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -465,8 +438,7 @@ public class EntryViewer extends ThemeActivity {
 		} );
 		findViewById( R.id.fabUpView ).setOnClickListener( v->mScrollView.smoothScrollTo( 0, 0 ) );
 
-		setSpeedButtonColors();
-		findViewById( R.id.speed_button_0 ).performClick();
+		setupSpeedSeekBar();
 		findViewById( R.id.speed_button_close ).setOnClickListener( view->{
 			findViewById( R.id.speedLayout ).setVisibility( View.GONE );
 			startScroll( 0 );
