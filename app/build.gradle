@@ -1,21 +1,15 @@
-import java.text.SimpleDateFormat
-
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.firebase-perf'
 
-String cleanVersionName = ""
-int verCode = 0
+import java.text.SimpleDateFormat
+
 String projectPath = ""
 int buildCode = -1
 
 android {
     compileSdkVersion 30
-    buildToolsVersion '30.0.3'
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
-    }
+    buildToolsVersion '31.0.0 rc3'
 
     def buildPropFile = file('build.properties')
     if (buildPropFile.canRead()) {
@@ -29,13 +23,11 @@ android {
     defaultConfig {
         applicationId "com.maxsavitsky.documenter"
         minSdkVersion 23
+        
         targetSdkVersion 30
         versionCode 59
-
-        verCode = versionCode
-        cleanVersionName = "1.15.1"
-
-        versionName cleanVersionName
+        versionName "1.15.1"
+        
         buildConfigField "String", "COMPILATION_DATE", "\"${getDate()}\""
         buildConfigField "int", "BUILD_CODE", "${buildCode}"
 
@@ -61,6 +53,11 @@ android {
             resValue "string", "app_name", "Documenter Dev"
         }
     }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
 }
 
 static String getDate() {
@@ -72,7 +69,7 @@ static String getDate() {
 afterEvaluate {
     assembleRelease.doLast {
         exec {
-            commandLine("cmd", "/c", "groovy", "${projectPath}app\\after_build_tasks.groovy", 'copyUpdate', cleanVersionName)
+            commandLine("cmd", "/c", "groovy", "${projectPath}app\\after_build_tasks.groovy", 'copyUpdate', versionName)
         }
     }
 }
@@ -80,7 +77,7 @@ afterEvaluate {
 task releaseUpdate {
     doLast {
         exec {
-            commandLine("cmd", "/c", "groovy", "${projectPath}app\\after_build_tasks.groovy", 'release', cleanVersionName)
+            commandLine("cmd", "/c", "groovy", "${projectPath}app\\after_build_tasks.groovy", 'release', versionName)
         }
     }
 }
@@ -109,9 +106,9 @@ dependencies {
 
     implementation 'com.android.support:multidex:1.0.3'
 
-    implementation 'org.jetbrains:annotations:20.1.0'
+    implementation 'org.jetbrains:annotations:21.0.1'
 
-    implementation 'com.firebaseui:firebase-ui-auth:6.4.0'
+    implementation 'com.firebaseui:firebase-ui-auth:7.1.1'
     implementation 'com.google.firebase:firebase-core:19.0.0'
     implementation 'com.google.firebase:firebase-auth:21.0.1'
     implementation 'com.google.firebase:firebase-storage:20.0.0'
