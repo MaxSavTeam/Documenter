@@ -36,7 +36,7 @@
     <string name="confirm_restore_message">Эта операция удалит предыдущие данные. Продолжить?</string>
     <string name="background_color">Цвет фона</string>
     <string name="text_color">Цвет текста</string>
-    <string name="error_has_occurred">Произошла ошибка.</string>
+    <string name="error_has_occurred">Произошла ошибка</string>
     <string name="send_report">Отправить отчёт</string>
     <string name="please">Пожалуйста</string>
     <string name="send_report_dialog_mes">Кажется, произошла ошибка, и это наша вина. Вы можете внести свой неоценимый вклад в улучшение приложения, отправив нам файл с описанием ошибки. &lt;br&gt; &lt;b&gt; Мы немедленно начнем работу над ошибками. &lt;/b&gt; &lt;br&gt; И если вы опишите проблему, где и как это произошло, то у вас нет цены. &lt;br&gt; &lt;br&gt; Спасибо за использование нашего приложения и всего самого наилучшего!</string>
@@ -178,4 +178,8 @@
     <string name="speed">Скорость</string>
     <string name="autoscroll">Автопрокручивание</string>
     <string name="updates_channel">Канал обновлений</string>
+    <string name="restart_app">Перезапустить приложение</string>
+
+    <string name="sorry">Простите</string>
+    <string name="after_exception_message">Мы совсем скоро узнаем об этой ошибке и приступим к исправлению</string>
 </resources>

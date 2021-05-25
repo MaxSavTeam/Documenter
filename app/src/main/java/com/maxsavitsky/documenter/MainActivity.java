@@ -23,7 +23,6 @@ import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigDecimal;
 
 public class MainActivity extends ThemeActivity {
 	public static final String TAG = "Documenter";
@@ -155,7 +154,7 @@ public class MainActivity extends ThemeActivity {
 	}
 
 	public void makeError(View v) {
-		BigDecimal a = BigDecimal.ONE.divide( BigDecimal.valueOf( 3 ) );
+		throw new RuntimeException("Test exception");
 	}
 
 	private void restartApp() {

@@ -1,5 +1,6 @@
 package com.maxsavitsky.documenter;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Color;
@@ -40,7 +41,7 @@ public class ThemeActivity extends AppCompatActivity {
 	// only for themes
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		SharedPreferences sharedPreferences = Utils.getDefaultSharedPreferences();
+		SharedPreferences sharedPreferences = getSharedPreferences( Utils.APP_PREFERENCES, Context.MODE_PRIVATE );
 		int darkModeState = sharedPreferences.getInt( "theme_state", 2 );
 
 		if(darkModeState == 0){

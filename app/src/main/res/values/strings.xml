@@ -44,10 +44,9 @@
     <string name="confirm_restore_message">This operation will delete the previous data. Proceed?</string>
     <string name="background_color">Background color</string>
     <string name="text_color">Text color</string>
-    <string name="error_has_occurred">An error has occurred.</string>
+    <string name="error_has_occurred">An error has occurred</string>
     <string name="send_report">Send report</string>
     <string name="please">Please</string>
-    <string name="send_report_dialog_mes">It seems that an error has occurred and it is our fault. You can make your invaluable contribution to improving the application by sending us a file with a description of the error. &lt;br&gt;&lt;b&gt;We will immediately begin work on the bugs.&lt;/b&gt; &lt;br&gt; And if you still describe the problem and where and how it happened, then you have no price.&lt;br&gt;&lt;br&gt;Thank you for using our application and all the best!</string>
     <string name="successfully">Successfully</string>
     <string name="file_not_found">File not found</string>
     <string name="create_entry_exit_mes">Do you really want to leave? All changes made will not be saved.</string>
@@ -193,4 +192,9 @@
         <item>Stable</item>
         <item>Beta</item>
     </string-array>
+    <string name="restart_app">Restart app</string>
+
+    <string name="send_report_dialog_mes">It seems that an error has occurred and it is our fault. You can make your invaluable contribution to improving the application by sending us a file with a description of the error. &lt;br&gt;&lt;b&gt;We will immediately begin work on the bugs.&lt;/b&gt; &lt;br&gt; And if you still describe the problem and where and how it happened, then you have no price.&lt;br&gt;&lt;br&gt;Thank you for using our application and all the best!</string>
+    <string name="sorry">Sorry</string>
+    <string name="after_exception_message">We will find out about this error very soon and will start fixing it</string>
 </resources>
