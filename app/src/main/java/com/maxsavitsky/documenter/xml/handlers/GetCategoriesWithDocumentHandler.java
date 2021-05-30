@@ -20,7 +20,9 @@ public class GetCategoriesWithDocumentHandler extends DefaultHandler {
 	public void startElement(String uri, String localName, String qName, Attributes attributes)  throws SAXException {
 		if(qName.equals("category")){
 			String id = attributes.getValue("id");
-			this.mCategoriesThis.add(MainData.getCategoryWithId( id ));
+			Category category = MainData.getCategoryWithId( id );
+			if(category != null)
+				mCategoriesThis.add(category);
 		}
 	}
 }

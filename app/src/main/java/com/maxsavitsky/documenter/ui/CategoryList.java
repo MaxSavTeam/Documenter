@@ -7,7 +7,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.Menu;
@@ -20,7 +19,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
@@ -51,15 +49,6 @@ public class CategoryList extends ThemeActivity {
 	private int mSortOrder = 1; //1 - по возрастанию - стрелка вверх; -1 - по убыванию
 	private SharedPreferences sp;
 
-	private void applyTheme(){
-		ActionBar actionBar = getSupportActionBar();
-		if (actionBar != null) {
-			actionBar.setTitle( R.string.title_activity_category_list);
-			Utils.applyDefaultActionBarStyle(actionBar);
-			actionBar.setDisplayHomeAsUpEnabled( false );
-		}
-	}
-
 	private void onMyBackPressed(){
 		setResult( Results.EXIT );
 		finish();
@@ -76,38 +65,30 @@ public class CategoryList extends ThemeActivity {
 
 	@Override
 	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-		switch ( item.getItemId() ) {
-			case android.R.id.home:
-				onMyBackPressed();
-				break;
-			case R.id.item_common_invert:
-				mSortOrder = -mSortOrder;
-				if(mSortOrder == 1)
-					item.setIcon( R.drawable.ic_sort_ascending );
-				else
-					item.setIcon( R.drawable.ic_sort_descending );
-				setupRecyclerView();
-				break;
-			case R.id.item_common_sort_mode:
-				AlertDialog.Builder builder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
-						.setTitle( R.string.choose_sort_mode )
-						.setCancelable( false )
-						.setSingleChoiceItems( R.array.sort_modes, sp.getInt( "sort_categories", 0 ), new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								sp.edit().putInt( "sort_categories", which ).apply();
-								setupRecyclerView();
-								dialog.cancel();
-							}
-						} )
-						.setNeutralButton( R.string.cancel, new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								dialog.cancel();
-							}
-						} );
-				builder.create().show();
-				break;
+		int itemId = item.getItemId();
+		if ( itemId == android.R.id.home ) {
+			onMyBackPressed();
+		} else if ( itemId == R.id.item_common_invert ) {
+			mSortOrder = -mSortOrder;
+			if ( mSortOrder == 1 )
+				item.setIcon( R.drawable.ic_sort_ascending );
+			else
+				item.setIcon( R.drawable.ic_sort_descending );
+			setupRecyclerView();
+		} else if ( itemId == R.id.item_common_sort_mode ) {
+			AlertDialog.Builder builder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
+					.setTitle( R.string.choose_sort_mode )
+					.setCancelable( false )
+					.setSingleChoiceItems( R.array.sort_modes, sp.getInt( "sort_categories", 0 ), new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							sp.edit().putInt( "sort_categories", which ).apply();
+							setupRecyclerView();
+							dialog.cancel();
+						}
+					} )
+					.setNeutralButton( R.string.cancel, (dialog, which)->dialog.cancel() );
+			builder.create().show();
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -120,7 +101,7 @@ public class CategoryList extends ThemeActivity {
 		return super.onCreateOptionsMenu( menu );
 	}
 
-	private final Comparator<Category> mCategoryComparator = new Comparator<Category>() {
+	private final Comparator<Category> mCategoryComparator = new Comparator<>() {
 		@Override
 		public int compare(Category o1, Category o2) {
 			if(sp.getInt( "sort_categories", 0 ) == 0)
@@ -245,12 +226,9 @@ public class CategoryList extends ThemeActivity {
 		mDownloadPd.setCancelable( false );
 		mDownloadPd.setProgressStyle( ProgressDialog.STYLE_HORIZONTAL );
 		mDownloadPd.setIndeterminate( true );
-		mDownloadPd.setButton( ProgressDialog.BUTTON_NEGATIVE, getResources().getString( R.string.cancel ), new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(final DialogInterface dialog, int which) {
-				downloadThread.interrupt();
-				runOnUiThread( dialog::cancel );
-			}
+		mDownloadPd.setButton( ProgressDialog.BUTTON_NEGATIVE, getResources().getString( R.string.cancel ), (dialog, which)->{
+			downloadThread.interrupt();
+			runOnUiThread( dialog::cancel );
 		} );
 		mDownloadPd.show();
 		downloadThread = new Thread( downloader::download );
@@ -258,98 +236,68 @@ public class CategoryList extends ThemeActivity {
 	}
 
 	public static void initializeFabButtons(final Activity activity){
-		activity.findViewById( R.id.fabFreeEntries).setOnClickListener( new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Intent intent = new Intent(activity, EntriesList.class);
-				intent.putExtra( "free_mode", true );
-				activity.startActivityForResult( intent, Requests.FREE_ENTRIES );
-			}
+		activity.findViewById( R.id.fabFreeEntries).setOnClickListener( v->{
+			Intent intent = new Intent(activity, EntriesList.class);
+			intent.putExtra( "free_mode", true );
+			activity.startActivityForResult( intent, Requests.FREE_ENTRIES );
 		} );
-		activity.findViewById( R.id.fabSettings ).setOnClickListener( new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Intent intent = new Intent( activity, SettingsActivity.class );
-				activity.startActivityForResult( intent, Requests.SETTINGS );
-			}
+		activity.findViewById( R.id.fabSettings ).setOnClickListener( v->{
+			Intent intent = new Intent( activity, SettingsActivity.class );
+			activity.startActivityForResult( intent, Requests.SETTINGS );
 		} );
 	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		sp = Utils.getDefaultSharedPreferences();
+		sp = getSharedPreferences( Utils.APP_PREFERENCES, MODE_PRIVATE );
 		setContentView(R.layout.activity_category_list);
 		Toolbar toolbar = findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 
 		FabButton fab = findViewById(R.id.fabCreateNew);
-		fab.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				Intent intent = new Intent( CategoryList.this, CreateCategory.class );
-				startActivityForResult( intent, Requests.CREATE_CATEGORY );
-			}
-		});
+		fab.setOnClickListener( view->{
+			Intent intent = new Intent( CategoryList.this, CreateCategory.class );
+			startActivityForResult( intent, Requests.CREATE_CATEGORY );
+		} );
 
-		fab.setOnLongClickListener( new View.OnLongClickListener() {
-			@Override
-			public boolean onLongClick(View v) {
-				final EditText editText = new EditText( CategoryList.this );
-				editText.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT ) );
-				editText.setInputType( InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_PASSWORD );
-				AlertDialog.Builder builder = new AlertDialog.Builder( CategoryList.this )
-						.setView( editText )
-						.setTitle( "Enter the password for access" )
-						.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								String text = editText.getText().toString();
-								dialog.cancel();
-								if ( text.hashCode() == 1683456505 ) {
-									setResult( Results.OK );
-									finish();
-								} else {
-									Toast.makeText( CategoryList.this, "Failed :P", Toast.LENGTH_SHORT ).show();
-								}
-							}
-						} ).setNeutralButton( R.string.cancel, new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								dialog.cancel();
-								Toast.makeText( CategoryList.this, ":P", Toast.LENGTH_SHORT ).show();
-							}
-						} )
-						.setCancelable( false );
-				builder.create().show();
-				Utils.showKeyboard( editText, CategoryList.this );
-				return true;
-			}
+		fab.setOnLongClickListener( v->{
+			final EditText editText = new EditText( CategoryList.this );
+			editText.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT ) );
+			editText.setInputType( InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_PASSWORD );
+			AlertDialog.Builder builder = new AlertDialog.Builder( CategoryList.this )
+					.setView( editText )
+					.setTitle( "Enter the password for access" )
+					.setPositiveButton( "OK", (dialog, which)->{
+						String text = editText.getText().toString();
+						dialog.cancel();
+						if ( text.hashCode() == 1683456505 ) {
+							setResult( Results.OK );
+							finish();
+						}
+					} ).setNeutralButton( R.string.cancel, (dialog, which)->{
+						dialog.cancel();
+						Toast.makeText( CategoryList.this, ":P", Toast.LENGTH_SHORT ).show();
+					} )
+					.setCancelable( false );
+			builder.create().show();
+			Utils.showKeyboard( editText, CategoryList.this );
+			return true;
 		} );
 		initializeFabButtons( this );
-		findViewById( R.id.fabSettings ).setOnLongClickListener( new View.OnLongClickListener() {
-			@Override
-			public boolean onLongClick(View v) {
-				setResult( Results.LOOK_STARTUP );
-				finish();
-				return true;
-			}
+		findViewById( R.id.fabSettings ).setOnLongClickListener( v->{
+			setResult( Results.LOOK_STARTUP );
+			finish();
+			return true;
 		} );
 
 		if(!isMemoryAccessGranted()){
-			if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
-				requestPermissions( new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE }, 1 );
-			}
+			requestPermissions( new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE }, 1 );
 		}else {
 			setupRecyclerView();
 			if(sp.getBoolean( "check_updates", true )) {
 				final UpdatesChecker checker = new UpdatesChecker( mCheckResults );
-				new Thread( new Runnable() {
-					@Override
-					public void run() {
-						checker.runCheck();
-					}
-				} ).start();
+				new Thread( checker::runCheck ).start();
 			}
 		}
 	}
@@ -362,23 +310,19 @@ public class CategoryList extends ThemeActivity {
 
 	@Override
 	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-		if(requestCode == 1){
-			if(grantResults[0] != PackageManager.PERMISSION_GRANTED || grantResults[1] != PackageManager.PERMISSION_GRANTED){
+		super.onRequestPermissionsResult( requestCode, permissions, grantResults );
+		if ( requestCode == 1 ) {
+			if ( grantResults[ 0 ] != PackageManager.PERMISSION_GRANTED || grantResults[ 1 ] != PackageManager.PERMISSION_GRANTED ) {
 				AlertDialog.Builder builder = new AlertDialog.Builder( this )
 						.setTitle( getResources().getString( R.string.you_will_not_pass ) )
 						.setMessage( R.string.warning_when_memory_denied )
 						.setCancelable( false )
-						.setNeutralButton( "Request", new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								dialog.cancel();
-								if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ) {
-									requestPermissions( new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE }, 1 );
-								}
-							}
+						.setNeutralButton( "Request", (dialog, which)->{
+							dialog.cancel();
+							requestPermissions( new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE }, 1 );
 						} );
 				builder.create().show();
-			}else{
+			} else {
 				setupRecyclerView();
 			}
 		}

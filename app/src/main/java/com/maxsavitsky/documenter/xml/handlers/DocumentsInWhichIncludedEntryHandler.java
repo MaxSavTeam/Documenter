@@ -19,7 +19,9 @@ public class DocumentsInWhichIncludedEntryHandler extends DefaultHandler {
 	public void startElement(String uri, String localName, String qName, Attributes attributes) {
 		if(qName.equals( "document" )){
 			String id = attributes.getValue( "id" );
-			mDocuments.add( new Document( id, MainData.getDocumentWithId( id ).getName() ) );
+			Document document = MainData.getDocumentWithId( id );
+			if(document != null)
+				mDocuments.add( new Document( id, document.getName() ) );
 		}
 	}
 }

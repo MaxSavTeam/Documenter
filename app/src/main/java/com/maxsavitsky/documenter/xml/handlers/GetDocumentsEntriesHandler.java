@@ -20,10 +20,13 @@ public class GetDocumentsEntriesHandler extends DefaultHandler {
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-		if(qName.equals( "entry" )){
+		if(qName != null && qName.equals( "entry" )){
 			String id = attributes.getValue( "id" );
-			Entry entry = new Entry( id, MainData.getEntryWithId(id).getName() );
-			entries.add( entry );
+			Entry loadedEntry = MainData.getEntryWithId( id );
+			if(loadedEntry != null) {
+				Entry entry = new Entry( id, loadedEntry.getName() );
+				entries.add( entry );
+			}
 		}
 	}
 }
