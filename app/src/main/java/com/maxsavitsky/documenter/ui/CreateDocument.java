@@ -91,7 +91,11 @@ public class CreateDocument extends ThemeActivity {
 					TextView t = v.findViewById( R.id.checkbox_item_hidden_id );
 					String id = t.getText().toString();
 					if(checkBox.isChecked()){
-						mEntriesToInclude.add( MainData.getEntryWithId( id ) );
+						Entry ent = MainData.getEntryWithId( id );
+						if(ent == null)
+							checkBox.setChecked( false );
+						else
+							mEntriesToInclude.add( MainData.getEntryWithId( id ) );
 					}else{
 						for(int i = 0; i < mEntriesToInclude.size(); i++){
 							if(mEntriesToInclude.get( i ).getId().equals( id )){

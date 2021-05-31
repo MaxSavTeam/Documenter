@@ -75,7 +75,7 @@ public class EntriesList extends ThemeActivity {
 		backPressed();
 	}
 
-	private final Comparator<Entry> mEntryComparator = new Comparator<Entry>() {
+	private final Comparator<Entry> mEntryComparator = new Comparator<>() {
 		@Override
 		public int compare(Entry o1, Entry o2) {
 			if ( o1 == null || o2 == null ) {
@@ -84,8 +84,8 @@ public class EntriesList extends ThemeActivity {
 			if ( sp.getInt( "sort_entries", 0 ) == 0 ) {
 				return o1.getName().compareToIgnoreCase( o2.getName() ) * mSortOrder;
 			} else {
-				int t1 = MainData.getEntryWithId( o1.getId() ).getInfo().getTimeStamp();
-				int t2 = MainData.getEntryWithId( o2.getId() ).getInfo().getTimeStamp();
+				int t1 = o1.getInfo().getTimeStamp();
+				int t2 = o2.getInfo().getTimeStamp();
 				int compareRes = Integer.compare( t1, t2 );
 				return compareRes * mSortOrder;
 			}
@@ -95,7 +95,7 @@ public class EntriesList extends ThemeActivity {
 	private void setupRecyclerView() {
 		try {
 			mEntries = XMLParser.newInstance().parseDocumentWithId( mDocument.getId() );
-		} catch (SAXException | IOException e) {
+		} catch (IOException | SAXException e) {
 			e.printStackTrace();
 			Utils.getErrorDialog( e, this ).show();
 			return;
