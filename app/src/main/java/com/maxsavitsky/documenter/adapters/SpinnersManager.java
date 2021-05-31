@@ -106,17 +106,22 @@ public class SpinnersManager {
 			if(selectedDoc.equals( "all" )) {
 				entries.addAll( MainData.getEntriesList() );
 			} else {
-				entries.addAll( MainData.getDocumentWithId( selectedDoc ).getEntries() );
+				Document document = MainData.getDocumentWithId( selectedDoc );
+				if(document != null)
+					entries.addAll( document.getEntries() );
 			}
 		}else{
-			Category category = MainData.getCategoryWithId( selectedCat );
 			if(selectedDoc.equals( "all" )){
-				for(Document document : category.getDocuments()){
-					entries.addAll( document.getEntries() );
+				Category category = MainData.getCategoryWithId( selectedCat );
+				if(category != null) {
+					for (Document document : category.getDocuments()) {
+						entries.addAll( document.getEntries() );
+					}
 				}
 			}else{
 				Document document = MainData.getDocumentWithId( selectedDoc );
-				entries.addAll( document.getEntries() );
+				if(document != null)
+					entries.addAll( document.getEntries() );
 			}
 		}
 		// check for duplicates
@@ -139,7 +144,8 @@ public class SpinnersManager {
 			documents.addAll( MainData.getDocumentsList() );
 		else{
 			Category category = MainData.getCategoryWithId( selectedCat );
-			documents.addAll( category.getDocuments() );
+			if(category!= null)
+				documents.addAll( category.getDocuments() );
 		}
 
 		mDocuments = documents;

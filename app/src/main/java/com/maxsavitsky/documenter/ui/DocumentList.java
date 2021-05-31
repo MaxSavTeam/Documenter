@@ -80,8 +80,8 @@ public class DocumentList extends ThemeActivity {
 			if ( sp.getInt( "sort_documents", 0 ) == 0 ) {
 				return o1.getName().compareToIgnoreCase( o2.getName() ) * mSortOrder;
 			} else {
-				int t1 = MainData.getDocumentWithId( o1.getId() ).getInfo().getTimeStamp();
-				int t2 = MainData.getDocumentWithId( o2.getId() ).getInfo().getTimeStamp();
+				int t1 = o1.getInfo().getTimeStamp();
+				int t2 = o2.getInfo().getTimeStamp();
 				int compared = Integer.compare( t1, t2 );
 				return compared * mSortOrder;
 			}
