@@ -26,9 +26,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.ThemeActivity;
-import com.maxsavitsky.documenter.backup.AutonomousCloudBackupper;
 import com.maxsavitsky.documenter.backup.BackupInterface;
 import com.maxsavitsky.documenter.backup.CloudBackupInstruments;
+import com.maxsavitsky.documenter.backup.CloudBackupMaker;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.utils.Utils;
 
@@ -154,7 +154,7 @@ public class CloudBackupActivity extends ThemeActivity {
 				.setSingleChoiceItems( strings, sp.getInt( "auto_backup_state", 0 ), (dialog, which)->{
 					sp.edit().putInt( "auto_backup_state", which ).apply();
 					t.setText( strings[ which ] );
-					AutonomousCloudBackupper.getInstance().stateChanged();
+					CloudBackupMaker.getInstance().stateChanged();
 					dialog.dismiss();
 				} );
 		builder.create().show();
@@ -173,7 +173,7 @@ public class CloudBackupActivity extends ThemeActivity {
 					pd.dismiss();
 					Toast.makeText( CloudBackupActivity.this, R.string.successfully, Toast.LENGTH_SHORT ).show();
 				} );
-				AutonomousCloudBackupper.getInstance().stateChanged();
+				CloudBackupMaker.getInstance().stateChanged();
 			}
 
 			@Override

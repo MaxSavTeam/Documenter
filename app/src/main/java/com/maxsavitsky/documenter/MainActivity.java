@@ -12,7 +12,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 
-import com.maxsavitsky.documenter.backup.AutonomousCloudBackupper;
+import com.maxsavitsky.documenter.backup.CloudBackupMaker;
 import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.data.MainData;
@@ -51,7 +51,7 @@ public class MainActivity extends ThemeActivity {
 
 		deleteInstalledApks();
 
-		final AutonomousCloudBackupper backupper = new AutonomousCloudBackupper( this );
+		final CloudBackupMaker backupper = new CloudBackupMaker( this );
 		new Thread( backupper::stateChanged, "AutoBackupper" ).start();
 	}
 

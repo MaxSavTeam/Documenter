@@ -25,18 +25,18 @@ import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class AutonomousCloudBackupper {
-	private Context mContext;
+public class CloudBackupMaker {
+	private final Context mContext;
 	private Timer mTimer;
 
 	@SuppressLint("StaticFieldLeak")
-	private static AutonomousCloudBackupper instance = null;
+	private static CloudBackupMaker instance = null;
 
-	public static AutonomousCloudBackupper getInstance() {
+	public static CloudBackupMaker getInstance() {
 		return instance;
 	}
 
-	public AutonomousCloudBackupper(Context context) {
+	public CloudBackupMaker(Context context) {
 		mContext = context;
 		instance = this;
 	}
