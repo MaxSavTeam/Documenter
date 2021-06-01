@@ -18,6 +18,7 @@ public class Document extends Type implements Comparable{
 	private final String id;
 	private final String name;
 	private Document.Properties mProperties;
+	private long creationTimestamp = 0;
 
 	private ArrayList<Entry> mEntries = null;
 	private Info mInfo = new Info();
@@ -50,6 +51,14 @@ public class Document extends Type implements Comparable{
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	public long getCreationTimestamp() {
+		return creationTimestamp;
+	}
+
+	public void setCreationTimestamp(long creationTimestamp) {
+		this.creationTimestamp = creationTimestamp;
 	}
 
 	public void setInfo(Info info) {
@@ -104,6 +113,10 @@ public class Document extends Type implements Comparable{
 			e.printStackTrace();
 		}
 		return entries;
+	}
+
+	public void setEntries(ArrayList<Entry> entries){
+		mEntries = entries;
 	}
 
 	public void addEntry(Entry entry) throws IOException, SAXException {

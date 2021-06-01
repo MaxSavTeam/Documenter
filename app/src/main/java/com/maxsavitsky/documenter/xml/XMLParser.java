@@ -1,9 +1,9 @@
 package com.maxsavitsky.documenter.xml;
 
+import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Category;
 import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.data.types.Entry;
-import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.documenter.xml.handlers.AllCategoriesHandler;
 import com.maxsavitsky.documenter.xml.handlers.AllDocumentsHandler;
@@ -148,7 +148,7 @@ public class XMLParser {
 	}
 
 	public Document.Properties parseDocumentProperties(String id) throws IOException, SAXException {
-		File file = new File( Utils.getExternalStoragePath().getPath() + "/entries/" + id + "/properties.xml" );
+		File file = new File( Utils.getExternalStoragePath().getPath() + "/documents/" + id + "/properties.xml" );
 		if(!file.exists())
 			return new Document.Properties();
 
