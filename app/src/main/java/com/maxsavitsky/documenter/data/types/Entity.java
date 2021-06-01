@@ -7,6 +7,7 @@ public abstract class Entity {
 	}
 
 	protected final String id, name;
+	protected long creationTimestamp = 0;
 
 	public Entity(String id, String name) {
 		this.id = id;
@@ -19,6 +20,14 @@ public abstract class Entity {
 
 	public String getName() {
 		return name;
+	}
+
+	public long getCreationTimestamp() {
+		return creationTimestamp;
+	}
+
+	public void setCreationTimestamp(long creationTimestamp) {
+		this.creationTimestamp = creationTimestamp;
 	}
 
 	public abstract Type getType();

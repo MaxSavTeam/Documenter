@@ -5,7 +5,6 @@ import java.util.ArrayList;
 public class Group extends Entity {
 
 	private final String id, name;
-	private long creationTimestamp = 0;
 
 	private ArrayList<? extends Entity> containingEntities = new ArrayList<>();
 
@@ -26,10 +25,6 @@ public class Group extends Entity {
 	@Override
 	public Type getType() {
 		return Type.GROUP;
-	}
-
-	public void setCreationTimestamp(long creationTimestamp) {
-		this.creationTimestamp = creationTimestamp;
 	}
 
 	public void setContainingEntities(ArrayList<? extends Entity> containingEntities) {

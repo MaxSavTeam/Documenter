@@ -31,6 +31,14 @@ public class DataReformatter {
 			for (Entity entity : entityHandler.getEntities())
 				entriesList.add( new EntryEntity( entity.getId(), entity.getName() ) );
 		}
+		for (EntryEntity e : entriesList) {
+			File infoFile = new File( Utils.getExternalStoragePath() + "/entries/" + e.getId() + "/info.xml" );
+			if ( infoFile.exists() ) {
+				InfoHandler infoHandler = new InfoHandler();
+				saxParser.parse( infoFile, infoHandler );
+				e.setCreationTimestamp( infoHandler.getInfo().getTimeStamp() );
+			}
+		}
 
 		ArrayList<Group> documentsList = new ArrayList<>();
 		file = new File( Utils.getExternalStoragePath().getPath() + "/documents.xml" );
@@ -102,17 +110,17 @@ public class DataReformatter {
 		JSONObject jsonObject = new JSONObject();
 
 		ArrayList<Group> allGroups = new ArrayList<>();
-		allGroups.addAll(documentsList);
+		allGroups.addAll( documentsList );
 		allGroups.addAll( categoriesList );
 		jsonObject.put( "groups", getDescriptionList( allGroups ) );
 
 		jsonObject.put( "entries", getDescriptionList( entriesList ) );
 
 		JSONObject groupsContent = new JSONObject();
-		for(Group group : allGroups){
-			if(group.getContainingEntities().size() > 0){
+		for (Group group : allGroups) {
+			if ( group.getContainingEntities().size() > 0 ) {
 				JSONArray containing = new JSONArray();
-				for(var e : group.getContainingEntities()){
+				for (var e : group.getContainingEntities()) {
 					containing.put( e.getId() );
 				}
 				groupsContent.put( group.getId(), containing );
@@ -125,11 +133,12 @@ public class DataReformatter {
 
 	private static JSONArray getDescriptionList(ArrayList<? extends com.maxsavitsky.documenter.data.types.Entity> entities) throws JSONException {
 		JSONArray jsonArray = new JSONArray();
-		for(var e : entities){
+		for (var e : entities) {
 			jsonArray.put(
 					new JSONObject()
 							.put( "id", e.getId() )
 							.put( "name", e.getName() )
+							.put( "timestamp", e.getCreationTimestamp() )
 			);
 		}
 		return jsonArray;
