@@ -32,8 +32,6 @@ import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -94,11 +92,7 @@ public class MainActivity extends ThemeActivity {
 		File file = new File( Utils.getExternalStoragePath().getPath() + "/data.json" );
 		if ( !file.exists() ) {
 			BackupInstruments.createBackupToFile( new File( Utils.getExternalStoragePath().getPath() + "/before_reformat_backup.zip" ), null );
-			JSONObject reformattedData = DataReformatter.runReformat();
-			file.createNewFile();
-			try (FileOutputStream fos = new FileOutputStream( file )) {
-				fos.write( reformattedData.toString().getBytes( StandardCharsets.UTF_8 ) );
-			}
+			DataReformatter.runReformat();
 		}
 	}
 

@@ -12,15 +12,21 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 public class DataReformatter {
 
-	public static JSONObject runReformat() throws Exception {
+	private static JSONObject prepareInfoJSON() throws Exception {
 		SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
 
 		ArrayList<EntryEntity> entriesList = new ArrayList<>();
@@ -131,6 +137,99 @@ public class DataReformatter {
 		return jsonObject;
 	}
 
+	public static void runReformat() throws Exception {
+		JSONObject jsonObject = prepareInfoJSON();
+		reformatEntriesProperties( jsonObject );
+		reformatEntriesAdditional( jsonObject );
+		File file = new File( Utils.getExternalStoragePath().getPath() + "/data.json" );
+		if ( !file.exists() ) {
+			file.createNewFile();
+		}
+		String reformattedData = jsonObject.toString();
+		try (FileOutputStream fos = new FileOutputStream( file )) {
+			fos.write( reformattedData.getBytes( StandardCharsets.UTF_8 ) );
+		}
+	}
+
+	private static void reformatEntriesProperties(JSONObject jsonObject) throws JSONException, ParserConfigurationException, SAXException, IOException {
+		SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
+		JSONArray jsonArray = jsonObject.getJSONArray( "entries" );
+		for (int i = 0; i < jsonArray.length(); i++) {
+			String id = jsonArray.getJSONObject( i ).getString( "id" );
+			File propsFile = new File( Utils.getExternalStoragePath().getPath() + "/entries/" + id + "/properties.xml" );
+			EntryEntity.Properties properties;
+			if ( propsFile.exists() ) {
+				EntryPropertiesHandler handler = new EntryPropertiesHandler();
+				saxParser.parse( propsFile, handler );
+				properties = handler.getProperties();
+			} else {
+				properties = new EntryEntity.Properties();
+			}
+			propsFile = new File( Utils.getExternalStoragePath().getPath() + "/entries/" + id + "/properties.json" );
+			if ( !propsFile.exists() ) {
+				propsFile.createNewFile();
+			}
+			try (FileOutputStream fos = new FileOutputStream( propsFile )) {
+				fos.write( properties.convertToJSON().toString().getBytes( StandardCharsets.UTF_8 ) );
+			}
+		}
+	}
+
+	private static void reformatEntriesAdditional(JSONObject jsonObject) throws JSONException, IOException {
+		JSONArray jsonArray = jsonObject.getJSONArray( "entries" );
+		for (int i = 0; i < jsonArray.length(); i++) {
+			String id = jsonArray.getJSONObject( i ).getString( "id" );
+			String pathDir = Utils.getExternalStoragePath().getPath() + "/entries/" + id + "/";
+			JSONObject out = new JSONObject();
+			File file = new File( pathDir + "alignment" );
+			JSONArray alignments = new JSONArray();
+			if ( file.exists() ) {
+				try (BufferedReader br = new BufferedReader( new FileReader( file ) )) {
+					String line;
+					while ( br.ready() ) {
+						line = br.readLine();
+
+						String[] strings = line.split( " " );
+						alignments.put(
+								new JSONObject()
+										.put( "name", strings[ 0 ] )
+										.put( "start", Integer.parseInt( strings[ 1 ] ) )
+										.put( "end", Integer.parseInt( strings[ 2 ] ) )
+						);
+					}
+				}
+			}
+			out.put( "alignments", alignments );
+
+			file = new File( pathDir + "relative_spans" );
+			JSONArray relativeSpans = new JSONArray();
+			if ( file.exists() ) {
+				try (BufferedReader br = new BufferedReader( new FileReader( file ) )) {
+					String line;
+					while ( br.ready() ) {
+						line = br.readLine();
+
+						String[] strings = line.split( " " );
+						relativeSpans.put(
+								new JSONObject()
+										.put( "value", Float.parseFloat( strings[ 0 ] ) )
+										.put( "start", Integer.parseInt( strings[ 1 ] ) )
+										.put( "end", Integer.parseInt( strings[ 2 ] ) )
+						);
+					}
+				}
+			}
+			out.put( "relativeSpans", relativeSpans );
+
+			file = new File( pathDir + "additional.json" );
+			if(!file.exists())
+				file.createNewFile();
+			try(FileOutputStream fos = new FileOutputStream(file)){
+				fos.write( out.toString().getBytes( StandardCharsets.UTF_8 ) );
+			}
+		}
+	}
+
 	private static JSONArray getDescriptionList(ArrayList<? extends com.maxsavitsky.documenter.data.types.Entity> entities) throws JSONException {
 		JSONArray jsonArray = new JSONArray();
 		for (var e : entities) {
@@ -178,6 +277,41 @@ public class DataReformatter {
 
 		public String getName() {
 			return name;
+		}
+	}
+
+	private static class EntryPropertiesHandler extends DefaultHandler {
+		private final EntryEntity.Properties mProperties = new EntryEntity.Properties();
+
+		public EntryEntity.Properties getProperties() {
+			return mProperties;
+		}
+
+		@Override
+		public void startElement(String uri, String localName, String qName, Attributes attributes) {
+			switch ( qName ) {
+				case "textSize":
+					mProperties.setTextSize( Integer.parseInt( attributes.getValue( "value" ) ) );
+					break;
+				case "bgColor":
+					mProperties.setBgColor( Integer.parseInt( attributes.getValue( "value" ) ) );
+					break;
+				case "textColor":
+					mProperties.setTextColor( Integer.parseInt( attributes.getValue( "value" ) ) );
+					break;
+				case "scrollPosition":
+					mProperties.setScrollPosition( Integer.parseInt( attributes.getValue( "value" ) ) );
+					break;
+				case "textAlignment":
+					mProperties.setTextAlignment( Integer.parseInt( attributes.getValue( "value" ) ) );
+					break;
+				case "saveLastPos":
+					mProperties.setSaveLastPos( Boolean.parseBoolean( attributes.getValue( "value" ) ) );
+					break;
+				case "defaultColor":
+					mProperties.setDefaultTextColor( Integer.parseInt( attributes.getValue( "value" ) ) );
+					break;
+			}
 		}
 	}
 
