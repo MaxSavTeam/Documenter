@@ -1,5 +1,7 @@
 package com.maxsavitsky.documenter.data.types;
 
+import java.util.ArrayList;
+
 public abstract class Entity {
 	public enum Type{
 		GROUP,
@@ -8,6 +10,7 @@ public abstract class Entity {
 
 	protected final String id, name;
 	protected long creationTimestamp = 0;
+	protected final ArrayList<String> parents = new ArrayList<>();
 
 	public Entity(String id, String name) {
 		this.id = id;
@@ -28,6 +31,14 @@ public abstract class Entity {
 
 	public void setCreationTimestamp(long creationTimestamp) {
 		this.creationTimestamp = creationTimestamp;
+	}
+
+	public void addParent(String id){
+		parents.add( id );
+	}
+
+	public boolean isRoot(){
+		return parents.isEmpty();
 	}
 
 	public abstract Type getType();

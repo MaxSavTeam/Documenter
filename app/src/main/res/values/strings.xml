@@ -197,4 +197,14 @@
     <string name="send_report_dialog_mes">It seems that an error has occurred and it is our fault. You can make your invaluable contribution to improving the application by sending us a file with a description of the error. &lt;br&gt;&lt;b&gt;We will immediately begin work on the bugs.&lt;/b&gt; &lt;br&gt; And if you still describe the problem and where and how it happened, then you have no price.&lt;br&gt;&lt;br&gt;Thank you for using our application and all the best!</string>
     <string name="sorry">Sorry</string>
     <string name="after_exception_message">We will find out about this error very soon and will start fixing it</string>
+    <string name="order">Order</string>
+    <string name="sorting">Sorting</string>
+    <string name="groups_first">Groups first</string>
+    <string name="entries_first">Entries first</string>
+    <string name="by_name">By name</string>
+    <string name="by_creation_time">By creation time</string>
+    <string name="ascending_descending_order">Ascending/descending order</string>
+    <string name="ascending">Ascending</string>
+    <string name="descending">Descending</string>
+    <string name="mixed">Mixed</string>
 </resources>

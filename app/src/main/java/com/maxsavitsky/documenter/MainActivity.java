@@ -12,17 +12,30 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 
+import com.maxsavitsky.documenter.backup.BackupInstruments;
 import com.maxsavitsky.documenter.backup.CloudBackupMaker;
 import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.codes.Results;
+import com.maxsavitsky.documenter.data.DataReformatter;
+import com.maxsavitsky.documenter.data.EntitiesStorage;
 import com.maxsavitsky.documenter.data.MainData;
+import com.maxsavitsky.documenter.data.types.Entity;
+import com.maxsavitsky.documenter.data.types.EntryEntity;
+import com.maxsavitsky.documenter.data.types.Group;
 import com.maxsavitsky.documenter.ui.CategoryList;
+import com.maxsavitsky.documenter.ui.EntitiesListActivity;
 import com.maxsavitsky.documenter.utils.Utils;
 
-import org.xml.sax.SAXException;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 public class MainActivity extends ThemeActivity {
 	public static final String TAG = "Documenter";
@@ -60,24 +73,101 @@ public class MainActivity extends ThemeActivity {
 		super.onPostCreate( savedInstanceState );
 		new Thread( ()->{
 			try {
+				runReformatIfNeeded();
 				initialize();
 				Log.i( TAG, "Initialized" );
 			} catch (final Exception e) {
-				runOnUiThread( new Runnable() {
-					@Override
-					public void run() {
-						Utils.getErrorDialog( e, MainActivity.this ).show();
-					}
-				} );
+				runOnUiThread( ()->Utils.getErrorDialog( e, MainActivity.this ).show() );
 				return;
 			}
 			try {
 				Thread.sleep( 1000 );
-				viewCategoryList( null );
+				Intent intent = new Intent(this, EntitiesListActivity.class );
+				startActivity( intent );
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		} ).start();
+	}
+
+	private void runReformatIfNeeded() throws Exception {
+		File file = new File( Utils.getExternalStoragePath().getPath() + "/data.json" );
+		if ( !file.exists() ) {
+			BackupInstruments.createBackupToFile( new File( Utils.getExternalStoragePath().getPath() + "/before_reformat_backup.zip" ), null );
+			JSONObject reformattedData = DataReformatter.runReformat();
+			file.createNewFile();
+			try (FileOutputStream fos = new FileOutputStream( file )) {
+				fos.write( reformattedData.toString().getBytes( StandardCharsets.UTF_8 ) );
+			}
+		}
+	}
+
+	private void initialize() throws Exception {
+		JSONObject data;
+		try (
+				FileInputStream fis = new FileInputStream( Utils.getExternalStoragePath().getPath() + "/data.json" );
+				ByteArrayOutputStream outputStream = new ByteArrayOutputStream()
+		) {
+			int len;
+			byte[] buffer = new byte[ 1024 ];
+			while ( ( len = fis.read( buffer ) ) != -1 ) {
+				outputStream.write( buffer, 0, len );
+			}
+			data = new JSONObject( outputStream.toString() );
+		}
+		ArrayList<EntryEntity> entries = new ArrayList<>();
+		JSONArray array = data.getJSONArray( "entries" );
+		for (int i = 0; i < array.length(); i++) {
+			JSONObject jsonObject = array.getJSONObject( i );
+			EntryEntity e = new EntryEntity( jsonObject.getString( "id" ), jsonObject.getString( "name" ) );
+			e.setCreationTimestamp( jsonObject.getLong( "timestamp" ) );
+			entries.add( e );
+		}
+
+		ArrayList<Group> groups = new ArrayList<>();
+		array = data.getJSONArray( "groups" );
+		for (int i = 0; i < array.length(); i++) {
+			JSONObject jsonObject = array.getJSONObject( i );
+			Group e = new Group( jsonObject.getString( "id" ), jsonObject.getString( "name" ) );
+			e.setCreationTimestamp( jsonObject.getLong( "timestamp" ) );
+			groups.add( e );
+		}
+
+		JSONObject groupsContent = data.getJSONObject( "groupsContent" );
+		Iterator<String> keys = groupsContent.keys();
+		while ( keys.hasNext() ) {
+			String key = keys.next();
+			Group group = null;
+			for(Group g : groups){
+				if(g.getId().equals( key )) {
+					group = g;
+					break;
+				}
+			}
+			if(group != null) {
+				ArrayList<Entity> containingEntities = new ArrayList<>();
+				JSONArray containing = groupsContent.getJSONArray( key );
+				for (int i = 0; i < containing.length(); i++) {
+					String id = containing.getString( i );
+					for(Group g : groups)
+						if(g.getId().equals( id )){
+							containingEntities.add( g );
+							g.addParent( key );
+							break;
+						}
+					for(EntryEntity e : entries)
+						if(e.getId().equals( id )){
+							containingEntities.add( e );
+							e.addParent( key );
+							break;
+						}
+
+				}
+				group.setContainingEntities( containingEntities );
+			}
+		}
+		EntitiesStorage.get().setEntryEntities( entries );
+		EntitiesStorage.get().setGroups( groups );
 	}
 
 	public void clearAllTraces(View v) {
@@ -123,12 +213,6 @@ public class MainActivity extends ThemeActivity {
 		Toast.makeText( this, getMemoryInfo(), Toast.LENGTH_LONG ).show();
 	}
 
-	private void initialize() throws IOException, SAXException {
-		MainData.readAllCategories();
-		MainData.readAllDocuments();
-		MainData.readAllEntries();
-	}
-
 	public void reinitialize(View v) {
 		MainData.clearAll();
 
@@ -154,7 +238,7 @@ public class MainActivity extends ThemeActivity {
 	}
 
 	public void makeError(View v) {
-		throw new RuntimeException("Test exception");
+		throw new RuntimeException( "Test exception" );
 	}
 
 	private void restartApp() {

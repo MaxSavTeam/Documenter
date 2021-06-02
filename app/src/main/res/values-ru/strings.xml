@@ -182,4 +182,14 @@
 
     <string name="sorry">Простите</string>
     <string name="after_exception_message">Мы совсем скоро узнаем об этой ошибке и приступим к исправлению</string>
+    <string name="order">Порядок</string>
+    <string name="sorting">Сортировка</string>
+    <string name="groups_first">Сначала группы</string>
+    <string name="entries_first">Сначала записи</string>
+    <string name="by_name">По имени</string>
+    <string name="by_creation_time">По времени создания</string>
+    <string name="ascending_descending_order">Возрастание/убывание</string>
+    <string name="ascending">Возрастание</string>
+    <string name="descending">Убывание</string>
+    <string name="mixed">Вперемешку</string>
 </resources>

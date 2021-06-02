@@ -67,7 +67,7 @@ public class BackupInstruments {
 			return;
 		}
 		for (File file : dir.listFiles()) {
-			if(!file.getName().equals( "cloud_backup.zip" ))
+			if(!file.getName().equals( "cloud_backup.zip" ) && !file.getPath().equals( path.getPath() ))
 				myPack( file, file.getName(), zipOutputStream );
 		}
 		zipOutputStream.close();
