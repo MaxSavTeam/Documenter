@@ -18,4 +18,7 @@ public class Requests {
 	public static final int PICK_IMAGE = 201;
 	public static final int SIGN_IN = 202;
 	public static final int SIGN_UP = 203;
+
+	// 3xx
+	public static final int ENTITIES_LIST = 301;
 }

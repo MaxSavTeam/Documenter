@@ -8,7 +8,8 @@ public abstract class Entity {
 		ENTRY
 	}
 
-	protected final String id, name;
+	protected final String id;
+	protected String name;
 	protected long creationTimestamp = 0;
 	protected final ArrayList<String> parents = new ArrayList<>();
 
@@ -39,6 +40,10 @@ public abstract class Entity {
 
 	public boolean isRoot(){
 		return parents.isEmpty();
+	}
+
+	public void rename(String name){
+		this.name = name;
 	}
 
 	public abstract Type getType();

@@ -3,12 +3,17 @@ package com.maxsavitsky.documenter.ui;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
@@ -19,6 +24,7 @@ import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.ThemeActivity;
 import com.maxsavitsky.documenter.adapters.EntitiesAdapter;
+import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.data.EntitiesStorage;
 import com.maxsavitsky.documenter.data.types.Entity;
 import com.maxsavitsky.documenter.data.types.Group;
@@ -39,11 +45,21 @@ public class EntitiesListActivity extends ThemeActivity {
 
 	private EntitiesAdapter mEntitiesAdapter;
 
+	private final ActivityResultLauncher<Intent> mEntitiesListLauncher = registerForActivityResult(
+			new ActivityResultContracts.StartActivityForResult(),
+			result->{
+				if ( result.getResultCode() == Results.NEED_TO_REFRESH ) {
+					Log.i( TAG, "need to refresh: " );
+					sortAndUpdateList();
+				}
+			}
+	);
+
 	private final EntitiesAdapter.AdapterCallback ADAPTER_CALLBACK = new EntitiesAdapter.AdapterCallback() {
 		@Override
 		public void onEntityClick(String id, Entity.Type type) {
 			if ( type == Entity.Type.GROUP ) {
-				startActivity( new Intent( EntitiesListActivity.this, EntitiesListActivity.class ).putExtra( "groupId", id ) );
+				mEntitiesListLauncher.launch( new Intent( EntitiesListActivity.this, EntitiesListActivity.class ).putExtra( "groupId", id ) );
 			}
 		}
 	};
@@ -55,13 +71,41 @@ public class EntitiesListActivity extends ThemeActivity {
 			onBackPressed();
 		} else if ( itemId == R.id.item_menu_sort_mode ) {
 			showSortOptionsDialog();
+		} else if ( itemId == R.id.item_menu_change_name ) {
+			AlertDialog.Builder builder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
+					.setTitle( R.string.edit_name );
+			final EditText editText = new EditText( this );
+			editText.setText( mGroup.getName() );
+			editText.append( "" );
+			editText.setTextColor( getColor( super.mTextColor ) );
+			editText.requestFocus();
+			ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT );
+			editText.setLayoutParams( layoutParams );
+			builder.setView( editText ).setPositiveButton( "OK", (dialog, which)->{
+				String text = editText.getText().toString();
+				text = text.trim();
+				if ( !text.isEmpty() && !text.equals( mGroup.getName() ) ) {
+					if ( EntitiesStorage.get().isGroupNameExists( text ) ) {
+						Toast.makeText( this, R.string.this_name_already_exist, Toast.LENGTH_SHORT ).show();
+						return;
+					}
+					mGroup.rename( text );
+					setTitle( text );
+					setResult( Results.NEED_TO_REFRESH );
+					EntitiesStorage.get().save();
+				} else {
+					Toast.makeText( this, R.string.invalid_name, Toast.LENGTH_SHORT ).show();
+				}
+				dialog.cancel();
+			} ).setNegativeButton( R.string.cancel, (dialog, which)->dialog.cancel() ).setCancelable( false );
+			builder.show();
 		}
 		return super.onOptionsItemSelected( item );
 	}
 
 	private void showSortOptionsDialog() {
 		View view = LayoutInflater.from( this ).inflate( R.layout.sort_menu, null );
-		CustomRadioGroup radioOrder = view.findViewById(R.id.radio_group_order);
+		CustomRadioGroup radioOrder = view.findViewById( R.id.radio_group_order );
 		radioOrder.setCheckedIndex( mSortOrder );
 		CustomRadioGroup radioSorting = view.findViewById( R.id.radio_group_sorting );
 		radioSorting.setCheckedIndex( mSortingMode );
@@ -138,25 +182,28 @@ public class EntitiesListActivity extends ThemeActivity {
 
 	private void sortAndUpdateList() {
 		ArrayList<? extends Entity> entities;
-		if(isRoot)
+		if ( isRoot ) {
 			entities = EntitiesStorage.get().getRootEntities();
-		else
+		} else {
 			entities = mGroup.getContainingEntities();
+		}
 		entities.sort( (Comparator<Entity>) (o1, o2)->{
-			if(o1.getType() != o2.getType()){
-				if(mSortOrder == 0)
+			if ( o1.getType() != o2.getType() ) {
+				if ( mSortOrder == 0 ) {
 					return o1.getType() == Entity.Type.GROUP ? -1 : 1;
-				else if(mSortOrder == 1)
+				} else if ( mSortOrder == 1 ) {
 					return o1.getType() == Entity.Type.GROUP ? 1 : -1;
+				}
 			}
 			int comp = 0;
-			if(mSortingMode == 0){
+			if ( mSortingMode == 0 ) {
 				comp = o1.getName().compareToIgnoreCase( o2.getName() );
-			}else{
+			} else {
 				comp = Long.compare( o1.getCreationTimestamp(), o2.getCreationTimestamp() );
 			}
-			if(mAscendingDescendingOrder == 1)
+			if ( mAscendingDescendingOrder == 1 ) {
 				comp = -comp;
+			}
 			return comp;
 		} );
 		updateList( entities );

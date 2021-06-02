@@ -21,25 +21,38 @@ public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHo
 	private ArrayList<? extends Entity> mEntities;
 	private final AdapterCallback mAdapterCallback;
 
-	public interface AdapterCallback{
+	public interface AdapterCallback {
 		void onEntityClick(String id, Entity.Type type);
 	}
 
 	public EntitiesAdapter(ArrayList<? extends Entity> entities, AdapterCallback callback) {
-		mEntities = entities;
+		mEntities = copy( entities );
 		mAdapterCallback = callback;
 	}
 
-	public void setElements(ArrayList<? extends Entity> entities){
+	public void setElements(ArrayList<? extends Entity> entities) {
 		DiffResult diffResult = DiffUtil.calculateDiff( new DiffUtilCallback( mEntities, entities ) );
-		mEntities = entities;
+		mEntities = copy( entities );
 		diffResult.dispatchUpdatesTo( this );
+	}
+
+	private ArrayList<? extends Entity> copy(ArrayList<? extends Entity> entities) {
+		ArrayList<Entity> res = new ArrayList<>();
+		for (Entity e : entities) {
+			res.add( new Entity( e.getId(), e.getName() ) {
+				@Override
+				public Type getType() {
+					return e.getType();
+				}
+			} );
+		}
+		return res;
 	}
 
 	@NonNull
 	@Override
 	public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-		View view = LayoutInflater.from(parent.getContext()).inflate( R.layout.entity_layout, parent, false);
+		View view = LayoutInflater.from( parent.getContext() ).inflate( R.layout.entity_layout, parent, false );
 		return new ViewHolder( view );
 	}
 
@@ -47,15 +60,16 @@ public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHo
 	public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
 		Entity entity = mEntities.get( position );
 		holder.textView.setText( entity.getName() );
-		if(entity.getType() == Entity.Type.GROUP){
+		if ( entity.getType() == Entity.Type.GROUP ) {
 			holder.imageView.setImageResource( R.drawable.ic_folder );
-		}else{
+		} else {
 			holder.imageView.setImageResource( R.drawable.ic_document );
 		}
 
 		holder.itemView.setOnClickListener( v->{
-			if(mAdapterCallback != null)
-				mAdapterCallback.onEntityClick( entity.getId(), entity.getType());
+			if ( mAdapterCallback != null ) {
+				mAdapterCallback.onEntityClick( entity.getId(), entity.getType() );
+			}
 		} );
 	}
 
@@ -64,7 +78,7 @@ public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHo
 		return mEntities.size();
 	}
 
-	public static class ViewHolder extends RecyclerView.ViewHolder{
+	public static class ViewHolder extends RecyclerView.ViewHolder {
 		private final TextView textView;
 		private final ImageView imageView;
 
@@ -76,7 +90,7 @@ public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHo
 		}
 	}
 
-	private static class DiffUtilCallback extends DiffUtil.Callback{
+	private static class DiffUtilCallback extends DiffUtil.Callback {
 
 		private final ArrayList<? extends Entity> oldList, newList;
 
