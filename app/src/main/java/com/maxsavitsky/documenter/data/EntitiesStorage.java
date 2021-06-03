@@ -214,6 +214,8 @@ public class EntitiesStorage {
 		}
 		g.unlink();
 		mGroups.remove( g );
+
+		save();
 	}
 
 	private void deleteGroupInternal(Group g, int mode, Map<String, Boolean> map) {
