@@ -2,6 +2,7 @@ package com.maxsavitsky.documenter.data;
 
 import android.util.Log;
 
+import com.maxsavitsky.documenter.App;
 import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.data.types.Entity;
 import com.maxsavitsky.documenter.data.types.EntryEntity;
@@ -135,6 +136,31 @@ public class EntitiesStorage {
 			);
 		}
 		return jsonArray;
+	}
+
+	public void deleteEntity(String id){
+		for(Group g : mGroups){
+			if(g.getId().equals( id )){
+				for(var e : g.getContainingEntities())
+					e.removeParent( id );
+				for(String p : g.getParents()){
+					getGroup( p ).ifPresent( group->group.removeContainingEntity( id ) );
+				}
+				mGroups.remove( g );
+				break;
+			}
+		}
+		for(EntryEntity e : mEntryEntities){
+			if(e.getId().equals( id )){
+				for(String p : e.getParents()){
+					getGroup( p ).ifPresent( group->group.removeContainingEntity( id ) );
+				}
+				Utils.deleteDirectory( new File( App.appStoragePath + "/entries/" + id ) );
+				mEntryEntities.remove( e );
+				break;
+			}
+		}
+		save();
 	}
 
 }

@@ -22,4 +22,8 @@ public class Group extends Entity {
 	public ArrayList<? extends Entity> getContainingEntities() {
 		return containingEntities;
 	}
+
+	public void removeContainingEntity(String id){
+		containingEntities.removeIf( e->e.getId().equals( id ) );
+	}
 }

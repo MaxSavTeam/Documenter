@@ -3,7 +3,6 @@ package com.maxsavitsky.documenter.ui;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -68,23 +67,19 @@ public class EntryViewer extends ThemeActivity {
 		}
 	}
 
-	private void backPressed() {
-		super.onBackPressed();
-	}
-
 	@Override
 	public void onBackPressed() {
-		backPressed();
+		super.onBackPressed();
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 		int itemId = item.getItemId();
 		if ( itemId == android.R.id.home ) {
-			backPressed();
-		}else if(itemId == R.id.item_auto_scroll){
+			onBackPressed();
+		} else if ( itemId == R.id.item_auto_scroll ) {
 			findViewById( R.id.speedLayout ).setVisibility( View.VISIBLE );
-			startScroll( ((SeekBar) findViewById( R.id.speedSeekBar )).getProgress() );
+			startScroll( ( (SeekBar) findViewById( R.id.speedSeekBar ) ).getProgress() );
 		} else if ( itemId == R.id.item_edit_entry_name ) {
 			AlertDialog changeNameDialog;
 			final EditText editText = new EditText( this );
@@ -95,22 +90,19 @@ public class EntryViewer extends ThemeActivity {
 			AlertDialog.Builder builder = new AlertDialog.Builder( this )
 					.setTitle( R.string.edit_entry_name )
 					.setView( editText )
-					.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							String newName = editText.getText().toString();
-							newName = newName.trim();
-							if ( !newName.isEmpty() && !newName.equals( mEntry.getName() ) ) {
-								if ( EntitiesStorage.get().isEntryNameExists( newName ) ) {
-									Toast.makeText( EntryViewer.this, R.string.this_name_already_exist, Toast.LENGTH_SHORT ).show();
-									return;
-								}
-								mEntry.rename( newName );
-								applyTheme();
-								setResult( Results.NEED_TO_REFRESH );
-							} else {
-								Toast.makeText( EntryViewer.this, R.string.invalid_name, Toast.LENGTH_SHORT ).show();
+					.setPositiveButton( "OK", (dialog, which)->{
+						String newName = editText.getText().toString();
+						newName = newName.trim();
+						if ( !newName.isEmpty() && !newName.equals( mEntry.getName() ) ) {
+							if ( EntitiesStorage.get().isEntryNameExists( newName ) ) {
+								Toast.makeText( EntryViewer.this, R.string.this_name_already_exist, Toast.LENGTH_SHORT ).show();
+								return;
 							}
+							mEntry.rename( newName );
+							applyTheme();
+							setResult( Results.NEED_TO_REFRESH );
+						} else {
+							Toast.makeText( EntryViewer.this, R.string.invalid_name, Toast.LENGTH_SHORT ).show();
 						}
 					} )
 					.setNegativeButton( R.string.cancel, (dialog, which)->dialog.cancel() ).setCancelable( false );
@@ -120,29 +112,13 @@ public class EntryViewer extends ThemeActivity {
 			AlertDialog.Builder deletionBuilder = new AlertDialog.Builder( this )
 					.setMessage( R.string.delete_confirmation_text )
 					.setTitle( R.string.confirmation )
-					.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							dialog.cancel();
-							try {
-								if ( MainData.finallyDeleteEntryWithId( mEntry.getId() ) ) {
-									setResult( Results.NEED_TO_REFRESH );
-									finish();
-								} else {
-									Toast.makeText( EntryViewer.this, "Failed", Toast.LENGTH_SHORT ).show();
-								}
-							} catch (Exception e) {
-								e.printStackTrace();
-								Toast.makeText( EntryViewer.this, "onOptionsItemSelected", Toast.LENGTH_LONG ).show();
-								Utils.getErrorDialog( e, EntryViewer.this ).show();
-							}
-						}
-					} ).setNeutralButton( R.string.cancel, new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							dialog.cancel();
-						}
-					} ).setCancelable( false );
+					.setPositiveButton( "OK", (dialog, which)->{
+						dialog.cancel();
+						EntitiesStorage.get().deleteEntity( mEntry.getId() );
+						setResult( Results.NEED_TO_REFRESH );
+						onBackPressed();
+					} )
+					.setNeutralButton( R.string.cancel, (dialog, which)->dialog.cancel() ).setCancelable( false );
 			deletionBuilder.create().show();
 		} else if ( itemId == R.id.item_edit_entry_text ) {
 			mEntry.getProperties().setScrollPosition( mScrollView.getScrollY() );
@@ -210,7 +186,7 @@ public class EntryViewer extends ThemeActivity {
 		}
 	}
 
-	private void setupSpeedSeekBar(){
+	private void setupSpeedSeekBar() {
 		SeekBar seekBar = findViewById( R.id.speedSeekBar );
 		seekBar.setProgress( 1 );
 		seekBar.setOnSeekBarChangeListener( new SeekBar.OnSeekBarChangeListener() {
@@ -234,13 +210,14 @@ public class EntryViewer extends ThemeActivity {
 	private ObjectAnimator mScrollAnimator;
 	private int mScrollSpeed = 0;
 
-	private void startScroll(int speed){
-		if(mScrollAnimator != null)
+	private void startScroll(int speed) {
+		if ( mScrollAnimator != null ) {
 			mScrollAnimator.cancel();
+		}
 		mScrollSpeed = speed;
-		if(speed != 0) {
+		if ( speed != 0 ) {
 			mScrollAnimator = ObjectAnimator.ofInt( mScrollView, "scrollY", mScrollView.getMaxVerticalScroll() );
-			int r = (int) (( mScrollView.getMaxVerticalScroll() - mScrollView.getScrollY() ) / speed * 20);
+			int r = (int) ( ( mScrollView.getMaxVerticalScroll() - mScrollView.getScrollY() ) / speed * 20 );
 			mScrollAnimator.setDuration( r );
 			mScrollAnimator.setInterpolator( new LinearInterpolator() );
 			mScrollAnimator.start();
@@ -356,9 +333,9 @@ public class EntryViewer extends ThemeActivity {
 		Intent intent = getIntent();
 
 		Optional<EntryEntity> op = EntitiesStorage.get().getEntry( intent.getStringExtra( "id" ) );
-		if(op.isPresent()){
+		if ( op.isPresent() ) {
 			mEntry = op.get();
-		}else{
+		} else {
 			Toast.makeText( this, "Entry not found", Toast.LENGTH_SHORT ).show();
 			onBackPressed();
 			return;
@@ -395,10 +372,11 @@ public class EntryViewer extends ThemeActivity {
 		mScrollView.setOnTouchListener( new View.OnTouchListener() {
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
-				if(event.getAction() == MotionEvent.ACTION_DOWN){
-					if(mScrollAnimator != null)
+				if ( event.getAction() == MotionEvent.ACTION_DOWN ) {
+					if ( mScrollAnimator != null ) {
 						mScrollAnimator.cancel();
-				}else if(event.getAction() == MotionEvent.ACTION_UP){
+					}
+				} else if ( event.getAction() == MotionEvent.ACTION_UP ) {
 					startScroll( mScrollSpeed );
 				}
 				mEntry.getProperties().setScrollPosition( mScrollView.getScrollY() ); // just remember
@@ -417,7 +395,7 @@ public class EntryViewer extends ThemeActivity {
 
 		final Thread loadThread = new Thread( ()->{
 			try {
-				mCallback.loaded( mEntry.loadText(Utils.getScreenSize().x ) );
+				mCallback.loaded( mEntry.loadText( Utils.getScreenSize().x ) );
 			} catch (IOException | JSONException e) {
 				e.printStackTrace();
 				mCallback.exceptionOccurred( e );
@@ -432,7 +410,7 @@ public class EntryViewer extends ThemeActivity {
 				(dialog, which)->{
 					loadThread.interrupt();
 					dialog.cancel();
-					backPressed();
+					onBackPressed();
 				} );
 		mProgressDialog.show();
 		loadThread.start();

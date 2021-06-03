@@ -38,6 +38,14 @@ public abstract class Entity {
 		parents.add( id );
 	}
 
+	public void removeParent(String id){
+		parents.removeIf( s->s.equals( id ) );
+	}
+
+	public ArrayList<String> getParents() {
+		return parents;
+	}
+
 	public boolean isRoot(){
 		return parents.isEmpty();
 	}
