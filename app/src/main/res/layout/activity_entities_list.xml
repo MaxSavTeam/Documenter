@@ -27,4 +27,29 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+
+    <com.maxsavitsky.documenter.ui.widget.FabMenu
+        android:id="@+id/fab_menu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:layout_margin="@dimen/fab_margin"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0"
+        app:menu_colorNormal="?fabButtonColor"
+        app:menu_icon="@drawable/ic_more_horiz_24">
+
+        <com.maxsavitsky.documenter.ui.widget.FabButton
+            android:id="@+id/fabSettings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_settings_24"
+            app:fab_label="@string/settings" />
+
+    </com.maxsavitsky.documenter.ui.widget.FabMenu>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

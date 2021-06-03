@@ -28,6 +28,7 @@ import com.maxsavitsky.documenter.data.EntitiesStorage;
 import com.maxsavitsky.documenter.data.types.Entity;
 import com.maxsavitsky.documenter.data.types.Group;
 import com.maxsavitsky.documenter.ui.widget.CustomRadioGroup;
+import com.maxsavitsky.documenter.ui.widget.FabButton;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -58,6 +59,16 @@ public class EntitiesListActivity extends ThemeActivity {
 			result->{
 				if ( result.getResultCode() == Results.NEED_TO_REFRESH ) {
 					sortAndUpdateList();
+				}
+			}
+	);
+
+	private final ActivityResultLauncher<Intent> mSettingsLauncher = registerForActivityResult(
+			new ActivityResultContracts.StartActivityForResult(),
+			result->{
+				if(result.getResultCode() == Results.RESTART_APP){
+					setResult( Results.RESTART_APP );
+					onBackPressed();
 				}
 			}
 	);
@@ -178,6 +189,11 @@ public class EntitiesListActivity extends ThemeActivity {
 			initializeRecyclerView( mGroup.getContainingEntities() );
 			sortAndUpdateList();
 		}
+
+		FabButton fab = findViewById( R.id.fabSettings );
+		fab.setOnClickListener( v->{
+			mSettingsLauncher.launch( new Intent( this, SettingsActivity.class ) );
+		} );
 	}
 
 	private void initializeRecyclerView(ArrayList<? extends Entity> entities) {

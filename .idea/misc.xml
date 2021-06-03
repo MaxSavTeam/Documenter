@@ -6,10 +6,13 @@
         <entry key="..\:/AndroidStudio/Documenter/app/src/main/res/drawable/ic_sort_ascending.xml" value="0.2304869913275517" />
         <entry key="..\:/AndroidStudio/Documenter/app/src/main/res/layout/activity_category_list.xml" value="0.18681693989071038" />
         <entry key="..\:/AndroidStudio/Documenter/app/src/main/res/layout/activity_create_entry.xml" value="0.20457650273224043" />
+        <entry key="..\:/AndroidStudio/Documenter/app/src/main/res/layout/activity_document_list2.xml" value="0.10787557908669755" />
         <entry key="..\:/AndroidStudio/Documenter/app/src/main/res/layout/activity_entities_list.xml" value="0.18681693989071038" />
         <entry key="..\:/AndroidStudio/Documenter/app/src/main/res/layout/activity_errhandler.xml" value="0.16974043715846995" />
         <entry key="..\:/AndroidStudio/Documenter/app/src/main/res/layout/activity_view_entry.xml" value="0.25" />
         <entry key="..\:/AndroidStudio/Documenter/app/src/main/res/layout/bottom_cycle.xml" value="0.20457650273224043" />
+        <entry key="..\:/AndroidStudio/Documenter/app/src/main/res/layout/common_fab_buttons.xml" value="0.10787557908669755" />
+        <entry key="..\:/AndroidStudio/Documenter/app/src/main/res/layout/content_category_list.xml" value="0.1758879781420765" />
         <entry key="..\:/AndroidStudio/Documenter/app/src/main/res/layout/content_create_entry.xml" value="0.10787557908669755" />
         <entry key="..\:/AndroidStudio/Documenter/app/src/main/res/layout/content_settings2.xml" value="0.22" />
         <entry key="..\:/AndroidStudio/Documenter/app/src/main/res/layout/entity_layout.xml" value="0.18681693989071038" />

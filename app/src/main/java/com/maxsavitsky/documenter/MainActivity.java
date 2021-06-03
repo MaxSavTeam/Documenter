@@ -9,6 +9,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 
@@ -43,6 +45,17 @@ public class MainActivity extends ThemeActivity {
 	public static MainActivity getInstance() {
 		return instance;
 	}
+
+	private final ActivityResultLauncher<Intent> mEntitiesListLauncher = registerForActivityResult(
+			new ActivityResultContracts.StartActivityForResult(),
+			result->{
+				if(result.getResultCode() == Results.RESTART_APP){
+					restartApp();
+				}else if(result.getResultCode() == RESULT_OK){
+					onBackPressed();
+				}
+			}
+	);
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -81,7 +94,7 @@ public class MainActivity extends ThemeActivity {
 			try {
 				Thread.sleep( 1000 );
 				Intent intent = new Intent(this, EntitiesListActivity.class );
-				startActivity( intent );
+				mEntitiesListLauncher.launch( intent );
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
