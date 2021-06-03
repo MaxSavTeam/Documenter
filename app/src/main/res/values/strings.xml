@@ -207,4 +207,9 @@
     <string name="ascending">Ascending</string>
     <string name="descending">Descending</string>
     <string name="mixed">Mixed</string>
+    <string name="deletion_mode_only_included_in_that_group">Delete groups and entries which are included only in that group</string>
+    <string name="deletion_mode_all">Delete all groups and entries, even if they are included in other groups (they will be deleted there)</string>
+    <string name="deletion_mode_move_to_upper_level">Delete group and move members to upper group</string>
+    <string name="deletion_mode_move_to_the_root">Delete group and move members to the root</string>
+    <string name="data_will_be_deleted_permanently">Data will be deleted permanently</string>
 </resources>

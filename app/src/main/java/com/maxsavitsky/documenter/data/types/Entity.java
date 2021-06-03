@@ -1,5 +1,7 @@
 package com.maxsavitsky.documenter.data.types;
 
+import com.maxsavitsky.documenter.data.EntitiesStorage;
+
 import java.util.ArrayList;
 
 public abstract class Entity {
@@ -40,6 +42,13 @@ public abstract class Entity {
 
 	public void removeParent(String id){
 		parents.removeIf( s->s.equals( id ) );
+	}
+
+	public void unlink(){
+		for(String p : parents){
+			EntitiesStorage.get().getGroup( p ).ifPresent( g->g.removeContainingEntity( id ) );
+		}
+		parents.clear();
 	}
 
 	public ArrayList<String> getParents() {

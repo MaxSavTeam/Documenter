@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="10dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.maxsavitsky.documenter.ui.widget.CustomRadioGroup
+        android:id="@+id/radio_group_delete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <RadioButton
+            android:id="@+id/radioButton1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:minHeight="48dp"
+            android:text="@string/deletion_mode_only_included_in_that_group"
+            android:textColor="?textColor" />
+
+        <RadioButton
+            android:id="@+id/radioButton8"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:minHeight="48dp"
+            android:text="@string/deletion_mode_all"
+            android:textColor="?textColor" />
+
+        <RadioButton
+            android:id="@+id/radioButton9"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:minHeight="48dp"
+            android:text="@string/deletion_mode_move_to_upper_level"
+            android:textColor="?textColor" />
+
+        <RadioButton
+            android:id="@+id/radioButton10"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:minHeight="48dp"
+            android:text="@string/deletion_mode_move_to_the_root"
+            android:textColor="?textColor" />
+
+    </com.maxsavitsky.documenter.ui.widget.CustomRadioGroup>
+
+    <TextView
+        android:id="@+id/textView9"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="TextView" />
+</LinearLayout>

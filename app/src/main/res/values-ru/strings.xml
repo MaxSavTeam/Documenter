@@ -192,4 +192,9 @@
     <string name="ascending">Возрастание</string>
     <string name="descending">Убывание</string>
     <string name="mixed">Вперемешку</string>
+    <string name="deletion_mode_only_included_in_that_group">Удалить группы и записи, которые включены только в эту группу</string>
+    <string name="deletion_mode_all">Удалить все группы и записи, даже если они включены в другие группы (там они тоже будут удалены)</string>
+    <string name="deletion_mode_move_to_upper_level">Удалить группу и переместить всё содержимое на уровень выше</string>
+    <string name="deletion_mode_move_to_the_root">Удалить группу и переместить всё содержимое в корень</string>
+    <string name="data_will_be_deleted_permanently">Данные будут удалены перманентно</string>
 </resources>

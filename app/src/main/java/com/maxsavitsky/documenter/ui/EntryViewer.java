@@ -109,7 +109,7 @@ public class EntryViewer extends ThemeActivity {
 			changeNameDialog = builder.create();
 			changeNameDialog.show();
 		} else if ( itemId == R.id.item_delete_entry ) {
-			AlertDialog.Builder deletionBuilder = new AlertDialog.Builder( this )
+			AlertDialog.Builder deletionBuilder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
 					.setMessage( R.string.delete_confirmation_text )
 					.setTitle( R.string.confirmation )
 					.setPositiveButton( "OK", (dialog, which)->{

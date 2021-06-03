@@ -18,6 +18,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -53,10 +55,11 @@ public class EntitiesStorage {
 		return Optional.empty();
 	}
 
-	public Optional<EntryEntity> getEntry(String id){
-		for(var e : mEntryEntities){
-			if(e.getId().equals( id ))
+	public Optional<EntryEntity> getEntry(String id) {
+		for (var e : mEntryEntities) {
+			if ( e.getId().equals( id ) ) {
 				return Optional.of( e );
+			}
 		}
 		return Optional.empty();
 	}
@@ -70,15 +73,15 @@ public class EntitiesStorage {
 				.collect( Collectors.toCollection( ArrayList::new ) );
 	}
 
-	public boolean isGroupNameExists(String name){
+	public boolean isGroupNameExists(String name) {
 		return mGroups.stream().anyMatch( g->g.getName().equals( name ) );
 	}
 
-	public boolean isEntryNameExists(String name){
+	public boolean isEntryNameExists(String name) {
 		return mEntryEntities.stream().anyMatch( e->e.getName().equals( name ) );
 	}
 
-	public synchronized void save(){
+	public synchronized void save() {
 		JSONObject result = new JSONObject();
 
 		String outString;
@@ -88,10 +91,10 @@ public class EntitiesStorage {
 			result.put( "entries", describeEntities( mEntryEntities ) );
 
 			JSONObject groupsContent = new JSONObject();
-			for(Group group : mGroups){
-				if(group.getContainingEntities().size() > 0){
+			for (Group group : mGroups) {
+				if ( group.getContainingEntities().size() > 0 ) {
 					JSONArray jsonArray = new JSONArray();
-					for(Entity entity : group.getContainingEntities()){
+					for (Entity entity : group.getContainingEntities()) {
 						jsonArray.put( entity.getId() );
 					}
 					groupsContent.put( group.getId(), jsonArray );
@@ -100,67 +103,154 @@ public class EntitiesStorage {
 			result.put( "groupsContent", groupsContent );
 
 			outString = result.toString();
-		}catch (JSONException e){
+		} catch (JSONException e) {
 			Log.i( TAG, "save: " + e );
 			return;
 		}
 
 		FileOutputStream fos = null;
-		File file = new File(Utils.getExternalStoragePath().getPath() + "/data.json"  );
-		try{
-			if(!file.exists())
+		File file = new File( Utils.getExternalStoragePath().getPath() + "/data.json" );
+		try {
+			if ( !file.exists() ) {
 				file.createNewFile();
+			}
 			fos = new FileOutputStream( file );
 			fos.write( outString.getBytes( StandardCharsets.UTF_8 ) );
 			fos.flush();
 			fos.close();
-		}catch (IOException e){
+		} catch (IOException e) {
 			Log.i( TAG, "save: " + e );
 
-			if(fos != null) {
+			if ( fos != null ) {
 				try {
 					fos.close();
-				} catch (IOException ignored) {}
+				} catch (IOException ignored) {
+				}
 			}
 		}
 	}
 
 	private JSONArray describeEntities(ArrayList<? extends Entity> entities) throws JSONException {
 		JSONArray jsonArray = new JSONArray();
-		for(Entity entity : entities){
+		for (Entity entity : entities) {
 			jsonArray.put(
 					new JSONObject()
 							.put( "id", entity.getId() )
 							.put( "name", entity.getName() )
-					.put( "timestamp", entity.getCreationTimestamp() )
+							.put( "timestamp", entity.getCreationTimestamp() )
 			);
 		}
 		return jsonArray;
 	}
 
-	public void deleteEntity(String id){
-		for(Group g : mGroups){
-			if(g.getId().equals( id )){
-				for(var e : g.getContainingEntities())
+	private void addEntityTo(Entity e, String groupId){
+		getGroup( groupId ).ifPresent( g->g.addMember( e ) );
+	}
+
+	private void addEntityTo(Entity e, Group g) {
+		g.addMember( e );
+	}
+
+	public void deleteEntity(String id) {
+		for (Group g : mGroups) {
+			if ( g.getId().equals( id ) ) {
+				for (var e : g.getContainingEntities())
 					e.removeParent( id );
-				for(String p : g.getParents()){
+				for (String p : g.getParents()) {
 					getGroup( p ).ifPresent( group->group.removeContainingEntity( id ) );
 				}
 				mGroups.remove( g );
 				break;
 			}
 		}
-		for(EntryEntity e : mEntryEntities){
-			if(e.getId().equals( id )){
-				for(String p : e.getParents()){
+		for (EntryEntity e : mEntryEntities) {
+			if ( e.getId().equals( id ) ) {
+				for (String p : e.getParents()) {
 					getGroup( p ).ifPresent( group->group.removeContainingEntity( id ) );
 				}
-				Utils.deleteDirectory( new File( App.appStoragePath + "/entries/" + id ) );
-				mEntryEntities.remove( e );
+				deleteEntry( e );
 				break;
 			}
 		}
 		save();
+	}
+
+	private void deleteEntry(EntryEntity e) {
+		Utils.deleteDirectory( new File( App.appStoragePath + "/entries/" + e.getId() ) );
+		mEntryEntities.remove( e );
+	}
+
+	/**
+	 * @param mode Mode of deletion. Can be 0 (delete group and members, which included only in that group),
+	 *             1 (delete group and all members),
+	 *             2 (delete group and move members to upper level),
+	 *             3 (delete group and move members to the root (unlink))
+	 */
+	public void deleteGroup(String id, int mode) {
+		Optional<Group> op = getGroup( id );
+		if ( !op.isPresent() ) {
+			return;
+		}
+		Group g = op.get();
+		Log.i( TAG, "deleteGroup: " + g );
+		Map<String, Boolean> map = new HashMap<>();
+		indexGroupMembers( g, map );
+		for (Entity m : g.getContainingEntities()) {
+			m.removeParent( g.getId() );
+			if ( m instanceof EntryEntity ) {
+				if ( mode == 1 || mode == 0 && checkEntityBeforeDeletion( m, map ) ) {
+					deleteEntry( (EntryEntity) m );
+				}
+			} else if ( m instanceof Group ) {
+				if(mode == 1 || mode == 0 && checkEntityBeforeDeletion( m, map ))
+					deleteGroupInternal( (Group) m, mode, map );
+			}
+			if ( mode == 2 ) {
+				for(String p : g.getParents()){
+					addEntityTo( m, p );
+					m.addParent( p );
+				}
+			}
+		}
+		g.unlink();
+		mGroups.remove( g );
+	}
+
+	private void deleteGroupInternal(Group g, int mode, Map<String, Boolean> map) {
+		g.unlink();
+		for(Entity e : g.getContainingEntities()){
+			if(mode == 1 || mode == 0 && checkEntityBeforeDeletion( e, map )){
+				if(e instanceof Group)
+					deleteGroupInternal( (Group) e, mode, map );
+				else if(e instanceof EntryEntity)
+					deleteEntry( (EntryEntity) e );
+			}
+		}
+		mGroups.remove( g );
+	}
+
+	private boolean checkEntityBeforeDeletion(Entity e, Map<String, Boolean> map) {
+		boolean f = true;
+		for (String p : e.getParents()) {
+			Boolean b = map.getOrDefault( p, false );
+			f &= b != null && b;
+		}
+		Log.i( TAG, "checkEntityBeforeDeletion: " + e.getId() + " " + f );
+		return f;
+	}
+
+	private void indexGroupMembers(Group g, Map<String, Boolean> map) {
+		map.put( g.getId(), true );
+		for (Entity e : g.getContainingEntities()) {
+			if ( e instanceof Group ) {
+				Boolean b = map.getOrDefault( e.getId(), false );
+				if ( b != null && !b ) {
+					indexGroupMembers( (Group) e, map );
+				}
+			} else {
+				map.put( e.getId(), true );
+			}
+		}
 	}
 
 }

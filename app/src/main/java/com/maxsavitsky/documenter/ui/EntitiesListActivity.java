@@ -1,8 +1,12 @@
 package com.maxsavitsky.documenter.ui;
 
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,6 +23,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.maxsavitsky.documenter.BuildConfig;
 import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.ThemeActivity;
@@ -66,12 +71,19 @@ public class EntitiesListActivity extends ThemeActivity {
 	private final ActivityResultLauncher<Intent> mSettingsLauncher = registerForActivityResult(
 			new ActivityResultContracts.StartActivityForResult(),
 			result->{
-				if(result.getResultCode() == Results.RESTART_APP){
+				if ( result.getResultCode() == Results.RESTART_APP ) {
 					setResult( Results.RESTART_APP );
 					onBackPressed();
 				}
 			}
 	);
+
+	private final BroadcastReceiver mNeedToRefreshReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			sortAndUpdateList();
+		}
+	};
 
 	private final EntitiesAdapter.AdapterCallback ADAPTER_CALLBACK = new EntitiesAdapter.AdapterCallback() {
 		@Override
@@ -83,6 +95,12 @@ public class EntitiesListActivity extends ThemeActivity {
 			}
 		}
 	};
+
+	@Override
+	protected void onDestroy() {
+		unregisterReceiver( mNeedToRefreshReceiver );
+		super.onDestroy();
+	}
 
 	@Override
 	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -111,7 +129,7 @@ public class EntitiesListActivity extends ThemeActivity {
 					}
 					mGroup.rename( text );
 					setTitle( text );
-					setResult( Results.NEED_TO_REFRESH );
+					sendBroadcast( new Intent(BuildConfig.APPLICATION_ID + ".REFRESH_ENTITIES_LISTS") );
 					EntitiesStorage.get().save();
 				} else {
 					Toast.makeText( this, R.string.invalid_name, Toast.LENGTH_SHORT ).show();
@@ -119,8 +137,30 @@ public class EntitiesListActivity extends ThemeActivity {
 				dialog.cancel();
 			} ).setNegativeButton( R.string.cancel, (dialog, which)->dialog.cancel() ).setCancelable( false );
 			builder.show();
+		} else if ( itemId == R.id.item_menu_delete ) {
+			showDeletionDialog();
 		}
 		return super.onOptionsItemSelected( item );
+	}
+
+	private void showDeletionDialog(){
+		View view = getLayoutInflater().inflate( R.layout.group_deletion_menu, null );
+		CustomRadioGroup radioGroup = view.findViewById( R.id.radio_group_delete );
+		radioGroup.setCheckedIndex( 0 );
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(this, super.mAlertDialogStyle);
+		builder
+				.setView( view )
+				.setNegativeButton( R.string.cancel, (dialog, which) -> dialog.cancel() )
+				.setPositiveButton( "OK", (dialog, which) -> {
+					int deletionMode = radioGroup.getCheckedItemIndex();
+					Log.i( TAG, "showDeletionDialog: " + deletionMode + " " + mGroup );
+					EntitiesStorage.get().deleteGroup( mGroup.getId(), deletionMode );
+					sendBroadcast( new Intent(BuildConfig.APPLICATION_ID + ".REFRESH_ENTITIES_LISTS") );
+					onBackPressed();
+				} )
+				.setCancelable( false );
+		builder.show();
 	}
 
 	private void showSortOptionsDialog() {
@@ -194,6 +234,8 @@ public class EntitiesListActivity extends ThemeActivity {
 		fab.setOnClickListener( v->{
 			mSettingsLauncher.launch( new Intent( this, SettingsActivity.class ) );
 		} );
+
+		registerReceiver( mNeedToRefreshReceiver, new IntentFilter( BuildConfig.APPLICATION_ID + ".REFRESH_ENTITIES_LISTS" ) );
 	}
 
 	private void initializeRecyclerView(ArrayList<? extends Entity> entities) {
@@ -212,6 +254,8 @@ public class EntitiesListActivity extends ThemeActivity {
 		} else {
 			entities = mGroup.getContainingEntities();
 		}
+		for(Entity e : entities)
+			Log.i( TAG, "sortAndUpdateList: " + e );
 		entities.sort( (Comparator<Entity>) (o1, o2)->{
 			if ( o1.getType() != o2.getType() ) {
 				if ( mSortOrder == 0 ) {

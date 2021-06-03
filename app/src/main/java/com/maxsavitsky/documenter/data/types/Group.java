@@ -23,7 +23,15 @@ public class Group extends Entity {
 		return containingEntities;
 	}
 
-	public void removeContainingEntity(String id){
+	public void addMember(Entity e) {
+		if ( containingEntities.stream().noneMatch( en->en.getId().equals( e.getId() ) ) ) {
+			ArrayList<Entity> entities = new ArrayList<>( containingEntities );
+			entities.add( e );
+			setContainingEntities( entities );
+		}
+	}
+
+	public void removeContainingEntity(String id) {
 		containingEntities.removeIf( e->e.getId().equals( id ) );
 	}
 }
