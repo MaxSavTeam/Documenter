@@ -58,6 +58,15 @@ public class EntitiesListActivity extends ThemeActivity {
 			}
 	);
 
+	private final ActivityResultLauncher<Intent> mCreateGroupLauncher = registerForActivityResult(
+			new ActivityResultContracts.StartActivityForResult(),
+			result->{
+				if ( result.getResultCode() == Results.NEED_TO_REFRESH ) {
+					sortAndUpdateList();
+				}
+			}
+	);
+
 	private final ActivityResultLauncher<Intent> mEntryViewerLauncher = registerForActivityResult(
 			new ActivityResultContracts.StartActivityForResult(),
 			result->{
@@ -128,7 +137,7 @@ public class EntitiesListActivity extends ThemeActivity {
 					}
 					mGroup.rename( text );
 					setTitle( text );
-					sendBroadcast( new Intent(BuildConfig.APPLICATION_ID + ".REFRESH_ENTITIES_LISTS") );
+					sendBroadcast( new Intent( BuildConfig.APPLICATION_ID + ".REFRESH_ENTITIES_LISTS" ) );
 					EntitiesStorage.get().save();
 				} else {
 					Toast.makeText( this, R.string.invalid_name, Toast.LENGTH_SHORT ).show();
@@ -142,19 +151,19 @@ public class EntitiesListActivity extends ThemeActivity {
 		return super.onOptionsItemSelected( item );
 	}
 
-	private void showDeletionDialog(){
+	private void showDeletionDialog() {
 		View view = getLayoutInflater().inflate( R.layout.group_deletion_menu, null );
 		CustomRadioGroup radioGroup = view.findViewById( R.id.radio_group_delete );
 		radioGroup.setCheckedIndex( 0 );
 
-		AlertDialog.Builder builder = new AlertDialog.Builder(this, super.mAlertDialogStyle);
+		AlertDialog.Builder builder = new AlertDialog.Builder( this, super.mAlertDialogStyle );
 		builder
 				.setView( view )
-				.setNegativeButton( R.string.cancel, (dialog, which) -> dialog.cancel() )
-				.setPositiveButton( "OK", (dialog, which) -> {
+				.setNegativeButton( R.string.cancel, (dialog, which)->dialog.cancel() )
+				.setPositiveButton( "OK", (dialog, which)->{
 					int deletionMode = radioGroup.getCheckedItemIndex();
 					EntitiesStorage.get().deleteGroup( mGroup.getId(), deletionMode );
-					sendBroadcast( new Intent(BuildConfig.APPLICATION_ID + ".REFRESH_ENTITIES_LISTS") );
+					sendBroadcast( new Intent( BuildConfig.APPLICATION_ID + ".REFRESH_ENTITIES_LISTS" ) );
 					onBackPressed();
 				} )
 				.setCancelable( false );
@@ -231,6 +240,13 @@ public class EntitiesListActivity extends ThemeActivity {
 		FabButton fab = findViewById( R.id.fabSettings );
 		fab.setOnClickListener( v->{
 			mSettingsLauncher.launch( new Intent( this, SettingsActivity.class ) );
+		} );
+
+		findViewById( R.id.fabCreateGroup ).setOnClickListener( v->{
+			Intent intent = new Intent( this, CreateGroupActivity.class );
+			if(!isRoot)
+				intent.putExtra( "parentId", mGroup.getId() );
+			mCreateGroupLauncher.launch( intent );
 		} );
 
 		registerReceiver( mNeedToRefreshReceiver, new IntentFilter( BuildConfig.APPLICATION_ID + ".REFRESH_ENTITIES_LISTS" ) );

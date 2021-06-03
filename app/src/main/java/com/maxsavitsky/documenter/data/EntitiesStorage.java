@@ -151,6 +151,17 @@ public class EntitiesStorage {
 		g.addMember( e );
 	}
 
+	public void createGroup(String name, String parentId){
+		String id = Utils.generateUniqueId() + "1";
+		Group g = new Group( id, name );
+		mGroups.add( g );
+		getGroup( parentId ).ifPresent( group -> {
+			group.addMember( g );
+			g.addParent( parentId );
+		} );
+		save();
+	}
+
 	public void deleteEntity(String id) {
 		for (Group g : mGroups) {
 			if ( g.getId().equals( id ) ) {

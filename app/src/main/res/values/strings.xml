@@ -212,4 +212,5 @@
     <string name="deletion_mode_move_to_upper_level">Delete group and move members to upper group</string>
     <string name="deletion_mode_move_to_the_root">Delete group and move members to the root</string>
     <string name="data_will_be_deleted_permanently">Data will be deleted permanently</string>
+    <string name="create_group">Create group</string>
 </resources>
