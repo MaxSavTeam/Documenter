@@ -2,7 +2,6 @@ package com.maxsavitsky.documenter.ui.widget;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.widget.RadioGroup;
 
 import com.maxsavitsky.documenter.MainActivity;
@@ -23,7 +22,6 @@ public class CustomRadioGroup extends RadioGroup {
 	}
 
 	private void initializeChildren() {
-		Log.i( TAG, "initializeChildren: " + getChildCount() );
 		childrenIds = new ArrayList<>( getChildCount() );
 		for (int i = 0; i < getChildCount(); i++) {
 			childrenIds.add( getChildAt( i ).getId() );

@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -154,7 +153,6 @@ public class EntitiesListActivity extends ThemeActivity {
 				.setNegativeButton( R.string.cancel, (dialog, which) -> dialog.cancel() )
 				.setPositiveButton( "OK", (dialog, which) -> {
 					int deletionMode = radioGroup.getCheckedItemIndex();
-					Log.i( TAG, "showDeletionDialog: " + deletionMode + " " + mGroup );
 					EntitiesStorage.get().deleteGroup( mGroup.getId(), deletionMode );
 					sendBroadcast( new Intent(BuildConfig.APPLICATION_ID + ".REFRESH_ENTITIES_LISTS") );
 					onBackPressed();
@@ -254,8 +252,6 @@ public class EntitiesListActivity extends ThemeActivity {
 		} else {
 			entities = mGroup.getContainingEntities();
 		}
-		for(Entity e : entities)
-			Log.i( TAG, "sortAndUpdateList: " + e );
 		entities.sort( (Comparator<Entity>) (o1, o2)->{
 			if ( o1.getType() != o2.getType() ) {
 				if ( mSortOrder == 0 ) {
