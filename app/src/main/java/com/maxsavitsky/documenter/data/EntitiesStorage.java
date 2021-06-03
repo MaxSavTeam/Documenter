@@ -52,6 +52,14 @@ public class EntitiesStorage {
 		return Optional.empty();
 	}
 
+	public Optional<EntryEntity> getEntry(String id){
+		for(var e : mEntryEntities){
+			if(e.getId().equals( id ))
+				return Optional.of( e );
+		}
+		return Optional.empty();
+	}
+
 	public ArrayList<? extends Entity> getRootEntities() {
 		return Stream.concat(
 				mGroups.stream()
@@ -63,6 +71,10 @@ public class EntitiesStorage {
 
 	public boolean isGroupNameExists(String name){
 		return mGroups.stream().anyMatch( g->g.getName().equals( name ) );
+	}
+
+	public boolean isEntryNameExists(String name){
+		return mEntryEntities.stream().anyMatch( e->e.getName().equals( name ) );
 	}
 
 	public synchronized void save(){

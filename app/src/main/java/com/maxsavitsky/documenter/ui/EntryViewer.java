@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.Spannable;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -31,30 +32,33 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.ThemeActivity;
 import com.maxsavitsky.documenter.adapters.ListAdapter;
 import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.codes.Results;
+import com.maxsavitsky.documenter.data.EntitiesStorage;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Entry;
+import com.maxsavitsky.documenter.data.types.EntryEntity;
 import com.maxsavitsky.documenter.data.types.Type;
 import com.maxsavitsky.documenter.ui.widget.CustomScrollView;
 import com.maxsavitsky.documenter.utils.Utils;
 
-import org.xml.sax.SAXException;
+import org.json.JSONException;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Optional;
 
 public class EntryViewer extends ThemeActivity {
 
-	private Entry mEntry;
+	private static final String TAG = MainActivity.TAG + " EntryViewer";
+	private EntryEntity mEntry;
 	private SharedPreferences sp;
-	private boolean resultSet = false;
 	private CustomScrollView mScrollView;
-	private boolean isFreeMode = false;
 
 	private void applyTheme() {
 		ActionBar actionBar = getSupportActionBar();
@@ -65,16 +69,7 @@ public class EntryViewer extends ThemeActivity {
 	}
 
 	private void backPressed() {
-		if ( !resultSet ) {
-			setResult( Results.OK );
-		}
-		mEntry.getProperties().setScrollPosition( mScrollView.getScrollY() );
-		try {
-			mEntry.saveProperties();
-			super.onBackPressed();
-		} catch (IOException e) {
-			Utils.getErrorDialog( e, this ).show();
-		}
+		super.onBackPressed();
 	}
 
 	@Override
@@ -106,30 +101,19 @@ public class EntryViewer extends ThemeActivity {
 							String newName = editText.getText().toString();
 							newName = newName.trim();
 							if ( !newName.isEmpty() && !newName.equals( mEntry.getName() ) ) {
-								if ( Utils.isNameExist( newName, "ent" ) ) {
+								if ( EntitiesStorage.get().isEntryNameExists( newName ) ) {
 									Toast.makeText( EntryViewer.this, R.string.this_name_already_exist, Toast.LENGTH_SHORT ).show();
 									return;
 								}
-								MainData.removeEntryWithId( mEntry.getId() );
-								ArrayList<Entry> entries = MainData.getEntriesList();
-								mEntry = new Entry( mEntry.getId(), newName );
-								entries.add( mEntry );
-								MainData.setEntriesList( entries );
-								Utils.saveEntriesList( entries );
+								mEntry.rename( newName );
 								applyTheme();
 								setResult( Results.NEED_TO_REFRESH );
-								resultSet = true;
 							} else {
 								Toast.makeText( EntryViewer.this, R.string.invalid_name, Toast.LENGTH_SHORT ).show();
 							}
 						}
 					} )
-					.setNegativeButton( R.string.cancel, new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							dialog.cancel();
-						}
-					} ).setCancelable( false );
+					.setNegativeButton( R.string.cancel, (dialog, which)->dialog.cancel() ).setCancelable( false );
 			changeNameDialog = builder.create();
 			changeNameDialog.show();
 		} else if ( itemId == R.id.item_delete_entry ) {
@@ -163,7 +147,7 @@ public class EntryViewer extends ThemeActivity {
 		} else if ( itemId == R.id.item_edit_entry_text ) {
 			mEntry.getProperties().setScrollPosition( mScrollView.getScrollY() );
 			try {
-				mEntry.saveProperties( mEntry.getProperties() );
+				mEntry.saveProperties();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -194,7 +178,6 @@ public class EntryViewer extends ThemeActivity {
 			public void onClick(View v) {
 				Intent data = new Intent();
 				data.putExtra( "id", mEntry.getId() );
-				data.putExtra( "free_mode", isFreeMode );
 				setResult( Results.REOPEN, data );
 				finish();
 			}
@@ -293,31 +276,6 @@ public class EntryViewer extends ThemeActivity {
 			menu.clear();
 		}
 		getMenuInflater().inflate( R.menu.entry_menu, menu );
-		if ( !isFreeMode ) {
-			getMenuInflater().inflate( R.menu.common_menu, menu );
-			MenuItem item = menu.findItem( R.id.item_common_remember_pos );
-			item.setChecked( mEntry.getProperties().isSaveLastPos() );
-			item.setOnMenuItemClickListener( new MenuItem.OnMenuItemClickListener() {
-				@Override
-				public boolean onMenuItemClick(MenuItem item) {
-					boolean isChecked = !item.isChecked();
-					item.setChecked( isChecked );
-					try {
-						mEntry.applySaveLastPos( isChecked );
-					} catch (final IOException | SAXException e) {
-						e.printStackTrace();
-						runOnUiThread( new Runnable() {
-							@Override
-							public void run() {
-								Utils.getErrorDialog( e, EntryViewer.this ).show();
-							}
-						} );
-					}
-
-					return true;
-				}
-			} );
-		}
 		return super.onCreateOptionsMenu( menu );
 	}
 
@@ -396,14 +354,17 @@ public class EntryViewer extends ThemeActivity {
 		Toolbar toolbar = findViewById( R.id.toolbar );
 		setSupportActionBar( toolbar );
 		Intent intent = getIntent();
-		mEntry = MainData.getEntryWithId( intent.getStringExtra( "id" ) );
-		try {
-			mEntry.readProperties();
-		} catch (Exception e) {
-			Utils.getErrorDialog( e, this ).show();
+
+		Optional<EntryEntity> op = EntitiesStorage.get().getEntry( intent.getStringExtra( "id" ) );
+		if(op.isPresent()){
+			mEntry = op.get();
+		}else{
+			Toast.makeText( this, "Entry not found", Toast.LENGTH_SHORT ).show();
+			onBackPressed();
+			return;
 		}
+
 		applyTheme();
-		isFreeMode = intent.getBooleanExtra( "free_mode", false );
 		invalidateOptionsMenu();
 
 		sp = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
@@ -422,6 +383,13 @@ public class EntryViewer extends ThemeActivity {
 				} else if ( scrollY <= 5 || oldScrollY < scrollY ) {
 					hideUpButton();
 				}
+				mEntry.getProperties().setScrollPosition( mScrollView.getScrollY() );
+				try {
+					mEntry.saveProperties();
+				} catch (Exception e) {
+					e.printStackTrace();
+					Log.i( TAG, "onScrollChange: " + e );
+				}
 			}
 		} );
 		mScrollView.setOnTouchListener( new View.OnTouchListener() {
@@ -433,6 +401,7 @@ public class EntryViewer extends ThemeActivity {
 				}else if(event.getAction() == MotionEvent.ACTION_UP){
 					startScroll( mScrollSpeed );
 				}
+				mEntry.getProperties().setScrollPosition( mScrollView.getScrollY() ); // just remember
 				return false;
 			}
 		} );
@@ -445,10 +414,11 @@ public class EntryViewer extends ThemeActivity {
 		} );
 
 		getWindow().getDecorView().setBackgroundColor( mEntry.getProperties().getBgColor() );
+
 		final Thread loadThread = new Thread( ()->{
 			try {
-				mCallback.loaded( mEntry.loadAndPrepareText(Utils.getScreenSize().x ) );
-			} catch (IOException e) {
+				mCallback.loaded( mEntry.loadText(Utils.getScreenSize().x ) );
+			} catch (IOException | JSONException e) {
 				e.printStackTrace();
 				mCallback.exceptionOccurred( e );
 			}

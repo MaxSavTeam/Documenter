@@ -3,7 +3,6 @@ package com.maxsavitsky.documenter.ui;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -49,7 +48,15 @@ public class EntitiesListActivity extends ThemeActivity {
 			new ActivityResultContracts.StartActivityForResult(),
 			result->{
 				if ( result.getResultCode() == Results.NEED_TO_REFRESH ) {
-					Log.i( TAG, "need to refresh: " );
+					sortAndUpdateList();
+				}
+			}
+	);
+
+	private final ActivityResultLauncher<Intent> mEntryViewerLauncher = registerForActivityResult(
+			new ActivityResultContracts.StartActivityForResult(),
+			result->{
+				if ( result.getResultCode() == Results.NEED_TO_REFRESH ) {
 					sortAndUpdateList();
 				}
 			}
@@ -60,6 +67,8 @@ public class EntitiesListActivity extends ThemeActivity {
 		public void onEntityClick(String id, Entity.Type type) {
 			if ( type == Entity.Type.GROUP ) {
 				mEntitiesListLauncher.launch( new Intent( EntitiesListActivity.this, EntitiesListActivity.class ).putExtra( "groupId", id ) );
+			} else {
+				mEntryViewerLauncher.launch( new Intent( EntitiesListActivity.this, EntryViewer.class ).putExtra( "id", id ) );
 			}
 		}
 	};

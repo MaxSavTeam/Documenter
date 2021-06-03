@@ -8,6 +8,8 @@ import com.maxsavitsky.exceptionhandler.ExceptionHandler;
 
 public class App extends Application {
 
+	public static String appStoragePath;
+
 	public static App instance;
 
 	@Override
@@ -19,6 +21,8 @@ public class App extends Application {
 	public void onCreate() {
 		super.onCreate();
 		instance = this;
+
+		appStoragePath = getExternalFilesDir( null ).getPath();
 
 		ExceptionHandler handler = new ExceptionHandler( getApplicationContext(), AfterExceptionActivity.class );
 		Thread.setDefaultUncaughtExceptionHandler( (t, tr)->{
