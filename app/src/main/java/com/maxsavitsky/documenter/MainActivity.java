@@ -51,7 +51,7 @@ public class MainActivity extends ThemeActivity {
 			result->{
 				if(result.getResultCode() == Results.RESTART_APP){
 					restartApp();
-				}else if(result.getResultCode() == RESULT_OK){
+				}else if(result.getResultCode() == RESULT_OK || result.getResultCode() == RESULT_CANCELED){
 					onBackPressed();
 				}
 			}
