@@ -108,6 +108,12 @@ public class EntitiesListActivity extends ThemeActivity {
 							}else{
 								Toast.makeText( this, R.string.move_add_fail_reason, Toast.LENGTH_LONG ).show();
 							}
+						}else{
+							if(EntitiesStorage.get().moveEntityTo( mGroup, groupId )){
+								Toast.makeText( this, R.string.success, Toast.LENGTH_SHORT ).show();
+							}else{
+								Toast.makeText( this, R.string.move_add_fail_reason, Toast.LENGTH_LONG ).show();
+							}
 						}
 					}
 				}
@@ -172,6 +178,11 @@ public class EntitiesListActivity extends ThemeActivity {
 			mCopyMoveLauncher.launch(
 					new Intent( this, CopyMoveActivity.class )
 							.putExtra( "mode", 0 )
+			);
+		} else if ( itemId == R.id.item_menu_move_to ) {
+			mCopyMoveLauncher.launch(
+					new Intent( this, CopyMoveActivity.class )
+							.putExtra( "mode", 1 )
 			);
 		}
 		return super.onOptionsItemSelected( item );
