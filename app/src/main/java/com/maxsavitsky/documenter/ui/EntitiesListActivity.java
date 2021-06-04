@@ -41,13 +41,13 @@ import java.util.Optional;
 public class EntitiesListActivity extends ThemeActivity {
 
 	private static final String TAG = MainActivity.TAG + " EntitiesList";
-	private boolean isRoot;
+	protected boolean isRoot;
 
-	private Group mGroup;
+	protected Group mGroup;
 
 	private int mSortOrder = 0, mSortingMode = 0, mAscendingDescendingOrder = 0;
 
-	private EntitiesAdapter mEntitiesAdapter;
+	protected EntitiesAdapter mEntitiesAdapter;
 
 	private final ActivityResultLauncher<Intent> mEntitiesListLauncher = registerForActivityResult(
 			new ActivityResultContracts.StartActivityForResult(),
@@ -92,6 +92,27 @@ public class EntitiesListActivity extends ThemeActivity {
 			sortAndUpdateList();
 		}
 	};
+
+	private final ActivityResultLauncher<Intent> mCopyMoveLauncher = registerForActivityResult(
+			new ActivityResultContracts.StartActivityForResult(),
+			result->{
+				if(result.getResultCode() == Results.ACCEPTED){
+					Intent data = result.getData();
+					if(data == null)
+						return;
+					String groupId = data.getStringExtra( "groupId" );
+					if(groupId != null){
+						if(data.getIntExtra( "mode", 0 ) == 0){
+							if(EntitiesStorage.get().addEntityTo( mGroup, groupId )){
+								Toast.makeText( this, R.string.success, Toast.LENGTH_SHORT ).show();
+							}else{
+								Toast.makeText( this, R.string.move_add_fail_reason, Toast.LENGTH_LONG ).show();
+							}
+						}
+					}
+				}
+			}
+	);
 
 	private final EntitiesAdapter.AdapterCallback ADAPTER_CALLBACK = new EntitiesAdapter.AdapterCallback() {
 		@Override
@@ -147,6 +168,11 @@ public class EntitiesListActivity extends ThemeActivity {
 			builder.show();
 		} else if ( itemId == R.id.item_menu_delete ) {
 			showDeletionDialog();
+		} else if ( itemId == R.id.item_menu_add_to ) {
+			mCopyMoveLauncher.launch(
+					new Intent( this, CopyMoveActivity.class )
+							.putExtra( "mode", 0 )
+			);
 		}
 		return super.onOptionsItemSelected( item );
 	}
@@ -200,6 +226,8 @@ public class EntitiesListActivity extends ThemeActivity {
 		if ( isRoot ) {
 			menu.findItem( R.id.item_menu_delete ).setVisible( false );
 			menu.findItem( R.id.item_menu_change_name ).setVisible( false );
+			menu.findItem( R.id.item_menu_add_to ).setVisible( false );
+			menu.findItem( R.id.item_menu_move_to ).setVisible( false );
 		}
 		return super.onCreateOptionsMenu( menu );
 	}
@@ -244,8 +272,9 @@ public class EntitiesListActivity extends ThemeActivity {
 
 		findViewById( R.id.fabCreateGroup ).setOnClickListener( v->{
 			Intent intent = new Intent( this, CreateGroupActivity.class );
-			if(!isRoot)
+			if ( !isRoot ) {
 				intent.putExtra( "parentId", mGroup.getId() );
+			}
 			mCreateGroupLauncher.launch( intent );
 		} );
 

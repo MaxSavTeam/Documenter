@@ -19,7 +19,7 @@ import java.util.ArrayList;
 public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHolder> {
 
 	private ArrayList<? extends Entity> mEntities;
-	private final AdapterCallback mAdapterCallback;
+	private AdapterCallback mAdapterCallback;
 
 	public interface AdapterCallback {
 		void onEntityClick(String id, Entity.Type type);
@@ -34,6 +34,10 @@ public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHo
 		DiffResult diffResult = DiffUtil.calculateDiff( new DiffUtilCallback( mEntities, entities ) );
 		mEntities = copy( entities );
 		diffResult.dispatchUpdatesTo( this );
+	}
+
+	public void setAdapterCallback(AdapterCallback adapterCallback) {
+		mAdapterCallback = adapterCallback;
 	}
 
 	private ArrayList<? extends Entity> copy(ArrayList<? extends Entity> entities) {

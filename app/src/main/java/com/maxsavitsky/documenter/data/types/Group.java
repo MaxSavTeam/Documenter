@@ -23,12 +23,29 @@ public class Group extends Entity {
 		return containingEntities;
 	}
 
-	public void addMember(Entity e) {
-		if ( containingEntities.stream().noneMatch( en->en.getId().equals( e.getId() ) ) ) {
-			ArrayList<Entity> entities = new ArrayList<>( containingEntities );
-			entities.add( e );
-			setContainingEntities( entities );
+	public boolean addMember(Entity e) {
+		if ( e.getId().equals( getId() ) || containingEntities.stream().anyMatch( en->en.getId().equals( e.getId() ) ) ) {
+			return false;
 		}
+		if(e instanceof Group){
+			if(isContainsRoot( (Group) e ))
+				return false;
+		}
+		ArrayList<Entity> entities = new ArrayList<>( containingEntities );
+		entities.add( e );
+		setContainingEntities( entities );
+		e.addParent( getId() );
+		return true;
+	}
+
+	private boolean isContainsRoot(Group g){
+		for(Entity en : g.getContainingEntities()){
+			if(en.getId().equals( getId() ))
+				return true;
+			if(en instanceof Group && isContainsRoot( (Group) en ))
+				return true;
+		}
+		return false;
 	}
 
 	public void removeContainingEntity(String id) {

@@ -198,4 +198,8 @@
     <string name="deletion_mode_move_to_the_root">Удалить группу и переместить всё содержимое в корень</string>
     <string name="data_will_be_deleted_permanently">Данные будут удалены перманентно</string>
     <string name="create_group">Создать группу</string>
+    <string name="add_to">Добавить в</string>
+    <string name="move_to">Переместить в</string>
+    <string name="root">Корень</string>
+    <string name="move_add_fail_reason">Не удалось добавить/переместить, т.к. содержимое уже содержит группу, в которую вы хотели добавить</string>
 </resources>

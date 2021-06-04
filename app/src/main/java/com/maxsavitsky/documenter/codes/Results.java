@@ -15,4 +15,7 @@ public class Results {
 	// 4xx
 	public static final int REOPEN = 401;
 	public static final int COPY_TO_ACTION = 402;
+
+	public static final int ACCEPTED = 501;
+	public static final int DECLINED = 502;
 }

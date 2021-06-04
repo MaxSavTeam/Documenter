@@ -24,9 +24,12 @@
         android:theme="@style/AppTheme"
         tools:targetApi="n">
         <activity
-            android:name=".ui.CreateGroupActivity"
-            android:windowSoftInputMode="adjustResize"
+            android:name=".ui.CopyMoveActivity"
             android:exported="true" />
+        <activity
+            android:name=".ui.CreateGroupActivity"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".ui.EntitiesListActivity"
             android:exported="true" />

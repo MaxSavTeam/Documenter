@@ -213,4 +213,9 @@
     <string name="deletion_mode_move_to_the_root">Delete group and move members to the root</string>
     <string name="data_will_be_deleted_permanently">Data will be deleted permanently</string>
     <string name="create_group">Create group</string>
+    <string name="add_to">Add to</string>
+    <string name="move_to">Move to</string>
+    <string name="root">Root</string>
+    <string name="move_add_fail_reason">Couldn\'t add / move, because the content already contains the group you wanted to add to</string>
+    <string name="success">Success</string>
 </resources>

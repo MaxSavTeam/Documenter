@@ -143,19 +143,35 @@ public class EntitiesStorage {
 		return jsonArray;
 	}
 
-	private void addEntityTo(Entity e, String groupId){
-		getGroup( groupId ).ifPresent( g->g.addMember( e ) );
+	public boolean addEntityTo(Entity e, String groupId) {
+		Optional<Group> op = getGroup( groupId );
+		if ( !op.isPresent() ) {
+			return false;
+		}
+		Group g = op.get();
+		return g.addMember( e );
 	}
 
-	private void addEntityTo(Entity e, Group g) {
-		g.addMember( e );
+	public boolean moveEntityTo(Entity e, String groupId){
+		Optional<Group> op = getGroup( groupId );
+		if(!op.isPresent())
+			return false;
+		Group g = op.get();
+		if(g.addMember( e )){
+			for(String p : e.getParents()){
+				if(!p.equals( g.getId() ))
+					e.removeParent( p );
+			}
+			return true;
+		}
+		return false;
 	}
 
-	public void createGroup(String name, String parentId){
+	public void createGroup(String name, String parentId) {
 		String id = Utils.generateUniqueId() + "1";
 		Group g = new Group( id, name );
 		mGroups.add( g );
-		getGroup( parentId ).ifPresent( group -> {
+		getGroup( parentId ).ifPresent( group->{
 			group.addMember( g );
 			g.addParent( parentId );
 		} );
@@ -203,23 +219,22 @@ public class EntitiesStorage {
 			return;
 		}
 		Group g = op.get();
-		Log.i( TAG, "deleteGroup: " + g );
 		Map<String, Boolean> map = new HashMap<>();
 		indexGroupMembers( g, map );
 		for (Entity m : g.getContainingEntities()) {
 			m.removeParent( g.getId() );
-			if ( m instanceof EntryEntity ) {
-				if ( mode == 1 || mode == 0 && checkEntityBeforeDeletion( m, map ) ) {
+			if ( mode == 1 || mode == 0 && checkEntityBeforeDeletion( m, map ) ) {
+				if ( m instanceof EntryEntity ) {
 					deleteEntry( (EntryEntity) m );
-				}
-			} else if ( m instanceof Group ) {
-				if(mode == 1 || mode == 0 && checkEntityBeforeDeletion( m, map ))
+				} else if ( m instanceof Group ) {
 					deleteGroupInternal( (Group) m, mode, map );
+				}
 			}
 			if ( mode == 2 ) {
-				for(String p : g.getParents()){
-					addEntityTo( m, p );
-					m.addParent( p );
+				for (String p : g.getParents()) {
+					if ( addEntityTo( m, p ) ) {
+						m.addParent( p );
+					}
 				}
 			}
 		}
@@ -231,12 +246,13 @@ public class EntitiesStorage {
 
 	private void deleteGroupInternal(Group g, int mode, Map<String, Boolean> map) {
 		g.unlink();
-		for(Entity e : g.getContainingEntities()){
-			if(mode == 1 || mode == 0 && checkEntityBeforeDeletion( e, map )){
-				if(e instanceof Group)
+		for (Entity e : g.getContainingEntities()) {
+			if ( mode == 1 || mode == 0 && checkEntityBeforeDeletion( e, map ) ) {
+				if ( e instanceof Group ) {
 					deleteGroupInternal( (Group) e, mode, map );
-				else if(e instanceof EntryEntity)
+				} else if ( e instanceof EntryEntity ) {
 					deleteEntry( (EntryEntity) e );
+				}
 			}
 		}
 		mGroups.remove( g );
@@ -248,7 +264,6 @@ public class EntitiesStorage {
 			Boolean b = map.getOrDefault( p, false );
 			f &= b != null && b;
 		}
-		Log.i( TAG, "checkEntityBeforeDeletion: " + e.getId() + " " + f );
 		return f;
 	}
 
