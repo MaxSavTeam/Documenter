@@ -149,7 +149,11 @@ public class EntitiesStorage {
 			return false;
 		}
 		Group g = op.get();
-		return g.addMember( e );
+		if(g.addMember( e )) {
+			save();
+			return true;
+		}
+		return false;
 	}
 
 	public boolean moveEntityTo(Entity e, String groupId){
@@ -162,6 +166,7 @@ public class EntitiesStorage {
 				if(!p.equals( g.getId() ))
 					e.removeParent( p );
 			}
+			save();
 			return true;
 		}
 		return false;

@@ -22,6 +22,8 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
@@ -58,6 +60,33 @@ public class EntryViewer extends ThemeActivity {
 	private EntryEntity mEntry;
 	private SharedPreferences sp;
 	private CustomScrollView mScrollView;
+
+	private final ActivityResultLauncher<Intent> mCopyMoveLauncher = registerForActivityResult(
+			new ActivityResultContracts.StartActivityForResult(),
+			result->{
+				if(result.getResultCode() == Results.ACCEPTED){
+					Intent data = result.getData();
+					if(data == null)
+						return;
+					String groupId = data.getStringExtra( "groupId" );
+					if(groupId != null){
+						if(data.getIntExtra( "mode", 0 ) == 0){
+							if(EntitiesStorage.get().addEntityTo( mEntry, groupId )){
+								Toast.makeText( this, R.string.success, Toast.LENGTH_SHORT ).show();
+							}else{
+								Toast.makeText( this, R.string.move_add_fail_reason, Toast.LENGTH_LONG ).show();
+							}
+						}else{
+							if(EntitiesStorage.get().moveEntityTo( mEntry, groupId )){
+								Toast.makeText( this, R.string.success, Toast.LENGTH_SHORT ).show();
+							}else{
+								Toast.makeText( this, R.string.move_add_fail_reason, Toast.LENGTH_LONG ).show();
+							}
+						}
+					}
+				}
+			}
+	);
 
 	private void applyTheme() {
 		ActionBar actionBar = getSupportActionBar();
@@ -134,6 +163,16 @@ public class EntryViewer extends ThemeActivity {
 			startActivityForResult( intent, Requests.EDIT_ENTRY );
 		} else if ( itemId == R.id.item_copy_content ) {
 			prepareCopyToLayout();
+		} else if ( itemId == R.id.item_menu_add_to ) {
+			mCopyMoveLauncher.launch(
+					new Intent( this, CopyMoveActivity.class )
+							.putExtra( "mode", 0 )
+			);
+		} else if ( itemId == R.id.item_menu_move_to ) {
+			mCopyMoveLauncher.launch(
+					new Intent( this, CopyMoveActivity.class )
+							.putExtra( "mode", 1 )
+			);
 		}
 		return super.onOptionsItemSelected( item );
 	}
