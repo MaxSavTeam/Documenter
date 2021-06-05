@@ -21,8 +21,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class EntitiesStorage {
 
@@ -62,15 +60,6 @@ public class EntitiesStorage {
 			}
 		}
 		return Optional.empty();
-	}
-
-	public ArrayList<? extends Entity> getRootEntities() {
-		return Stream.concat(
-				mGroups.stream()
-						.filter( Entity::isRoot ),
-				mEntryEntities.stream()
-						.filter( Entity::isRoot ) )
-				.collect( Collectors.toCollection( ArrayList::new ) );
 	}
 
 	public boolean isGroupNameExists(String name) {
