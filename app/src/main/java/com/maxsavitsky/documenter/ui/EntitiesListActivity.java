@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -44,6 +45,7 @@ public class EntitiesListActivity extends ThemeActivity {
 	protected boolean isRoot;
 
 	protected Group mGroup;
+	protected Group mParentGroup;
 
 	private int mSortOrder = 0, mSortingMode = 0, mAscendingDescendingOrder = 0;
 
@@ -53,7 +55,7 @@ public class EntitiesListActivity extends ThemeActivity {
 			new ActivityResultContracts.StartActivityForResult(),
 			result->{
 				if ( result.getResultCode() == Results.NEED_TO_REFRESH ) {
-					sortAndUpdateList();
+					refresh();
 				}
 			}
 	);
@@ -62,7 +64,7 @@ public class EntitiesListActivity extends ThemeActivity {
 			new ActivityResultContracts.StartActivityForResult(),
 			result->{
 				if ( result.getResultCode() == Results.NEED_TO_REFRESH ) {
-					sortAndUpdateList();
+					refresh();
 				}
 			}
 	);
@@ -71,7 +73,7 @@ public class EntitiesListActivity extends ThemeActivity {
 			new ActivityResultContracts.StartActivityForResult(),
 			result->{
 				if ( result.getResultCode() == Results.NEED_TO_REFRESH ) {
-					sortAndUpdateList();
+					refresh();
 				}
 			}
 	);
@@ -89,7 +91,7 @@ public class EntitiesListActivity extends ThemeActivity {
 	private final BroadcastReceiver mNeedToRefreshReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			sortAndUpdateList();
+			refresh();
 		}
 	};
 
@@ -103,19 +105,19 @@ public class EntitiesListActivity extends ThemeActivity {
 					}
 					String groupId = data.getStringExtra( "groupId" );
 					if ( groupId != null ) {
+						boolean success;
+						Log.i( TAG, "mode=" + data.getIntExtra( "mode", 0 ) );
 						if ( data.getIntExtra( "mode", 0 ) == 0 ) {
-							if ( EntitiesStorage.get().addEntityTo( mGroup, groupId ) ) {
-								Toast.makeText( this, R.string.success, Toast.LENGTH_SHORT ).show();
-							} else {
-								Toast.makeText( this, R.string.move_add_fail_reason, Toast.LENGTH_LONG ).show();
-							}
+							success = EntitiesStorage.get().addEntityTo( mGroup, groupId );
 						} else {
-							if ( EntitiesStorage.get().moveEntityTo( mGroup, groupId ) ) {
-								Toast.makeText( this, R.string.success, Toast.LENGTH_SHORT ).show();
-							} else {
-								Toast.makeText( this, R.string.move_add_fail_reason, Toast.LENGTH_LONG ).show();
-							}
+							success = EntitiesStorage.get().moveEntityTo( mGroup, groupId );
 						}
+						if ( success ) {
+							Toast.makeText( this, R.string.success, Toast.LENGTH_SHORT ).show();
+						} else {
+							Toast.makeText( this, R.string.move_add_fail_reason, Toast.LENGTH_LONG ).show();
+						}
+						sendRefreshIntent();
 					}
 				}
 			}
@@ -131,6 +133,11 @@ public class EntitiesListActivity extends ThemeActivity {
 			}
 		}
 	};
+
+	private void refresh(){
+		sortAndUpdateList();
+		invalidateOptionsMenu();
+	}
 
 	@Override
 	protected void onDestroy() {
@@ -185,8 +192,20 @@ public class EntitiesListActivity extends ThemeActivity {
 					new Intent( this, CopyMoveActivity.class )
 							.putExtra( "mode", 1 )
 			);
+		} else if(itemId == R.id.item_menu_remove_from_parent){
+			mGroup.removeParent( mParentGroup.getId() );
+			mParentGroup.removeContainingEntity( mGroup.getId() );
+			if(mGroup.getParents().size() == 0){
+				EntitiesStorage.get().addEntityTo( mGroup, "root" );
+			}
+			EntitiesStorage.get().save();
+			sendRefreshIntent();
 		}
 		return super.onOptionsItemSelected( item );
+	}
+
+	private void sendRefreshIntent(){
+		sendBroadcast( new Intent( BuildConfig.APPLICATION_ID + ".REFRESH_ENTITIES_LISTS" ) );
 	}
 
 	private void showDeletionDialog() {
@@ -201,7 +220,7 @@ public class EntitiesListActivity extends ThemeActivity {
 				.setPositiveButton( "OK", (dialog, which)->{
 					int deletionMode = radioGroup.getCheckedItemIndex();
 					EntitiesStorage.get().deleteGroup( mGroup.getId(), deletionMode );
-					sendBroadcast( new Intent( BuildConfig.APPLICATION_ID + ".REFRESH_ENTITIES_LISTS" ) );
+					sendRefreshIntent();
 					onBackPressed();
 				} )
 				.setCancelable( false );
@@ -236,11 +255,12 @@ public class EntitiesListActivity extends ThemeActivity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate( R.menu.entities_list_menu, menu );
 		if ( isRoot ) {
-			menu.findItem( R.id.item_menu_delete ).setVisible( false );
-			menu.findItem( R.id.item_menu_change_name ).setVisible( false );
-			menu.findItem( R.id.item_menu_add_to ).setVisible( false );
-			menu.findItem( R.id.item_menu_move_to ).setVisible( false );
+			for(int i = 0; i < menu.size(); i++)
+				menu.getItem( i ).setVisible( false );
+			menu.findItem( R.id.item_menu_sort_mode ).setVisible( true );
 		}
+		if(mParentGroup != null && mParentGroup.getId().equals( "root" ) && mGroup.getParents().size() == 1)
+			menu.findItem( R.id.item_menu_remove_from_parent ).setVisible( false );
 		return super.onCreateOptionsMenu( menu );
 	}
 
@@ -257,6 +277,8 @@ public class EntitiesListActivity extends ThemeActivity {
 			groupId = "root";
 		}
 		isRoot = groupId.equals( "root" );
+
+		EntitiesStorage.get().getGroup( getIntent().getStringExtra( "parentId" ) ).ifPresent( g->mParentGroup = g );
 
 		ActionBar actionBar = getSupportActionBar();
 		if ( actionBar != null ) {

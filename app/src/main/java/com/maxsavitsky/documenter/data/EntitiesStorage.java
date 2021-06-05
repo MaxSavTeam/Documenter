@@ -149,22 +149,26 @@ public class EntitiesStorage {
 			return false;
 		}
 		Group g = op.get();
-		if(g.addMember( e )) {
+		if ( g.addMember( e ) ) {
 			save();
 			return true;
 		}
 		return false;
 	}
 
-	public boolean moveEntityTo(Entity e, String groupId){
+	public boolean moveEntityTo(Entity e, String groupId) {
 		Optional<Group> op = getGroup( groupId );
-		if(!op.isPresent())
+		if ( !op.isPresent() ) {
 			return false;
+		}
 		Group g = op.get();
-		if(g.addMember( e )){
-			for(String p : e.getParents()){
-				if(!p.equals( g.getId() ))
+		if ( g.addMember( e ) ) {
+			ArrayList<String> parents = new ArrayList<>( e.getParents() );
+			for (String p : parents) {
+				if ( !p.equals( g.getId() ) ) {
+					getGroup( p ).ifPresent( group->group.removeContainingEntity( e.getId() ) );
 					e.removeParent( p );
+				}
 			}
 			save();
 			return true;
@@ -242,7 +246,7 @@ public class EntitiesStorage {
 					}
 				}
 			}
-			if(mode == 3 && m.getParents().size() == 0){
+			if ( mode == 3 && m.getParents().size() == 0 ) {
 				addEntityTo( m, "root" );
 				m.addParent( "root" );
 			}

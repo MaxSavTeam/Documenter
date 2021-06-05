@@ -18,6 +18,8 @@ import com.maxsavitsky.documenter.data.types.Entity;
 
 public class CopyMoveActivity extends EntitiesListActivity {
 
+	private int mode;
+
 	private final ActivityResultLauncher<Intent> mLauncher = registerForActivityResult(
 			new ActivityResultContracts.StartActivityForResult(),
 			result->{
@@ -35,6 +37,7 @@ public class CopyMoveActivity extends EntitiesListActivity {
 				mLauncher.launch(
 						new Intent( CopyMoveActivity.this, CopyMoveActivity.class )
 								.putExtra( "groupId", id )
+								.putExtra( "mode", mode )
 				);
 			}
 		}
@@ -49,7 +52,7 @@ public class CopyMoveActivity extends EntitiesListActivity {
 			Intent data = new Intent();
 			if(!isRoot)
 				data.putExtra( "groupId", mGroup.getId() );
-			data.putExtra( "mode", getIntent().getIntExtra( "mode", 0 ) );
+			data.putExtra( "mode", mode );
 			setResult( Results.ACCEPTED, data );
 			onBackPressed();
 		}
@@ -69,8 +72,10 @@ public class CopyMoveActivity extends EntitiesListActivity {
 
 		findViewById( R.id.fab_menu ).setVisibility( View.GONE );
 
+		mode = getIntent().getIntExtra( "mode", 0 );
+
 		int sId;
-		if ( getIntent().getIntExtra( "mode", 0 ) == 0 ) {
+		if ( mode == 0 ) {
 			sId = R.string.add_to;
 		} else {
 			sId = R.string.move_to;
