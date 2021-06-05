@@ -242,6 +242,10 @@ public class EntitiesStorage {
 					}
 				}
 			}
+			if(mode == 3 && m.getParents().size() == 0){
+				addEntityTo( m, "root" );
+				m.addParent( "root" );
+			}
 		}
 		g.unlink();
 		mGroups.remove( g );

@@ -72,6 +72,7 @@ public class DataReformatter {
 					for (EntryEntity entryEntity : entriesList) {
 						if ( entryEntity.getId().equals( p.getId() ) ) {
 							includedEntries.add( entryEntity );
+							entryEntity.addParent( document.getId() );
 						}
 					}
 				}
@@ -106,6 +107,7 @@ public class DataReformatter {
 					for (Group entity : documentsList) {
 						if ( entity.getId().equals( p.getId() ) ) {
 							includedEntries.add( entity );
+							entity.addParent( category.getId() );
 						}
 					}
 				}
@@ -118,6 +120,24 @@ public class DataReformatter {
 		ArrayList<Group> allGroups = new ArrayList<>();
 		allGroups.addAll( documentsList );
 		allGroups.addAll( categoriesList );
+
+		Group rootGroup = new Group( "root", "root" );
+		ArrayList<com.maxsavitsky.documenter.data.types.Entity> entities = new ArrayList<>();
+		for(Group g : allGroups){
+			if(g.getParents().size() == 0){
+				entities.add( g );
+				g.addParent( rootGroup.getId() );
+			}
+		}
+		for(EntryEntity e : entriesList){
+			if(e.getParents().size() == 0){
+				entities.add( e );
+				e.addParent( rootGroup.getId() );
+			}
+		}
+		rootGroup.setContainingEntities( entities );
+		allGroups.add( rootGroup );
+
 		jsonObject.put( "groups", getDescriptionList( allGroups ) );
 
 		jsonObject.put( "entries", getDescriptionList( entriesList ) );

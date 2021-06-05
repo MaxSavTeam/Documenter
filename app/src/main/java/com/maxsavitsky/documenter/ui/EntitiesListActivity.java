@@ -96,22 +96,23 @@ public class EntitiesListActivity extends ThemeActivity {
 	private final ActivityResultLauncher<Intent> mCopyMoveLauncher = registerForActivityResult(
 			new ActivityResultContracts.StartActivityForResult(),
 			result->{
-				if(result.getResultCode() == Results.ACCEPTED){
+				if ( result.getResultCode() == Results.ACCEPTED ) {
 					Intent data = result.getData();
-					if(data == null)
+					if ( data == null ) {
 						return;
+					}
 					String groupId = data.getStringExtra( "groupId" );
-					if(groupId != null){
-						if(data.getIntExtra( "mode", 0 ) == 0){
-							if(EntitiesStorage.get().addEntityTo( mGroup, groupId )){
+					if ( groupId != null ) {
+						if ( data.getIntExtra( "mode", 0 ) == 0 ) {
+							if ( EntitiesStorage.get().addEntityTo( mGroup, groupId ) ) {
 								Toast.makeText( this, R.string.success, Toast.LENGTH_SHORT ).show();
-							}else{
+							} else {
 								Toast.makeText( this, R.string.move_add_fail_reason, Toast.LENGTH_LONG ).show();
 							}
-						}else{
-							if(EntitiesStorage.get().moveEntityTo( mGroup, groupId )){
+						} else {
+							if ( EntitiesStorage.get().moveEntityTo( mGroup, groupId ) ) {
 								Toast.makeText( this, R.string.success, Toast.LENGTH_SHORT ).show();
-							}else{
+							} else {
 								Toast.makeText( this, R.string.move_add_fail_reason, Toast.LENGTH_LONG ).show();
 							}
 						}
@@ -124,9 +125,9 @@ public class EntitiesListActivity extends ThemeActivity {
 		@Override
 		public void onEntityClick(String id, Entity.Type type) {
 			if ( type == Entity.Type.GROUP ) {
-				mEntitiesListLauncher.launch( new Intent( EntitiesListActivity.this, EntitiesListActivity.class ).putExtra( "groupId", id ) );
+				mEntitiesListLauncher.launch( new Intent( EntitiesListActivity.this, EntitiesListActivity.class ).putExtra( "groupId", id ).putExtra( "parentId", mGroup.getId() ) );
 			} else {
-				mEntryViewerLauncher.launch( new Intent( EntitiesListActivity.this, EntryViewer.class ).putExtra( "id", id ) );
+				mEntryViewerLauncher.launch( new Intent( EntitiesListActivity.this, EntryViewer.class ).putExtra( "id", id ).putExtra( "parentId", mGroup.getId() ) );
 			}
 		}
 	};
@@ -252,29 +253,29 @@ public class EntitiesListActivity extends ThemeActivity {
 		setSupportActionBar( toolbar );
 
 		String groupId = getIntent().getStringExtra( "groupId" );
-		isRoot = groupId == null;
+		if ( groupId == null ) {
+			groupId = "root";
+		}
+		isRoot = groupId.equals( "root" );
 
-		if ( isRoot ) {
-			initializeRecyclerView( EntitiesStorage.get().getRootEntities() );
-		} else {
-			ActionBar actionBar = getSupportActionBar();
-			if ( actionBar != null ) {
-				actionBar.setDisplayHomeAsUpEnabled( true );
-			}
+		ActionBar actionBar = getSupportActionBar();
+		if ( actionBar != null ) {
+			actionBar.setDisplayHomeAsUpEnabled( !isRoot );
+		}
 
-			Optional<Group> op = EntitiesStorage.get().getGroup( groupId );
-			if ( !op.isPresent() ) {
-				Toast.makeText( this, "Group not found", Toast.LENGTH_SHORT ).show();
-				onBackPressed();
-				return;
-			}
-			mGroup = op.get();
+		Optional<Group> op = EntitiesStorage.get().getGroup( groupId );
+		if ( !op.isPresent() ) {
+			Toast.makeText( this, "Group not found", Toast.LENGTH_SHORT ).show();
+			onBackPressed();
+			return;
+		}
+		mGroup = op.get();
 
+		if(!isRoot)
 			setTitle( mGroup.getName() );
 
-			initializeRecyclerView( mGroup.getContainingEntities() );
-			sortAndUpdateList();
-		}
+		initializeRecyclerView( mGroup.getContainingEntities() );
+		sortAndUpdateList();
 
 		FabButton fab = findViewById( R.id.fabSettings );
 		fab.setOnClickListener( v->{
@@ -283,9 +284,7 @@ public class EntitiesListActivity extends ThemeActivity {
 
 		findViewById( R.id.fabCreateGroup ).setOnClickListener( v->{
 			Intent intent = new Intent( this, CreateGroupActivity.class );
-			if ( !isRoot ) {
-				intent.putExtra( "parentId", mGroup.getId() );
-			}
+			intent.putExtra( "parentId", mGroup.getId() );
 			mCreateGroupLauncher.launch( intent );
 		} );
 
@@ -303,11 +302,7 @@ public class EntitiesListActivity extends ThemeActivity {
 
 	private void sortAndUpdateList() {
 		ArrayList<? extends Entity> entities;
-		if ( isRoot ) {
-			entities = EntitiesStorage.get().getRootEntities();
-		} else {
-			entities = mGroup.getContainingEntities();
-		}
+		entities = mGroup.getContainingEntities();
 		entities.sort( (Comparator<Entity>) (o1, o2)->{
 			if ( o1.getType() != o2.getType() ) {
 				if ( mSortOrder == 0 ) {
