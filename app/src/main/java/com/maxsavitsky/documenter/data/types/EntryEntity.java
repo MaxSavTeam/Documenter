@@ -141,10 +141,11 @@ public class EntryEntity extends Entity {
 	}
 
 	public void saveText(Spannable text) throws IOException, JSONException {
-		File file = new File( App.appStoragePath + "/entries/" + getId() + "/text" );
+		File file = new File( App.appStoragePath + "/entries/" + getId() );
 		if ( !file.exists() ) {
-			file.createNewFile();
+			file.mkdirs();
 		}
+		file = new File( file.getPath() + "/text" );
 
 		rawText = Html.toHtml( text, Html.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL );
 		try(FileOutputStream fos = new FileOutputStream(file)){
@@ -195,7 +196,10 @@ public class EntryEntity extends Entity {
 	}
 
 	public void saveProperties() throws IOException, JSONException {
-		File propsFile = new File( App.appStoragePath + "/entries/" + getId() + "/properties.json" );
+		File propsFile = new File( App.appStoragePath + "/entries/" + getId() );
+		if(!propsFile.exists())
+			propsFile.mkdirs();
+		propsFile = new File( propsFile.getPath() + "/properties.json" );
 		if ( !propsFile.exists() ) {
 			propsFile.createNewFile();
 		}

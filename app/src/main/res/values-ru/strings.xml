@@ -70,7 +70,7 @@
     <string name="loading">Загрузка…</string>
     <string name="entry_is_loading">Запись загружается …</string>
     <string name="edit_entry">Изменить запись</string>
-    <string name="create_new_entry">Создать новую запись</string>
+    <string name="create_entry">Создать запись</string>
     <string name="pick_images">Выберите изображение</string>
     <string name="image_picker_warning_memory_not_accessed">Функция не может работать, потому что приложение не имеет доступа к памяти. Нажмите кнопку «Запрос» для доступа к приложению.</string>
     <string name="request">Запрос</string>

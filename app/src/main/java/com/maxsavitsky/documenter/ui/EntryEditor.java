@@ -418,7 +418,7 @@ public class EntryEditor extends ThemeActivity {
 			}
 			mParentGroup = parentOptional.get();
 
-			title = getResources().getString( R.string.create_new_entry );
+			title = getResources().getString( R.string.create_entry );
 			mEntry = new EntryEntity( "temp_entry", "" );
 			tempProperties = new EntryEntity.Properties();
 			mId = Utils.generateUniqueId() + "_0";
@@ -1474,7 +1474,7 @@ public class EntryEditor extends ThemeActivity {
 			copyTempFiles();
 			replaceTempImagesInSpans();
 			mEntry.saveText( text );
-			setResult( Results.REOPEN, new Intent().putExtra( "id", mId ) );
+			setResult( Results.REOPEN, new Intent().putExtra( "id", mEntry.getId() ) );
 			super.onBackPressed();
 		} catch (IOException | JSONException e) {
 			Utils.getErrorDialog( e, this ).show();

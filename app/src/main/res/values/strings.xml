@@ -77,7 +77,7 @@
     <string name="loading">Loading…</string>
     <string name="entry_is_loading">Entry is loading…</string>
     <string name="edit_entry">Edit entry</string>
-    <string name="create_new_entry">Create new entry</string>
+    <string name="create_entry">Create entry</string>
     <string name="pick_images">Pick image</string>
     <string name="image_picker_warning_memory_not_accessed">The function cannot work, because the application does not have access to memory. Click the "Request" button to access the application.</string>
     <string name="request">Request</string>

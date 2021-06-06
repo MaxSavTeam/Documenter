@@ -95,6 +95,19 @@ public class EntitiesListActivity extends ThemeActivity {
 		);
 	}
 
+	private final ActivityResultLauncher<Intent> mCreateEntryLauncher = registerForActivityResult(
+			new ActivityResultContracts.StartActivityForResult(),
+			result -> {
+				if ( result.getResultCode() == Results.REOPEN ) {
+					Intent intent = new Intent( this, EntryViewer.class );
+					if ( result.getData() != null ) {
+						intent.putExtras( result.getData() );
+					}
+					mEntryViewerLauncher.launch( intent );
+				}
+			}
+	);
+
 	private final ActivityResultLauncher<Intent> mSettingsLauncher = registerForActivityResult(
 			new ActivityResultContracts.StartActivityForResult(),
 			result->{
@@ -380,6 +393,13 @@ public class EntitiesListActivity extends ThemeActivity {
 			Intent intent = new Intent( this, CreateGroupActivity.class );
 			intent.putExtra( "parentId", mGroup.getId() );
 			mCreateGroupLauncher.launch( intent );
+		} );
+
+		findViewById( R.id.fabCreateEntry ).setOnClickListener( v->{
+			Intent intent = new Intent(this, EntryEditor.class);
+			intent.putExtra( "parentId", mGroup.getId() );
+			intent.putExtra( "type", "create" );
+			mCreateEntryLauncher.launch( intent );
 		} );
 
 		registerReceiver( mNeedToRefreshReceiver, new IntentFilter( BuildConfig.APPLICATION_ID + ".REFRESH_ENTITIES_LISTS" ) );

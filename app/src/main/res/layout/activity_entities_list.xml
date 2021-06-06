@@ -45,6 +45,13 @@
         app:menu_icon="@drawable/ic_more_horiz_24">
 
         <com.maxsavitsky.documenter.ui.widget.FabButton
+            android:id="@+id/fabCreateEntry"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_plus_24"
+            app:fab_label="@string/create_entry" />
+
+        <com.maxsavitsky.documenter.ui.widget.FabButton
             android:id="@+id/fabCreateGroup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
