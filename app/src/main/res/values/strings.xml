@@ -220,4 +220,5 @@
     <string name="success">Success</string>
     <string name="remove_from_parent">Remove from parent</string>
     <string name="some_entities_were_not_moved_added">Some entities were not moved/added</string>
+    <string name="remove">Remove</string>
 </resources>

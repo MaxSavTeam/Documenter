@@ -165,6 +165,21 @@ public class EntitiesStorage {
 		return false;
 	}
 
+	public void removeEntityFrom(Entity entity, Group parentGroup){
+		if(parentGroup.getId().equals( "root" ) && entity.getParents().size() == 1 && entity.getParents().get( 0 ).equals( "root" ))
+			return;
+		parentGroup.removeContainingEntity( entity.getId() );
+		entity.removeParent( parentGroup.getId() );
+		if(entity.getParents().isEmpty()){
+			getGroup( "root" )
+					.ifPresent( g->{
+						if(g.addMember( entity ))
+							entity.addParent( g.getId() );
+					} );
+		}
+		save();
+	}
+
 	public void createGroup(String name, String parentId) {
 		String id = Utils.generateUniqueId() + "1";
 		Group g = new Group( id, name );

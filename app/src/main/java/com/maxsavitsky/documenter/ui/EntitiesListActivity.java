@@ -131,7 +131,7 @@ public class EntitiesListActivity extends ThemeActivity {
 						sendRefreshIntent();
 					}
 					if( selectionMode )
-						onBackPressed();
+						exitSelectionMode();
 					mSelectedEntities.clear();
 				}
 			}
@@ -174,13 +174,18 @@ public class EntitiesListActivity extends ThemeActivity {
 	@Override
 	public void onBackPressed() {
 		if( selectionMode ){
-			selectionMode = false;
-			mEntitiesAdapter.hideCheckBoxes();
-			findViewById( R.id.flexboxLayout ).setVisibility( View.GONE );
-			findViewById( R.id.fab_menu ).setVisibility( View.VISIBLE );
+			exitSelectionMode();
 		}else{
 			super.onBackPressed();
 		}
+	}
+
+	private void exitSelectionMode(){
+		selectionMode = false;
+		mEntitiesAdapter.hideCheckBoxes();
+		findViewById( R.id.flexboxLayout ).setVisibility( View.GONE );
+		findViewById( R.id.fab_menu ).setVisibility( View.VISIBLE );
+		mSelectedEntities.clear();
 	}
 
 	private void refresh(){
@@ -370,6 +375,15 @@ public class EntitiesListActivity extends ThemeActivity {
 		findViewById( R.id.layout_move_to ).setOnClickListener( v->{
 			if(mSelectedEntities.size() > 0){
 				openCopyMoveActivity( 1 );
+			}
+		} );
+		findViewById( R.id.layout_remove ).setOnClickListener( v->{
+			if(mSelectedEntities.size() > 0){
+				for(Entity e : mSelectedEntities){
+					EntitiesStorage.get().removeEntityFrom( e, mGroup );
+				}
+				exitSelectionMode();
+				sendRefreshIntent();
 			}
 		} );
 	}

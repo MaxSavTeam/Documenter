@@ -205,4 +205,5 @@
     <string name="success">Успех</string>
     <string name="remove_from_parent">Убрать из содержащей группы</string>
     <string name="some_entities_were_not_moved_added">Некоторые элементы не были перемещены/добавлены</string>
+    <string name="remove">Убрать</string>
 </resources>
