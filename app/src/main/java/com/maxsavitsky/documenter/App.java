@@ -8,7 +8,7 @@ import com.maxsavitsky.exceptionhandler.ExceptionHandler;
 
 public class App extends Application {
 
-	public static String appStoragePath;
+	public static String appDataPath, appStoragePath;
 
 	public static App instance;
 
@@ -23,6 +23,7 @@ public class App extends Application {
 		instance = this;
 
 		appStoragePath = getExternalFilesDir( null ).getPath();
+		appDataPath = appStoragePath + "/data";
 
 		ExceptionHandler handler = new ExceptionHandler( getApplicationContext(), AfterExceptionActivity.class );
 		Thread.setDefaultUncaughtExceptionHandler( (t, tr)->{

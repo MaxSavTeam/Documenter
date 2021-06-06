@@ -1,6 +1,6 @@
 package com.maxsavitsky.documenter.updates;
 
-import android.os.Environment;
+import com.maxsavitsky.documenter.App;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -18,7 +18,7 @@ public class UpdatesDownloader {
 	}
 
 	public void download()  {
-		File file = new File( Environment.getExternalStorageDirectory().getAbsolutePath() + "/.documenter" );
+		File file = new File( App.appStoragePath, "updates" );
 		String dUrl = mVersionInfo.getDownloadUrl();
 		int s = dUrl.length();
 		while ( dUrl.charAt( s - 1 ) != '/' ) {
@@ -27,7 +27,7 @@ public class UpdatesDownloader {
 		final String name = dUrl.substring( s );
 		if(!file.exists())
 			file.mkdir();
-		file = new File( file.getPath() + "/" + name );
+		file = new File( file, name );
 
 		URL url;
 		InputStream in = null;

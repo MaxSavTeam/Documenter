@@ -229,7 +229,7 @@ public class EntitiesStorage {
 	}
 
 	private void deleteEntry(EntryEntity e) {
-		Utils.deleteDirectory( new File( App.appStoragePath + "/entries/" + e.getId() ) );
+		Utils.deleteDirectory( new File( App.appDataPath + "/entries/" + e.getId() ) );
 		mEntryEntities.remove( e );
 	}
 

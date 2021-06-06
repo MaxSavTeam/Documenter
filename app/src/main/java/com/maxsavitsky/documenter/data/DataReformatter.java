@@ -19,6 +19,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -161,13 +163,77 @@ public class DataReformatter {
 		JSONObject jsonObject = prepareInfoJSON();
 		reformatEntriesProperties( jsonObject );
 		reformatEntriesAdditional( jsonObject );
-		File file = new File( Utils.getExternalStoragePath().getPath() + "/data.json" );
+		deleteUnusedEntriesDirs( jsonObject );
+		deleteUnusedEntriesFiles( jsonObject );
+		File dataDir = new File( Utils.getExternalStoragePath().getPath() + "/data" );
+		if(!dataDir.exists())
+			dataDir.mkdirs();
+		copyEntriesDir();
+		deleteUnusedRootFiles();
+		File file = new File( dataDir, "data.json" );
 		if ( !file.exists() ) {
 			file.createNewFile();
 		}
 		String reformattedData = jsonObject.toString();
 		try (FileOutputStream fos = new FileOutputStream( file )) {
 			fos.write( reformattedData.getBytes( StandardCharsets.UTF_8 ) );
+		}
+	}
+
+	private static void deleteUnusedRootFiles(){
+		File file = Utils.getExternalStoragePath();
+		File[] files = file.listFiles();
+		if(files != null){
+			for(File f : files){
+				if(f.isDirectory()){
+					if(!f.getName().equals( "data" ) && !f.getName().equals( "backups" ))
+						Utils.deleteDirectory( f );
+				}else{
+					f.delete();
+				}
+			}
+		}
+	}
+
+	private static void copyEntriesDir() throws IOException {
+		Utils.copy( new File( Utils.getExternalStoragePath().getPath() + "/entries" ), new File( Utils.getExternalStoragePath().getPath() + "/data" ) );
+	}
+
+	private static void deleteUnusedEntriesFiles(JSONObject jsonObject) throws JSONException {
+		JSONArray jsonArray = jsonObject.getJSONArray( "entries" );
+		for (int i = 0; i < jsonArray.length(); i++) {
+			String id = jsonArray.getJSONObject( i ).getString( "id" );
+			File dir = new File( Utils.getExternalStoragePath() + "/entries/" + id );
+			if(dir.exists()){
+				File[] files = dir.listFiles();
+				if(files  != null){
+					for(File f : files){
+						String n = f.getName();
+						if(n.endsWith( ".xml" ) || n.equals( "alignment" ) || n.equals( "relative_spans" )){
+							f.delete();
+						}
+					}
+				}
+			}
+		}
+	}
+
+	private static void deleteUnusedEntriesDirs(JSONObject jsonObject) throws JSONException {
+		Map<String, Boolean> map = new HashMap<>();
+		JSONArray jsonArray = jsonObject.getJSONArray( "entries" );
+		for (int i = 0; i < jsonArray.length(); i++) {
+			String id = jsonArray.getJSONObject( i ).getString( "id" );
+			map.put( id, true );
+		}
+		File file = new File( Utils.getExternalStoragePath().getPath() + "/entries" );
+		if(file.exists()){
+			File[] files = file.listFiles();
+			if(files != null){
+				for(File f : files){
+					if(!map.containsKey( f.getName() ))
+						Utils.deleteDirectory( f );
+				}
+			}
 		}
 	}
 

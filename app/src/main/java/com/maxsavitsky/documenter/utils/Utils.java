@@ -32,6 +32,7 @@ import com.maxsavitsky.exceptionhandler.ExceptionHandler;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -193,6 +194,31 @@ public class Utils {
 		}
 
 		return ous.toByteArray();
+	}
+
+	public static void copy(File file, File destinationDir) throws IOException {
+		File dest = new File( destinationDir, file.getName() );
+		if(file.isFile()) {
+			if ( !dest.exists() )
+				dest.createNewFile();
+			try (FileInputStream fis = new FileInputStream( file );
+			     FileOutputStream fos = new FileOutputStream( dest )) {
+				int len;
+				byte[] buffer = new byte[ 4096 ];
+				while ( ( len = fis.read( buffer ) ) > 0 ) {
+					fos.write( buffer, 0, len );
+				}
+			}
+		}else{
+			if(!dest.exists())
+				dest.mkdirs();
+			File[] files = file.listFiles();
+			if(files != null){
+				for(File f : files){
+					copy(f, dest);
+				}
+			}
+		}
 	}
 
 	public static void saveCategoriesList(ArrayList<Category> categories) {

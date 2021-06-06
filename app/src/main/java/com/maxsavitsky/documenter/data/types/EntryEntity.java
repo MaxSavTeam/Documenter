@@ -128,7 +128,7 @@ public class EntryEntity extends Entity {
 	}
 
 	private String loadFromEntryStorage(String path) throws IOException {
-		File file = new File( App.appStoragePath + "/entries/" + getId() + "/" + path );
+		File file = new File( App.appDataPath + "/entries/" + getId() + "/" + path );
 		try (FileInputStream fis = new FileInputStream( file );
 		     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
 			int len;
@@ -141,7 +141,7 @@ public class EntryEntity extends Entity {
 	}
 
 	public void saveText(Spannable text) throws IOException, JSONException {
-		File file = new File( App.appStoragePath + "/entries/" + getId() );
+		File file = new File( App.appDataPath + "/entries/" + getId() );
 		if ( !file.exists() ) {
 			file.mkdirs();
 		}
@@ -187,7 +187,7 @@ public class EntryEntity extends Entity {
 		}
 		additional.put( "relativeSpans", relatives );
 
-		file = new File( App.appStoragePath + "/entries/" + getId() + "/additional.json" );
+		file = new File( App.appDataPath + "/entries/" + getId() + "/additional.json" );
 		if(!file.exists())
 			file.createNewFile();
 		try(FileOutputStream fos = new FileOutputStream(file)){
@@ -196,7 +196,7 @@ public class EntryEntity extends Entity {
 	}
 
 	public void saveProperties() throws IOException, JSONException {
-		File propsFile = new File( App.appStoragePath + "/entries/" + getId() );
+		File propsFile = new File( App.appDataPath + "/entries/" + getId() );
 		if(!propsFile.exists())
 			propsFile.mkdirs();
 		propsFile = new File( propsFile.getPath() + "/properties.json" );
@@ -210,7 +210,7 @@ public class EntryEntity extends Entity {
 	}
 
 	public void loadProperties() throws IOException, JSONException {
-		File propsFile = new File( App.appStoragePath + "/entries/" + getId() + "/properties.json" );
+		File propsFile = new File( App.appDataPath + "/entries/" + getId() + "/properties.json" );
 		if ( propsFile.exists() ) {
 			String result;
 			try (FileInputStream fileInputStream = new FileInputStream( propsFile );
@@ -229,7 +229,7 @@ public class EntryEntity extends Entity {
 	}
 
 	public void checkMediaDir() {
-		File file = new File( App.appStoragePath + "/entries/" + getId() + "/media/images" );
+		File file = new File( App.appDataPath + "/entries/" + getId() + "/media/images" );
 		if ( !file.exists() ) {
 			file.mkdirs();
 		}
@@ -237,11 +237,11 @@ public class EntryEntity extends Entity {
 
 	public File getImagesMediaFolder() {
 		checkMediaDir();
-		return new File( App.appStoragePath + "/entries/" + getId() + "/media/images" );
+		return new File( App.appDataPath + "/entries/" + getId() + "/media/images" );
 	}
 
 	public ArrayList<File> getContentFiles() {
-		File dir = new File( App.appStoragePath + "/entries/" + getId() );
+		File dir = new File( App.appDataPath + "/entries/" + getId() );
 
 		return getDirectoryFiles( dir );
 	}
