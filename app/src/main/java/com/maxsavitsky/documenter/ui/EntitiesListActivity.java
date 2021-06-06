@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -47,9 +46,15 @@ public class EntitiesListActivity extends ThemeActivity {
 	protected Group mGroup;
 	protected Group mParentGroup;
 
+	protected ArrayList<? extends Entity> mEntities;
+
+	private boolean selectionMode = false;
+
 	private int mSortOrder = 0, mSortingMode = 0, mAscendingDescendingOrder = 0;
 
 	protected EntitiesAdapter mEntitiesAdapter;
+
+	private final ArrayList<Entity> mSelectedEntities = new ArrayList<>();
 
 	private final ActivityResultLauncher<Intent> mEntitiesListLauncher = registerForActivityResult(
 			new ActivityResultContracts.StartActivityForResult(),
@@ -105,34 +110,78 @@ public class EntitiesListActivity extends ThemeActivity {
 					}
 					String groupId = data.getStringExtra( "groupId" );
 					if ( groupId != null ) {
-						boolean success;
-						Log.i( TAG, "mode=" + data.getIntExtra( "mode", 0 ) );
-						if ( data.getIntExtra( "mode", 0 ) == 0 ) {
-							success = EntitiesStorage.get().addEntityTo( mGroup, groupId );
-						} else {
-							success = EntitiesStorage.get().moveEntityTo( mGroup, groupId );
+						boolean success = true;
+						int mode = data.getIntExtra( "mode", 0 );
+						for(Entity e : mSelectedEntities) {
+							if ( mode == 0 ) {
+								success &= EntitiesStorage.get().addEntityTo( e, groupId );
+							} else {
+								success &= EntitiesStorage.get().moveEntityTo( e, groupId );
+							}
 						}
 						if ( success ) {
 							Toast.makeText( this, R.string.success, Toast.LENGTH_SHORT ).show();
 						} else {
-							Toast.makeText( this, R.string.move_add_fail_reason, Toast.LENGTH_LONG ).show();
+							if ( mSelectedEntities.size() == 1 )
+								Toast.makeText( this, R.string.move_add_fail_reason, Toast.LENGTH_LONG ).show();
+							else {
+								Toast.makeText( this, R.string.some_entities_were_not_moved_added, Toast.LENGTH_LONG ).show();
+							}
 						}
 						sendRefreshIntent();
 					}
+					if( selectionMode )
+						onBackPressed();
+					mSelectedEntities.clear();
 				}
 			}
 	);
 
 	private final EntitiesAdapter.AdapterCallback ADAPTER_CALLBACK = new EntitiesAdapter.AdapterCallback() {
 		@Override
-		public void onEntityClick(String id, Entity.Type type) {
-			if ( type == Entity.Type.GROUP ) {
-				mEntitiesListLauncher.launch( new Intent( EntitiesListActivity.this, EntitiesListActivity.class ).putExtra( "groupId", id ).putExtra( "parentId", mGroup.getId() ) );
-			} else {
-				mEntryViewerLauncher.launch( new Intent( EntitiesListActivity.this, EntryViewer.class ).putExtra( "id", id ).putExtra( "parentId", mGroup.getId() ) );
+		public void onEntityClick(String id, Entity.Type type, int index) {
+			if( selectionMode ){
+				boolean contains = mSelectedEntities.contains( mEntities.get( index ) );
+				if(contains)
+					mSelectedEntities.remove( mEntities.get( index ) );
+				else
+					mSelectedEntities.add( mEntities.get( index ) );
+				mEntitiesAdapter.setCheckBox( index, !contains );
+			}else {
+				if ( type == Entity.Type.GROUP ) {
+					mEntitiesListLauncher.launch( new Intent( EntitiesListActivity.this, EntitiesListActivity.class ).putExtra( "groupId", id ).putExtra( "parentId", mGroup.getId() ) );
+				} else {
+					mEntryViewerLauncher.launch( new Intent( EntitiesListActivity.this, EntryViewer.class ).putExtra( "id", id ).putExtra( "parentId", mGroup.getId() ) );
+				}
+			}
+		}
+
+		@Override
+		public void onLongClick(int index) {
+			if(!selectionMode ) {
+				mEntitiesAdapter.showCheckBoxes();
+				selectionMode = true;
+
+				mEntitiesAdapter.setCheckBox( index, true );
+				mSelectedEntities.add( mEntities.get( index ) );
+
+				findViewById( R.id.flexboxLayout ).setVisibility( View.VISIBLE );
+				findViewById( R.id.fab_menu ).setVisibility( View.GONE );
 			}
 		}
 	};
+
+	@Override
+	public void onBackPressed() {
+		if( selectionMode ){
+			selectionMode = false;
+			mEntitiesAdapter.hideCheckBoxes();
+			findViewById( R.id.flexboxLayout ).setVisibility( View.GONE );
+			findViewById( R.id.fab_menu ).setVisibility( View.VISIBLE );
+		}else{
+			super.onBackPressed();
+		}
+	}
 
 	private void refresh(){
 		sortAndUpdateList();
@@ -172,7 +221,7 @@ public class EntitiesListActivity extends ThemeActivity {
 					}
 					mGroup.rename( text );
 					setTitle( text );
-					sendBroadcast( new Intent( BuildConfig.APPLICATION_ID + ".REFRESH_ENTITIES_LISTS" ) );
+					sendRefreshIntent();
 					EntitiesStorage.get().save();
 				} else {
 					Toast.makeText( this, R.string.invalid_name, Toast.LENGTH_SHORT ).show();
@@ -183,15 +232,11 @@ public class EntitiesListActivity extends ThemeActivity {
 		} else if ( itemId == R.id.item_menu_delete ) {
 			showDeletionDialog();
 		} else if ( itemId == R.id.item_menu_add_to ) {
-			mCopyMoveLauncher.launch(
-					new Intent( this, CopyMoveActivity.class )
-							.putExtra( "mode", 0 )
-			);
+			mSelectedEntities.add( mGroup );
+			openCopyMoveActivity( 0 );
 		} else if ( itemId == R.id.item_menu_move_to ) {
-			mCopyMoveLauncher.launch(
-					new Intent( this, CopyMoveActivity.class )
-							.putExtra( "mode", 1 )
-			);
+			mSelectedEntities.add( mGroup );
+			openCopyMoveActivity( 1 );
 		} else if(itemId == R.id.item_menu_remove_from_parent){
 			mGroup.removeParent( mParentGroup.getId() );
 			mParentGroup.removeContainingEntity( mGroup.getId() );
@@ -202,6 +247,13 @@ public class EntitiesListActivity extends ThemeActivity {
 			sendRefreshIntent();
 		}
 		return super.onOptionsItemSelected( item );
+	}
+
+	private void openCopyMoveActivity(int mode){
+		mCopyMoveLauncher.launch(
+				new Intent( this, CopyMoveActivity.class )
+						.putExtra( "mode", mode )
+		);
 	}
 
 	private void sendRefreshIntent(){
@@ -238,9 +290,7 @@ public class EntitiesListActivity extends ThemeActivity {
 		AlertDialog.Builder builder = new AlertDialog.Builder( this, super.mAlertDialogStyle );
 		builder
 				.setCancelable( false )
-				.setNegativeButton( R.string.cancel, (dialog, which)->{
-					dialog.cancel();
-				} )
+				.setNegativeButton( R.string.cancel, (dialog, which)->dialog.cancel() )
 				.setPositiveButton( R.string.apply, (dialog, which)->{
 					mSortOrder = radioOrder.getCheckedItemIndex();
 					mSortingMode = radioSorting.getCheckedItemIndex();
@@ -311,6 +361,17 @@ public class EntitiesListActivity extends ThemeActivity {
 		} );
 
 		registerReceiver( mNeedToRefreshReceiver, new IntentFilter( BuildConfig.APPLICATION_ID + ".REFRESH_ENTITIES_LISTS" ) );
+
+		findViewById( R.id.layout_add_to ).setOnClickListener( v->{
+			if(mSelectedEntities.size() > 0){
+				openCopyMoveActivity( 0 );
+			}
+		} );
+		findViewById( R.id.layout_move_to ).setOnClickListener( v->{
+			if(mSelectedEntities.size() > 0){
+				openCopyMoveActivity( 1 );
+			}
+		} );
 	}
 
 	private void initializeRecyclerView(ArrayList<? extends Entity> entities) {
@@ -333,7 +394,7 @@ public class EntitiesListActivity extends ThemeActivity {
 					return o1.getType() == Entity.Type.GROUP ? 1 : -1;
 				}
 			}
-			int comp = 0;
+			int comp;
 			if ( mSortingMode == 0 ) {
 				comp = o1.getName().compareToIgnoreCase( o2.getName() );
 			} else {
@@ -349,5 +410,6 @@ public class EntitiesListActivity extends ThemeActivity {
 
 	private void updateList(ArrayList<? extends Entity> entities) {
 		mEntitiesAdapter.setElements( entities );
+		mEntities = entities;
 	}
 }

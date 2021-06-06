@@ -204,4 +204,5 @@
     <string name="move_add_fail_reason">Не удалось добавить/переместить, т.к. содержимое уже содержит группу, в которую вы хотели добавить</string>
     <string name="success">Успех</string>
     <string name="remove_from_parent">Убрать из содержащей группы</string>
+    <string name="some_entities_were_not_moved_added">Некоторые элементы не были перемещены/добавлены</string>
 </resources>

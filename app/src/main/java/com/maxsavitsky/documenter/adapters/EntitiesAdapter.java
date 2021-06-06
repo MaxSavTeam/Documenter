@@ -3,6 +3,7 @@ package com.maxsavitsky.documenter.adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -20,9 +21,13 @@ public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHo
 
 	private ArrayList<? extends Entity> mEntities;
 	private AdapterCallback mAdapterCallback;
+	private boolean isSelectionMode = false;
+	private ArrayList<Boolean> isItemSelected;
 
 	public interface AdapterCallback {
-		void onEntityClick(String id, Entity.Type type);
+		void onEntityClick(String id, Entity.Type type, int index);
+
+		void onLongClick(int index);
 	}
 
 	public EntitiesAdapter(ArrayList<? extends Entity> entities, AdapterCallback callback) {
@@ -53,6 +58,25 @@ public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHo
 		return res;
 	}
 
+	public void showCheckBoxes(){
+		isSelectionMode = true;
+		isItemSelected = new ArrayList<>();
+		for(int i = 0; i < mEntities.size(); i++)
+			isItemSelected.add( false );
+		notifyDataSetChanged();
+	}
+
+	public void hideCheckBoxes(){
+		isSelectionMode = false;
+		isItemSelected.clear();
+		notifyDataSetChanged();
+	}
+
+	public void setCheckBox(int index, boolean state){
+		isItemSelected.set( index, state );
+		notifyItemChanged( index );
+	}
+
 	@NonNull
 	@Override
 	public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -72,9 +96,22 @@ public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHo
 
 		holder.itemView.setOnClickListener( v->{
 			if ( mAdapterCallback != null ) {
-				mAdapterCallback.onEntityClick( entity.getId(), entity.getType() );
+				mAdapterCallback.onEntityClick( entity.getId(), entity.getType(), position );
 			}
 		} );
+
+		holder.itemView.setOnLongClickListener( v->{
+			mAdapterCallback.onLongClick(position);
+			return true;
+		} );
+
+		if(isSelectionMode){
+			holder.checkBox.setVisibility( View.VISIBLE );
+			holder.checkBox.setChecked( isItemSelected.get( position ) );
+		}else{
+			holder.checkBox.setVisibility( View.GONE );
+			holder.checkBox.setChecked( false );
+		}
 	}
 
 	@Override
@@ -85,12 +122,14 @@ public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHo
 	public static class ViewHolder extends RecyclerView.ViewHolder {
 		private final TextView textView;
 		private final ImageView imageView;
+		private final CheckBox checkBox;
 
 		public ViewHolder(@NonNull View itemView) {
 			super( itemView );
 
 			textView = itemView.findViewById( R.id.entity_layout_text );
 			imageView = itemView.findViewById( R.id.entity_layout_icon );
+			checkBox = itemView.findViewById( R.id.entity_layout_check_box );
 		}
 	}
 

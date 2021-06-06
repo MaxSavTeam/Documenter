@@ -32,7 +32,7 @@ public class CopyMoveActivity extends EntitiesListActivity {
 
 	private final EntitiesAdapter.AdapterCallback mAdapterCallback = new EntitiesAdapter.AdapterCallback() {
 		@Override
-		public void onEntityClick(String id, Entity.Type type) {
+		public void onEntityClick(String id, Entity.Type type, int index) {
 			if ( type == Entity.Type.GROUP ) {
 				mLauncher.launch(
 						new Intent( CopyMoveActivity.this, CopyMoveActivity.class )
@@ -40,6 +40,11 @@ public class CopyMoveActivity extends EntitiesListActivity {
 								.putExtra( "mode", mode )
 				);
 			}
+		}
+
+		@Override
+		public void onLongClick(int index) {
+
 		}
 	};
 
@@ -50,8 +55,7 @@ public class CopyMoveActivity extends EntitiesListActivity {
 			onBackPressed();
 		}else if(item.getItemId() == R.id.item_apply){
 			Intent data = new Intent();
-			if(!isRoot)
-				data.putExtra( "groupId", mGroup.getId() );
+			data.putExtra( "groupId", mGroup.getId() );
 			data.putExtra( "mode", mode );
 			setResult( Results.ACCEPTED, data );
 			onBackPressed();

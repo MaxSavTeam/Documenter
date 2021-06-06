@@ -4,8 +4,17 @@
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="15dp"
+    android:animateLayoutChanges="true"
     android:gravity="center_vertical"
     android:orientation="horizontal">
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:buttonTint="?colorAccent"
+        android:visibility="gone"
+        android:layout_marginEnd="10dp"
+        android:id="@+id/entity_layout_check_box" />
 
     <ImageView
         android:layout_width="30dp"

@@ -219,4 +219,5 @@
     <string name="move_add_fail_reason">Couldn\'t add / move, because the content already contains the group you wanted to add to</string>
     <string name="success">Success</string>
     <string name="remove_from_parent">Remove from parent</string>
+    <string name="some_entities_were_not_moved_added">Some entities were not moved/added</string>
 </resources>
