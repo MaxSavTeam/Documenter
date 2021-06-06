@@ -3,7 +3,6 @@ package com.maxsavitsky.documenter.utils;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 
 import androidx.core.content.FileProvider;
 
@@ -21,10 +20,6 @@ public class ApkInstaller {
 	}
 
 	private static Uri fromFile(Context context, File file){
-		if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
-			return FileProvider.getUriForFile( context, BuildConfig.APPLICATION_ID + ".provider", file );
-		}else{
-			return Uri.fromFile(file);
-		}
+		return FileProvider.getUriForFile( context, BuildConfig.APPLICATION_ID + ".provider", file );
 	}
 }
