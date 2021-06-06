@@ -33,6 +33,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.maxsavitsky.documenter.BuildConfig;
 import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.ThemeActivity;
@@ -43,6 +44,7 @@ import com.maxsavitsky.documenter.data.EntitiesStorage;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.data.types.EntryEntity;
+import com.maxsavitsky.documenter.data.types.Group;
 import com.maxsavitsky.documenter.data.types.Type;
 import com.maxsavitsky.documenter.ui.widget.CustomScrollView;
 import com.maxsavitsky.documenter.utils.Utils;
@@ -58,28 +60,30 @@ public class EntryViewer extends ThemeActivity {
 
 	private static final String TAG = MainActivity.TAG + " EntryViewer";
 	private EntryEntity mEntry;
+	private Group mParentGroup;
 	private SharedPreferences sp;
 	private CustomScrollView mScrollView;
 
 	private final ActivityResultLauncher<Intent> mCopyMoveLauncher = registerForActivityResult(
 			new ActivityResultContracts.StartActivityForResult(),
 			result->{
-				if(result.getResultCode() == Results.ACCEPTED){
+				if ( result.getResultCode() == Results.ACCEPTED ) {
 					Intent data = result.getData();
-					if(data == null)
+					if ( data == null ) {
 						return;
+					}
 					String groupId = data.getStringExtra( "groupId" );
-					if(groupId != null){
-						if(data.getIntExtra( "mode", 0 ) == 0){
-							if(EntitiesStorage.get().addEntityTo( mEntry, groupId )){
+					if ( groupId != null ) {
+						if ( data.getIntExtra( "mode", 0 ) == 0 ) {
+							if ( EntitiesStorage.get().addEntityTo( mEntry, groupId ) ) {
 								Toast.makeText( this, R.string.success, Toast.LENGTH_SHORT ).show();
-							}else{
+							} else {
 								Toast.makeText( this, R.string.move_add_fail_reason, Toast.LENGTH_LONG ).show();
 							}
-						}else{
-							if(EntitiesStorage.get().moveEntityTo( mEntry, groupId )){
+						} else {
+							if ( EntitiesStorage.get().moveEntityTo( mEntry, groupId ) ) {
 								Toast.makeText( this, R.string.success, Toast.LENGTH_SHORT ).show();
-							}else{
+							} else {
 								Toast.makeText( this, R.string.move_add_fail_reason, Toast.LENGTH_LONG ).show();
 							}
 						}
@@ -173,6 +177,14 @@ public class EntryViewer extends ThemeActivity {
 					new Intent( this, CopyMoveActivity.class )
 							.putExtra( "mode", 1 )
 			);
+		} else if(itemId == R.id.item_menu_remove_from_parent){
+			mEntry.removeParent( mParentGroup.getId() );
+			mParentGroup.removeContainingEntity( mEntry.getId() );
+			if(mEntry.getParents().size() == 0){
+				EntitiesStorage.get().addEntityTo( mEntry, "root" );
+			}
+			EntitiesStorage.get().save();
+			sendBroadcast( new Intent( BuildConfig.APPLICATION_ID + ".REFRESH_ENTITIES_LISTS" ) );
 		}
 		return super.onOptionsItemSelected( item );
 	}
@@ -288,10 +300,10 @@ public class EntryViewer extends ThemeActivity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		if ( menu != null ) {
-			menu.clear();
-		}
 		getMenuInflater().inflate( R.menu.entry_menu, menu );
+		if ( mParentGroup == null || mParentGroup.getId().equals( "root" ) && mEntry.getParents().size() == 1 ) {
+			menu.findItem( R.id.item_menu_remove_from_parent ).setVisible( false );
+		}
 		return super.onCreateOptionsMenu( menu );
 	}
 
@@ -379,6 +391,9 @@ public class EntryViewer extends ThemeActivity {
 			onBackPressed();
 			return;
 		}
+
+		EntitiesStorage.get().getGroup( getIntent().getStringExtra( "parentId" ) )
+				.ifPresent( g->mParentGroup = g );
 
 		applyTheme();
 		invalidateOptionsMenu();
