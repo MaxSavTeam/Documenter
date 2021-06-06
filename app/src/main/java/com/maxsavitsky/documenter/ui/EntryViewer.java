@@ -25,7 +25,6 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
@@ -35,7 +34,6 @@ import com.maxsavitsky.documenter.BuildConfig;
 import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.ThemeActivity;
-import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.data.EntitiesStorage;
 import com.maxsavitsky.documenter.data.types.EntryEntity;
@@ -192,7 +190,7 @@ public class EntryViewer extends ThemeActivity {
 			intent.putExtra( "type", "edit" );
 			intent.putExtra( "id", mEntry.getId() );
 			intent.putExtra( "scroll_position", mScrollView.getScrollY() );
-			startActivityForResult( intent, Requests.EDIT_ENTRY );
+			mEntryEditorLauncher.launch( intent );
 		} else if ( itemId == R.id.item_copy_content ) {
 			prepareCopyToLayout();
 		} else if ( itemId == R.id.item_menu_add_to ) {
@@ -252,34 +250,11 @@ public class EntryViewer extends ThemeActivity {
 		mScrollSpeed = speed;
 		if ( speed != 0 ) {
 			mScrollAnimator = ObjectAnimator.ofInt( mScrollView, "scrollY", mScrollView.getMaxVerticalScroll() );
-			int r = (int) ( ( mScrollView.getMaxVerticalScroll() - mScrollView.getScrollY() ) / speed * 20 );
+			int r = ( mScrollView.getMaxVerticalScroll() - mScrollView.getScrollY() ) / speed * 20;
 			mScrollAnimator.setDuration( r );
 			mScrollAnimator.setInterpolator( new LinearInterpolator() );
 			mScrollAnimator.start();
 		}
-	}
-
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-		if ( requestCode == Requests.EDIT_ENTRY ) {
-			if ( resultCode == Results.REOPEN ) {
-				setResult( resultCode, data );
-				finish();
-			} else if ( resultCode == Results.OK ) {
-				if ( data != null ) {
-					int scrollPos = data.getIntExtra( "scroll_position", -1 );
-					if ( scrollPos != -1 ) {
-						mScrollView.post( new Runnable() {
-							@Override
-							public void run() {
-								mScrollView.scrollTo( 0, scrollPos );
-							}
-						} );
-					}
-				}
-			}
-		}
-		super.onActivityResult( requestCode, resultCode, data );
 	}
 
 	@Override
@@ -387,7 +362,6 @@ public class EntryViewer extends ThemeActivity {
 		TextView textView = findViewById( R.id.textViewContent );
 		textView.setTextSize( TypedValue.COMPLEX_UNIT_DIP, mEntry.getProperties().getTextSize() );
 		textView.setTextColor( mEntry.getProperties().getDefaultTextColor() );
-		//textView.setMovementMethod( LinkMovementMethod.getInstance() );
 
 		mScrollView = findViewById( R.id.viewEntryScrollView );
 		mScrollView.setOnScrollChangeListener( new View.OnScrollChangeListener() {
