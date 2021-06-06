@@ -29,31 +29,23 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.maxsavitsky.documenter.BuildConfig;
 import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.ThemeActivity;
-import com.maxsavitsky.documenter.adapters.ListAdapter;
 import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.data.EntitiesStorage;
-import com.maxsavitsky.documenter.data.MainData;
-import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.data.types.EntryEntity;
 import com.maxsavitsky.documenter.data.types.Group;
-import com.maxsavitsky.documenter.data.types.Type;
 import com.maxsavitsky.documenter.ui.widget.CustomScrollView;
 import com.maxsavitsky.documenter.utils.Utils;
 
 import org.json.JSONException;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Optional;
 
 public class EntryViewer extends ThemeActivity {
@@ -88,6 +80,42 @@ public class EntryViewer extends ThemeActivity {
 							}
 						}
 					}
+				}
+			}
+	);
+
+	private final ActivityResultLauncher<Intent> mEntryEditorLauncher = registerForActivityResult(
+			new ActivityResultContracts.StartActivityForResult(),
+			result->{
+				if ( result.getResultCode() == Results.REOPEN ) {
+					setResult( result.getResultCode(), result.getData() );
+					onBackPressed();
+				} else if ( result.getResultCode() == Results.OK ) {
+					if ( result.getData() != null ) {
+						int scrollPos = result.getData().getIntExtra( "scroll_position", -1 );
+						if ( scrollPos != -1 ) {
+							mScrollView.post( new Runnable() {
+								@Override
+								public void run() {
+									mScrollView.scrollTo( 0, scrollPos );
+								}
+							} );
+						}
+					}
+				}
+			}
+	);
+
+	private final ActivityResultLauncher<Intent> mChooseEntryLauncher = registerForActivityResult(
+			new ActivityResultContracts.StartActivityForResult(),
+			result->{
+				if(result.getResultCode() == Results.ACCEPTED && result.getData() != null){
+					String id = result.getData().getStringExtra( "id" );
+					Intent intent = new Intent(this, EntryEditor.class);
+					intent.putExtra( "type", "copy" );
+					intent.putExtra( "from_id", mEntry.getId() );
+					intent.putExtra( "to_id", id );
+					mEntryEditorLauncher.launch( intent );
 				}
 			}
 	);
@@ -177,10 +205,10 @@ public class EntryViewer extends ThemeActivity {
 					new Intent( this, CopyMoveActivity.class )
 							.putExtra( "mode", 1 )
 			);
-		} else if(itemId == R.id.item_menu_remove_from_parent){
+		} else if ( itemId == R.id.item_menu_remove_from_parent ) {
 			mEntry.removeParent( mParentGroup.getId() );
 			mParentGroup.removeContainingEntity( mEntry.getId() );
-			if(mEntry.getParents().size() == 0){
+			if ( mEntry.getParents().size() == 0 ) {
 				EntitiesStorage.get().addEntityTo( mEntry, "root" );
 			}
 			EntitiesStorage.get().save();
@@ -190,51 +218,7 @@ public class EntryViewer extends ThemeActivity {
 	}
 
 	private void prepareCopyToLayout() {
-		setContentView( R.layout.layout_copy_to );
-		getWindow().getDecorView().setBackgroundColor( super.BACKGROUND_COLOR );
-		ArrayList<Type> entryArrayList = new ArrayList<>();
-		ArrayList<Entry> mainEntries = MainData.getEntriesList();
-		for (int i = 0; i < mainEntries.size(); i++) {
-			Type entry = mainEntries.get( i );
-			if ( !entry.getId().equals( mEntry.getId() ) ) {
-				entryArrayList.add( entry );
-			}
-		}
-		findViewById( R.id.btnCopyCancel ).setOnClickListener( new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Intent data = new Intent();
-				data.putExtra( "id", mEntry.getId() );
-				setResult( Results.REOPEN, data );
-				finish();
-			}
-		} );
-		RecyclerView rc = findViewById( R.id.rcCopyTo );
-		if ( entryArrayList.size() == 0 ) {
-			rc.setVisibility( View.GONE );
-			findViewById( R.id.txtCopyNothingToShow ).setVisibility( View.VISIBLE );
-		} else {
-			Collections.sort( entryArrayList, Utils.getSortByNamesComparator() );
-			ListAdapter.AdapterCallback adapterCallback = new ListAdapter.AdapterCallback() {
-				@Override
-				public void onClick(Type type) {
-					Intent intent = new Intent();
-					String id = type.getId();
-					intent.putExtra( "type", "copy" );
-					intent.putExtra( "from_id", mEntry.getId() );
-					intent.putExtra( "to_id", id );
-					setResult( Results.COPY_TO_ACTION, intent );
-					finish();
-				}
-			};
-
-			LinearLayoutManager linearLayoutManager = new LinearLayoutManager( this );
-			linearLayoutManager.setOrientation( RecyclerView.VERTICAL );
-
-			ListAdapter listAdapter = new ListAdapter( this, entryArrayList, adapterCallback );
-			rc.setLayoutManager( linearLayoutManager );
-			rc.setAdapter( listAdapter );
-		}
+		mChooseEntryLauncher.launch( new Intent( this, ChooseEntryActivity.class ) );
 	}
 
 	private void setupSpeedSeekBar() {

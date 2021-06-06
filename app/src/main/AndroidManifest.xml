@@ -24,6 +24,9 @@
         android:theme="@style/AppTheme"
         tools:targetApi="n">
         <activity
+            android:name=".ui.ChooseEntryActivity"
+            android:exported="true" />
+        <activity
             android:name=".ui.CopyMoveActivity"
             android:exported="true" />
         <activity

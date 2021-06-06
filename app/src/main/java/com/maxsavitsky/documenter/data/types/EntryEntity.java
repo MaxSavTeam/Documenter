@@ -153,7 +153,10 @@ public class EntryEntity extends Entity {
 
 		JSONObject additional = new JSONObject();
 		JSONArray alignments = new JSONArray();
-		this.alignments.clear();
+		if(this.alignments == null)
+			this.alignments = new ArrayList<>();
+		else
+			this.alignments.clear();
 		for (AlignmentSpan.Standard span : text.getSpans( 0, text.length(), AlignmentSpan.Standard.class )) {
 			int start = text.getSpanStart( span ), end = text.getSpanEnd( span );
 			alignments.put(
@@ -167,7 +170,10 @@ public class EntryEntity extends Entity {
 		additional.put( "alignments", alignments );
 
 		JSONArray relatives = new JSONArray();
-		this.relativeSizeSpans.clear();
+		if(relativeSizeSpans == null)
+			relativeSizeSpans = new ArrayList<>();
+		else
+			relativeSizeSpans.clear();
 		for (RelativeSizeSpan span : text.getSpans( 0, text.length(), RelativeSizeSpan.class )) {
 			int start = text.getSpanStart( span ), end = text.getSpanEnd( span );
 			relatives.put(
