@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -74,14 +75,25 @@ public class EntitiesListActivity extends ThemeActivity {
 			}
 	);
 
-	private final ActivityResultLauncher<Intent> mEntryViewerLauncher = registerForActivityResult(
-			new ActivityResultContracts.StartActivityForResult(),
-			result->{
-				if ( result.getResultCode() == Results.NEED_TO_REFRESH ) {
-					refresh();
+	private ActivityResultLauncher<Intent> mEntryViewerLauncher;
+
+	{
+		mEntryViewerLauncher = registerForActivityResult(
+				new ActivityResultContracts.StartActivityForResult(),
+				result->{
+					if ( result.getResultCode() == Results.NEED_TO_REFRESH ) {
+						refresh();
+					}
+					if ( result.getResultCode() == Results.REOPEN ) {
+						Intent intent = new Intent( this, EntryViewer.class );
+						if ( result.getData() != null ) {
+							intent.putExtras( result.getData() );
+						}
+						mEntryViewerLauncher.launch( intent );
+					}
 				}
-			}
-	);
+		);
+	}
 
 	private final ActivityResultLauncher<Intent> mSettingsLauncher = registerForActivityResult(
 			new ActivityResultContracts.StartActivityForResult(),
@@ -195,7 +207,12 @@ public class EntitiesListActivity extends ThemeActivity {
 
 	@Override
 	protected void onDestroy() {
-		unregisterReceiver( mNeedToRefreshReceiver );
+		try {
+			unregisterReceiver( mNeedToRefreshReceiver );
+		}catch (IllegalArgumentException e){
+			Log.i( TAG, "onDestroy: " + e );
+			e.printStackTrace();
+		}
 		super.onDestroy();
 	}
 

@@ -191,6 +191,19 @@ public class EntitiesStorage {
 		save();
 	}
 
+	public EntryEntity createEntry(String name, String parentId){
+		String id = Utils.generateUniqueId() + "0";
+		EntryEntity e = new EntryEntity( id, name );
+		mEntryEntities.add( e );
+		getGroup( parentId )
+				.ifPresent( g->{
+					if(g.addMember( e ))
+						e.addParent( g.getId() );
+				} );
+		save();
+		return e;
+	}
+
 	public void deleteEntity(String id) {
 		for (Group g : mGroups) {
 			if ( g.getId().equals( id ) ) {

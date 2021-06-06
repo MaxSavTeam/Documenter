@@ -391,7 +391,6 @@ public class Entry extends Type {
 			element.attr( "style", styleAttr + "text-align:" + element.attr( "align" ) + ";" );
 			element.removeAttr( "align" );
 		}
-		Log.i( TAG, "prepareDivs: " + doc.html() );
 		return doc.html();
 	}
 

@@ -1,6 +1,7 @@
 package com.maxsavitsky.documenter.data.types;
 
 import android.graphics.Color;
+import android.text.Html;
 import android.text.Layout;
 import android.text.Spannable;
 import android.text.Spanned;
@@ -17,6 +18,9 @@ import com.maxsavitsky.documenter.utils.SpanEntry;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -50,9 +54,18 @@ public class EntryEntity extends Entity {
 		if ( rawText == null ) {
 			rawText = loadTextFromStorage();
 		}
+		org.jsoup.nodes.Document doc = Jsoup.parse( rawText );
+		Elements elements = doc.select( "div[align]" );
+		for (Element element : elements) {
+			String styleAttr = element.attr( "style" );
+			element.attr( "style", styleAttr + "text-align:" + element.attr( "align" ) + ";" );
+			element.removeAttr( "align" );
+		}
+		rawText = doc.html();
 		Spannable spannable = (Spannable) HtmlCompat.fromHtml( rawText, HtmlCompat.FROM_HTML_MODE_COMPACT, new HtmlImageLoader( imageMaxWidth ), null );
-		if(alignments == null || relativeSizeSpans == null)
+		if ( alignments == null || relativeSizeSpans == null ) {
 			loadAdditional();
+		}
 		for (SpanEntry<AlignmentSpan.Standard> se : alignments) {
 			int st = se.getStart(), end = se.getEnd();
 			if ( st < 0 ) {
@@ -96,9 +109,9 @@ public class EntryEntity extends Entity {
 			);
 		}
 
-		JSONArray relativesArray = jsonObject.getJSONArray("relativeSpans");
-		relativeSizeSpans = new ArrayList<>(relativesArray.length());
-		for(int i = 0; i < relativesArray.length(); i++){
+		JSONArray relativesArray = jsonObject.getJSONArray( "relativeSpans" );
+		relativeSizeSpans = new ArrayList<>( relativesArray.length() );
+		for (int i = 0; i < relativesArray.length(); i++) {
 			JSONObject a = relativesArray.getJSONObject( i );
 			relativeSizeSpans.add(
 					new SpanEntry<>(
@@ -127,13 +140,121 @@ public class EntryEntity extends Entity {
 		}
 	}
 
+	public void saveText(Spannable text) throws IOException, JSONException {
+		File file = new File( App.appStoragePath + "/entries/" + getId() + "/text" );
+		if ( !file.exists() ) {
+			file.createNewFile();
+		}
+
+		rawText = Html.toHtml( text, Html.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL );
+		try(FileOutputStream fos = new FileOutputStream(file)){
+			fos.write( rawText.getBytes( StandardCharsets.UTF_8 ) );
+		}
+
+		JSONObject additional = new JSONObject();
+		JSONArray alignments = new JSONArray();
+		this.alignments.clear();
+		for (AlignmentSpan.Standard span : text.getSpans( 0, text.length(), AlignmentSpan.Standard.class )) {
+			int start = text.getSpanStart( span ), end = text.getSpanEnd( span );
+			alignments.put(
+					new JSONObject()
+							.put( "name", span.getAlignment().name() )
+							.put( "start", start )
+							.put( "end", end )
+			);
+			this.alignments.add( new SpanEntry<>( span, start, end ) );
+		}
+		additional.put( "alignments", alignments );
+
+		JSONArray relatives = new JSONArray();
+		this.relativeSizeSpans.clear();
+		for (RelativeSizeSpan span : text.getSpans( 0, text.length(), RelativeSizeSpan.class )) {
+			int start = text.getSpanStart( span ), end = text.getSpanEnd( span );
+			relatives.put(
+					new JSONObject()
+							.put( "value", span.getSizeChange() )
+							.put( "start", start )
+							.put( "end", end )
+			);
+			this.relativeSizeSpans.add( new SpanEntry<>( span, start, end ) );
+		}
+		additional.put( "relativeSpans", relatives );
+
+		file = new File( App.appStoragePath + "/entries/" + getId() + "/additional.json" );
+		if(!file.exists())
+			file.createNewFile();
+		try(FileOutputStream fos = new FileOutputStream(file)){
+			fos.write( additional.toString().getBytes( StandardCharsets.UTF_8 ) );
+		}
+	}
+
 	public void saveProperties() throws IOException, JSONException {
 		File propsFile = new File( App.appStoragePath + "/entries/" + getId() + "/properties.json" );
-		if(!propsFile.exists())
+		if ( !propsFile.exists() ) {
 			propsFile.createNewFile();
+		}
 		String data = mProperties.convertToJSON().toString();
-		try(FileOutputStream fos = new FileOutputStream(propsFile)){
+		try (FileOutputStream fos = new FileOutputStream( propsFile )) {
 			fos.write( data.getBytes( StandardCharsets.UTF_8 ) );
+		}
+	}
+
+	public void loadProperties() throws IOException, JSONException {
+		File propsFile = new File( App.appStoragePath + "/entries/" + getId() + "/properties.json" );
+		if ( propsFile.exists() ) {
+			String result;
+			try (FileInputStream fileInputStream = new FileInputStream( propsFile );
+			     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+				int len;
+				byte[] buffer = new byte[ 1024 ];
+				while ( ( len = fileInputStream.read( buffer ) ) != -1 ) {
+					byteArrayOutputStream.write( buffer, 0, len );
+				}
+				result = byteArrayOutputStream.toString();
+			}
+			mProperties = Properties.restoreFromJSON( new JSONObject( result ) );
+		} else {
+			mProperties = new Properties();
+		}
+	}
+
+	public void checkMediaDir() {
+		File file = new File( App.appStoragePath + "/entries/" + getId() + "/media/images" );
+		if ( !file.exists() ) {
+			file.mkdirs();
+		}
+	}
+
+	public File getImagesMediaFolder() {
+		checkMediaDir();
+		return new File( App.appStoragePath + "/entries/" + getId() + "/media/images" );
+	}
+
+	public ArrayList<File> getContentFiles() {
+		File dir = new File( App.appStoragePath + "/entries/" + getId() );
+
+		return getDirectoryFiles( dir );
+	}
+
+	private ArrayList<File> getDirectoryFiles(File dir) {
+		ArrayList<File> files = new ArrayList<>();
+		File[] children = dir.listFiles();
+		if ( children != null ) {
+			for (File child : children) {
+				if ( child.isFile() ) {
+					files.add( child );
+				} else if ( child.isDirectory() ) {
+					files.addAll( getDirectoryFiles( child ) );
+				}
+			}
+		}
+		return files;
+	}
+
+	public void deleteContentFiles() {
+		ArrayList<File> files = getContentFiles();
+		for (File file : files) {
+			file.delete();
 		}
 	}
 

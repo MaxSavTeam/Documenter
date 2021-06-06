@@ -68,21 +68,23 @@ import androidx.core.content.ContextCompat;
 
 import com.flask.colorpicker.ColorPickerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.maxsavitsky.documenter.BuildConfig;
 import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.ThemeActivity;
 import com.maxsavitsky.documenter.codes.Results;
-import com.maxsavitsky.documenter.data.Info;
+import com.maxsavitsky.documenter.data.EntitiesStorage;
 import com.maxsavitsky.documenter.data.MainData;
-import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.data.types.Entry;
+import com.maxsavitsky.documenter.data.types.EntryEntity;
+import com.maxsavitsky.documenter.data.types.Group;
 import com.maxsavitsky.documenter.media.images.ImageRenderer;
 import com.maxsavitsky.documenter.ui.editor.TextEditor;
 import com.maxsavitsky.documenter.utils.ChangeEntry;
 import com.maxsavitsky.documenter.utils.SpanEntry;
 import com.maxsavitsky.documenter.utils.Utils;
 
-import org.xml.sax.SAXException;
+import org.json.JSONException;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -93,14 +95,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
 public class EntryEditor extends ThemeActivity {
-	private Document mDocument;
 	private String type, mOriginalText;
-	private Entry mEntry, mCopyToEntry;
+	private EntryEntity mEntry, mCopyToEntry;
 	private String mId;
 	private String title = "Create new entry";
-	private Entry.Properties tempProperties;
+	private EntryEntity.Properties tempProperties;
 	private TextEditor mTextEditor;
 	private ImageButton btnBgColorPicker, btnTextColorPicker;
 	private ImageButton btnSubScript, btnSupScript;
@@ -121,9 +123,10 @@ public class EntryEditor extends ThemeActivity {
 	private final float INDEX_PROPORTION = 0.75f;
 	private final int DEFAULT_TOOLS_COLOR = Color.WHITE;
 	private final String TAG = MainActivity.TAG + " EntryEditor";
+	private Group mParentGroup;
 
 	private interface OnLoadedTextListener {
-		void loaded(Spannable spannable, Entry entry);
+		void loaded(Spannable spannable, EntryEntity entry);
 
 		void exceptionOccurred(Exception e);
 	}
@@ -156,10 +159,10 @@ public class EntryEditor extends ThemeActivity {
 				!mTextEditor.getText().toString().isEmpty() &&
 				!tempProperties.equals( new Entry.Properties() );
 
-		Log.i( TAG, "backPressed: " + (mTextEditor.getText().hashCode()) );
+		Log.i( TAG, "backPressed: " + ( mTextEditor.getText().hashCode() ) );
 
 		boolean secondCondition = type.equals( "edit" );
-				//&& ( !t.equals( mOriginalText ) || !mStartProperties.equals( mEntry.getProperties() ) );
+		//&& ( !t.equals( mOriginalText ) || !mStartProperties.equals( mEntry.getProperties() ) );
 
 		if ( firstCondition || secondCondition ) {
 			showExitAlertDialog();
@@ -311,7 +314,7 @@ public class EntryEditor extends ThemeActivity {
 
 		final OnLoadedTextListener listener = new OnLoadedTextListener() {
 			@Override
-			public void loaded(Spannable spannable, Entry entry) {
+			public void loaded(Spannable spannable, EntryEntity entry) {
 				mTextEditor.setSelection( changeEntry.getCursorPosition() );
 				runOnUiThread( ()->( (ScrollView) findViewById( R.id.scrollView ) ).setScrollY( changeEntry.getScrollY() ) );
 			}
@@ -381,45 +384,67 @@ public class EntryEditor extends ThemeActivity {
 			_finishActivity();
 			return;
 		}
-		switch ( type ) {
-			case "edit":
-				mEntry = MainData.getEntryWithId( getIntent().getStringExtra( "id" ) );
-				try {
-					mEntry.readProperties();
-				} catch (IOException | SAXException e) {
-					Utils.getErrorDialog( e, this ).show();
-					return;
-				}
-				mId = mEntry.getId();
-				tempProperties = new Entry.Properties( mEntry.getProperties() );
-				mDefaultTextColor = tempProperties.getDefaultTextColor();
-				mTextEditor.setTextColor( mDefaultTextColor );
-				setImageButtonColor( tempProperties.getBgColor(), btnBgColorPicker.getId() );
+		mId = startIntent.getStringExtra( "id" );
 
-				title = getResources().getString( R.string.edit_entry ) + ": " + mEntry.getName();
+		if ( "edit".equals( type ) ) {
+			Optional<EntryEntity> op = EntitiesStorage.get().getEntry( mId );
+			if ( !op.isPresent() ) {
+				Toast.makeText( this, "Entry not found", Toast.LENGTH_SHORT ).show();
+				super.onBackPressed();
+				return;
+			}
+			mEntry = op.get();
+			try {
+				mEntry.loadProperties();
+			} catch (IOException | JSONException e) {
+				Utils.getErrorDialog( e, this ).show();
+				return;
+			}
+			tempProperties = new EntryEntity.Properties( mEntry.getProperties() );
+			mDefaultTextColor = tempProperties.getDefaultTextColor();
+			mTextEditor.setTextColor( mDefaultTextColor );
+			setImageButtonColor( tempProperties.getBgColor(), btnBgColorPicker.getId() );
 
-				loadTextFromEntryInEditor( mId );
-				break;
-			case "create":
-				title = getResources().getString( R.string.create_new_entry );
-				mWithoutDoc = getIntent().getBooleanExtra( "without_doc", false );
-				if ( !mWithoutDoc ) {
-					mDocument = MainData.getDocumentWithId( getIntent().getStringExtra( "id" ) );
-				}
-				mEntry = new Entry( "temp_entry", "" );
-				tempProperties = new Entry.Properties();
-				mId = Utils.generateUniqueId() + "_ent";
-				hideUpButton();
-				break;
-			case "copy":
-				String toId = startIntent.getStringExtra( "to_id" );
-				String fromId = startIntent.getStringExtra( "from_id" );
-				mEntry = MainData.getEntryWithId( fromId );
-				tempProperties = new Entry.Properties( mEntry.getProperties() );
-				mCopyToEntry = MainData.getEntryWithId( toId );
-				title = getResources().getString( R.string.edit_entry ) + ": " + mCopyToEntry.getName();
-				loadTextFromEntryInEditor( fromId );
-				break;
+			title = getResources().getString( R.string.edit_entry ) + ": " + mEntry.getName();
+
+			loadTextFromEntryInEditor( mId );
+		} else if ( "create".equals( type ) ) {
+			String parentId = startIntent.getStringExtra( "parentId" );
+			Optional<Group> parentOptional = EntitiesStorage.get().getGroup( parentId );
+			if ( !parentOptional.isPresent() ) {
+				Toast.makeText( this, "Parent group not found", Toast.LENGTH_SHORT ).show();
+				super.onBackPressed();
+				return;
+			}
+			mParentGroup = parentOptional.get();
+
+			title = getResources().getString( R.string.create_new_entry );
+			mEntry = new EntryEntity( "temp_entry", "" );
+			tempProperties = new EntryEntity.Properties();
+			mId = Utils.generateUniqueId() + "_0";
+			hideUpButton();
+		} else if ( "copy".equals( type ) ) {
+			String toId = startIntent.getStringExtra( "to_id" );
+			String fromId = startIntent.getStringExtra( "from_id" );
+			Optional<EntryEntity> op = EntitiesStorage.get().getEntry( fromId );
+			if ( !op.isPresent() ) {
+				Toast.makeText( this, "Entry not found", Toast.LENGTH_SHORT ).show();
+				super.onBackPressed();
+				return;
+			}
+			mEntry = op.get();
+			tempProperties = new EntryEntity.Properties( mEntry.getProperties() );
+
+			op = EntitiesStorage.get().getEntry( toId );
+			if ( !op.isPresent() ) {
+				Toast.makeText( this, "Destination entry not found", Toast.LENGTH_SHORT ).show();
+				super.onBackPressed();
+				return;
+			}
+
+			mCopyToEntry = op.get();
+			title = getResources().getString( R.string.edit_entry ) + ": " + mCopyToEntry.getName();
+			loadTextFromEntryInEditor( fromId );
 		}
 
 		mTextEditor.setBackgroundColor( tempProperties.getBgColor() );
@@ -477,7 +502,14 @@ public class EntryEditor extends ThemeActivity {
 	}
 
 	private void loadTextFromEntryInEditor(String id) {
-		final Entry entry = MainData.getEntryWithId( id );
+		Optional<EntryEntity> op = EntitiesStorage.get().getEntry( id );
+		if ( !op.isPresent() ) {
+			Log.i( TAG, "loadTextFromEntryInEditor: entry with id not found. id=" + id );
+			Toast.makeText( this, "Loading entry not found", Toast.LENGTH_SHORT ).show();
+			super.onBackPressed();
+			return;
+		}
+		final EntryEntity entry = op.get();
 		mProgressDialogOnTextLoad = new ProgressDialog( this );
 		mProgressDialogOnTextLoad.setTitle( R.string.loading );
 		mProgressDialogOnTextLoad.setMessage( getResources().getString( R.string.entry_is_loading ) );
@@ -486,9 +518,9 @@ public class EntryEditor extends ThemeActivity {
 		new Thread( ()->{
 			mStartLoadTextTime = System.currentTimeMillis();
 			try {
-				Spannable loadedSpannable = entry.loadAndPrepareText( Utils.getScreenSize().x );
+				Spannable loadedSpannable = entry.loadText( Utils.getScreenSize().x );
 				mOnLoadedTextListener.loaded( loadedSpannable, entry );
-			} catch (final IOException e) {
+			} catch (final IOException | JSONException e) {
 				mOnLoadedTextListener.exceptionOccurred( e );
 			}
 		} ).start();
@@ -536,7 +568,7 @@ public class EntryEditor extends ThemeActivity {
 
 	private final OnLoadedTextListener mOnLoadedTextListener = new OnLoadedTextListener() {
 		@Override
-		public void loaded(final Spannable spannable, final Entry entry) {
+		public void loaded(final Spannable spannable, final EntryEntity entry) {
 			double seconds = ( System.currentTimeMillis() - mStartLoadTextTime ) / 1000.0;
 			Log.i( TAG + "L", "mOnLoadedTextListener.loaded called. Seconds = " + seconds );
 
@@ -831,7 +863,7 @@ public class EntryEditor extends ThemeActivity {
 		ForegroundColorSpan[] spans = e.getSpans( selSt, selEnd, ForegroundColorSpan.class );
 		int colorToReplace;
 		OnColorSelected onColorSelected;
-		if(spans.length > 0){
+		if ( spans.length > 0 ) {
 			colorToReplace = spans[ 0 ].getForegroundColor();
 			onColorSelected = color->{
 				if ( colorToReplace != color ) {
@@ -839,33 +871,33 @@ public class EntryEditor extends ThemeActivity {
 					setButtonReplaceColorAppearance();
 				}
 			};
-		}else{
+		} else {
 			colorToReplace = Color.BLACK;
-			onColorSelected = color -> {
-				if(color != colorToReplace){
+			onColorSelected = color->{
+				if ( color != colorToReplace ) {
 					ForegroundColorSpan[] allSpans = e.getSpans( 0, e.length(), ForegroundColorSpan.class );
-					int[] startPositions = new int[e.length() + 1];
-					int[] endPositions = new int[e.length() + 1];
-					for(ForegroundColorSpan span : allSpans){
-						startPositions[e.getSpanStart( span )]++;
-						endPositions[e.getSpanEnd( span )]++;
+					int[] startPositions = new int[ e.length() + 1 ];
+					int[] endPositions = new int[ e.length() + 1 ];
+					for (ForegroundColorSpan span : allSpans) {
+						startPositions[ e.getSpanStart( span ) ]++;
+						endPositions[ e.getSpanEnd( span ) ]++;
 					}
 					int cnt = 0;
 					ArrayList<SpanEntry<ForegroundColorSpan>> spansToApply = new ArrayList<>();
 					int st = 0;
-					for(int i = 0; i < startPositions.length; i++){
+					for (int i = 0; i < startPositions.length; i++) {
 						boolean wasZero = cnt == 0;
-						cnt += startPositions[i] - endPositions[i];
-						if(!wasZero && cnt == 0){
+						cnt += startPositions[ i ] - endPositions[ i ];
+						if ( !wasZero && cnt == 0 ) {
 							st = i;
-						}else if(wasZero && cnt != 0){
-							spansToApply.add(new SpanEntry<>( new ForegroundColorSpan( color ), st, i ));
+						} else if ( wasZero && cnt != 0 ) {
+							spansToApply.add( new SpanEntry<>( new ForegroundColorSpan( color ), st, i ) );
 						}
 					}
-					if(cnt == 0){
-						spansToApply.add(new SpanEntry<>( new ForegroundColorSpan( color ), st, e.length() ));
+					if ( cnt == 0 ) {
+						spansToApply.add( new SpanEntry<>( new ForegroundColorSpan( color ), st, e.length() ) );
 					}
-					for(SpanEntry<ForegroundColorSpan> entry : spansToApply){
+					for (SpanEntry<ForegroundColorSpan> entry : spansToApply) {
 						e.setSpan( entry.getSpan(), entry.getStart(), entry.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 					}
 					setButtonReplaceColorAppearance();
@@ -1314,7 +1346,7 @@ public class EntryEditor extends ThemeActivity {
 						for (ForegroundColorSpan span : spans) {
 							e.removeSpan( span );
 						}
-						e.setSpan( new ForegroundColorSpan( color ), 0, e.length()-1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+						e.setSpan( new ForegroundColorSpan( color ), 0, e.length() - 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 						mTextEditor.setTextColor( color );
 
 						mDefaultTextColor = color;
@@ -1429,40 +1461,22 @@ public class EntryEditor extends ThemeActivity {
 
 	private void createEntry(String name, Spannable text) {
 		mTextEditor.clearComposingText();
-		mEntry = new Entry( mId, name );
-		ArrayList<Entry> entries = MainData.getEntriesList();
-		entries.add( mEntry );
-		MainData.setEntriesList( entries );
-		Utils.saveEntriesList( entries );
-		File file = new File( Utils.getExternalStoragePath().getPath() + "/entries/" + mId );
-		if ( !file.exists() ) {
-			file.mkdirs();
-		}
+		mEntry = EntitiesStorage.get().createEntry( name, mParentGroup.getId() );
+		mEntry.setProperties( tempProperties );
 		try {
-			mEntry.saveProperties( tempProperties );
-		} catch (IOException e) {
+			mEntry.saveProperties();
+		} catch (IOException | JSONException e) {
 			Utils.getErrorDialog( e, this ).show();
 			return;
 		}
-		file = new File( file.getPath() + "/included_in.xml" );
-		try {
-			file.createNewFile();
-		} catch (Exception e) {
-			Utils.getErrorDialog( e, this ).show();
-		}
+		sendBroadcast( new Intent( BuildConfig.APPLICATION_ID + ".REFRESH_ENTITIES_LISTS" ) );
 		try {
 			copyTempFiles();
 			replaceTempImagesInSpans();
-			mEntry.saveInWhichDocumentsIncludedThisEntry( new ArrayList<>() );
-			mEntry.saveContent( text );
-			mEntry.setAndSaveInfo( new Info( (int) System.currentTimeMillis() ) );
-			if ( !mWithoutDoc ) {
-				mEntry.addDocumentToIncluded( mDocument.getId() );
-				mDocument.addEntry( mEntry );
-			}
+			mEntry.saveText( text );
 			setResult( Results.REOPEN, new Intent().putExtra( "id", mId ) );
-			finish();
-		} catch (IOException | SAXException e) {
+			super.onBackPressed();
+		} catch (IOException | JSONException e) {
 			Utils.getErrorDialog( e, this ).show();
 			e.printStackTrace();
 		}
@@ -1707,8 +1721,9 @@ public class EntryEditor extends ThemeActivity {
 				removeUnusedImages();
 				if ( e.length() != 0 ) {
 					try {
-						mEntry.saveProperties( tempProperties );
-						mEntry.saveContent( mTextEditor.getText() );
+						mEntry.setProperties( tempProperties );
+						mEntry.saveProperties();
+						mEntry.saveText( mTextEditor.getText() );
 						ScrollView scrollView = findViewById( R.id.scrollView );
 						setResult( Results.REOPEN, new Intent().putExtra( "id", mEntry.getId() ).putExtra( "scroll_position", scrollView.getScrollY() ) );
 					} catch (Exception ex) {
@@ -1725,12 +1740,13 @@ public class EntryEditor extends ThemeActivity {
 					copyContentFiles();
 					replaceImages();
 					try {
-						mCopyToEntry.saveProperties( tempProperties );
-						mCopyToEntry.saveContent( mTextEditor.getText() );
+						mCopyToEntry.setProperties( tempProperties );
+						mCopyToEntry.saveProperties();
+						mCopyToEntry.saveText( mTextEditor.getText() );
 
 						setResult( Results.REOPEN, new Intent().putExtra( "id", mCopyToEntry.getId() ) );
 						_finishActivity();
-					} catch (IOException ex) {
+					} catch (IOException | JSONException ex) {
 						ex.printStackTrace();
 						Utils.getErrorDialog( ex, this ).show();
 					}

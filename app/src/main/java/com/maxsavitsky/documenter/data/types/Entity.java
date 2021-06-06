@@ -12,12 +12,13 @@ public abstract class Entity {
 
 	protected final String id;
 	protected String name;
-	protected long creationTimestamp = 0;
+	protected long creationTimestamp;
 	protected final ArrayList<String> parents = new ArrayList<>();
 
 	public Entity(String id, String name) {
 		this.id = id;
 		this.name = name;
+		creationTimestamp = System.currentTimeMillis();
 	}
 
 	public String getId() {
