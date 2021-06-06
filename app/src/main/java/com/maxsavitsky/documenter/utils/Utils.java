@@ -20,12 +20,15 @@ import android.widget.EditText;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 
+import com.maxsavitsky.documenter.App;
 import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.R;
+import com.maxsavitsky.documenter.data.EntitiesStorage;
 import com.maxsavitsky.documenter.data.MainData;
 import com.maxsavitsky.documenter.data.types.Category;
 import com.maxsavitsky.documenter.data.types.Document;
 import com.maxsavitsky.documenter.data.types.Entry;
+import com.maxsavitsky.documenter.data.types.EntryEntity;
 import com.maxsavitsky.documenter.data.types.Type;
 import com.maxsavitsky.exceptionhandler.ExceptionHandler;
 
@@ -35,9 +38,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.concurrent.ThreadLocalRandom;
@@ -79,8 +80,8 @@ public class Utils {
 	 * */
 	public static void removeAllUnusedImages(){
 		Log.i(THIS_TAG, "removing all unused images");
-		for(Entry entry : MainData.getEntriesList()){
-			ArrayList<String> r = entry.removeUnusedImages();
+		for(EntryEntity e : EntitiesStorage.get().getEntryEntities()){
+			ArrayList<String> r = e.removeUnusedImages();
 			for(String s : r){
 				Log.i(THIS_TAG, "removed " + s);
 			}
@@ -166,22 +167,6 @@ public class Utils {
 			}
 		}
 		dir.delete();
-	}
-
-	public static String readFile(File file) throws IOException {
-		String s = "";
-		FileInputStream fileInputStream = new FileInputStream( file );
-		byte[] buffer = new byte[ 1024 ];
-		int len;
-		while ( ( len = fileInputStream.read( buffer ) ) != -1 ) {
-			if ( len < 1024 ) {
-				buffer = Arrays.copyOf( buffer, len );
-			}
-
-			s = String.format( "%s%s", s, new String( buffer, StandardCharsets.UTF_8 ) );
-		}
-		fileInputStream.close();
-		return s;
 	}
 
 	public static byte[] readFileByBytes(File file) throws IOException{
@@ -399,7 +384,7 @@ public class Utils {
 	}
 
 	public static File getTempFolder() {
-		return new File( getExternalStoragePath().getPath() + "/temp" );
+		return new File( App.appStoragePath, "temp" );
 	}
 
 	public static void clearTempFolder() {

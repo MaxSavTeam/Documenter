@@ -6,6 +6,7 @@ import android.text.Layout;
 import android.text.Spannable;
 import android.text.Spanned;
 import android.text.style.AlignmentSpan;
+import android.text.style.ImageSpan;
 import android.text.style.RelativeSizeSpan;
 import android.view.Gravity;
 
@@ -14,6 +15,7 @@ import androidx.core.text.HtmlCompat;
 import com.maxsavitsky.documenter.App;
 import com.maxsavitsky.documenter.data.html.HtmlImageLoader;
 import com.maxsavitsky.documenter.utils.SpanEntry;
+import com.maxsavitsky.documenter.utils.Utils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,6 +31,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class EntryEntity extends Entity {
 
@@ -38,8 +42,11 @@ public class EntryEntity extends Entity {
 
 	private Properties mProperties = new Properties();
 
+	private String entryDir;
+
 	public EntryEntity(String id, String name) {
 		super( id, name );
+		entryDir = App.appDataPath + "/entries/" + id;
 	}
 
 	public Properties getProperties() {
@@ -128,7 +135,7 @@ public class EntryEntity extends Entity {
 	}
 
 	private String loadFromEntryStorage(String path) throws IOException {
-		File file = new File( App.appDataPath + "/entries/" + getId() + "/" + path );
+		File file = new File( entryDir, path );
 		try (FileInputStream fis = new FileInputStream( file );
 		     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
 			int len;
@@ -141,11 +148,11 @@ public class EntryEntity extends Entity {
 	}
 
 	public void saveText(Spannable text) throws IOException, JSONException {
-		File file = new File( App.appDataPath + "/entries/" + getId() );
+		File file = new File( entryDir );
 		if ( !file.exists() ) {
 			file.mkdirs();
 		}
-		file = new File( file.getPath() + "/text" );
+		file = new File( file, "text" );
 
 		rawText = Html.toHtml( text, Html.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL );
 		try(FileOutputStream fos = new FileOutputStream(file)){
@@ -187,7 +194,7 @@ public class EntryEntity extends Entity {
 		}
 		additional.put( "relativeSpans", relatives );
 
-		file = new File( App.appDataPath + "/entries/" + getId() + "/additional.json" );
+		file = new File( entryDir, "additional.json" );
 		if(!file.exists())
 			file.createNewFile();
 		try(FileOutputStream fos = new FileOutputStream(file)){
@@ -196,10 +203,10 @@ public class EntryEntity extends Entity {
 	}
 
 	public void saveProperties() throws IOException, JSONException {
-		File propsFile = new File( App.appDataPath + "/entries/" + getId() );
+		File propsFile = new File( entryDir );
 		if(!propsFile.exists())
 			propsFile.mkdirs();
-		propsFile = new File( propsFile.getPath() + "/properties.json" );
+		propsFile = new File( propsFile,"properties.json" );
 		if ( !propsFile.exists() ) {
 			propsFile.createNewFile();
 		}
@@ -210,7 +217,7 @@ public class EntryEntity extends Entity {
 	}
 
 	public void loadProperties() throws IOException, JSONException {
-		File propsFile = new File( App.appDataPath + "/entries/" + getId() + "/properties.json" );
+		File propsFile = new File( entryDir, "properties.json" );
 		if ( propsFile.exists() ) {
 			String result;
 			try (FileInputStream fileInputStream = new FileInputStream( propsFile );
@@ -229,7 +236,7 @@ public class EntryEntity extends Entity {
 	}
 
 	public void checkMediaDir() {
-		File file = new File( App.appDataPath + "/entries/" + getId() + "/media/images" );
+		File file = new File( entryDir + "/media/images" );
 		if ( !file.exists() ) {
 			file.mkdirs();
 		}
@@ -237,11 +244,11 @@ public class EntryEntity extends Entity {
 
 	public File getImagesMediaFolder() {
 		checkMediaDir();
-		return new File( App.appDataPath + "/entries/" + getId() + "/media/images" );
+		return new File( entryDir + "/media/images" );
 	}
 
 	public ArrayList<File> getContentFiles() {
-		File dir = new File( App.appDataPath + "/entries/" + getId() );
+		File dir = new File( entryDir );
 
 		return getDirectoryFiles( dir );
 	}
@@ -266,6 +273,33 @@ public class EntryEntity extends Entity {
 		for (File file : files) {
 			file.delete();
 		}
+	}
+
+	public ArrayList<String> removeUnusedImages() {
+		ArrayList<String> removed = new ArrayList<>();
+		try {
+			Spanned spanned = Html.fromHtml( loadTextFromStorage() );
+			ImageSpan[] spans = spanned.getSpans( 0, spanned.length(), ImageSpan.class );
+			Map<String, Boolean> used = new HashMap<>();
+			for (ImageSpan span : spans) {
+				File f = new File( span.getSource() );
+				used.put( f.getName(), true );
+			}
+			File dir = getImagesMediaFolder();
+
+			File[] files = dir.listFiles();
+			if ( files != null ) {
+				for (File file : files) {
+					if ( !used.containsKey( file.getName() ) ) {
+						file.delete();
+						removed.add( file.getPath().replace( Utils.getExternalStoragePath().getPath(), "" ) );
+					}
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return removed;
 	}
 
 	@Override

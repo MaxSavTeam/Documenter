@@ -4,6 +4,7 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import com.maxsavitsky.documenter.App;
 import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.utils.Utils;
 
@@ -19,25 +20,29 @@ public class BackupInstruments {
 	private static final String THIS_TAG = MainActivity.TAG + " BInstruments";
 
 	public static void restoreFromBackup(File backupFile, @Nullable BackupInterface backupInterface) throws IOException {
-		File[] files = Utils.getExternalStoragePath().listFiles();
-		for (File child : files) {
-			if(child.getName().endsWith( ".zip" ))
-				continue;
-			if ( child.isDirectory() ) {
-				Utils.deleteDirectory( child );
-			} else {
-				child.delete();
+		File dataDir = new File( App.appDataPath );
+		if(!dataDir.exists())
+			dataDir.mkdirs();
+		File[] files = dataDir.listFiles();
+		if(files != null) {
+			for (File child : files) {
+				if ( child.isDirectory() ) {
+					Utils.deleteDirectory( child );
+				} else {
+					child.delete();
+				}
 			}
 		}
 
-		File destinationDir = Utils.getExternalStoragePath();
+		File dest = dataDir.getParentFile();
 		ZipInputStream zis = new ZipInputStream( new FileInputStream( backupFile ) );
 		byte[] buffer = new byte[ 1024 ];
 		ZipEntry zipEntry;
 		while ( ( zipEntry = zis.getNextEntry() ) != null ) {
-			File newFile = new File( destinationDir.getCanonicalPath(), zipEntry.getName() );
+			File newFile = new File( dest, zipEntry.getName() );
 			if ( zipEntry.isDirectory() ) {
-				newFile.mkdir();
+				if(!newFile.exists())
+					newFile.mkdir();
 				continue;
 			}
 			FileOutputStream fos = new FileOutputStream( newFile );
@@ -57,19 +62,12 @@ public class BackupInstruments {
 	public static void createBackupToFile(File path, @Nullable BackupInterface backupInterface) throws IOException {
 		long startTime = System.currentTimeMillis();
 		Utils.removeAllUnusedImages();
-		File dir = Utils.getExternalStoragePath();
+		File dir = new File( App.appDataPath );
 		path.createNewFile();
 		ZipOutputStream zipOutputStream = new ZipOutputStream( new FileOutputStream( path ) );
 		zipOutputStream.setLevel( 9 );
 
-		if ( dir == null || dir.listFiles() == null ) {
-			zipOutputStream.close();
-			return;
-		}
-		for (File file : dir.listFiles()) {
-			if(!file.getName().equals( "cloud_backup.zip" ) && !file.getPath().equals( path.getPath() ))
-				myPack( file, file.getName(), zipOutputStream );
-		}
+		myPack( dir, dir.getName(), zipOutputStream );
 		zipOutputStream.close();
 
 		long end = System.currentTimeMillis();

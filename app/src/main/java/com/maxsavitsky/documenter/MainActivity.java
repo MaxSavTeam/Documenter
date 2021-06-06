@@ -167,21 +167,37 @@ public class MainActivity extends ThemeActivity {
 	}
 
 	private void runReformatIfNeeded() throws Exception {
-		File file = new File( App.appDataPath, "data.json" );
+		File file = new File( App.appDataPath );
+		if(!file.exists())
+			file.mkdirs();
+		file = new File( App.appDataPath, "data.json" );
 		if ( !file.exists() ) {
-			File f = new File( App.appStoragePath, "backups" );
-			if ( !f.exists() ) {
-				f.mkdirs();
+			if(new File( App.appStoragePath, "entries.xml" ).exists() &&
+					new File( App.appStoragePath, "documents.xml" ).exists() &&
+					new File( App.appStoragePath, "categories.xml" ).exists()) {
+				File f = new File( App.appStoragePath, "backups" );
+				if ( !f.exists() ) {
+					f.mkdirs();
+				}
+				BackupInstruments.createBackupToFile( new File( f, "before_reformat_backup.zip" ), null );
+				DataReformatter.runReformat();
 			}
-			BackupInstruments.createBackupToFile( new File( f, "before_reformat_backup.zip" ), null );
-			DataReformatter.runReformat();
 		}
 	}
 
 	private void initialize() throws Exception {
+		File dataFile = new File( App.appDataPath, "data.json" );
+		if(!dataFile.exists()){
+			dataFile.createNewFile();
+			EntitiesStorage.get().setGroups( new ArrayList<>(){{
+				add( new Group( "root", "root" ) );
+			}} );
+			EntitiesStorage.get().save(); // create file with empty data
+			return;
+		}
 		JSONObject data;
 		try (
-				FileInputStream fis = new FileInputStream( new File( App.appDataPath, "data.json" ) );
+				FileInputStream fis = new FileInputStream( dataFile );
 				ByteArrayOutputStream outputStream = new ByteArrayOutputStream()
 		) {
 			int len;
