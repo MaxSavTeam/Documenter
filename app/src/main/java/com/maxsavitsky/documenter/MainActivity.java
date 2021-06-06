@@ -10,7 +10,6 @@ import android.util.Log;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 
@@ -71,11 +70,16 @@ public class MainActivity extends ThemeActivity {
 		}
 
 		deleteInstalledApks();
+
+		if(sharedPreferences.getBoolean( "check_updates", true )) {
+			final UpdatesChecker checker = new UpdatesChecker( mCheckResults );
+			new Thread( checker::runCheck ).start();
+		}else{
+			startInitialization();
+		}
 	}
 
-	@Override
-	protected void onPostCreate(@Nullable Bundle savedInstanceState) {
-		super.onPostCreate( savedInstanceState );
+	private void startInitialization(){
 		new Thread( ()->{
 			try {
 				runReformatIfNeeded();
@@ -100,7 +104,7 @@ public class MainActivity extends ThemeActivity {
 	private final UpdatesChecker.CheckResults mCheckResults = new UpdatesChecker.CheckResults() {
 		@Override
 		public void noUpdates() {
-
+			startInitialization();
 		}
 
 		@Override
@@ -129,7 +133,7 @@ public class MainActivity extends ThemeActivity {
 
 		@Override
 		public void onException(Exception e) {
-
+			noUpdates();
 		}
 
 		@Override
