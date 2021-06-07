@@ -27,6 +27,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.transition.TransitionManager;
 
 import com.maxsavitsky.documenter.BuildConfig;
 import com.maxsavitsky.documenter.MainActivity;
@@ -191,14 +192,18 @@ public class EntitiesListActivity extends ThemeActivity {
 		@Override
 		public void onLongClick(int index) {
 			if(!selectionMode ) {
+				TransitionManager.beginDelayedTransition( (ViewGroup) getWindow().getDecorView() );
 				mEntitiesAdapter.showCheckBoxes();
 				selectionMode = true;
 
 				mEntitiesAdapter.setCheckBox( index, true );
 				mSelectedEntities.add( mEntities.get( index ) );
 
-				hideFab();
-				showFlexLayout();
+				findViewById( R.id.flexboxLayout ).setVisibility( View.VISIBLE );
+				findViewById( R.id.fab_menu ).setVisibility( View.GONE );
+
+				//hideFab();
+				//showFlexLayout();
 			}
 		}
 	};
@@ -214,12 +219,13 @@ public class EntitiesListActivity extends ThemeActivity {
 
 	private void exitSelectionMode(){
 		selectionMode = false;
+		TransitionManager.beginDelayedTransition( (ViewGroup) getWindow().getDecorView() );
 		mEntitiesAdapter.hideCheckBoxes();
-		//findViewById( R.id.flexboxLayout ).setVisibility( View.GONE );
-		//findViewById( R.id.fab_menu ).setVisibility( View.VISIBLE );
+		findViewById( R.id.flexboxLayout ).setVisibility( View.GONE );
+		findViewById( R.id.fab_menu ).setVisibility( View.VISIBLE );
 		mSelectedEntities.clear();
-		showFab();
-		hideFlexboxLayout();
+		//showFab();
+		//hideFlexboxLayout();
 	}
 
 	private void hideFab(){

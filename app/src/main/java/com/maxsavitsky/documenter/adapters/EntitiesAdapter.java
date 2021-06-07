@@ -24,6 +24,8 @@ public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHo
 	private boolean isSelectionMode = false;
 	private ArrayList<Boolean> isItemSelected;
 
+	private final ArrayList<ViewHolder> viewHolders = new ArrayList<>();
+
 	public interface AdapterCallback {
 		void onEntityClick(String id, Entity.Type type, int index);
 
@@ -33,11 +35,25 @@ public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHo
 	public EntitiesAdapter(ArrayList<? extends Entity> entities, AdapterCallback callback) {
 		mEntities = copy( entities );
 		mAdapterCallback = callback;
+		initHoldersList();
+	}
+
+	private void initHoldersList() {
+		if ( viewHolders.size() < mEntities.size() ) {
+			while ( viewHolders.size() != mEntities.size() ) {
+				viewHolders.add( null );
+			}
+		} else {
+			while ( viewHolders.size() != mEntities.size() ) {
+				viewHolders.remove( viewHolders.size() - 1 );
+			}
+		}
 	}
 
 	public void setElements(ArrayList<? extends Entity> entities) {
 		DiffResult diffResult = DiffUtil.calculateDiff( new DiffUtilCallback( mEntities, entities ) );
 		mEntities = copy( entities );
+		initHoldersList();
 		diffResult.dispatchUpdatesTo( this );
 	}
 
@@ -58,23 +74,36 @@ public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHo
 		return res;
 	}
 
-	public void showCheckBoxes(){
+	public void showCheckBoxes() {
 		isSelectionMode = true;
 		isItemSelected = new ArrayList<>();
-		for(int i = 0; i < mEntities.size(); i++)
+		for (int i = 0; i < mEntities.size(); i++)
 			isItemSelected.add( false );
-		notifyDataSetChanged();
+		for (int i = 0; i < viewHolders.size(); i++) {
+			ViewHolder holder = viewHolders.get( i );
+			if ( holder == null ) {
+				continue;
+			}
+			holder.checkBox.setVisibility( View.VISIBLE );
+			holder.checkBox.setChecked( isItemSelected.get( i ) );
+		}
 	}
 
-	public void hideCheckBoxes(){
+	public void hideCheckBoxes() {
 		isSelectionMode = false;
 		isItemSelected.clear();
-		notifyDataSetChanged();
+		for(ViewHolder holder : viewHolders){
+			if(holder == null)
+				continue;
+			holder.checkBox.setVisibility( View.GONE );
+			holder.checkBox.setChecked( false );
+		}
 	}
 
-	public void setCheckBox(int index, boolean state){
+	public void setCheckBox(int index, boolean state) {
 		isItemSelected.set( index, state );
-		notifyItemChanged( index );
+		if(viewHolders.get( index ) != null)
+			viewHolders.get( index ).checkBox.setChecked( state );
 	}
 
 	@NonNull
@@ -86,6 +115,7 @@ public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHo
 
 	@Override
 	public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+		viewHolders.set( position, holder );
 		Entity entity = mEntities.get( position );
 		holder.textView.setText( entity.getName() );
 		if ( entity.getType() == Entity.Type.GROUP ) {
@@ -101,14 +131,14 @@ public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHo
 		} );
 
 		holder.itemView.setOnLongClickListener( v->{
-			mAdapterCallback.onLongClick(position);
+			mAdapterCallback.onLongClick( position );
 			return true;
 		} );
 
-		if(isSelectionMode){
+		if ( isSelectionMode ) {
 			holder.checkBox.setVisibility( View.VISIBLE );
 			holder.checkBox.setChecked( isItemSelected.get( position ) );
-		}else{
+		} else {
 			holder.checkBox.setVisibility( View.GONE );
 			holder.checkBox.setChecked( false );
 		}
