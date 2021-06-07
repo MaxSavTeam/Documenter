@@ -7,12 +7,16 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -423,6 +427,75 @@ public class EntitiesListActivity extends ThemeActivity {
 				sendRefreshIntent();
 			}
 		} );
+		findViewById( R.id.layout_delete ).setOnClickListener( v->{
+			if(mSelectedEntities.size() > 0){
+				AlertDialog.Builder deletionBuilder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
+						.setMessage( R.string.delete_confirmation_text )
+						.setTitle( R.string.confirmation )
+						.setPositiveButton( "OK", (dialog, which)->{
+							dialog.cancel();
+							prepareMultipleDeletion();
+						} )
+						.setNeutralButton( R.string.cancel, (dialog, which)->dialog.cancel() ).setCancelable( false );
+				deletionBuilder.create().show();
+			}
+		} );
+	}
+
+	private void prepareMultipleDeletion(){
+		boolean areThereGroups = false;
+		for(Entity e : mSelectedEntities){
+			if(e instanceof Group){
+				areThereGroups = true;
+				break;
+			}
+		}
+		if(areThereGroups){
+			View view = getLayoutInflater().inflate( R.layout.group_deletion_menu, null );
+			CustomRadioGroup radioGroup = view.findViewById( R.id.radio_group_delete );
+			radioGroup.setCheckedIndex( 0 );
+
+			LinearLayout layout = (LinearLayout) view;
+			TextView textView = new TextView(this);
+			textView.setText( R.string.multiple_deletion_note );
+			MarginLayoutParams params = new MarginLayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT );
+			params.topMargin = (int) TypedValue.applyDimension( TypedValue.COMPLEX_UNIT_DIP, 10, getResources().getDisplayMetrics() );
+			textView.setLayoutParams( params );
+
+			TypedValue typedValue = new TypedValue();
+			getTheme().resolveAttribute( R.attr.textColor, typedValue, true );
+			textView.setTextColor( typedValue.data );
+			textView.setTextSize( 18 );
+			layout.addView(textView);
+
+			AlertDialog.Builder builder = new AlertDialog.Builder( this, super.mAlertDialogStyle );
+			builder
+					.setView( layout )
+					.setNegativeButton( R.string.cancel, (dialog, which)->dialog.cancel() )
+					.setPositiveButton( "OK", (dialog, which)->{
+						int deletionMode = radioGroup.getCheckedItemIndex();
+						EntitiesListActivity.this.deleteMultipleEntities( deletionMode );
+					} )
+					.setCancelable( false );
+			builder.show();
+		}else{
+			deleteMultipleEntities( 0 );
+		}
+	}
+
+	private void deleteMultipleEntities(int groupDeletionMode){
+		for(Entity e : mSelectedEntities){
+			if(e instanceof Group){
+				EntitiesStorage.get()
+						.deleteGroup( e.getId(), groupDeletionMode );
+			}else{
+				EntitiesStorage.get()
+						.deleteEntry( e.getId() );
+			}
+		}
+		exitSelectionMode();
+		mSelectedEntities.clear();
+		sendRefreshIntent();
 	}
 
 	private void initializeRecyclerView(ArrayList<? extends Entity> entities) {

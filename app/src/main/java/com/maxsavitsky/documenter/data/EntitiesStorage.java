@@ -235,6 +235,20 @@ public class EntitiesStorage {
 		save();
 	}
 
+	public void deleteEntry(String id){
+		Optional<EntryEntity> op = getEntry( id );
+		if(!op.isPresent())
+			return;
+		EntryEntity e = op.get();
+		for(String p : e.getParents()){
+			getGroup( p )
+					.ifPresent( g->g.removeContainingEntity( e.getId() ) );
+			e.removeParent( p );
+		}
+		deleteEntry( e );
+		save();
+	}
+
 	private void deleteEntry(EntryEntity e) {
 		Utils.deleteDirectory( new File( App.appDataPath + "/entries/" + e.getId() ) );
 		mEntryEntities.remove( e );

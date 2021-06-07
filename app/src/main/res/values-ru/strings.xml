@@ -206,4 +206,5 @@
     <string name="remove_from_parent">Убрать из содержащей группы</string>
     <string name="some_entities_were_not_moved_added">Некоторые элементы не были перемещены/добавлены</string>
     <string name="remove">Убрать</string>
+    <string name="multiple_deletion_note">Примечание: эта опция применится только к группам, которые Вы выбрали</string>
 </resources>
