@@ -3,7 +3,6 @@ package com.maxsavitsky.documenter.data;
 import com.maxsavitsky.documenter.data.types.EntryEntity;
 import com.maxsavitsky.documenter.data.types.Group;
 import com.maxsavitsky.documenter.utils.Utils;
-import com.maxsavitsky.documenter.xml.handlers.InfoHandler;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -42,9 +41,9 @@ public class DataReformatter {
 		for (EntryEntity e : entriesList) {
 			File infoFile = new File( Utils.getExternalStoragePath() + "/entries/" + e.getId() + "/info.xml" );
 			if ( infoFile.exists() ) {
-				InfoHandler infoHandler = new InfoHandler();
-				saxParser.parse( infoFile, infoHandler );
-				e.setCreationTimestamp( infoHandler.getInfo().getTimeStamp() );
+				TimestampHandler handler = new TimestampHandler();
+				saxParser.parse( infoFile, handler );
+				e.setCreationTimestamp( handler.timestamp );
 			}
 		}
 
@@ -60,9 +59,9 @@ public class DataReformatter {
 		for (Group document : documentsList) {
 			File infoFile = new File( Utils.getExternalStoragePath().getPath() + "/documents/" + document.getId() + "/info.xml" );
 			if ( infoFile.exists() ) {
-				InfoHandler infoHandler = new InfoHandler();
-				saxParser.parse( infoFile, infoHandler );
-				document.setCreationTimestamp( infoHandler.getInfo().getTimeStamp() );
+				TimestampHandler handler = new TimestampHandler();
+				saxParser.parse( infoFile, handler );
+				document.setCreationTimestamp( handler.timestamp );
 			}
 
 			File includedEntriesFile = new File( Utils.getExternalStoragePath().getPath() + "/documents/" + document.getId() + "/" + document.getId() + ".xml" );
@@ -95,9 +94,9 @@ public class DataReformatter {
 		for (Group category : categoriesList) {
 			File infoFile = new File( Utils.getExternalStoragePath().getPath() + "/categories/" + category.getId() + "/info.xml" );
 			if ( infoFile.exists() ) {
-				InfoHandler infoHandler = new InfoHandler();
-				saxParser.parse( infoFile, infoHandler );
-				category.setCreationTimestamp( infoHandler.getInfo().getTimeStamp() );
+				TimestampHandler handler = new TimestampHandler();
+				saxParser.parse( infoFile, handler );
+				category.setCreationTimestamp( handler.timestamp );
 			}
 
 			File includedDocsFile = new File( Utils.getExternalStoragePath().getPath() + "/categories/" + category.getId() + "/" + category.getId() + ".xml" );
@@ -327,6 +326,17 @@ public class DataReformatter {
 			);
 		}
 		return jsonArray;
+	}
+
+	private static class TimestampHandler extends DefaultHandler{
+		private int timestamp;
+
+		@Override
+		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+			if(qName.equals( "timestamp" )){
+				timestamp = Integer.parseInt( attributes.getValue( "value" ) );
+			}
+		}
 	}
 
 	private static class EntityHandler extends DefaultHandler {
