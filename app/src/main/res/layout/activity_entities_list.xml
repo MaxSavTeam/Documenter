@@ -45,25 +45,26 @@
         app:menu_icon="@drawable/ic_more_horiz_24">
 
         <com.maxsavitsky.documenter.ui.widget.FabButton
+            android:id="@+id/fabSettings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_settings_24"
+            android:scaleType="fitCenter"
+            app:fab_label="@string/settings" />
+
+        <com.maxsavitsky.documenter.ui.widget.FabButton
             android:id="@+id/fabCreateEntry"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_plus_24"
+            android:src="@drawable/ic_create_entry"
             app:fab_label="@string/create_entry" />
 
         <com.maxsavitsky.documenter.ui.widget.FabButton
             android:id="@+id/fabCreateGroup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_plus_24"
+            android:src="@drawable/ic_create_group"
             app:fab_label="@string/create_group" />
-
-        <com.maxsavitsky.documenter.ui.widget.FabButton
-            android:id="@+id/fabSettings"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_settings_24"
-            app:fab_label="@string/settings" />
 
     </com.maxsavitsky.documenter.ui.widget.FabMenu>
 
