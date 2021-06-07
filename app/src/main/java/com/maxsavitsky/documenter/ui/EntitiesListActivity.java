@@ -14,6 +14,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
+import android.view.ViewTreeObserver;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -60,6 +61,8 @@ public class EntitiesListActivity extends ThemeActivity {
 	protected EntitiesAdapter mEntitiesAdapter;
 
 	private final ArrayList<Entity> mSelectedEntities = new ArrayList<>();
+
+	private int mFlexboxLayoutHeight;
 
 	private final ActivityResultLauncher<Intent> mEntitiesListLauncher = registerForActivityResult(
 			new ActivityResultContracts.StartActivityForResult(),
@@ -194,8 +197,8 @@ public class EntitiesListActivity extends ThemeActivity {
 				mEntitiesAdapter.setCheckBox( index, true );
 				mSelectedEntities.add( mEntities.get( index ) );
 
-				findViewById( R.id.flexboxLayout ).setVisibility( View.VISIBLE );
-				findViewById( R.id.fab_menu ).setVisibility( View.GONE );
+				hideFab();
+				showFlexLayout();
 			}
 		}
 	};
@@ -212,9 +215,38 @@ public class EntitiesListActivity extends ThemeActivity {
 	private void exitSelectionMode(){
 		selectionMode = false;
 		mEntitiesAdapter.hideCheckBoxes();
-		findViewById( R.id.flexboxLayout ).setVisibility( View.GONE );
-		findViewById( R.id.fab_menu ).setVisibility( View.VISIBLE );
+		//findViewById( R.id.flexboxLayout ).setVisibility( View.GONE );
+		//findViewById( R.id.fab_menu ).setVisibility( View.VISIBLE );
 		mSelectedEntities.clear();
+		showFab();
+		hideFlexboxLayout();
+	}
+
+	private void hideFab(){
+		findViewById( R.id.fab_menu ).animate()
+				.alpha( 0 );
+	}
+
+	private void showFab(){
+		findViewById( R.id.fab_menu ).animate()
+				.alpha( 1 );
+	}
+
+	private void showFlexLayout(){
+		View view = findViewById( R.id.flexboxLayout );
+		view.setVisibility( View.VISIBLE );
+		view.setTranslationY( mFlexboxLayoutHeight );
+		view
+				.animate()
+				.translationY( 0 );
+	}
+
+	private void hideFlexboxLayout(){
+		View view = findViewById( R.id.flexboxLayout );
+		view
+				.animate()
+				.translationY( mFlexboxLayoutHeight )
+				.withEndAction( ()->view.setVisibility( View.GONE ) );
 	}
 
 	private void refresh(){
@@ -440,6 +472,17 @@ public class EntitiesListActivity extends ThemeActivity {
 				deletionBuilder.create().show();
 			}
 		} );
+
+		View flexbox = findViewById( R.id.flexboxLayout );
+		flexbox.getViewTreeObserver().addOnGlobalLayoutListener( new ViewTreeObserver.OnGlobalLayoutListener() {
+			@Override
+			public void onGlobalLayout() {
+				flexbox.getViewTreeObserver().removeOnGlobalLayoutListener( this );
+				mFlexboxLayoutHeight = flexbox.getHeight();
+				flexbox.setVisibility( View.GONE );
+			}
+		} );
+		flexbox.setVisibility( View.VISIBLE );
 	}
 
 	private void prepareMultipleDeletion(){
