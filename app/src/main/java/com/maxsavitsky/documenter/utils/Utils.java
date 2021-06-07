@@ -43,8 +43,6 @@ public class Utils {
 	private static File externalStoragePath;
 	private static SharedPreferences mDefaultSharedPreferences;
 
-	public static final String xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-	public static final String htmlHeader = "<!DOCTYPE html>\n";
 	public static final String APP_PREFERENCES = "main_settings";
 	private static final String THIS_TAG = MainActivity.TAG + " Utils";
 
