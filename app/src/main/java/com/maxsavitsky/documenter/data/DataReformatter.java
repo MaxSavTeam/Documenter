@@ -1,5 +1,6 @@
 package com.maxsavitsky.documenter.data;
 
+import com.maxsavitsky.documenter.App;
 import com.maxsavitsky.documenter.data.types.EntryEntity;
 import com.maxsavitsky.documenter.data.types.Group;
 import com.maxsavitsky.documenter.utils.Utils;
@@ -31,7 +32,7 @@ public class DataReformatter {
 		SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
 
 		ArrayList<EntryEntity> entriesList = new ArrayList<>();
-		File file = new File( Utils.getExternalStoragePath().getPath() + "/entries.xml" );
+		File file = new File( App.appStoragePath, "entries.xml" );
 		if ( file.exists() ) {
 			EntityHandler entityHandler = new EntityHandler( "entry" );
 			saxParser.parse( file, entityHandler );
@@ -39,7 +40,7 @@ public class DataReformatter {
 				entriesList.add( new EntryEntity( entity.getId(), entity.getName() ) );
 		}
 		for (EntryEntity e : entriesList) {
-			File infoFile = new File( Utils.getExternalStoragePath() + "/entries/" + e.getId() + "/info.xml" );
+			File infoFile = new File( App.appStoragePath, "entries/" + e.getId() + "/info.xml" );
 			if ( infoFile.exists() ) {
 				TimestampHandler handler = new TimestampHandler();
 				saxParser.parse( infoFile, handler );
@@ -48,7 +49,7 @@ public class DataReformatter {
 		}
 
 		ArrayList<Group> documentsList = new ArrayList<>();
-		file = new File( Utils.getExternalStoragePath().getPath() + "/documents.xml" );
+		file = new File( App.appStoragePath, "documents.xml" );
 		if ( file.exists() ) {
 			EntityHandler entityHandler = new EntityHandler( "document" );
 			saxParser.parse( file, entityHandler );
@@ -57,14 +58,14 @@ public class DataReformatter {
 		}
 
 		for (Group document : documentsList) {
-			File infoFile = new File( Utils.getExternalStoragePath().getPath() + "/documents/" + document.getId() + "/info.xml" );
+			File infoFile = new File( App.appStoragePath, "documents/" + document.getId() + "/info.xml" );
 			if ( infoFile.exists() ) {
 				TimestampHandler handler = new TimestampHandler();
 				saxParser.parse( infoFile, handler );
 				document.setCreationTimestamp( handler.timestamp );
 			}
 
-			File includedEntriesFile = new File( Utils.getExternalStoragePath().getPath() + "/documents/" + document.getId() + "/" + document.getId() + ".xml" );
+			File includedEntriesFile = new File( App.appStoragePath, "documents/" + document.getId() + "/" + document.getId() + ".xml" );
 			if ( includedEntriesFile.exists() ) {
 				EntityHandler entityHandler = new EntityHandler( "entry" );
 				saxParser.parse( includedEntriesFile, entityHandler );
@@ -82,7 +83,7 @@ public class DataReformatter {
 		}
 
 		ArrayList<Group> categoriesList = new ArrayList<>();
-		file = new File( Utils.getExternalStoragePath().getPath() + "/categories.xml" );
+		file = new File( App.appStoragePath, "categories.xml" );
 		if ( file.exists() ) {
 			EntityHandler entityHandler = new EntityHandler( "category" );
 			saxParser.parse( file, entityHandler );
@@ -92,14 +93,14 @@ public class DataReformatter {
 		}
 
 		for (Group category : categoriesList) {
-			File infoFile = new File( Utils.getExternalStoragePath().getPath() + "/categories/" + category.getId() + "/info.xml" );
+			File infoFile = new File( App.appStoragePath, "categories/" + category.getId() + "/info.xml" );
 			if ( infoFile.exists() ) {
 				TimestampHandler handler = new TimestampHandler();
 				saxParser.parse( infoFile, handler );
 				category.setCreationTimestamp( handler.timestamp );
 			}
 
-			File includedDocsFile = new File( Utils.getExternalStoragePath().getPath() + "/categories/" + category.getId() + "/" + category.getId() + ".xml" );
+			File includedDocsFile = new File( App.appStoragePath, "categories/" + category.getId() + "/" + category.getId() + ".xml" );
 			if ( includedDocsFile.exists() ) {
 				EntityHandler entityHandler = new EntityHandler( "document" );
 				saxParser.parse( includedDocsFile, entityHandler );
@@ -164,7 +165,7 @@ public class DataReformatter {
 		reformatEntriesAdditional( jsonObject );
 		deleteUnusedEntriesDirs( jsonObject );
 		deleteUnusedEntriesFiles( jsonObject );
-		File dataDir = new File( Utils.getExternalStoragePath().getPath() + "/data" );
+		File dataDir = new File( App.appStoragePath, "data" );
 		if(!dataDir.exists())
 			dataDir.mkdirs();
 		copyEntriesDir();
@@ -180,7 +181,7 @@ public class DataReformatter {
 	}
 
 	private static void deleteUnusedRootFiles(){
-		File file = Utils.getExternalStoragePath();
+		File file = new File( App.appStoragePath );
 		File[] files = file.listFiles();
 		if(files != null){
 			for(File f : files){
@@ -195,14 +196,14 @@ public class DataReformatter {
 	}
 
 	private static void copyEntriesDir() throws IOException {
-		Utils.copy( new File( Utils.getExternalStoragePath().getPath() + "/entries" ), new File( Utils.getExternalStoragePath().getPath() + "/data" ) );
+		Utils.copy( new File( App.appStoragePath, "entries" ), new File( App.appStoragePath, "data" ) );
 	}
 
 	private static void deleteUnusedEntriesFiles(JSONObject jsonObject) throws JSONException {
 		JSONArray jsonArray = jsonObject.getJSONArray( "entries" );
 		for (int i = 0; i < jsonArray.length(); i++) {
 			String id = jsonArray.getJSONObject( i ).getString( "id" );
-			File dir = new File( Utils.getExternalStoragePath() + "/entries/" + id );
+			File dir = new File( App.appStoragePath, "entries/" + id );
 			if(dir.exists()){
 				File[] files = dir.listFiles();
 				if(files  != null){
@@ -224,7 +225,7 @@ public class DataReformatter {
 			String id = jsonArray.getJSONObject( i ).getString( "id" );
 			map.put( id, true );
 		}
-		File file = new File( Utils.getExternalStoragePath().getPath() + "/entries" );
+		File file = new File( App.appStoragePath, "entries" );
 		if(file.exists()){
 			File[] files = file.listFiles();
 			if(files != null){
@@ -241,7 +242,7 @@ public class DataReformatter {
 		JSONArray jsonArray = jsonObject.getJSONArray( "entries" );
 		for (int i = 0; i < jsonArray.length(); i++) {
 			String id = jsonArray.getJSONObject( i ).getString( "id" );
-			File propsFile = new File( Utils.getExternalStoragePath().getPath() + "/entries/" + id + "/properties.xml" );
+			File propsFile = new File( App.appStoragePath, "entries/" + id + "/properties.xml" );
 			EntryEntity.Properties properties;
 			if ( propsFile.exists() ) {
 				EntryPropertiesHandler handler = new EntryPropertiesHandler();
@@ -250,7 +251,7 @@ public class DataReformatter {
 			} else {
 				properties = new EntryEntity.Properties();
 			}
-			propsFile = new File( Utils.getExternalStoragePath().getPath() + "/entries/" + id + "/properties.json" );
+			propsFile = new File( App.appStoragePath, "entries/" + id + "/properties.json" );
 			if ( !propsFile.exists() ) {
 				propsFile.createNewFile();
 			}
@@ -264,7 +265,7 @@ public class DataReformatter {
 		JSONArray jsonArray = jsonObject.getJSONArray( "entries" );
 		for (int i = 0; i < jsonArray.length(); i++) {
 			String id = jsonArray.getJSONObject( i ).getString( "id" );
-			String pathDir = Utils.getExternalStoragePath().getPath() + "/entries/" + id + "/";
+			String pathDir = App.appStoragePath + "/entries/" + id + "/";
 			JSONObject out = new JSONObject();
 			File file = new File( pathDir + "alignment" );
 			JSONArray alignments = new JSONArray();
@@ -332,7 +333,7 @@ public class DataReformatter {
 		private int timestamp;
 
 		@Override
-		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+		public void startElement(String uri, String localName, String qName, Attributes attributes) {
 			if(qName.equals( "timestamp" )){
 				timestamp = Integer.parseInt( attributes.getValue( "value" ) );
 			}
@@ -348,7 +349,7 @@ public class DataReformatter {
 		}
 
 		@Override
-		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+		public void startElement(String uri, String localName, String qName, Attributes attributes) {
 			if ( qName.equals( name ) ) {
 				mEntities.add( new Entity( attributes.getValue( "id" ), attributes.getValue( "name" ) ) );
 			}

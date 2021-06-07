@@ -10,7 +10,6 @@ import android.graphics.Point;
 import android.net.Uri;
 import android.os.StrictMode;
 import android.text.Html;
-import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
@@ -40,7 +39,6 @@ import java.util.concurrent.ThreadLocalRandom;
 public class Utils {
 	@SuppressLint("StaticFieldLeak")
 	private static Context sContext;
-	private static File externalStoragePath;
 	private static SharedPreferences mDefaultSharedPreferences;
 
 	public static final String APP_PREFERENCES = "main_settings";
@@ -52,7 +50,6 @@ public class Utils {
 
 	public static void setContext(Context context) {
 		sContext = context;
-		externalStoragePath = context.getApplicationContext().getExternalFilesDir( null );
 	}
 
 	public static SharedPreferences getDefaultSharedPreferences() {
@@ -63,20 +60,12 @@ public class Utils {
 		mDefaultSharedPreferences = defaultSharedPreferences;
 	}
 
-	public static File getExternalStoragePath() {
-		return externalStoragePath;
-	}
-
 	/**
 	 * This functions checks all entries and all images and removes unused images in this entries
 	 * */
 	public static void removeAllUnusedImages(){
-		Log.i(THIS_TAG, "removing all unused images");
 		for(EntryEntity e : EntitiesStorage.get().getEntryEntities()){
-			ArrayList<String> r = e.removeUnusedImages();
-			for(String s : r){
-				Log.i(THIS_TAG, "removed " + s);
-			}
+			e.removeUnusedImages();
 		}
 	}
 

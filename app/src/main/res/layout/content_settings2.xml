@@ -351,14 +351,6 @@
                     android:text="@string/apparently_you_had_error"
                     android:textColor="?textColor"/>
 
-                <Button
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="start"
-                    android:onClick="sendLastReport"
-                    android:textColor="?colored_buttons_text_color"
-                    style="@style/Widget.AppCompat.Button.Borderless"
-                    android:text="@string/send_report" />
             </LinearLayout>
 
         </LinearLayout>

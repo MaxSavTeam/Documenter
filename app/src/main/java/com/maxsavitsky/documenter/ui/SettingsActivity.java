@@ -163,12 +163,6 @@ public class SettingsActivity extends ThemeActivity {
 		updateUserUi( mAuth.getCurrentUser() );
 	}
 
-	public void sendLastReport(View v) {
-		String file = Utils.getExternalStoragePath().getPath() + "/" + sp.getString( "last_exception", "1" );
-		Utils.sendLog( this, file );
-		sp.edit().remove( "last_exception" ).apply();
-	}
-
 	private void updateUserUi(FirebaseUser user) {
 		if ( user == null ) {
 			findViewById( R.id.layout_authorised_backup ).setVisibility( View.GONE );

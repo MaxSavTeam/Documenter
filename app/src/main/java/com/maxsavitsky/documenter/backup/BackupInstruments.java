@@ -80,7 +80,6 @@ public class BackupInstruments {
 		if ( path.isHidden() ) {
 			return;
 		}
-		Log.i( THIS_TAG, "packing " + (path.getPath().replace( Utils.getExternalStoragePath().getPath(), "" )) + " size: " + (path.length() / 1024) + "KB" );
 		if ( path.isDirectory() ) {
 			if ( fileName.endsWith( "/" ) ) {
 				out.putNextEntry( new ZipEntry( fileName ) );

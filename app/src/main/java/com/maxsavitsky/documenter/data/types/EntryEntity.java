@@ -15,7 +15,6 @@ import androidx.core.text.HtmlCompat;
 import com.maxsavitsky.documenter.App;
 import com.maxsavitsky.documenter.data.html.HtmlImageLoader;
 import com.maxsavitsky.documenter.utils.SpanEntry;
-import com.maxsavitsky.documenter.utils.Utils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -275,8 +274,7 @@ public class EntryEntity extends Entity {
 		}
 	}
 
-	public ArrayList<String> removeUnusedImages() {
-		ArrayList<String> removed = new ArrayList<>();
+	public void removeUnusedImages() {
 		try {
 			Spanned spanned = Html.fromHtml( loadTextFromStorage() );
 			ImageSpan[] spans = spanned.getSpans( 0, spanned.length(), ImageSpan.class );
@@ -292,14 +290,12 @@ public class EntryEntity extends Entity {
 				for (File file : files) {
 					if ( !used.containsKey( file.getName() ) ) {
 						file.delete();
-						removed.add( file.getPath().replace( Utils.getExternalStoragePath().getPath(), "" ) );
 					}
 				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return removed;
 	}
 
 	@Override
