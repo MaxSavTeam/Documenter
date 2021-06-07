@@ -559,7 +559,13 @@ public class EntitiesListActivity extends ThemeActivity {
 	}
 
 	private void updateList(ArrayList<? extends Entity> entities) {
+		entities = filterList( entities );
 		mEntitiesAdapter.setElements( entities );
 		mEntities = entities;
 	}
+
+	protected ArrayList<? extends Entity> filterList(ArrayList<? extends Entity> entities){
+		return entities;
+	}
+
 }

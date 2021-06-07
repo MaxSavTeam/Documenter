@@ -16,6 +16,9 @@ import com.maxsavitsky.documenter.adapters.EntitiesAdapter;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.data.types.Entity;
 
+import java.util.ArrayList;
+import java.util.stream.Collectors;
+
 public class CopyMoveActivity extends EntitiesListActivity {
 
 	private int mode;
@@ -23,7 +26,7 @@ public class CopyMoveActivity extends EntitiesListActivity {
 	private final ActivityResultLauncher<Intent> mLauncher = registerForActivityResult(
 			new ActivityResultContracts.StartActivityForResult(),
 			result->{
-				if(result.getResultCode() == Results.DECLINED || result.getResultCode() == Results.ACCEPTED){
+				if ( result.getResultCode() == Results.DECLINED || result.getResultCode() == Results.ACCEPTED ) {
 					setResult( result.getResultCode(), result.getData() );
 					onBackPressed();
 				}
@@ -55,10 +58,10 @@ public class CopyMoveActivity extends EntitiesListActivity {
 
 	@Override
 	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-		if(item.getItemId() == R.id.item_cancel){
+		if ( item.getItemId() == R.id.item_cancel ) {
 			setResult( Results.DECLINED );
 			onBackPressed();
-		}else if(item.getItemId() == R.id.item_apply){
+		} else if ( item.getItemId() == R.id.item_apply ) {
 			Intent data = new Intent();
 			data.putExtra( "groupId", mGroup.getId() );
 			data.putExtra( "mode", mode );
@@ -100,5 +103,12 @@ public class CopyMoveActivity extends EntitiesListActivity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate( R.menu.choose_menu, menu );
 		return true;
+	}
+
+	@Override
+	protected ArrayList<? extends Entity> filterList(ArrayList<? extends Entity> entities) {
+		return entities.stream()
+				.filter( e->e.getType() == Entity.Type.GROUP )
+				.collect( Collectors.toCollection( ArrayList::new ) );
 	}
 }
