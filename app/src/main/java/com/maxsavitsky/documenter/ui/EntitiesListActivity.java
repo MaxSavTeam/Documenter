@@ -562,6 +562,7 @@ public class EntitiesListActivity extends ThemeActivity {
 		entities = filterList( entities );
 		mEntitiesAdapter.setElements( entities );
 		mEntities = entities;
+		findViewById( R.id.text_view_list_is_empty ).setVisibility( entities.isEmpty() ? View.VISIBLE : View.GONE );
 	}
 
 	protected ArrayList<? extends Entity> filterList(ArrayList<? extends Entity> entities){

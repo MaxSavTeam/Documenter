@@ -162,4 +162,5 @@
     <string name="some_entities_were_not_moved_added">Some entities were not moved/added</string>
     <string name="remove">Remove</string>
     <string name="multiple_deletion_note">Note: that option will be applied only to groups which you have selected</string>
+    <string name="list_is_empty">List is empty</string>
 </resources>
