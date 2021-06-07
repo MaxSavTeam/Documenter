@@ -2,51 +2,30 @@
     <item name="color_int_in_history" type="id" />
     <item name="color_pos_in_history" type="id" />
 
-    <string name="resources_url" translatable="false">https://res.maxsavteam.com</string>
     <!--string name="app_name" translatable="false">Documenter</string-->
     <string name="plus" translatable="false">+</string>
     <string name="minus" translatable="false">-</string>
 
-    <string name="title_activity_create_category">Create Category</string>
-    <string name="title_activity_category_list">Category List</string>
-    <string name="title_activity_create_document">Create Document</string>
-    <string name="title_activity_document_list">Document List</string>
-    <string name="title_activity_entries_list">Entries List</string>
-    <string name="edit_documents_list">Edit documents list</string>
-    <string name="edit_category_name">Edit category name</string>
-
     <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>
     <string name="apply">Apply</string>
-    <string name="edit_document_name">Edit document name</string>
     <string name="title_activity_create_entry">Create Entry</string>
     <string name="enter_your_minds_here">Enter your thoughts here…</string>
     <string name="enter_name">Enter name</string>
     <string name="name_yours_minds">Name your thoughts</string>
-    <string name="edit_entries_list">Edit entries list</string>
-    <string name="choose_sort_mode">Choose sort mode</string>
-    <string-array name="sort_modes">
-        <item>Name</item>
-        <item>Creation date</item>
-    </string-array>
     <string name="edit_entry_name">Edit entry name</string>
     <string name="sort_mode">Sort mode</string>
     <string name="edit_text">Edit text</string>
-    <string name="tools">Tools</string>
-    <string name="swipe_up">Swipe up</string>
     <string name="text_size">Text size</string>
     <string name="confirmation">Confirmation</string>
     <string name="delete_confirmation_text" tools:ignore="ExtraTranslation">Are you sure you want to delete?</string>
-    <string name="invert">Invert</string>
     <string name="settings">Settings</string>
     <string name="create_backup">Create backup</string>
     <string name="restore_from_backup">Restore from backup</string>
     <string name="confirm_restore_message">This operation will delete the previous data. Proceed?</string>
-    <string name="background_color">Background color</string>
     <string name="text_color">Text color</string>
     <string name="error_has_occurred">An error has occurred</string>
     <string name="send_report">Send report</string>
-    <string name="please">Please</string>
     <string name="successfully">Successfully</string>
     <string name="file_not_found">File not found</string>
     <string name="create_entry_exit_mes">Do you really want to leave? All changes made will not be saved.</string>
@@ -69,31 +48,19 @@
     <string name="would_you_like_to_download_and_install">Would you like to download and install?</string>
     <string name="check_for_updates">Check for updates</string>
     <string name="app_is_up_to_date">App is up to date</string>
-    <string name="font">Font</string>
-    <string name="remember_last_pos">Remember last position</string>
-    <string name="parameters">Parameters</string>
-    <string name="you_will_not_pass">You will not pass!</string>
-    <string name="warning_when_memory_denied">Without access to memory, the application cannot work. Press "Request" and allow access, please</string>
     <string name="loading">Loading…</string>
     <string name="entry_is_loading">Entry is loading…</string>
     <string name="edit_entry">Edit entry</string>
     <string name="create_entry">Create entry</string>
-    <string name="pick_images">Pick image</string>
     <string name="image_picker_warning_memory_not_accessed">The function cannot work, because the application does not have access to memory. Click the "Request" button to access the application.</string>
     <string name="request">Request</string>
     <string name="warning">Warning</string>
-    <string name="documents_to_be_included_in_category">Documents to be included in the category</string>
-    <string name="entries_to_be_included_in_category">Entries to be included in the category</string>
     <string name="invalid_name">Invalid name</string>
     <string name="this_name_already_exist">This name already exists</string>
     <string name="do_you_want_to_continue">Do you want to continue?</string>
-    <string name="ignore_this_update">Ignore this update</string>
-    <string name="delete_category__with_docs">Also delete all documents included ONLY in this category</string>
-    <string name="delete_category__with_entries">Also delete entries that are included ONLY in deleted documents</string>
     <string name="ui">UI</string>
     <string name="updates">Updates</string>
     <string name="automatically_check_for_updates">Automatically check for updates</string>
-    <string name="delete_document__with_entries">Delete entries that are included ONLY in this document</string>
     <string name="local_backup">Local backup</string>
     <string name="cloud_backup">Cloud backup</string>
     <string name="sign_in">Sign in</string>
@@ -114,30 +81,19 @@
         <item>Monthly</item>
     </string-array>
 
-    <string name="creating">Creating…</string>
     <string name="restore">Restore</string>
     <string name="creating_backup"><![CDATA[Creating a backup…<br><br>The speed of creation depends on the number of categories, documents, records, as well as the number and size of pictures.]]></string>
     <string name="backup_error">Backup error</string>
     <string name="never">never</string>
-    <string name="free_entries">Free entries</string>
-    <string name="nothing_to_show">Nothing to show</string>
     <string name="need_to_restart_app">Need to restart app</string>
     <string name="edit_name">Edit name</string>
     <string name="version">Version</string>
-    <string name="text_background_color">Text background color</string>
     <string name="choose_text_background_of_segment">Select the background color of the selected text</string>
-    <string name="delete_applied_styles">Delete applied styles</string>
     <string name="downloading">Downloading…</string>
     <string name="resend_verification_email">Send verification email again</string>
     <string name="account_not_verified_label">Your account is not verified.\n We have sent you an email with instructions for verifying your account.\n If you have confirmed the mail and this message has not disappeared, restart the application.</string>
     <string name="restoring_please_donot_close_app"><![CDATA[Restoring…<br>Please do not close the application.]]></string>
     <string name="logged_in">Logged in</string>
-    <string name="file_type_is_not_supported">Sorry, but this file type is not supported.</string>
-    <string name="some_data_might_not_be_saved_correctly">Some data might not be saved correctly.</string>
-    <string name="sup_and_subscript">Superscript and subscript</string>
-    <string name="sup"><![CDATA[<sup>sup</sup>]]></string>
-    <string name="sub"><![CDATA[<sub>sub</sub>]]></string>
-    <string name="apply_to_everything">Apply to everything</string>
     <string name="to">to</string>
     <string name="replace_this_color">Replace this color</string>
     <string name="copy_content">Copy content</string>
@@ -160,17 +116,6 @@
 
     <string name="feedback">Feedback</string>
     <string name="apparently_you_had_error">Apparently, you had a critical error (the application crashed). We are sorry. If you have not sent the report, please send now. It will help us greatly.</string>
-    <string name="necessary_update_title">Necessary update %s available</string>
-    <string name="necessary_update_text">We have released an important update. This means that this version was unsuccessful and there were serious problems in it. Or, we have updated our server side, and it has become incompatible with this version. We ask you to update.</string>
-    <string name="included_in">Included in</string>
-
-    <string name="show_from">Show from</string>
-    <string name="category">Category</string>
-    <string name="document">Document</string>
-    <string name="entry">Entry</string>
-
-    <string name="all">All</string>
-    <string name="create_new">Create new</string>
 
     <string-array name="theme_states">
         <item>Light</item>
@@ -180,10 +125,6 @@
     <string name="theme">Theme</string>
     <string name="maxsav_team_copyright" translatable="false">© MaxSav Team, 2021</string>
     <string name="speed">Speed</string>
-    <string name="_0" translatable="false">0</string>
-    <string name="_1" translatable="false">1</string>
-    <string name="_2" translatable="false">2</string>
-    <string name="_3" translatable="false">3</string>
     <string name="X" translatable="false">×</string>
     <string name="autoscroll">Autoscroll</string>
     <string name="updates_channel">Updates channel</string>
@@ -194,7 +135,6 @@
     </string-array>
     <string name="restart_app">Restart app</string>
 
-    <string name="send_report_dialog_mes">It seems that an error has occurred and it is our fault. You can make your invaluable contribution to improving the application by sending us a file with a description of the error. &lt;br&gt;&lt;b&gt;We will immediately begin work on the bugs.&lt;/b&gt; &lt;br&gt; And if you still describe the problem and where and how it happened, then you have no price.&lt;br&gt;&lt;br&gt;Thank you for using our application and all the best!</string>
     <string name="sorry">Sorry</string>
     <string name="after_exception_message">We will find out about this error very soon and will start fixing it</string>
     <string name="order">Order</string>

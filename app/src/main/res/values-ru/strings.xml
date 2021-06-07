@@ -1,45 +1,25 @@
 <resources xmlns:ns0="http://schemas.android.com/tools">
-    <string name="title_activity_create_category">Создать категорию</string>
-    <string name="title_activity_category_list">Список категорий</string>
-    <string name="title_activity_create_document">Создать документ</string>
-    <string name="title_activity_document_list">Список документов</string>
-    <string name="title_activity_entries_list">Список записей</string>
-    <string name="edit_documents_list">Редактировать список документов</string>
-    <string name="edit_category_name">Изменить название категории</string>
 
     <string name="delete">Удалить</string>
     <string name="cancel">Отменить</string>
     <string name="apply">Применить</string>
-    <string name="edit_document_name">Изменить название документа</string>
     <string name="title_activity_create_entry">Создать запись</string>
     <string name="enter_your_minds_here">Введите ваши мысли здесь…</string>
     <string name="enter_name">Введите имя</string>
     <string name="name_yours_minds">Назовите свои мысли</string>
-    <string name="edit_entries_list">Изменить список записей</string>
-    <string name="choose_sort_mode">Выберите режим сортировки</string>
-    <string-array name="sort_modes">
-        <item>По названию</item>
-        <item>По дате создания</item>
-    </string-array>
     <string name="edit_entry_name">Изменить название записи</string>
     <string name="sort_mode">Режим сортировки</string>
     <string name="edit_text">Редактировать текст</string>
-    <string name="tools">Инструменты</string>
-    <string name="swipe_up">Проведите вверх</string>
     <string name="text_size">Размер текста</string>
     <string name="confirmation">Подтверждение</string>
     <string name="delete_confirmation_text" ns0:ignore="ExtraTranslation">Вы уверены, что хотите удалить?</string>
-    <string name="invert">Инвертировать</string>
     <string name="settings">Настройки</string>
     <string name="create_backup">Создать резервную копию</string>
     <string name="restore_from_backup">Восстановить из резервной копии</string>
     <string name="confirm_restore_message">Эта операция удалит предыдущие данные. Продолжить?</string>
-    <string name="background_color">Цвет фона</string>
     <string name="text_color">Цвет текста</string>
     <string name="error_has_occurred">Произошла ошибка</string>
     <string name="send_report">Отправить отчёт</string>
-    <string name="please">Пожалуйста</string>
-    <string name="send_report_dialog_mes">Кажется, произошла ошибка, и это наша вина. Вы можете внести свой неоценимый вклад в улучшение приложения, отправив нам файл с описанием ошибки. &lt;br&gt; &lt;b&gt; Мы немедленно начнем работу над ошибками. &lt;/b&gt; &lt;br&gt; И если вы опишите проблему, где и как это произошло, то у вас нет цены. &lt;br&gt; &lt;br&gt; Спасибо за использование нашего приложения и всего самого наилучшего!</string>
     <string name="successfully">Успешно</string>
     <string name="file_not_found">Файл не найден</string>
     <string name="create_entry_exit_mes">Вы действительно хотите уйти? Все сделанные изменения не будут сохранены.</string>
@@ -62,31 +42,19 @@
     <string name="would_you_like_to_download_and_install">Хотите скачать и установить?</string>
     <string name="check_for_updates">Проверить наличие обновлений</string>
     <string name="app_is_up_to_date">Это последняя версия</string>
-    <string name="font">Шрифт</string>
-    <string name="remember_last_pos">Запомнить последнюю позицию</string>
-    <string name="parameters">Параметры</string>
-    <string name="you_will_not_pass">Ты не пройдёшь!</string>
-    <string name="warning_when_memory_denied">Без доступа к памяти приложение не может работать. Нажмите «Запрос» и разрешите доступ, пожалуйста</string>
     <string name="loading">Загрузка…</string>
     <string name="entry_is_loading">Запись загружается …</string>
     <string name="edit_entry">Изменить запись</string>
     <string name="create_entry">Создать запись</string>
-    <string name="pick_images">Выберите изображение</string>
     <string name="image_picker_warning_memory_not_accessed">Функция не может работать, потому что приложение не имеет доступа к памяти. Нажмите кнопку «Запрос» для доступа к приложению.</string>
     <string name="request">Запрос</string>
     <string name="warning">Предупреждение</string>
-    <string name="documents_to_be_included_in_category">Документы для включения в категорию</string>
-    <string name="entries_to_be_included_in_category">Записи для включения в категорию</string>
     <string name="invalid_name">Неправильное имя</string>
     <string name="this_name_already_exist">Это имя уже существует</string>
     <string name="do_you_want_to_continue">Вы хотите продолжить?</string>
-    <string name="ignore_this_update">Игнорировать это обновление</string>
-    <string name="delete_category__with_docs">Также удалите все документы, включенные ТОЛЬКО в эту категорию</string>
-    <string name="delete_category__with_entries">Также удаляйте записи, которые включены ТОЛЬКО в удаленные документы</string>
     <string name="ui">UI</string>
     <string name="updates">Обновления</string>
     <string name="automatically_check_for_updates">Автоматически проверять наличие обновлений</string>
-    <string name="delete_document__with_entries">Удалить записи, которые включены ТОЛЬКО в этот документ</string>
     <string name="local_backup">Локальное резервное копирование</string>
     <string name="cloud_backup">Облачное резервное копирование</string>
     <string name="sign_in">Войти в систему</string>
@@ -107,20 +75,15 @@
         <item>Ежемесячно</item>
     </string-array>
 
-    <string name="creating">Создание…</string>
     <string name="restore">Восстановить</string>
     <string name="creating_backup"><![CDATA[Создание резервной копии…<br><br>Скорость создания зависит от количества категорий, документов, записей, а также от количества и размера картинок.]]></string>
     <string name="backup_error">Ошибка резервного копирования</string>
     <string name="never">никогда</string>
-    <string name="free_entries">Свободные записи</string>
-    <string name="nothing_to_show">Здесь нечего показывать</string>
 
     <string name="need_to_restart_app">Необходимо перезапустить приложение</string>
     <string name="edit_name">Изменить имя</string>
     <string name="version">Версия</string>
-    <string name="text_background_color">Цвет фона текста</string>
     <string name="choose_text_background_of_segment">Выберите цвет фона выбранного текста</string>
-    <string name="delete_applied_styles">Удалить приминённые стили</string>
     <string name="downloading">Скачивание…</string>
     <string name="resend_verification_email">Отправить письмо повторно</string>
     <string name="account_not_verified_label">Ваша учётная запись не подтверждена.\n
@@ -128,12 +91,6 @@
 Если Вы подтвердили почту и это надпись не исчезла, перезапустите приложение.</string>
     <string name="restoring_please_donot_close_app"><![CDATA[Восстанавливаем…<br>Пожалуйста, не закрывайте приложение.]]></string>
     <string name="logged_in">Выполнен вход в</string>
-    <string name="file_type_is_not_supported">Извините, но этот тип файла не поддерживается.</string>
-    <string name="some_data_might_not_be_saved_correctly">Некоторые данные могли некорректно сохраниться.</string>
-    <string name="sup_and_subscript">Верхний и нижний индексы</string>
-    <string name="sup"><![CDATA[<sup>верхний</sup> индекс]]></string>
-    <string name="sub"><![CDATA[<sub>нижний</sub> индекс]]></string>
-    <string name="apply_to_everything">Применить ко всему</string>
     <string name="to">к</string>
     <string name="replace_this_color">Заменить этот цвет</string>
     <string name="copy_content">Скопировать содержимое</string>
@@ -156,18 +113,6 @@
 
     <string name="feedback">Обратная связь</string>
     <string name="apparently_you_had_error">Видимо, у Вас произошла критическая ошибка (приложение вылетело). Мы извиняемся. Если Вы не отправили отчёт, отправьте, пожалуйста, сейчас. Это сильно нам поможет.</string>
-    <string name="necessary_update_title">Важное обновление %s доступно</string>
-    <string name="necessary_update_text">Мы выпустили важное обновление.  Это значит, что данная версия оказалась неудачной и в ней нашлись серьёзные проблемы. Либо же мы обновили нашу серверную часть, и она стала несовместимой для работы с этой версией. Мы просим Вас обновится.</string>
-    <string name="included_in">Входит в</string>
-
-    <string name="show_from">Показывать из</string>
-
-    <string name="category">Категория</string>
-    <string name="document">Документ</string>
-    <string name="entry">Запись</string>
-
-    <string name="all">Все</string>
-    <string name="create_new">Создать</string>
 
     <string-array name="theme_states">
         <item>Светлая</item>

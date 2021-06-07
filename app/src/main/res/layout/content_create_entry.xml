@@ -18,7 +18,6 @@
         tools:ignore="UselessParent">
 
         <RelativeLayout
-            android:id="@+id/entry_editor_relative_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 

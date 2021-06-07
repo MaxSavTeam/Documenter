@@ -12,7 +12,6 @@
         android:id="@+id/toolsLinearLayout"
         android:layout_height="match_parent">
         <ImageButton
-            android:id="@+id/btnToolsTextSize"
             android:scaleType="fitCenter"
             android:backgroundTint="@android:color/transparent"
             android:layout_width="@dimen/bottom_cycle_height"
@@ -24,7 +23,6 @@
         <ImageButton
             android:layout_width="@dimen/bottom_cycle_height"
             android:layout_height="@dimen/bottom_cycle_height"
-            android:id="@+id/btnToolsAlignment"
             android:src="@drawable/ic_align_center_white"
             android:scaleType="fitCenter"
             android:onClick="showTextAlignmentPicker"
@@ -124,7 +122,6 @@
         <ImageButton
             android:layout_width="@dimen/bottom_cycle_height"
             android:layout_height="@dimen/bottom_cycle_height"
-            android:id="@+id/btnToolsInsertImage"
             android:src="@drawable/ic_insert_photo"
             android:scaleType="fitCenter"
             android:onClick="pickImages"
