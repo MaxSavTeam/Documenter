@@ -46,6 +46,11 @@ public class CopyMoveActivity extends EntitiesListActivity {
 		public void onLongClick(int index) {
 
 		}
+
+		@Override
+		public View getViewAt(int position) {
+			return null;
+		}
 	};
 
 	@Override

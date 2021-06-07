@@ -14,7 +14,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
-import android.view.ViewTreeObserver;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -180,6 +180,8 @@ public class EntitiesListActivity extends ThemeActivity {
 				else
 					mSelectedEntities.add( mEntities.get( index ) );
 				mEntitiesAdapter.setCheckBox( index, !contains );
+				CheckBox checkBox = findViewById( R.id.checkbox_toggle_all );
+				checkBox.setChecked( mSelectedEntities.size() == mEntities.size() );
 			}else {
 				if ( type == Entity.Type.GROUP ) {
 					mEntitiesListLauncher.launch( new Intent( EntitiesListActivity.this, EntitiesListActivity.class ).putExtra( "groupId", id ).putExtra( "parentId", mGroup.getId() ) );
@@ -202,9 +204,13 @@ public class EntitiesListActivity extends ThemeActivity {
 				findViewById( R.id.flexboxLayout ).setVisibility( View.VISIBLE );
 				findViewById( R.id.fab_menu ).setVisibility( View.GONE );
 
-				//hideFab();
-				//showFlexLayout();
+				((CheckBox) findViewById( R.id.checkbox_toggle_all )).setChecked( mEntities.size() == 1 );
 			}
+		}
+
+		@Override
+		public View getViewAt(int position) {
+			return ((RecyclerView) findViewById( R.id.recycler_view_entities )).getLayoutManager().findViewByPosition( position );
 		}
 	};
 
@@ -224,35 +230,6 @@ public class EntitiesListActivity extends ThemeActivity {
 		findViewById( R.id.flexboxLayout ).setVisibility( View.GONE );
 		findViewById( R.id.fab_menu ).setVisibility( View.VISIBLE );
 		mSelectedEntities.clear();
-		//showFab();
-		//hideFlexboxLayout();
-	}
-
-	private void hideFab(){
-		findViewById( R.id.fab_menu ).animate()
-				.alpha( 0 );
-	}
-
-	private void showFab(){
-		findViewById( R.id.fab_menu ).animate()
-				.alpha( 1 );
-	}
-
-	private void showFlexLayout(){
-		View view = findViewById( R.id.flexboxLayout );
-		view.setVisibility( View.VISIBLE );
-		view.setTranslationY( mFlexboxLayoutHeight );
-		view
-				.animate()
-				.translationY( 0 );
-	}
-
-	private void hideFlexboxLayout(){
-		View view = findViewById( R.id.flexboxLayout );
-		view
-				.animate()
-				.translationY( mFlexboxLayoutHeight )
-				.withEndAction( ()->view.setVisibility( View.GONE ) );
 	}
 
 	private void refresh(){
@@ -479,16 +456,16 @@ public class EntitiesListActivity extends ThemeActivity {
 			}
 		} );
 
-		View flexbox = findViewById( R.id.flexboxLayout );
-		flexbox.getViewTreeObserver().addOnGlobalLayoutListener( new ViewTreeObserver.OnGlobalLayoutListener() {
-			@Override
-			public void onGlobalLayout() {
-				flexbox.getViewTreeObserver().removeOnGlobalLayoutListener( this );
-				mFlexboxLayoutHeight = flexbox.getHeight();
-				flexbox.setVisibility( View.GONE );
+		CheckBox checkBox = findViewById( R.id.checkbox_toggle_all );
+		checkBox.setOnClickListener( v->{
+			boolean state = checkBox.isChecked();
+			for(int i = 0; i < mEntitiesAdapter.getItemCount(); i++)
+				mEntitiesAdapter.setCheckBox( i, state );
+			mSelectedEntities.clear();
+			if(state){
+				mSelectedEntities.addAll(mEntities);
 			}
 		} );
-		flexbox.setVisibility( View.VISIBLE );
 	}
 
 	private void prepareMultipleDeletion(){

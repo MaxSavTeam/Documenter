@@ -30,6 +30,8 @@ public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHo
 		void onEntityClick(String id, Entity.Type type, int index);
 
 		void onLongClick(int index);
+
+		View getViewAt(int position);
 	}
 
 	public EntitiesAdapter(ArrayList<? extends Entity> entities, AdapterCallback callback) {
@@ -79,11 +81,11 @@ public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHo
 		isItemSelected = new ArrayList<>();
 		for (int i = 0; i < mEntities.size(); i++)
 			isItemSelected.add( false );
-		for (int i = 0; i < viewHolders.size(); i++) {
-			ViewHolder holder = viewHolders.get( i );
-			if ( holder == null ) {
+		for (int i = 0; i < getItemCount(); i++) {
+			View view = mAdapterCallback.getViewAt( i );
+			if(view == null)
 				continue;
-			}
+			ViewHolder holder = new ViewHolder( view );
 			holder.checkBox.setVisibility( View.VISIBLE );
 			holder.checkBox.setChecked( isItemSelected.get( i ) );
 		}
@@ -92,9 +94,11 @@ public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHo
 	public void hideCheckBoxes() {
 		isSelectionMode = false;
 		isItemSelected.clear();
-		for(ViewHolder holder : viewHolders){
-			if(holder == null)
+		for (int i = 0; i < getItemCount(); i++) {
+			View view = mAdapterCallback.getViewAt( i );
+			if(view == null)
 				continue;
+			ViewHolder holder = new ViewHolder( view );
 			holder.checkBox.setVisibility( View.GONE );
 			holder.checkBox.setChecked( false );
 		}
@@ -102,8 +106,9 @@ public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHo
 
 	public void setCheckBox(int index, boolean state) {
 		isItemSelected.set( index, state );
-		if(viewHolders.get( index ) != null)
-			viewHolders.get( index ).checkBox.setChecked( state );
+		View view = mAdapterCallback.getViewAt( index );
+		if(view != null)
+			new ViewHolder( view ).checkBox.setChecked( state );
 	}
 
 	@NonNull
@@ -126,12 +131,12 @@ public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHo
 
 		holder.itemView.setOnClickListener( v->{
 			if ( mAdapterCallback != null ) {
-				mAdapterCallback.onEntityClick( entity.getId(), entity.getType(), position );
+				mAdapterCallback.onEntityClick( entity.getId(), entity.getType(), holder.getAdapterPosition() );
 			}
 		} );
 
 		holder.itemView.setOnLongClickListener( v->{
-			mAdapterCallback.onLongClick( position );
+			mAdapterCallback.onLongClick( holder.getAdapterPosition() );
 			return true;
 		} );
 
