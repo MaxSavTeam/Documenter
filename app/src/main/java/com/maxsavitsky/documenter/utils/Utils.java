@@ -104,48 +104,6 @@ public class Utils {
 		sendLog( sContext, path );
 	}
 
-	/*public static  <T> void removeAllSpansInBounds(int selSt, int selEnd, Class<T> type, Spannable e){
-		if(e == null)
-			return;
-
-		ArrayList<SpanEntry<T>> arrayList = new ArrayList<>();
-		T[] spans = e.getSpans( selSt, selEnd, type );
-		for(T span : spans){
-			int st = e.getSpanStart( span );
-			int end = e.getSpanEnd( span );
-			if(st < selSt){
-				arrayList.add( new SpanEntry<T>( span, st, selSt ) );
-			}
-			if(end > selEnd){
-				arrayList.add( new SpanEntry<T>( span, selEnd, end ) );
-			}
-			e.removeSpan( span );
-		}
-		for(SpanEntry<T> se : arrayList){
-			e.setSpan( se.getSpan(), se.getStart(), se.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-		}
-	}*/
-
-	/**
-	 * Check if category, document or entry exists
-	 *
-	 * @param type can be of three types: cat, doc or ent
-	 */
-	public static boolean isNameExist(String name, String type) {
-		name = name.trim();
-		ArrayList<? extends Type> categories = type.equals( "cat" ) ? MainData.getCategoriesList() :
-				(
-						type.equals( "doc" ) ? MainData.getDocumentsList() : MainData.getEntriesList()
-				);
-		for (Type category : categories) {
-			if ( name.equals( category.getName() ) ) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
 	public static Point getScreenSize(){
 		WindowManager windowManager = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
 		Display display = windowManager.getDefaultDisplay();

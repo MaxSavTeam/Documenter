@@ -1690,7 +1690,7 @@ public class EntryEditor extends ThemeActivity {
 									if ( n.isEmpty() || n.trim().equals( "" ) ) {
 										Toast.makeText( EntryEditor.this, R.string.invalid_name, Toast.LENGTH_SHORT ).show();
 									} else {
-										if ( Utils.isNameExist( n, "ent" ) ) {
+										if ( EntitiesStorage.get().isEntryNameExists( n ) ) {
 											AlertDialog.Builder builder1 = new AlertDialog.Builder( EntryEditor.this )
 													.setTitle( R.string.warning )
 													.setMessage( getResources().getString( R.string.this_name_already_exist ) + "\n" +
