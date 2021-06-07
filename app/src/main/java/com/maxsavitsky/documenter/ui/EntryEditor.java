@@ -74,8 +74,6 @@ import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.ThemeActivity;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.data.EntitiesStorage;
-import com.maxsavitsky.documenter.data.MainData;
-import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.data.types.EntryEntity;
 import com.maxsavitsky.documenter.data.types.Group;
 import com.maxsavitsky.documenter.media.images.ImageRenderer;
@@ -157,7 +155,7 @@ public class EntryEditor extends ThemeActivity {
 		}
 		boolean firstCondition = type.equals( "create" ) &&
 				!mTextEditor.getText().toString().isEmpty() &&
-				!tempProperties.equals( new Entry.Properties() );
+				!tempProperties.equals( new EntryEntity.Properties() );
 
 		Log.i( TAG, "backPressed: " + ( mTextEditor.getText().hashCode() ) );
 
@@ -683,7 +681,7 @@ public class EntryEditor extends ThemeActivity {
 					String format = "";
 					format = MimeTypeMap.getSingleton().getExtensionFromMimeType( getContentResolver().getType( uri ) );
 					file = new File( file.getPath() + "." + format );
-					if ( !MainData.isExists( mId ) ) {
+					if ( !EntitiesStorage.get().getEntry( mId ).isPresent() ) {
 						mMediaToMove.add( file );
 					}
 					FileOutputStream fos = new FileOutputStream( file );

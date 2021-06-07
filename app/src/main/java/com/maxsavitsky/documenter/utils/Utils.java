@@ -24,23 +24,17 @@ import com.maxsavitsky.documenter.App;
 import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.data.EntitiesStorage;
-import com.maxsavitsky.documenter.data.MainData;
-import com.maxsavitsky.documenter.data.types.Category;
-import com.maxsavitsky.documenter.data.types.Document;
-import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.data.types.EntryEntity;
-import com.maxsavitsky.documenter.data.types.Type;
 import com.maxsavitsky.exceptionhandler.ExceptionHandler;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Utils {
@@ -164,40 +158,6 @@ public class Utils {
 		}
 	}
 
-	public static void saveCategoriesList(ArrayList<Category> categories) {
-		try {
-			File file = new File( getContext().getExternalFilesDir( null ).getPath() + "/categories.xml" );
-			FileWriter fr = new FileWriter( file, false );
-			fr.write( xmlHeader );
-			fr.append( "<categories>\n" );
-			for (int i = 0; i < categories.size(); i++) {
-				fr.append( "\t<category " + categories.get( i ).toString() + "/>\n" );
-			}
-			fr.append( "</categories>" );
-			fr.flush();
-			fr.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	public static void saveDocumentsList(ArrayList<Document> documents) {
-		try {
-			File file = new File( getContext().getExternalFilesDir( null ).getPath() + "/documents.xml" );
-			FileWriter fr = new FileWriter( file, false );
-			fr.write( xmlHeader );
-			fr.append( "<documents>\n" );
-			for (int i = 0; i < documents.size(); i++) {
-				fr.append( "\t<document " + documents.get( i ).toString() + " />\n" );
-			}
-			fr.append( "</documents>" );
-			fr.flush();
-			fr.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
 	public static void showKeyboard(EditText editText, Context context) {
 		editText.requestFocus();
 		InputMethodManager imm = (InputMethodManager) context.getSystemService( Context.INPUT_METHOD_SERVICE );
@@ -214,108 +174,6 @@ public class Utils {
 		}
 		if ( imm != null ) {
 			imm.hideSoftInputFromWindow( view.getWindowToken(), 0 );
-		}
-	}
-
-	public static void saveEntriesList(ArrayList<Entry> entries) {
-		try {
-			File file = new File( getExternalStoragePath().getPath() + "/entries.xml" );
-			if ( !file.exists() ) {
-				file.createNewFile();
-			}
-			FileWriter fr = new FileWriter( file, false );
-			fr.write( xmlHeader );
-			fr.append( "<entries>\n" );
-			for (Entry entry : entries) {
-				fr.append( "\t<entry " + entry.toString() + " />\n" );
-			}
-			fr.append( "</entries>" );
-			fr.flush();
-			fr.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	public static void saveCategoryDocuments(String id, ArrayList<Document> documents) throws IOException {
-		File file = new File( getExternalStoragePath().getPath() + "/categories/" );
-		if ( !file.exists() ) {
-			file.mkdir();
-		}
-		file = new File( file.getPath() + "/" + id );
-		if ( !file.exists() ) {
-			file.mkdir();
-		}
-		file = new File( file.getPath() + "/" + id + ".xml" );
-		if ( !file.exists() ) {
-			file.createNewFile();
-		}
-		FileWriter fr = new FileWriter( file, false );
-		fr.write( xmlHeader );
-		fr.append( "<documents>\n" );
-		for (int i = 0; i < documents.size(); i++) {
-			Document cur = documents.get( i );
-			fr.append( "\t<document " + "id=\"" + cur.getId() + "\" />\n" );
-		}
-		fr.append( "</documents>" );
-		fr.flush();
-		fr.close();
-	}
-
-	public static void saveDocumentEntries(String id, ArrayList<Entry> entries) {
-		File file = new File( getExternalStoragePath().getPath() + "/documents/" );
-		try {
-			if ( !file.exists() ) {
-				file.mkdir();
-			}
-			file = new File( file.getPath() + "/" + id );
-			if ( !file.exists() ) {
-				file.mkdir();
-			}
-			file = new File( file.getPath() + "/" + id + ".xml" );
-			if ( !file.exists() ) {
-				file.createNewFile();
-			}
-			FileWriter fr = new FileWriter( file, false );
-			fr.write( xmlHeader );
-			fr.append( "<entries>\n" );
-			for (Entry entry : entries) {
-				fr.append( "\t<entry id=\"" + entry.getId() + "\" />\n" );
-			}
-			fr.append( "</entries>" );
-			fr.flush();
-			fr.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	public static void saveInWhichCategoriesDocumentWithIdIncludedIn(String id, ArrayList<Category> categories) throws IOException {
-		MainData.getDocumentWithId( id ).saveInWhichCategoriesDocumentWithIdIncludedIn( categories );
-	}
-
-	public static void createAllNecessaryForDocument(String id) throws IOException {
-		File file = new File( getExternalStoragePath().getPath() + "/documents/" + id );
-		if ( !file.exists() ) {
-			file.mkdirs();
-		}
-		file = new File( file.getPath() + "/" + id + ".xml" );
-		if ( !file.exists() ) {
-			file.createNewFile();
-			FileWriter fr = new FileWriter( file, false );
-			fr.write( xmlHeader );
-			fr.append( "<entries>\n</entries>" );
-			fr.flush();
-			fr.close();
-		}
-		file = new File( getExternalStoragePath().getPath() + "/documents/" + id + "/included_in.xml" );
-		if ( !file.exists() ) {
-			file.createNewFile();
-			FileWriter fr = new FileWriter( file, false );
-			fr.write( xmlHeader );
-			fr.append( "<categories>\n</categories>" );
-			fr.flush();
-			fr.close();
 		}
 	}
 
@@ -356,8 +214,9 @@ public class Utils {
 	}
 
 	public static File getEntryImagesMediaFolder(String id) {
-		if ( MainData.isExists( id ) ) {
-			return MainData.getEntryWithId( id ).getImagesMediaFolder();
+		Optional<EntryEntity> op = EntitiesStorage.get().getEntry(id);
+		if ( op.isPresent() ) {
+			return op.get().getImagesMediaFolder();
 		} else {
 			File tempFile = getTempFolder();
 			if ( !tempFile.exists() ) {
@@ -422,27 +281,5 @@ public class Utils {
 
 	public static AlertDialog getErrorDialog(Exception e, Context context){
 		return getErrorDialog( e, context, true, true );
-	}
-
-	public static AlertDialog getErrorDialog(Throwable t, Context context) {
-		AlertDialog.Builder builder = new AlertDialog.Builder( context ).setTitle( "Error stacktrace" );
-		builder.setMessage( Html.fromHtml( "<b>Stacktrace:</b><br><br>" + getThrowableStackTrace( t ) + "<br><br>" + t.getMessage() ) )
-				.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.cancel();
-					}
-				} ).setCancelable( false );
-
-		return builder.create();
-	}
-
-	public static Comparator<? super Type> getSortByNamesComparator(){
-		return new Comparator<Type>() {
-			@Override
-			public int compare(Type o1, Type o2) {
-				return o1.getName().compareToIgnoreCase( o2.getName() );
-			}
-		};
 	}
 }
