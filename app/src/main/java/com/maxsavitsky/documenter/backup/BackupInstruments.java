@@ -76,6 +76,34 @@ public class BackupInstruments {
 			backupInterface.onSuccess( System.currentTimeMillis() );
 	}
 
+	public static void createOldBackup(File path, BackupInterface backupInterface) throws IOException {
+		long startTime = System.currentTimeMillis();
+		Utils.removeAllUnusedImages();
+		File dir = new File( App.appStoragePath );
+		path.createNewFile();
+		ZipOutputStream zipOutputStream = new ZipOutputStream( new FileOutputStream( path ) );
+		zipOutputStream.setLevel( 9 );
+
+		if ( dir.listFiles() == null ) {
+			zipOutputStream.close();
+			return;
+		}
+		for (File file : dir.listFiles()) {
+			if(!file.getName().equals( "cloud_backup.zip" ) &&
+					!file.getPath().equals( path.getPath() ) &&
+					!file.getName().equals( "backups" ) &&
+					!file.getName().equals( "data" ) &&
+					!file.getName().equals( "updates" ))
+				myPack( file, file.getName(), zipOutputStream );
+		}
+		zipOutputStream.close();
+
+		long end = System.currentTimeMillis();
+		Log.i( THIS_TAG, "packed in " + ((end - startTime) / 1000) + "s" );
+		if(backupInterface != null)
+			backupInterface.onSuccess( System.currentTimeMillis() );
+	}
+
 	private static void myPack(File path, String fileName, ZipOutputStream out) throws IOException {
 		if ( path.isHidden() ) {
 			return;

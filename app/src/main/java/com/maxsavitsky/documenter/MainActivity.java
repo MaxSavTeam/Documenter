@@ -179,7 +179,7 @@ public class MainActivity extends ThemeActivity {
 				if ( !f.exists() ) {
 					f.mkdirs();
 				}
-				BackupInstruments.createBackupToFile( new File( f, "before_reformat_backup.zip" ), null );
+				BackupInstruments.createOldBackup( new File( f, "before_reformat_backup.zip" ), null );
 				DataReformatter.runReformat();
 			}
 		}

@@ -28,7 +28,7 @@ android {
         
         targetSdkVersion 30
         versionCode 61
-        versionName "2.0.0"
+        versionName "2.0.0-beta"
 
         globalVersionName = versionName
         
