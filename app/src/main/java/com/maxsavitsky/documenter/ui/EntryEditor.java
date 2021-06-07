@@ -74,7 +74,7 @@ import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.ThemeActivity;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.data.EntitiesStorage;
-import com.maxsavitsky.documenter.data.types.EntryEntity;
+import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.data.types.Group;
 import com.maxsavitsky.documenter.media.images.ImageRenderer;
 import com.maxsavitsky.documenter.ui.editor.TextEditor;
@@ -97,10 +97,10 @@ import java.util.Optional;
 
 public class EntryEditor extends ThemeActivity {
 	private String type, mOriginalText;
-	private EntryEntity mEntry, mCopyToEntry;
+	private Entry mEntry, mCopyToEntry;
 	private String mId;
 	private String title = "Create new entry";
-	private EntryEntity.Properties tempProperties;
+	private Entry.Properties tempProperties;
 	private TextEditor mTextEditor;
 	private ImageButton btnBgColorPicker, btnTextColorPicker;
 	private ImageButton btnSubScript, btnSupScript;
@@ -124,7 +124,7 @@ public class EntryEditor extends ThemeActivity {
 	private Group mParentGroup;
 
 	private interface OnLoadedTextListener {
-		void loaded(Spannable spannable, EntryEntity entry);
+		void loaded(Spannable spannable, Entry entry);
 
 		void exceptionOccurred(Exception e);
 	}
@@ -155,7 +155,7 @@ public class EntryEditor extends ThemeActivity {
 		}
 		boolean firstCondition = type.equals( "create" ) &&
 				!mTextEditor.getText().toString().isEmpty() &&
-				!tempProperties.equals( new EntryEntity.Properties() );
+				!tempProperties.equals( new Entry.Properties() );
 
 		Log.i( TAG, "backPressed: " + ( mTextEditor.getText().hashCode() ) );
 
@@ -312,7 +312,7 @@ public class EntryEditor extends ThemeActivity {
 
 		final OnLoadedTextListener listener = new OnLoadedTextListener() {
 			@Override
-			public void loaded(Spannable spannable, EntryEntity entry) {
+			public void loaded(Spannable spannable, Entry entry) {
 				mTextEditor.setSelection( changeEntry.getCursorPosition() );
 				runOnUiThread( ()->( (ScrollView) findViewById( R.id.scrollView ) ).setScrollY( changeEntry.getScrollY() ) );
 			}
@@ -385,7 +385,7 @@ public class EntryEditor extends ThemeActivity {
 		mId = startIntent.getStringExtra( "id" );
 
 		if ( "edit".equals( type ) ) {
-			Optional<EntryEntity> op = EntitiesStorage.get().getEntry( mId );
+			Optional<Entry> op = EntitiesStorage.get().getEntry( mId );
 			if ( !op.isPresent() ) {
 				Toast.makeText( this, "Entry not found", Toast.LENGTH_SHORT ).show();
 				super.onBackPressed();
@@ -398,7 +398,7 @@ public class EntryEditor extends ThemeActivity {
 				Utils.getErrorDialog( e, this ).show();
 				return;
 			}
-			tempProperties = new EntryEntity.Properties( mEntry.getProperties() );
+			tempProperties = new Entry.Properties( mEntry.getProperties() );
 			mDefaultTextColor = tempProperties.getDefaultTextColor();
 			mTextEditor.setTextColor( mDefaultTextColor );
 			setImageButtonColor( tempProperties.getBgColor(), btnBgColorPicker.getId() );
@@ -417,21 +417,21 @@ public class EntryEditor extends ThemeActivity {
 			mParentGroup = parentOptional.get();
 
 			title = getResources().getString( R.string.create_entry );
-			mEntry = new EntryEntity( "temp_entry", "" );
-			tempProperties = new EntryEntity.Properties();
+			mEntry = new Entry( "temp_entry", "" );
+			tempProperties = new Entry.Properties();
 			mId = Utils.generateUniqueId() + "_0";
 			hideUpButton();
 		} else if ( "copy".equals( type ) ) {
 			String toId = startIntent.getStringExtra( "to_id" );
 			String fromId = startIntent.getStringExtra( "from_id" );
-			Optional<EntryEntity> op = EntitiesStorage.get().getEntry( fromId );
+			Optional<Entry> op = EntitiesStorage.get().getEntry( fromId );
 			if ( !op.isPresent() ) {
 				Toast.makeText( this, "Entry not found", Toast.LENGTH_SHORT ).show();
 				super.onBackPressed();
 				return;
 			}
 			mEntry = op.get();
-			tempProperties = new EntryEntity.Properties( mEntry.getProperties() );
+			tempProperties = new Entry.Properties( mEntry.getProperties() );
 
 			op = EntitiesStorage.get().getEntry( toId );
 			if ( !op.isPresent() ) {
@@ -500,14 +500,14 @@ public class EntryEditor extends ThemeActivity {
 	}
 
 	private void loadTextFromEntryInEditor(String id) {
-		Optional<EntryEntity> op = EntitiesStorage.get().getEntry( id );
+		Optional<Entry> op = EntitiesStorage.get().getEntry( id );
 		if ( !op.isPresent() ) {
 			Log.i( TAG, "loadTextFromEntryInEditor: entry with id not found. id=" + id );
 			Toast.makeText( this, "Loading entry not found", Toast.LENGTH_SHORT ).show();
 			super.onBackPressed();
 			return;
 		}
-		final EntryEntity entry = op.get();
+		final Entry entry = op.get();
 		mProgressDialogOnTextLoad = new ProgressDialog( this );
 		mProgressDialogOnTextLoad.setTitle( R.string.loading );
 		mProgressDialogOnTextLoad.setMessage( getResources().getString( R.string.entry_is_loading ) );
@@ -566,7 +566,7 @@ public class EntryEditor extends ThemeActivity {
 
 	private final OnLoadedTextListener mOnLoadedTextListener = new OnLoadedTextListener() {
 		@Override
-		public void loaded(final Spannable spannable, final EntryEntity entry) {
+		public void loaded(final Spannable spannable, final Entry entry) {
 			double seconds = ( System.currentTimeMillis() - mStartLoadTextTime ) / 1000.0;
 			Log.i( TAG + "L", "mOnLoadedTextListener.loaded called. Seconds = " + seconds );
 

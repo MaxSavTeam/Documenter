@@ -23,7 +23,7 @@ import com.maxsavitsky.documenter.App;
 import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.data.EntitiesStorage;
-import com.maxsavitsky.documenter.data.types.EntryEntity;
+import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.exceptionhandler.ExceptionHandler;
 
 import java.io.ByteArrayOutputStream;
@@ -64,7 +64,7 @@ public class Utils {
 	 * This functions checks all entries and all images and removes unused images in this entries
 	 * */
 	public static void removeAllUnusedImages(){
-		for(EntryEntity e : EntitiesStorage.get().getEntryEntities()){
+		for(Entry e : EntitiesStorage.get().getEntryEntities()){
 			e.removeUnusedImages();
 		}
 	}
@@ -201,7 +201,7 @@ public class Utils {
 	}
 
 	public static File getEntryImagesMediaFolder(String id) {
-		Optional<EntryEntity> op = EntitiesStorage.get().getEntry(id);
+		Optional<Entry> op = EntitiesStorage.get().getEntry(id);
 		if ( op.isPresent() ) {
 			return op.get().getImagesMediaFolder();
 		} else {

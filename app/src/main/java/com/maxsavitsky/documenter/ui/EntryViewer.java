@@ -36,7 +36,7 @@ import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.ThemeActivity;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.data.EntitiesStorage;
-import com.maxsavitsky.documenter.data.types.EntryEntity;
+import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.data.types.Group;
 import com.maxsavitsky.documenter.ui.widget.CustomScrollView;
 import com.maxsavitsky.documenter.utils.Utils;
@@ -49,7 +49,7 @@ import java.util.Optional;
 public class EntryViewer extends ThemeActivity {
 
 	private static final String TAG = MainActivity.TAG + " EntryViewer";
-	private EntryEntity mEntry;
+	private Entry mEntry;
 	private Group mParentGroup;
 	private SharedPreferences sp;
 	private CustomScrollView mScrollView;
@@ -342,7 +342,7 @@ public class EntryViewer extends ThemeActivity {
 		setSupportActionBar( toolbar );
 		Intent intent = getIntent();
 
-		Optional<EntryEntity> op = EntitiesStorage.get().getEntry( intent.getStringExtra( "id" ) );
+		Optional<Entry> op = EntitiesStorage.get().getEntry( intent.getStringExtra( "id" ) );
 		if ( op.isPresent() ) {
 			mEntry = op.get();
 		} else {

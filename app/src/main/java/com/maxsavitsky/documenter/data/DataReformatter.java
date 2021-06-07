@@ -1,7 +1,7 @@
 package com.maxsavitsky.documenter.data;
 
 import com.maxsavitsky.documenter.App;
-import com.maxsavitsky.documenter.data.types.EntryEntity;
+import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.data.types.Group;
 import com.maxsavitsky.documenter.utils.Utils;
 
@@ -31,15 +31,15 @@ public class DataReformatter {
 	private static JSONObject prepareInfoJSON() throws Exception {
 		SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
 
-		ArrayList<EntryEntity> entriesList = new ArrayList<>();
+		ArrayList<Entry> entriesList = new ArrayList<>();
 		File file = new File( App.appStoragePath, "entries.xml" );
 		if ( file.exists() ) {
 			EntityHandler entityHandler = new EntityHandler( "entry" );
 			saxParser.parse( file, entityHandler );
 			for (Entity entity : entityHandler.getEntities())
-				entriesList.add( new EntryEntity( entity.getId(), entity.getName() ) );
+				entriesList.add( new Entry( entity.getId(), entity.getName() ) );
 		}
-		for (EntryEntity e : entriesList) {
+		for (Entry e : entriesList) {
 			File infoFile = new File( App.appStoragePath, "entries/" + e.getId() + "/info.xml" );
 			if ( infoFile.exists() ) {
 				TimestampHandler handler = new TimestampHandler();
@@ -69,12 +69,12 @@ public class DataReformatter {
 			if ( includedEntriesFile.exists() ) {
 				EntityHandler entityHandler = new EntityHandler( "entry" );
 				saxParser.parse( includedEntriesFile, entityHandler );
-				ArrayList<EntryEntity> includedEntries = new ArrayList<>();
+				ArrayList<Entry> includedEntries = new ArrayList<>();
 				for (Entity p : entityHandler.getEntities()) {
-					for (EntryEntity entryEntity : entriesList) {
-						if ( entryEntity.getId().equals( p.getId() ) ) {
-							includedEntries.add( entryEntity );
-							entryEntity.addParent( document.getId() );
+					for (Entry entry : entriesList) {
+						if ( entry.getId().equals( p.getId() ) ) {
+							includedEntries.add( entry );
+							entry.addParent( document.getId() );
 						}
 					}
 				}
@@ -131,7 +131,7 @@ public class DataReformatter {
 				g.addParent( rootGroup.getId() );
 			}
 		}
-		for(EntryEntity e : entriesList){
+		for(Entry e : entriesList){
 			if(e.getParents().size() == 0){
 				entities.add( e );
 				e.addParent( rootGroup.getId() );
@@ -243,13 +243,13 @@ public class DataReformatter {
 		for (int i = 0; i < jsonArray.length(); i++) {
 			String id = jsonArray.getJSONObject( i ).getString( "id" );
 			File propsFile = new File( App.appStoragePath, "entries/" + id + "/properties.xml" );
-			EntryEntity.Properties properties;
+			Entry.Properties properties;
 			if ( propsFile.exists() ) {
 				EntryPropertiesHandler handler = new EntryPropertiesHandler();
 				saxParser.parse( propsFile, handler );
 				properties = handler.getProperties();
 			} else {
-				properties = new EntryEntity.Properties();
+				properties = new Entry.Properties();
 			}
 			propsFile = new File( App.appStoragePath, "entries/" + id + "/properties.json" );
 			if ( !propsFile.exists() ) {
@@ -378,9 +378,9 @@ public class DataReformatter {
 	}
 
 	private static class EntryPropertiesHandler extends DefaultHandler {
-		private final EntryEntity.Properties mProperties = new EntryEntity.Properties();
+		private final Entry.Properties mProperties = new Entry.Properties();
 
-		public EntryEntity.Properties getProperties() {
+		public Entry.Properties getProperties() {
 			return mProperties;
 		}
 

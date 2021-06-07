@@ -5,7 +5,7 @@ import android.util.Log;
 import com.maxsavitsky.documenter.App;
 import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.data.types.Entity;
-import com.maxsavitsky.documenter.data.types.EntryEntity;
+import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.data.types.Group;
 import com.maxsavitsky.documenter.utils.Utils;
 
@@ -35,17 +35,17 @@ public class EntitiesStorage {
 	}
 
 	private ArrayList<Group> mGroups = new ArrayList<>();
-	private ArrayList<EntryEntity> mEntryEntities = new ArrayList<>();
+	private ArrayList<Entry> mEntryEntities = new ArrayList<>();
 
 	public void setGroups(ArrayList<Group> groups) {
 		mGroups = groups;
 	}
 
-	public void setEntryEntities(ArrayList<EntryEntity> entryEntities) {
+	public void setEntryEntities(ArrayList<Entry> entryEntities) {
 		mEntryEntities = entryEntities;
 	}
 
-	public ArrayList<EntryEntity> getEntryEntities() {
+	public ArrayList<Entry> getEntryEntities() {
 		return new ArrayList<>( mEntryEntities );
 	}
 
@@ -57,7 +57,7 @@ public class EntitiesStorage {
 		return Optional.empty();
 	}
 
-	public Optional<EntryEntity> getEntry(String id) {
+	public Optional<Entry> getEntry(String id) {
 		for (var e : mEntryEntities) {
 			if ( e.getId().equals( id ) ) {
 				return Optional.of( e );
@@ -197,9 +197,9 @@ public class EntitiesStorage {
 		save();
 	}
 
-	public EntryEntity createEntry(String name, String parentId) {
+	public Entry createEntry(String name, String parentId) {
 		String id = Utils.generateUniqueId() + "0";
-		EntryEntity e = new EntryEntity( id, name );
+		Entry e = new Entry( id, name );
 		mEntryEntities.add( e );
 		getGroup( parentId )
 				.ifPresent( g->{
@@ -223,7 +223,7 @@ public class EntitiesStorage {
 				break;
 			}
 		}
-		for (EntryEntity e : mEntryEntities) {
+		for (Entry e : mEntryEntities) {
 			if ( e.getId().equals( id ) ) {
 				for (String p : e.getParents()) {
 					getGroup( p ).ifPresent( group->group.removeContainingEntity( id ) );
@@ -236,10 +236,10 @@ public class EntitiesStorage {
 	}
 
 	public void deleteEntry(String id){
-		Optional<EntryEntity> op = getEntry( id );
+		Optional<Entry> op = getEntry( id );
 		if(!op.isPresent())
 			return;
-		EntryEntity e = op.get();
+		Entry e = op.get();
 		for(String p : e.getParents()){
 			getGroup( p )
 					.ifPresent( g->g.removeContainingEntity( e.getId() ) );
@@ -249,7 +249,7 @@ public class EntitiesStorage {
 		save();
 	}
 
-	private void deleteEntry(EntryEntity e) {
+	private void deleteEntry(Entry e) {
 		Utils.deleteDirectory( new File( App.appDataPath + "/entries/" + e.getId() ) );
 		mEntryEntities.remove( e );
 	}
@@ -271,8 +271,8 @@ public class EntitiesStorage {
 		for (Entity m : g.getContainingEntities()) {
 			m.removeParent( g.getId() );
 			if ( mode == 1 || mode == 0 && checkEntityBeforeDeletion( m, map ) ) {
-				if ( m instanceof EntryEntity ) {
-					deleteEntry( (EntryEntity) m );
+				if ( m instanceof Entry ) {
+					deleteEntry( (Entry) m );
 				} else if ( m instanceof Group ) {
 					deleteGroupInternal( (Group) m, mode, map );
 				}
@@ -301,8 +301,8 @@ public class EntitiesStorage {
 			if ( mode == 1 || mode == 0 && checkEntityBeforeDeletion( e, map ) ) {
 				if ( e instanceof Group ) {
 					deleteGroupInternal( (Group) e, mode, map );
-				} else if ( e instanceof EntryEntity ) {
-					deleteEntry( (EntryEntity) e );
+				} else if ( e instanceof Entry ) {
+					deleteEntry( (Entry) e );
 				}
 			}
 		}

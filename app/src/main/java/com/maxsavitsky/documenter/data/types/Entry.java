@@ -33,7 +33,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class EntryEntity extends Entity {
+public class Entry extends Entity {
 
 	private String rawText = null;
 	private ArrayList<SpanEntry<AlignmentSpan.Standard>> alignments = null;
@@ -43,7 +43,7 @@ public class EntryEntity extends Entity {
 
 	private String entryDir;
 
-	public EntryEntity(String id, String name) {
+	public Entry(String id, String name) {
 		super( id, name );
 		entryDir = App.appDataPath + "/entries/" + id;
 	}

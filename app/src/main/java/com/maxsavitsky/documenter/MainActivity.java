@@ -19,7 +19,7 @@ import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.data.DataReformatter;
 import com.maxsavitsky.documenter.data.EntitiesStorage;
 import com.maxsavitsky.documenter.data.types.Entity;
-import com.maxsavitsky.documenter.data.types.EntryEntity;
+import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.data.types.Group;
 import com.maxsavitsky.documenter.ui.EntitiesListActivity;
 import com.maxsavitsky.documenter.updates.UpdatesChecker;
@@ -207,11 +207,11 @@ public class MainActivity extends ThemeActivity {
 			}
 			data = new JSONObject( outputStream.toString() );
 		}
-		ArrayList<EntryEntity> entries = new ArrayList<>();
+		ArrayList<Entry> entries = new ArrayList<>();
 		JSONArray array = data.getJSONArray( "entries" );
 		for (int i = 0; i < array.length(); i++) {
 			JSONObject jsonObject = array.getJSONObject( i );
-			EntryEntity e = new EntryEntity( jsonObject.getString( "id" ), jsonObject.getString( "name" ) );
+			Entry e = new Entry( jsonObject.getString( "id" ), jsonObject.getString( "name" ) );
 			e.setCreationTimestamp( jsonObject.getLong( "timestamp" ) );
 			entries.add( e );
 		}
@@ -247,7 +247,7 @@ public class MainActivity extends ThemeActivity {
 							g.addParent( key );
 							break;
 						}
-					for (EntryEntity e : entries)
+					for (Entry e : entries)
 						if ( e.getId().equals( id ) ) {
 							containingEntities.add( e );
 							e.addParent( key );
