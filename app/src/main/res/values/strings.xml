@@ -163,4 +163,7 @@
     <string name="remove">Remove</string>
     <string name="multiple_deletion_note">Note: that option will be applied only to groups which you have selected</string>
     <string name="list_is_empty">List is empty</string>
+    <string name="displaying_mode">Displaying mode</string>
+    <string name="legacy">Legacy</string>
+    <string name="present">Present</string>
 </resources>

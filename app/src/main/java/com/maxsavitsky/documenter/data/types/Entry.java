@@ -17,9 +17,6 @@ import com.maxsavitsky.documenter.utils.SpanEntry;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -54,20 +51,20 @@ public class Entry extends Entity {
 		mProperties = properties;
 	}
 
-	public Spannable loadText(int imageMaxWidth) throws IOException, JSONException {
+	public Spannable loadText(int imageMaxWidth) throws JSONException, IOException {
+		int flag;
+		if(getProperties().getDisplayingMode() == 0)
+			flag = Html.FROM_HTML_MODE_LEGACY;
+		else
+			flag = Html.FROM_HTML_MODE_COMPACT;
+		return loadText( imageMaxWidth, flag );
+	}
+
+	public Spannable loadText(int imageMaxWidth, int flags) throws IOException, JSONException {
 		if ( rawText == null ) {
 			rawText = loadTextFromStorage();
 		}
-		org.jsoup.nodes.Document doc = Jsoup.parse( rawText );
-		Elements elements = doc.select( "div[align]" );
-		for (Element element : elements) {
-			String styleAttr = element.attr( "style" );
-			element.attr( "style", styleAttr + "text-align:" + element.attr( "align" ) + ";" );
-			element.removeAttr( "align" );
-		}
-		rawText = doc.html();
-		//Spannable spannable = (Spannable) HtmlCompat.fromHtml( rawText, HtmlCompat.FROM_HTML_MODE_COMPACT, new HtmlImageLoader( imageMaxWidth ), null );
-		Spannable spannable = (Spannable) Html.fromHtml( rawText, Html.FROM_HTML_MODE_LEGACY, new ImageSpanLoader( getId(), imageMaxWidth ), null );
+		Spannable spannable = (Spannable) Html.fromHtml( rawText, flags, new ImageSpanLoader( getId(), imageMaxWidth ), null );
 		if ( alignments == null || relativeSizeSpans == null ) {
 			loadAdditional();
 		}
@@ -317,6 +314,8 @@ public class Entry extends Entity {
 
 		private int mDefaultTextColor = Color.BLACK;
 
+		private int displayingMode = 1;
+
 		public int getDefaultTextColor() {
 			return mDefaultTextColor;
 		}
@@ -349,6 +348,7 @@ public class Entry extends Entity {
 			this.mTextAlignment = other.mTextAlignment;
 			this.mSaveLastPos = other.mSaveLastPos;
 			this.mDefaultTextColor = other.mDefaultTextColor;
+			this.displayingMode = other.displayingMode;
 		}
 
 		public Properties() {}
@@ -383,6 +383,14 @@ public class Entry extends Entity {
 
 		public void setTextSize(int textSize) {
 			this.textSize = textSize;
+		}
+
+		public int getDisplayingMode() {
+			return displayingMode;
+		}
+
+		public void setDisplayingMode(int displayingMode) {
+			this.displayingMode = displayingMode;
 		}
 
 		@Override
@@ -426,7 +434,8 @@ public class Entry extends Entity {
 					.put( "scrollPosition", mScrollPosition )
 					.put( "saveLastPosition", mSaveLastPos )
 					.put( "textAlignment", mTextAlignment )
-					.put( "defaultTextColor", mDefaultTextColor );
+					.put( "defaultTextColor", mDefaultTextColor )
+					.put( "displayingMode", displayingMode );
 			return jsonObject;
 		}
 
@@ -439,6 +448,7 @@ public class Entry extends Entity {
 			properties.mSaveLastPos = jsonObject.optBoolean( "saveLastPosition", properties.mSaveLastPos );
 			properties.mTextAlignment = jsonObject.optInt( "textAlignment", properties.mTextAlignment );
 			properties.mDefaultTextColor = jsonObject.optInt( "defaultTextColor", properties.mDefaultTextColor );
+			properties.displayingMode = jsonObject.optInt( "displayingMode", properties.displayingMode );
 			return properties;
 		}
 

@@ -516,6 +516,7 @@ public class EntryEditor extends ThemeActivity {
 		new Thread( ()->{
 			mStartLoadTextTime = System.currentTimeMillis();
 			try {
+				entry.loadProperties();
 				Spannable loadedSpannable = entry.loadText( Utils.getScreenSize().x );
 				mOnLoadedTextListener.loaded( loadedSpannable, entry );
 			} catch (final IOException | JSONException e) {

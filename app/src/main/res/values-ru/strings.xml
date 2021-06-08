@@ -153,4 +153,7 @@
     <string name="remove">Убрать</string>
     <string name="multiple_deletion_note">Примечание: эта опция применится только к группам, которые Вы выбрали</string>
     <string name="list_is_empty">Список пуст</string>
+    <string name="displaying_mode">Режим отображения</string>
+    <string name="legacy">Устаревший</string>
+    <string name="present">Актуальный</string>
 </resources>

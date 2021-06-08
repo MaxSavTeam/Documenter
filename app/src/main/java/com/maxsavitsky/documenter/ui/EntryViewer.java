@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.Html;
 import android.text.Spannable;
 import android.util.Log;
 import android.util.TypedValue;
@@ -213,6 +214,30 @@ public class EntryViewer extends ThemeActivity {
 			sendBroadcast( new Intent( BuildConfig.APPLICATION_ID + ".REFRESH_ENTITIES_LISTS" ) );
 		} else if(itemId == R.id.item_debug_show_id){
 			Toast.makeText( this, mEntry.getId(), Toast.LENGTH_SHORT ).show();
+		} else if(itemId == R.id.item_displaying_mode){
+			AlertDialog.Builder builder = new AlertDialog.Builder(this, super.mAlertDialogStyle);
+			final int[] selectedItem = new int[ 1 ];
+			builder
+					.setSingleChoiceItems(
+							new String[]{ getString( R.string.legacy ), getString( R.string.present ) },
+							mEntry.getProperties().getDisplayingMode(),
+							(dialog, which)->selectedItem[ 0 ] = which
+					)
+					.setNegativeButton( R.string.cancel, (dialog, which) -> dialog.cancel() )
+					.setPositiveButton( "OK", (dialog, which)->{
+						if(selectedItem[0] != mEntry.getProperties().getDisplayingMode()){
+							mEntry.getProperties().setDisplayingMode( selectedItem[0] );
+							try {
+								mEntry.saveProperties();
+							} catch (IOException | JSONException e) {
+								e.printStackTrace();
+								Log.i( TAG, "choose displaying mode: " + e );
+							}
+							setResult( Results.REOPEN, getIntent() );
+							onBackPressed();
+						}
+					} );
+			builder.show();
 		}
 		return super.onOptionsItemSelected( item );
 	}
@@ -411,7 +436,12 @@ public class EntryViewer extends ThemeActivity {
 
 		final Thread loadThread = new Thread( ()->{
 			try {
-				mCallback.loaded( mEntry.loadText( Utils.getScreenSize().x ) );
+				int flags;
+				if(mEntry.getProperties().getDisplayingMode() == 0)
+					flags = Html.FROM_HTML_MODE_LEGACY;
+				else
+					flags = Html.FROM_HTML_MODE_COMPACT;
+				mCallback.loaded( mEntry.loadText( Utils.getScreenSize().x, flags ) );
 			} catch (IOException | JSONException e) {
 				e.printStackTrace();
 				mCallback.exceptionOccurred( e );
