@@ -367,36 +367,30 @@ public class EntryViewer extends ThemeActivity {
 		textView.setTextColor( mEntry.getProperties().getDefaultTextColor() );
 
 		mScrollView = findViewById( R.id.viewEntryScrollView );
-		mScrollView.setOnScrollChangeListener( new View.OnScrollChangeListener() {
-			@Override
-			public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
-				if ( oldScrollY > scrollY && scrollY > 5 ) {
-					showUpButton();
-				} else if ( scrollY <= 5 || oldScrollY < scrollY ) {
-					hideUpButton();
-				}
-				mEntry.getProperties().setScrollPosition( mScrollView.getScrollY() );
-				try {
-					mEntry.saveProperties();
-				} catch (Exception e) {
-					e.printStackTrace();
-					Log.i( TAG, "onScrollChange: " + e );
-				}
+		mScrollView.setOnScrollChangeListener( (v, scrollX, scrollY, oldScrollX, oldScrollY)->{
+			if ( oldScrollY > scrollY && scrollY > 5 ) {
+				showUpButton();
+			} else if ( scrollY <= 5 || oldScrollY < scrollY ) {
+				hideUpButton();
+			}
+			mEntry.getProperties().setScrollPosition( mScrollView.getScrollY() );
+			try {
+				mEntry.saveProperties();
+			} catch (Exception e) {
+				e.printStackTrace();
+				Log.i( TAG, "onScrollChange: " + e );
 			}
 		} );
-		mScrollView.setOnTouchListener( new View.OnTouchListener() {
-			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-				if ( event.getAction() == MotionEvent.ACTION_DOWN ) {
-					if ( mScrollAnimator != null ) {
-						mScrollAnimator.cancel();
-					}
-				} else if ( event.getAction() == MotionEvent.ACTION_UP ) {
-					startScroll( mScrollSpeed );
+		mScrollView.setOnTouchListener( (v, event)->{
+			if ( event.getAction() == MotionEvent.ACTION_DOWN ) {
+				if ( mScrollAnimator != null ) {
+					mScrollAnimator.cancel();
 				}
-				mEntry.getProperties().setScrollPosition( mScrollView.getScrollY() ); // just remember
-				return false;
+			} else if ( event.getAction() == MotionEvent.ACTION_UP ) {
+				startScroll( mScrollSpeed );
 			}
+			mEntry.getProperties().setScrollPosition( mScrollView.getScrollY() ); // just remember
+			return false;
 		} );
 		findViewById( R.id.fabUpView ).setOnClickListener( v->mScrollView.smoothScrollTo( 0, 0 ) );
 
@@ -405,6 +399,13 @@ public class EntryViewer extends ThemeActivity {
 			findViewById( R.id.speedLayout ).setVisibility( View.GONE );
 			startScroll( 0 );
 		} );
+
+		try {
+			mEntry.loadProperties();
+		} catch (IOException | JSONException e) {
+			e.printStackTrace();
+			Utils.getErrorDialog( e, this ).show();
+		}
 
 		getWindow().getDecorView().setBackgroundColor( mEntry.getProperties().getBgColor() );
 
