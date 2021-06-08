@@ -11,7 +11,7 @@ import android.text.style.RelativeSizeSpan;
 import android.view.Gravity;
 
 import com.maxsavitsky.documenter.App;
-import com.maxsavitsky.documenter.data.html.HtmlImageLoader;
+import com.maxsavitsky.documenter.data.html.ImageSpanLoader;
 import com.maxsavitsky.documenter.utils.SpanEntry;
 
 import org.json.JSONArray;
@@ -67,7 +67,7 @@ public class Entry extends Entity {
 		}
 		rawText = doc.html();
 		//Spannable spannable = (Spannable) HtmlCompat.fromHtml( rawText, HtmlCompat.FROM_HTML_MODE_COMPACT, new HtmlImageLoader( imageMaxWidth ), null );
-		Spannable spannable = (Spannable) Html.fromHtml( rawText, Html.FROM_HTML_MODE_LEGACY, new HtmlImageLoader( imageMaxWidth ), null );
+		Spannable spannable = (Spannable) Html.fromHtml( rawText, Html.FROM_HTML_MODE_LEGACY, new ImageSpanLoader( getId(), imageMaxWidth ), null );
 		if ( alignments == null || relativeSizeSpans == null ) {
 			loadAdditional();
 		}

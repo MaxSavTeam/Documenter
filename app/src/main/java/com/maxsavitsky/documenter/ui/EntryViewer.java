@@ -211,6 +211,8 @@ public class EntryViewer extends ThemeActivity {
 			}
 			EntitiesStorage.get().save();
 			sendBroadcast( new Intent( BuildConfig.APPLICATION_ID + ".REFRESH_ENTITIES_LISTS" ) );
+		} else if(itemId == R.id.item_debug_show_id){
+			Toast.makeText( this, mEntry.getId(), Toast.LENGTH_SHORT ).show();
 		}
 		return super.onOptionsItemSelected( item );
 	}
@@ -263,6 +265,7 @@ public class EntryViewer extends ThemeActivity {
 		if ( mParentGroup == null || mParentGroup.getId().equals( "root" ) && mEntry.getParents().size() == 1 ) {
 			menu.findItem( R.id.item_menu_remove_from_parent ).setVisible( false );
 		}
+		menu.findItem( R.id.item_debug_show_id ).setVisible( BuildConfig.DEBUG );
 		return super.onCreateOptionsMenu( menu );
 	}
 

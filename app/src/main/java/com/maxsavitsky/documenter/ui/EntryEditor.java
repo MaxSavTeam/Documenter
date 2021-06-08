@@ -720,7 +720,7 @@ public class EntryEditor extends ThemeActivity {
 
 		Drawable d = ImageRenderer.renderDrawable( file.getPath(), mTextEditor.getWidth() );
 
-		ImageSpan imageSpan = new ImageSpan( d, file.getPath() );
+		ImageSpan imageSpan = new ImageSpan( d, file.getName() );
 
 		e.setSpan( imageSpan, s, s + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 

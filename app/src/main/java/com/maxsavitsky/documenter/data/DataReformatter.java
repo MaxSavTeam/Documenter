@@ -1,8 +1,16 @@
 package com.maxsavitsky.documenter.data;
 
+import android.text.Spannable;
+import android.text.Spanned;
+import android.text.style.ImageSpan;
+import android.util.Log;
+
 import com.maxsavitsky.documenter.App;
+import com.maxsavitsky.documenter.MainActivity;
+import com.maxsavitsky.documenter.data.html.ImageSpanLoader;
 import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.data.types.Group;
+import com.maxsavitsky.documenter.utils.SpanEntry;
 import com.maxsavitsky.documenter.utils.Utils;
 
 import org.json.JSONArray;
@@ -27,6 +35,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 public class DataReformatter {
+	private static final String TAG = MainActivity.TAG + " DataReformatter";
 
 	private static JSONObject prepareInfoJSON() throws Exception {
 		SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
@@ -161,14 +170,20 @@ public class DataReformatter {
 
 	public static void runReformat() throws Exception {
 		JSONObject jsonObject = prepareInfoJSON();
-		reformatEntriesProperties( jsonObject );
-		reformatEntriesAdditional( jsonObject );
-		deleteUnusedEntriesDirs( jsonObject );
-		deleteUnusedEntriesFiles( jsonObject );
+		ArrayList<String> entriesList = new ArrayList<>();
+		JSONArray jsonArray = jsonObject.getJSONArray( "entries" );
+		for (int i = 0; i < jsonArray.length(); i++) {
+			entriesList.add( jsonArray.getJSONObject( i ).getString( "id" ) );
+		}
+		reformatEntriesProperties( entriesList );
+		reformatEntriesAdditional( entriesList );
+		deleteUnusedEntriesDirs( entriesList );
+		deleteUnusedEntriesFiles( entriesList );
 		File dataDir = new File( App.appStoragePath, "data" );
 		if(!dataDir.exists())
 			dataDir.mkdirs();
 		copyEntriesDir();
+		reformatEntriesImages( entriesList );
 		deleteUnusedRootFiles();
 		File file = new File( dataDir, "data.json" );
 		if ( !file.exists() ) {
@@ -199,10 +214,8 @@ public class DataReformatter {
 		Utils.copy( new File( App.appStoragePath, "entries" ), new File( App.appStoragePath, "data" ) );
 	}
 
-	private static void deleteUnusedEntriesFiles(JSONObject jsonObject) throws JSONException {
-		JSONArray jsonArray = jsonObject.getJSONArray( "entries" );
-		for (int i = 0; i < jsonArray.length(); i++) {
-			String id = jsonArray.getJSONObject( i ).getString( "id" );
+	private static void deleteUnusedEntriesFiles(ArrayList<String> entries) {
+		for (String id : entries) {
 			File dir = new File( App.appStoragePath, "entries/" + id );
 			if(dir.exists()){
 				File[] files = dir.listFiles();
@@ -218,11 +231,9 @@ public class DataReformatter {
 		}
 	}
 
-	private static void deleteUnusedEntriesDirs(JSONObject jsonObject) throws JSONException {
+	private static void deleteUnusedEntriesDirs(ArrayList<String> entries) {
 		Map<String, Boolean> map = new HashMap<>();
-		JSONArray jsonArray = jsonObject.getJSONArray( "entries" );
-		for (int i = 0; i < jsonArray.length(); i++) {
-			String id = jsonArray.getJSONObject( i ).getString( "id" );
+		for (String id : entries) {
 			map.put( id, true );
 		}
 		File file = new File( App.appStoragePath, "entries" );
@@ -237,11 +248,33 @@ public class DataReformatter {
 		}
 	}
 
-	private static void reformatEntriesProperties(JSONObject jsonObject) throws JSONException, ParserConfigurationException, SAXException, IOException {
+	private static void reformatEntriesImages(ArrayList<String> entries) throws JSONException {
+		for(String id : entries) {
+			Entry entry = new Entry( id, "" );
+			try {
+				Spannable text = entry.loadText( 100 );
+				ArrayList<SpanEntry<ImageSpan>> spanEntries = new ArrayList<>();
+				ImageSpan[] imageSpans = text.getSpans( 0, text.length(), ImageSpan.class );
+				for (ImageSpan span : imageSpans) {
+					String[] strings = span.getSource().split( "/" );
+					String imageId = strings[ strings.length - 1 ];
+					spanEntries.add( new SpanEntry<>( new ImageSpan( new ImageSpanLoader( id, 100 ).getDrawable( imageId ), imageId ), text.getSpanStart( span ), text.getSpanEnd( span ) ) );
+					text.removeSpan( span );
+				}
+				for (SpanEntry<ImageSpan> spanEntry : spanEntries) {
+					text.setSpan( spanEntry.getSpan(), spanEntry.getStart(), spanEntry.getEnd(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+				}
+				entry.saveText( text );
+			}catch (IOException e){
+				Log.i( TAG, "reformatEntriesImages: " + e );
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private static void reformatEntriesProperties(ArrayList<String> entries) throws JSONException, ParserConfigurationException, SAXException, IOException {
 		SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
-		JSONArray jsonArray = jsonObject.getJSONArray( "entries" );
-		for (int i = 0; i < jsonArray.length(); i++) {
-			String id = jsonArray.getJSONObject( i ).getString( "id" );
+		for (String id : entries) {
 			File propsFile = new File( App.appStoragePath, "entries/" + id + "/properties.xml" );
 			Entry.Properties properties;
 			if ( propsFile.exists() ) {
@@ -261,10 +294,8 @@ public class DataReformatter {
 		}
 	}
 
-	private static void reformatEntriesAdditional(JSONObject jsonObject) throws JSONException, IOException {
-		JSONArray jsonArray = jsonObject.getJSONArray( "entries" );
-		for (int i = 0; i < jsonArray.length(); i++) {
-			String id = jsonArray.getJSONObject( i ).getString( "id" );
+	private static void reformatEntriesAdditional(ArrayList<String> entries) throws JSONException, IOException {
+		for (String id : entries) {
 			String pathDir = App.appStoragePath + "/entries/" + id + "/";
 			JSONObject out = new JSONObject();
 			File file = new File( pathDir + "alignment" );
