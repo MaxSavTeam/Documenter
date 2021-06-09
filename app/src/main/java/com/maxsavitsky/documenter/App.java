@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
+import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.exceptionhandler.ExceptionHandler;
 
 public class App extends Application {
@@ -23,6 +24,8 @@ public class App extends Application {
 	public void onCreate() {
 		super.onCreate();
 		instance = this;
+
+		Utils.setContext(getApplicationContext());
 
 		appStoragePath = getExternalFilesDir( null ).getPath();
 		appDataPath = appStoragePath + "/data";

@@ -55,7 +55,6 @@ public class MainActivity extends ThemeActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		Utils.setContext( this );
 		SharedPreferences sharedPreferences = getSharedPreferences( Utils.APP_PREFERENCES, Context.MODE_PRIVATE );
 		Utils.setDefaultSharedPreferences( sharedPreferences );
 
