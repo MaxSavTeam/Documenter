@@ -14,8 +14,9 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
@@ -28,7 +29,6 @@ import com.maxsavitsky.documenter.BuildConfig;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.ThemeActivity;
 import com.maxsavitsky.documenter.backup.BackupInstruments;
-import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.ui.widget.ButtonWithDropdown;
 import com.maxsavitsky.documenter.updates.UpdatesChecker;
@@ -46,17 +46,29 @@ public class SettingsActivity extends ThemeActivity {
 	private boolean mMemoryAccessGranted = false;
 	private FirebaseAuth mAuth;
 
+	private final ActivityResultLauncher<Intent> mSignInLauncher = registerForActivityResult(
+			new ActivityResultContracts.StartActivityForResult(),
+			result->{
+				updateUserUi( mAuth.getCurrentUser() );
+				if ( mAuth.getCurrentUser() != null && !mAuth.getCurrentUser().isEmailVerified() ) {
+					mAuth.getCurrentUser().sendEmailVerification();
+				}
+			}
+	);
+
+	private final ActivityResultLauncher<Intent> mCloudBackupParamsLauncher = registerForActivityResult(
+			new ActivityResultContracts.StartActivityForResult(),
+			result->{
+
+			}
+	);
+
 	private void applyTheme() {
 		ActionBar actionBar = getSupportActionBar();
 		if ( actionBar != null ) {
 			Utils.applyDefaultActionBarStyle( actionBar );
 			actionBar.setTitle( R.string.settings );
 		}
-	}
-
-	@Override
-	public void onBackPressed() {
-		super.onBackPressed();
 	}
 
 	@Override
@@ -156,10 +168,9 @@ public class SettingsActivity extends ThemeActivity {
 
 	public void signButtonsAction(View v) {
 		if ( v.getId() == R.id.btnSignIn ) {
-			startActivityForResult( AuthUI.getInstance()
+			mSignInLauncher.launch( AuthUI.getInstance()
 							.createSignInIntentBuilder()
-							.build(),
-					Requests.SIGN_IN );
+							.build());
 		} else if ( v.getId() == R.id.btnSignOut || v.getId() == R.id.btnSignOutVer ) {
 			AuthUI.getInstance().signOut( this )
 					.addOnCompleteListener( task->updateUserUi( mAuth.getCurrentUser() ) );
@@ -178,22 +189,7 @@ public class SettingsActivity extends ThemeActivity {
 
 	public void cloudBackupParams(View v) {
 		Intent intent = new Intent( this, CloudBackupActivity.class );
-		startActivityForResult( intent, Requests.CLOUD_BACKUP_PARAMS );
-	}
-
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-		super.onActivityResult( requestCode, resultCode, data );
-		if ( requestCode == Requests.SIGN_IN ) {
-			updateUserUi( mAuth.getCurrentUser() );
-			if ( mAuth.getCurrentUser() != null && !mAuth.getCurrentUser().isEmailVerified() ) {
-				mAuth.getCurrentUser().sendEmailVerification();
-			}
-		}
-		if ( resultCode == Results.RESTART_APP ) {
-			setResult( resultCode );
-			onBackPressed();
-		}
+		mCloudBackupParamsLauncher.launch( intent );
 	}
 
 	private ProgressDialog mCheckUpdatesDialog = null;
