@@ -114,7 +114,7 @@
                 android:layout_height="32dp"
                 android:scaleType="fitCenter"
                 android:src="@drawable/ic_close"
-                app:tint="?textColor" />
+                app:tint="@color/light_blue" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -136,7 +136,7 @@
                 android:layout_height="32dp"
                 android:scaleType="fitCenter"
                 android:src="@drawable/ic_add_to"
-                app:tint="?textColor" />
+                app:tint="@color/light_blue" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -157,8 +157,7 @@
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:scaleType="fitCenter"
-                android:src="@drawable/ic_move_to"
-                app:tint="?textColor" />
+                android:src="@drawable/ic_move_to" />
 
             <TextView
                 android:layout_width="wrap_content"

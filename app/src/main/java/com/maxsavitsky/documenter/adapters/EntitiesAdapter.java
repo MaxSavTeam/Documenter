@@ -2,7 +2,6 @@ package com.maxsavitsky.documenter.adapters;
 
 import android.content.res.ColorStateList;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -127,9 +126,9 @@ public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHo
 			holder.imageView.setImageTintList( ColorStateList.valueOf( holder.itemView.getContext().getColor( R.color.yellow ) ) );
 		} else {
 			holder.imageView.setImageResource( R.drawable.ic_document );
-			TypedValue value = new TypedValue();
+			/*TypedValue value = new TypedValue();
 			holder.itemView.getContext().getTheme().resolveAttribute( R.attr.textColor, value, true );
-			holder.imageView.setImageTintList( ColorStateList.valueOf( value.data ) );
+			holder.imageView.setImageTintList( ColorStateList.valueOf( value.data ) );*/
 		}
 
 		holder.itemView.setOnClickListener( v->{
