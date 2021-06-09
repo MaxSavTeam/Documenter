@@ -2,7 +2,6 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="15dp"
     android:gravity="center_vertical"
     android:orientation="horizontal">
@@ -20,7 +19,6 @@
         android:layout_height="30dp"
         android:scaleType="fitCenter"
         android:background="@null"
-        app:tint="?textColor"
         android:id="@+id/entity_layout_icon" />
 
     <TextView
