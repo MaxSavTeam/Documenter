@@ -16,9 +16,6 @@ import com.maxsavitsky.documenter.adapters.EntitiesAdapter;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.data.types.Entity;
 
-import java.util.ArrayList;
-import java.util.stream.Collectors;
-
 public class CopyMoveActivity extends EntitiesListActivity {
 
 	private int mode;
@@ -103,12 +100,5 @@ public class CopyMoveActivity extends EntitiesListActivity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate( R.menu.choose_menu, menu );
 		return true;
-	}
-
-	@Override
-	protected ArrayList<? extends Entity> filterList(ArrayList<? extends Entity> entities) {
-		return entities.stream()
-				.filter( e->e.getType() == Entity.Type.GROUP )
-				.collect( Collectors.toCollection( ArrayList::new ) );
 	}
 }
