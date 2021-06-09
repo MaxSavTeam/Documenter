@@ -80,7 +80,7 @@ public class CloudBackupMaker {
 				.setOngoing( true )
 				.setProgress( 0, 0, true );
 
-		final BackupInterface backupInterface = new BackupInterface() {
+		final BackupInstruments.BackupCallback backupCallback = new BackupInstruments.BackupCallback() {
 			@Override
 			public void onSuccess(long timeOfCreation) {
 				manager.cancelAll();
@@ -98,10 +98,10 @@ public class CloudBackupMaker {
 			public void run() {
 				try {
 					long time = System.currentTimeMillis();
-					CloudBackupInstruments.createBackup( backupInterface, "backup_" + time, time );
+					CloudBackupInstruments.createBackup( backupCallback, "backup_" + time, time );
 				} catch (IOException e) {
 					e.printStackTrace();
-					backupInterface.onException( e );
+					backupCallback.onException( e );
 				}
 			}
 		} ).start();

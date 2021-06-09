@@ -19,7 +19,7 @@ import java.util.zip.ZipOutputStream;
 public class BackupInstruments {
 	private static final String THIS_TAG = MainActivity.TAG + " BInstruments";
 
-	public static void restoreFromBackup(File backupFile, @Nullable BackupInterface backupInterface) throws IOException {
+	public static void restoreFromBackup(File backupFile, @Nullable BackupCallback backupCallback) throws IOException {
 		File dataDir = new File( App.appDataPath );
 		if(!dataDir.exists())
 			dataDir.mkdirs();
@@ -55,11 +55,11 @@ public class BackupInstruments {
 		}
 		zis.closeEntry();
 		zis.close();
-		if(backupInterface != null)
-			backupInterface.onSuccess( System.currentTimeMillis() );
+		if( backupCallback != null)
+			backupCallback.onSuccess( System.currentTimeMillis() );
 	}
 
-	public static void createBackupToFile(File path, @Nullable BackupInterface backupInterface) throws IOException {
+	public static void createBackupToFile(File path, @Nullable BackupCallback backupCallback) throws IOException {
 		long startTime = System.currentTimeMillis();
 		Utils.removeAllUnusedImages();
 		File dir = new File( App.appDataPath );
@@ -72,11 +72,11 @@ public class BackupInstruments {
 
 		long end = System.currentTimeMillis();
 		Log.i( THIS_TAG, "packed in " + ((end - startTime) / 1000) + "s" );
-		if(backupInterface != null)
-			backupInterface.onSuccess( System.currentTimeMillis() );
+		if( backupCallback != null)
+			backupCallback.onSuccess( System.currentTimeMillis() );
 	}
 
-	public static void createOldBackup(File path, BackupInterface backupInterface) throws IOException {
+	public static void createOldBackup(File path, BackupCallback backupCallback) throws IOException {
 		long startTime = System.currentTimeMillis();
 		Utils.removeAllUnusedImages();
 		File dir = new File( App.appStoragePath );
@@ -88,20 +88,23 @@ public class BackupInstruments {
 			zipOutputStream.close();
 			return;
 		}
-		for (File file : dir.listFiles()) {
-			if(!file.getName().equals( "cloud_backup.zip" ) &&
-					!file.getPath().equals( path.getPath() ) &&
-					!file.getName().equals( "backups" ) &&
-					!file.getName().equals( "data" ) &&
-					!file.getName().equals( "updates" ))
-				myPack( file, file.getName(), zipOutputStream );
+		File[] files = dir.listFiles();
+		if(files != null) {
+			for (File file : files) {
+				if ( !file.getName().equals( "cloud_backup.zip" ) &&
+						!file.getPath().equals( path.getPath() ) &&
+						!file.getName().equals( "backups" ) &&
+						!file.getName().equals( "data" ) &&
+						!file.getName().equals( "updates" ) )
+					myPack( file, file.getName(), zipOutputStream );
+			}
 		}
 		zipOutputStream.close();
 
 		long end = System.currentTimeMillis();
 		Log.i( THIS_TAG, "packed in " + ((end - startTime) / 1000) + "s" );
-		if(backupInterface != null)
-			backupInterface.onSuccess( System.currentTimeMillis() );
+		if( backupCallback != null)
+			backupCallback.onSuccess( System.currentTimeMillis() );
 	}
 
 	private static void myPack(File path, String fileName, ZipOutputStream out) throws IOException {
@@ -117,8 +120,10 @@ public class BackupInstruments {
 			out.closeEntry();
 
 			File[] children = path.listFiles();
-			for (File child : children) {
-				myPack( child, fileName + "/" + child.getName(), out );
+			if(children != null) {
+				for (File child : children) {
+					myPack( child, fileName + "/" + child.getName(), out );
+				}
 			}
 			return;
 		}
@@ -127,5 +132,11 @@ public class BackupInstruments {
 		ZipEntry zipEntry = new ZipEntry( fileName );
 		out.putNextEntry( zipEntry );
 		out.write( content, 0, content.length );
+	}
+
+	public interface BackupCallback {
+		void onSuccess(long timeOfCreation);
+
+		void onException(final Exception e);
 	}
 }

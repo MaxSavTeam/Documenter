@@ -32,7 +32,6 @@ import com.maxsavitsky.documenter.BuildConfig;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.ThemeActivity;
 import com.maxsavitsky.documenter.backup.BackupInstruments;
-import com.maxsavitsky.documenter.backup.BackupInterface;
 import com.maxsavitsky.documenter.codes.Requests;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.ui.widget.ButtonWithDropdown;
@@ -364,7 +363,7 @@ public class SettingsActivity extends ThemeActivity {
 		final ProgressDialog pd = new ProgressDialog( this );
 		pd.setMessage( Html.fromHtml( getString( R.string.restoring_please_donot_close_app ) ) );
 		pd.setCancelable( false );
-		final BackupInterface backupInterface = new BackupInterface() {
+		final BackupInstruments.BackupCallback backupCallback = new BackupInstruments.BackupCallback() {
 			@Override
 			public void onSuccess(long timeOfCreation) {
 				runOnUiThread( pd::dismiss );
@@ -387,10 +386,10 @@ public class SettingsActivity extends ThemeActivity {
 			@Override
 			public void run() {
 				try {
-					BackupInstruments.restoreFromBackup( file, backupInterface );
+					BackupInstruments.restoreFromBackup( file, backupCallback );
 				} catch (IOException e) {
 					e.printStackTrace();
-					backupInterface.onException( e );
+					backupCallback.onException( e );
 				}
 			}
 		} ).start();
@@ -438,7 +437,7 @@ public class SettingsActivity extends ThemeActivity {
 		final ProgressDialog pd = new ProgressDialog( this );
 		pd.setMessage( Html.fromHtml( getString( R.string.creating_backup ) ) );
 		pd.setCancelable( false );
-		final BackupInterface backupInterface = new BackupInterface() {
+		final BackupInstruments.BackupCallback backupCallback = new BackupInstruments.BackupCallback() {
 			@Override
 			public void onSuccess(long timeOfCreation) {
 				runOnUiThread( new Runnable() {
@@ -466,10 +465,10 @@ public class SettingsActivity extends ThemeActivity {
 			@Override
 			public void run() {
 				try {
-					BackupInstruments.createBackupToFile( outputFile, backupInterface );
+					BackupInstruments.createBackupToFile( outputFile, backupCallback );
 				} catch (IOException e) {
 					e.printStackTrace();
-					backupInterface.onException( e );
+					backupCallback.onException( e );
 				}
 			}
 		} ).start();

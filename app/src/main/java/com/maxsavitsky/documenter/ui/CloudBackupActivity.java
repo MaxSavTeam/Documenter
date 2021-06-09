@@ -26,7 +26,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.ThemeActivity;
-import com.maxsavitsky.documenter.backup.BackupInterface;
+import com.maxsavitsky.documenter.backup.BackupInstruments;
 import com.maxsavitsky.documenter.backup.CloudBackupInstruments;
 import com.maxsavitsky.documenter.backup.CloudBackupMaker;
 import com.maxsavitsky.documenter.codes.Results;
@@ -166,7 +166,7 @@ public class CloudBackupActivity extends ThemeActivity {
 		//pd.setMessage( "Preparing..." );
 		pd.setCancelable( false );
 
-		final BackupInterface backupInterface = new BackupInterface() {
+		final BackupInstruments.BackupCallback backupCallback = new BackupInstruments.BackupCallback() {
 			@Override
 			public void onSuccess(long timeOfCreation) {
 				runOnUiThread( ()->{
@@ -189,10 +189,10 @@ public class CloudBackupActivity extends ThemeActivity {
 		new Thread( ()->{
 			try {
 				long time = System.currentTimeMillis();
-				CloudBackupInstruments.createBackup( backupInterface, "backup_" + time, time );
+				CloudBackupInstruments.createBackup( backupCallback, "backup_" + time, time );
 			} catch (IOException e) {
 				e.printStackTrace();
-				backupInterface.onException( e );
+				backupCallback.onException( e );
 			}
 		} ).start();
 	}
@@ -203,7 +203,7 @@ public class CloudBackupActivity extends ThemeActivity {
 		//pd.setMessage( "Preparing..." );
 		pd.setCancelable( false );
 
-		final BackupInterface backupInterface = new BackupInterface() {
+		final BackupInstruments.BackupCallback backupCallback = new BackupInstruments.BackupCallback() {
 			@Override
 			public void onSuccess(long timeOfCreation) {
 				runOnUiThread( ()->{
@@ -227,10 +227,10 @@ public class CloudBackupActivity extends ThemeActivity {
 			@Override
 			public void run() {
 				try {
-					CloudBackupInstruments.restoreFromBackup( backupInterface, "backup_" + mLastBackupTime );
+					CloudBackupInstruments.restoreFromBackup( backupCallback, "backup_" + mLastBackupTime );
 				} catch (IOException e) {
 					e.printStackTrace();
-					backupInterface.onException( e );
+					backupCallback.onException( e );
 				}
 			}
 		} ).start();

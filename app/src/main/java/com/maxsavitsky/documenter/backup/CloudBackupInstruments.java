@@ -15,7 +15,7 @@ import java.io.IOException;
 
 public class CloudBackupInstruments {
 
-	public static void createBackup(final BackupInterface cloudInterface, String backupName, final long loadTime) throws IOException {
+	public static void createBackup(final BackupInstruments.BackupCallback cloudInterface, String backupName, final long loadTime) throws IOException {
 		final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 		if ( user == null ) {
 			return;
@@ -49,7 +49,7 @@ public class CloudBackupInstruments {
 				} );
 	}
 
-	public static void restoreFromBackup(final BackupInterface cloudInterface, String backupName) throws IOException {
+	public static void restoreFromBackup(final BackupInstruments.BackupCallback cloudInterface, String backupName) throws IOException {
 		final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 		if ( user == null ) {
 			return;
