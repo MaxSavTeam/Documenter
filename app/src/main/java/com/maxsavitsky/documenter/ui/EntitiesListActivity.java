@@ -163,6 +163,7 @@ public class EntitiesListActivity extends ThemeActivity {
 							}
 						}
 						sendRefreshIntent();
+						refresh();
 					}
 					if( selectionMode )
 						exitSelectionMode();

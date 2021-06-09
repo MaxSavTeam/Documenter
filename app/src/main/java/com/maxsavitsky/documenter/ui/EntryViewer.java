@@ -78,6 +78,7 @@ public class EntryViewer extends ThemeActivity {
 								Toast.makeText( this, R.string.move_add_fail_reason, Toast.LENGTH_LONG ).show();
 							}
 						}
+						sendRefreshIntent();
 					}
 				}
 			}
@@ -125,6 +126,10 @@ public class EntryViewer extends ThemeActivity {
 			Utils.applyDefaultActionBarStyle( actionBar );
 			actionBar.setTitle( mEntry.getName() );
 		}
+	}
+
+	private void sendRefreshIntent(){
+		sendBroadcast( new Intent( BuildConfig.APPLICATION_ID + ".REFRESH_ENTITIES_LISTS" ) );
 	}
 
 	@Override
