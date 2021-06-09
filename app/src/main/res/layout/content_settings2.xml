@@ -189,17 +189,6 @@
                     android:textColor="?textColor"
                     android:textSize="24sp" />
 
-                <Switch
-                    android:id="@+id/swDarkTheme"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:text="@string/dark_theme"
-                    android:textColor="?attr/textColor"
-                    android:textSize="20sp"
-                    android:thumbTint="?colorAccent"
-                    android:visibility="gone" />
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -226,7 +215,7 @@
 
                 </LinearLayout>
 
-                <Switch
+                <com.google.android.material.switchmaterial.SwitchMaterial
                     android:layout_marginStart="10dp"
                     android:layout_marginEnd="10dp"
                     android:id="@+id/swKeepScreenOn"
@@ -236,7 +225,8 @@
                     android:text="@string/keep_screen_on"
                     android:textColor="?textColor"
                     android:textSize="20sp"
-                    android:thumbTint="?colorAccent" />
+                    app:thumbTint="?colorAccent" />
+
             </LinearLayout>
 
             <LinearLayout
@@ -297,7 +287,7 @@
                     app:layout_constraintTop_toBottomOf="@+id/settingsSwitchesLayout"
                     app:layout_constraintVertical_bias="0.050000012" />
 
-                <Switch
+                <com.google.android.material.switchmaterial.SwitchMaterial
                     android:id="@+id/switch_check_for_updates"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -308,7 +298,7 @@
                     android:textSize="20sp"
                     android:layout_marginStart="10dp"
                     android:layout_marginEnd="10dp"
-                    android:thumbTint="?colorAccent" />
+                    app:thumbTint="?colorAccent" />
 
             </LinearLayout>
 

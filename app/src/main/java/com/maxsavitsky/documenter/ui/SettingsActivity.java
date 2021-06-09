@@ -10,7 +10,6 @@ import android.os.Environment;
 import android.text.Html;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,6 +22,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
 import com.firebase.ui.auth.AuthUI;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.maxsavitsky.documenter.BuildConfig;
@@ -108,33 +108,11 @@ public class SettingsActivity extends ThemeActivity {
 		updatesChannelButton.setSelection( sp.getInt( "updates_channel", 0 ) );
 		updatesChannelButton.setOnItemSelectedListener( index->sp.edit().putInt( "updates_channel", index ).apply() );
 
-		final Switch swDarkHeader = findViewById( R.id.swDarkTheme );
-		swDarkHeader.setChecked( sp.getBoolean( "dark_theme", false ) );
-		swDarkHeader.setOnClickListener( new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				final boolean isChecked = swDarkHeader.isChecked();
-				sp.edit().putBoolean( "dark_theme", isChecked ).apply();
-				final AlertDialog.Builder builder = new AlertDialog.Builder( SettingsActivity.this, SettingsActivity.super.mAlertDialogStyle )
-						.setMessage( R.string.need_to_restart_app )
-						.setCancelable( false )
-						.setPositiveButton( "OK", (dialog, which)->{
-							dialog.cancel();
-							setResult( Results.RESTART_APP );
-							onBackPressed();
-						} ).setNegativeButton( R.string.cancel, (dialog, which)->{
-							dialog.cancel();
-							sp.edit().putBoolean( "dark_theme", !isChecked ).apply();
-							swDarkHeader.setChecked( !isChecked );
-						} );
-
-				runOnUiThread( builder::show );
-			}
-		} );
-		Switch swCheckForUpdates = findViewById( R.id.switch_check_for_updates );
+		SwitchMaterial swCheckForUpdates = findViewById( R.id.switch_check_for_updates );
 		swCheckForUpdates.setChecked( sp.getBoolean( "check_updates", true ) );
 		swCheckForUpdates.setOnCheckedChangeListener( (buttonView, isChecked)->sp.edit().putBoolean( "check_updates", isChecked ).apply() );
-		Switch swKeepScreenOn = findViewById( R.id.swKeepScreenOn );
+
+		SwitchMaterial swKeepScreenOn = findViewById( R.id.swKeepScreenOn );
 		swKeepScreenOn.setChecked( sp.getBoolean( "keep_screen_on", true ) );
 		swKeepScreenOn.setOnCheckedChangeListener( (buttonView, isChecked)->sp.edit().putBoolean( "keep_screen_on", isChecked ).apply() );
 
