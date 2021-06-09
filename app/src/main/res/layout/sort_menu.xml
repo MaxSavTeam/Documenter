@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:text="@string/order"
         android:textColor="?textColor"
-        android:textSize="16sp" />
+        android:textSize="18sp" />
 
     <com.maxsavitsky.documenter.ui.widget.CustomRadioGroup
         android:id="@+id/radio_group_order"
@@ -21,6 +21,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="48dp"
+            android:textSize="16sp"
             android:textColor="?textColor"
             android:text="@string/groups_first" />
 
@@ -28,6 +29,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="48dp"
+            android:textSize="16sp"
             android:textColor="?textColor"
             android:text="@string/entries_first" />
 
@@ -35,6 +37,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="48dp"
+            android:textSize="16sp"
             android:textColor="?textColor"
             android:text="@string/mixed" />
     </com.maxsavitsky.documenter.ui.widget.CustomRadioGroup>
@@ -45,7 +48,7 @@
         android:layout_height="wrap_content"
         android:text="@string/sorting"
         android:textColor="?textColor"
-        android:textSize="16sp" />
+        android:textSize="18sp" />
 
     <com.maxsavitsky.documenter.ui.widget.CustomRadioGroup
         android:id="@+id/radio_group_sorting"
@@ -56,6 +59,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="48dp"
+            android:textSize="16sp"
             android:textColor="?textColor"
             android:text="@string/by_name" />
 
@@ -63,6 +67,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="48dp"
+            android:textSize="16sp"
             android:textColor="?textColor"
             android:text="@string/by_creation_time" />
     </com.maxsavitsky.documenter.ui.widget.CustomRadioGroup>
@@ -73,7 +78,7 @@
         android:layout_marginTop="10dp"
         android:text="@string/ascending_descending_order"
         android:textColor="?textColor"
-        android:textSize="16sp" />
+        android:textSize="18sp" />
 
     <com.maxsavitsky.documenter.ui.widget.CustomRadioGroup
         android:id="@+id/radio_group_ascending_descending"
@@ -84,6 +89,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="48dp"
+            android:textSize="16sp"
             android:textColor="?textColor"
             android:text="@string/ascending" />
 
@@ -91,6 +97,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="48dp"
+            android:textSize="16sp"
             android:textColor="?textColor"
             android:text="@string/descending" />
     </com.maxsavitsky.documenter.ui.widget.CustomRadioGroup>
