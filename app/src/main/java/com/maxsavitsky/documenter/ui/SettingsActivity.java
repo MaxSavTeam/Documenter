@@ -2,7 +2,6 @@ package com.maxsavitsky.documenter.ui;
 
 import android.Manifest;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -11,7 +10,6 @@ import android.os.Environment;
 import android.text.Html;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,8 +22,6 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 
 import com.firebase.ui.auth.AuthUI;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.maxsavitsky.documenter.BuildConfig;
@@ -49,7 +45,6 @@ public class SettingsActivity extends ThemeActivity {
 
 	private boolean mMemoryAccessGranted = false;
 	private FirebaseAuth mAuth;
-	private SharedPreferences sp;
 
 	private void applyTheme() {
 		ActionBar actionBar = getSupportActionBar();
@@ -61,7 +56,6 @@ public class SettingsActivity extends ThemeActivity {
 
 	@Override
 	public void onBackPressed() {
-		setResult( Results.OK );
 		super.onBackPressed();
 	}
 
@@ -75,8 +69,6 @@ public class SettingsActivity extends ThemeActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		sp = Utils.getDefaultSharedPreferences();
-
 		super.onCreate( savedInstanceState );
 		setContentView( R.layout.activity_settings );
 
@@ -114,46 +106,25 @@ public class SettingsActivity extends ThemeActivity {
 				final AlertDialog.Builder builder = new AlertDialog.Builder( SettingsActivity.this, SettingsActivity.super.mAlertDialogStyle )
 						.setMessage( R.string.need_to_restart_app )
 						.setCancelable( false )
-						.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								dialog.cancel();
-								setResult( Results.RESTART_APP );
-								finish();
-							}
-						} ).setNegativeButton( R.string.cancel, new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								dialog.cancel();
-								sp.edit().putBoolean( "dark_theme", !isChecked ).apply();
-								swDarkHeader.setChecked( !isChecked );
-							}
+						.setPositiveButton( "OK", (dialog, which)->{
+							dialog.cancel();
+							setResult( Results.RESTART_APP );
+							onBackPressed();
+						} ).setNegativeButton( R.string.cancel, (dialog, which)->{
+							dialog.cancel();
+							sp.edit().putBoolean( "dark_theme", !isChecked ).apply();
+							swDarkHeader.setChecked( !isChecked );
 						} );
 
-				runOnUiThread( new Runnable() {
-					@Override
-					public void run() {
-						builder.create().show();
-					}
-				} );
+				runOnUiThread( builder::show );
 			}
 		} );
 		Switch swCheckForUpdates = findViewById( R.id.switch_check_for_updates );
 		swCheckForUpdates.setChecked( sp.getBoolean( "check_updates", true ) );
-		swCheckForUpdates.setOnCheckedChangeListener( new CompoundButton.OnCheckedChangeListener() {
-			@Override
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				sp.edit().putBoolean( "check_updates", isChecked ).apply();
-			}
-		} );
+		swCheckForUpdates.setOnCheckedChangeListener( (buttonView, isChecked)->sp.edit().putBoolean( "check_updates", isChecked ).apply() );
 		Switch swKeepScreenOn = findViewById( R.id.swKeepScreenOn );
 		swKeepScreenOn.setChecked( sp.getBoolean( "keep_screen_on", true ) );
-		swKeepScreenOn.setOnCheckedChangeListener( new CompoundButton.OnCheckedChangeListener() {
-			@Override
-			public void onCheckedChanged(CompoundButton buttonView, final boolean isChecked) {
-				sp.edit().putBoolean( "keep_screen_on", isChecked ).apply();
-			}
-		} );
+		swKeepScreenOn.setOnCheckedChangeListener( (buttonView, isChecked)->sp.edit().putBoolean( "keep_screen_on", isChecked ).apply() );
 
 		mAuth = FirebaseAuth.getInstance();
 		if ( mAuth.getCurrentUser() != null ) {
@@ -171,13 +142,12 @@ public class SettingsActivity extends ThemeActivity {
 		} else {
 			if ( user.isEmailVerified() ) {
 				findViewById( R.id.layout_authorised_backup ).setVisibility( View.VISIBLE );
-				findViewById( R.id.layout_not_authorised_backup ).setVisibility( View.GONE );
 				findViewById( R.id.layout_email_not_verified ).setVisibility( View.GONE );
 			} else {
 				findViewById( R.id.layout_authorised_backup ).setVisibility( View.GONE );
-				findViewById( R.id.layout_not_authorised_backup ).setVisibility( View.GONE );
 				findViewById( R.id.layout_email_not_verified ).setVisibility( View.VISIBLE );
 			}
+			findViewById( R.id.layout_not_authorised_backup ).setVisibility( View.GONE );
 			TextView textViewLoggedIn = findViewById( R.id.lblLoggedIn );
 			textViewLoggedIn.setVisibility( View.VISIBLE );
 			textViewLoggedIn.setText( String.format( "%s %s", getString( R.string.logged_in ), user.getEmail() ) );
@@ -189,26 +159,17 @@ public class SettingsActivity extends ThemeActivity {
 			startActivityForResult( AuthUI.getInstance()
 							.createSignInIntentBuilder()
 							.build(),
-
 					Requests.SIGN_IN );
 		} else if ( v.getId() == R.id.btnSignOut || v.getId() == R.id.btnSignOutVer ) {
 			AuthUI.getInstance().signOut( this )
-					.addOnCompleteListener( new OnCompleteListener<Void>() {
-						@Override
-						public void onComplete(@NonNull Task<Void> task) {
-							updateUserUi( mAuth.getCurrentUser() );
-						}
-					} );
+					.addOnCompleteListener( task->updateUserUi( mAuth.getCurrentUser() ) );
 		} else if ( v.getId() == R.id.btnSendVerification ) {
 			FirebaseUser user = mAuth.getCurrentUser();
 			if ( user != null ) {
 				user.sendEmailVerification()
-						.addOnCompleteListener( new OnCompleteListener<Void>() {
-							@Override
-							public void onComplete(@NonNull Task<Void> task) {
-								if ( task.isSuccessful() ) {
-									Toast.makeText( SettingsActivity.this, "Email sent", Toast.LENGTH_SHORT ).show();
-								}
+						.addOnCompleteListener( task->{
+							if ( task.isSuccessful() ) {
+								Toast.makeText( SettingsActivity.this, "Email sent", Toast.LENGTH_SHORT ).show();
 							}
 						} );
 			}
@@ -231,7 +192,7 @@ public class SettingsActivity extends ThemeActivity {
 		}
 		if ( resultCode == Results.RESTART_APP ) {
 			setResult( resultCode );
-			finish();
+			onBackPressed();
 		}
 	}
 
@@ -332,25 +293,12 @@ public class SettingsActivity extends ThemeActivity {
 		mDownloadPd.setMessage( getString( R.string.downloading ) );
 		mDownloadPd.setCancelable( false );
 		mDownloadPd.setIndeterminate( true );
-		mDownloadPd.setButton( ProgressDialog.BUTTON_NEGATIVE, getResources().getString( R.string.cancel ), new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(final DialogInterface dialog, int which) {
-				downloadThread.interrupt();
-				runOnUiThread( new Runnable() {
-					@Override
-					public void run() {
-						dialog.cancel();
-					}
-				} );
-			}
+		mDownloadPd.setButton( ProgressDialog.BUTTON_NEGATIVE, getResources().getString( R.string.cancel ), (dialog, which)->{
+			downloadThread.interrupt();
+			runOnUiThread( dialog::cancel );
 		} );
 		mDownloadPd.show();
-		downloadThread = new Thread( new Runnable() {
-			@Override
-			public void run() {
-				downloader.download();
-			}
-		} );
+		downloadThread = new Thread( downloader::download );
 		downloadThread.start();
 	}
 
@@ -373,24 +321,16 @@ public class SettingsActivity extends ThemeActivity {
 
 			@Override
 			public void onException(final Exception e) {
-				runOnUiThread( new Runnable() {
-					@Override
-					public void run() {
-						Utils.getErrorDialog( e, SettingsActivity.this ).show();
-					}
-				} );
+				runOnUiThread( ()->Utils.getErrorDialog( e, SettingsActivity.this ).show() );
 			}
 		};
 		pd.show();
-		new Thread( new Runnable() {
-			@Override
-			public void run() {
-				try {
-					BackupInstruments.restoreFromBackup( file, backupCallback );
-				} catch (IOException e) {
-					e.printStackTrace();
-					backupCallback.onException( e );
-				}
+		new Thread( ()->{
+			try {
+				BackupInstruments.restoreFromBackup( file, backupCallback );
+			} catch (IOException e) {
+				e.printStackTrace();
+				backupCallback.onException( e );
 			}
 		} ).start();
 	}
@@ -400,23 +340,15 @@ public class SettingsActivity extends ThemeActivity {
 				.setTitle( R.string.confirmation )
 				.setMessage( R.string.confirm_restore_message )
 				.setCancelable( false )
-				.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.cancel();
-						if ( ContextCompat.checkSelfPermission( SettingsActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE ) == PackageManager.PERMISSION_DENIED ) {
-							requestPermissions( new String[]{ Manifest.permission.READ_EXTERNAL_STORAGE }, 11 );
-						} else {
-							unpack();
-						}
+				.setPositiveButton( "OK", (dialog, which)->{
+					dialog.cancel();
+					if ( ContextCompat.checkSelfPermission( SettingsActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE ) == PackageManager.PERMISSION_DENIED ) {
+						requestPermissions( new String[]{ Manifest.permission.READ_EXTERNAL_STORAGE }, 11 );
+					} else {
+						unpack();
 					}
 				} )
-				.setNeutralButton( R.string.cancel, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.cancel();
-					}
-				} );
+				.setNeutralButton( R.string.cancel, (dialog, which)->dialog.cancel() );
 		builder.create().show();
 	}
 
@@ -440,36 +372,27 @@ public class SettingsActivity extends ThemeActivity {
 		final BackupInstruments.BackupCallback backupCallback = new BackupInstruments.BackupCallback() {
 			@Override
 			public void onSuccess(long timeOfCreation) {
-				runOnUiThread( new Runnable() {
-					@Override
-					public void run() {
-						pd.dismiss();
-						Toast.makeText( SettingsActivity.this, R.string.successfully, Toast.LENGTH_SHORT ).show();
-					}
+				runOnUiThread( ()->{
+					pd.dismiss();
+					Toast.makeText( SettingsActivity.this, R.string.successfully, Toast.LENGTH_SHORT ).show();
 				} );
 			}
 
 			@Override
 			public void onException(final Exception e) {
-				runOnUiThread( new Runnable() {
-					@Override
-					public void run() {
-						pd.dismiss();
-						Utils.getErrorDialog( e, SettingsActivity.this ).show();
-					}
+				runOnUiThread( ()->{
+					pd.dismiss();
+					Utils.getErrorDialog( e, SettingsActivity.this ).show();
 				} );
 			}
 		};
 		pd.show();
-		new Thread( new Runnable() {
-			@Override
-			public void run() {
-				try {
-					BackupInstruments.createBackupToFile( outputFile, backupCallback );
-				} catch (IOException e) {
-					e.printStackTrace();
-					backupCallback.onException( e );
-				}
+		new Thread( ()->{
+			try {
+				BackupInstruments.createBackupToFile( outputFile, backupCallback );
+			} catch (IOException e) {
+				e.printStackTrace();
+				backupCallback.onException( e );
 			}
 		} ).start();
 	}
