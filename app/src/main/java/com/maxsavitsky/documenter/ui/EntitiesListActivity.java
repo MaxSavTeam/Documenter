@@ -40,6 +40,7 @@ import com.maxsavitsky.documenter.data.types.Entity;
 import com.maxsavitsky.documenter.data.types.Group;
 import com.maxsavitsky.documenter.ui.widget.CustomRadioGroup;
 import com.maxsavitsky.documenter.ui.widget.FabButton;
+import com.maxsavitsky.documenter.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -282,7 +283,9 @@ public class EntitiesListActivity extends ThemeActivity {
 				}
 				dialog.cancel();
 			} ).setNegativeButton( R.string.cancel, (dialog, which)->dialog.cancel() ).setCancelable( false );
-			builder.show();
+			AlertDialog alertDialog = builder.create();
+			alertDialog.setOnShowListener( dialog ->Utils.showKeyboard(editText, this) );
+			alertDialog.show();
 		} else if ( itemId == R.id.item_menu_delete ) {
 			showDeletionDialog();
 		} else if ( itemId == R.id.item_menu_add_to ) {
