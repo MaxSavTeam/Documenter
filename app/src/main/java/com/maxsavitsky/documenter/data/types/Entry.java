@@ -36,7 +36,7 @@ public class Entry extends Entity {
 
 	private Properties mProperties = new Properties();
 
-	private String entryDir;
+	private final String entryDir;
 
 	public Entry(String id, String name) {
 		super( id, name );
@@ -53,10 +53,11 @@ public class Entry extends Entity {
 
 	public Spannable loadText(int imageMaxWidth) throws JSONException, IOException {
 		int flag;
-		if(getProperties().getDisplayingMode() == 0)
+		if ( getProperties().getDisplayingMode() == 0 ) {
 			flag = Html.FROM_HTML_MODE_LEGACY;
-		else
+		} else {
 			flag = Html.FROM_HTML_MODE_COMPACT;
+		}
 		return loadText( imageMaxWidth, flag );
 	}
 
@@ -68,31 +69,39 @@ public class Entry extends Entity {
 		if ( alignments == null || relativeSizeSpans == null ) {
 			loadAdditional();
 		}
-		for (SpanEntry<AlignmentSpan.Standard> se : alignments) {
-			int st = se.getStart(), end = se.getEnd();
-			if ( st < 0 ) {
-				st = 0;
-			}
-			if ( end > spannable.length() ) {
-				end = spannable.length();
-			}
+		for(SpanEntry<AlignmentSpan.Standard> se : alignments)
+			applySpanEntry( spannable, se );
 
-			spannable.setSpan( se.getSpan(), st, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-		}
-
-		for (SpanEntry<RelativeSizeSpan> se : relativeSizeSpans) {
-			int st = se.getStart(), end = se.getEnd();
-			if ( st < 0 ) {
-				st = 0;
-			}
-			if ( end > spannable.length() ) {
-				end = spannable.length();
-			}
-
-			spannable.setSpan( se.getSpan(), st, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-		}
+		for (SpanEntry<RelativeSizeSpan> se : relativeSizeSpans)
+			applySpanEntry( spannable, se );
 
 		return spannable;
+	}
+
+	private void applySpanEntry(Spannable spannable, SpanEntry<?> se) {
+		int st = se.getStart(), end = se.getEnd();
+		if ( st > end ) {
+			int t = st;
+			st = end;
+			end = t;
+		}
+		if ( st > spannable.length() ) {
+			int r = end - st;
+			end = spannable.length();
+			st = end - r;
+		}
+		if ( st < 0 ) {
+			st = 0;
+		}
+		if ( end > spannable.length() ) {
+			st -= end - st;
+			if ( st < 0 ) {
+				st = 0;
+			}
+			end = spannable.length();
+		}
+
+		spannable.setSpan( se.getSpan(), st, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 	}
 
 	private void loadAdditional() throws IOException, JSONException {
@@ -150,16 +159,17 @@ public class Entry extends Entity {
 		file = new File( file, "text" );
 
 		rawText = Html.toHtml( text, Html.TO_HTML_PARAGRAPH_LINES_INDIVIDUAL );
-		try(FileOutputStream fos = new FileOutputStream(file)){
+		try (FileOutputStream fos = new FileOutputStream( file )) {
 			fos.write( rawText.getBytes( StandardCharsets.UTF_8 ) );
 		}
 
 		JSONObject additional = new JSONObject();
 		JSONArray alignments = new JSONArray();
-		if(this.alignments == null)
+		if ( this.alignments == null ) {
 			this.alignments = new ArrayList<>();
-		else
+		} else {
 			this.alignments.clear();
+		}
 		for (AlignmentSpan.Standard span : text.getSpans( 0, text.length(), AlignmentSpan.Standard.class )) {
 			int start = text.getSpanStart( span ), end = text.getSpanEnd( span );
 			alignments.put(
@@ -173,10 +183,11 @@ public class Entry extends Entity {
 		additional.put( "alignments", alignments );
 
 		JSONArray relatives = new JSONArray();
-		if(relativeSizeSpans == null)
+		if ( relativeSizeSpans == null ) {
 			relativeSizeSpans = new ArrayList<>();
-		else
+		} else {
 			relativeSizeSpans.clear();
+		}
 		for (RelativeSizeSpan span : text.getSpans( 0, text.length(), RelativeSizeSpan.class )) {
 			int start = text.getSpanStart( span ), end = text.getSpanEnd( span );
 			relatives.put(
@@ -190,18 +201,20 @@ public class Entry extends Entity {
 		additional.put( "relativeSpans", relatives );
 
 		file = new File( entryDir, "additional.json" );
-		if(!file.exists())
+		if ( !file.exists() ) {
 			file.createNewFile();
-		try(FileOutputStream fos = new FileOutputStream(file)){
+		}
+		try (FileOutputStream fos = new FileOutputStream( file )) {
 			fos.write( additional.toString().getBytes( StandardCharsets.UTF_8 ) );
 		}
 	}
 
 	public void saveProperties() throws IOException, JSONException {
 		File propsFile = new File( entryDir );
-		if(!propsFile.exists())
+		if ( !propsFile.exists() ) {
 			propsFile.mkdirs();
-		propsFile = new File( propsFile,"properties.json" );
+		}
+		propsFile = new File( propsFile, "properties.json" );
 		if ( !propsFile.exists() ) {
 			propsFile.createNewFile();
 		}

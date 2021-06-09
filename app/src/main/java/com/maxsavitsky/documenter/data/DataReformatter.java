@@ -251,6 +251,7 @@ public class DataReformatter {
 		for(String id : entries) {
 			Entry entry = new Entry( id, "" );
 			try {
+				Log.i( TAG, "reformatEntriesImages: " + id );
 				Spannable text = entry.loadText( 100 );
 				ArrayList<SpanEntry<ImageSpan>> spanEntries = new ArrayList<>();
 				ImageSpan[] imageSpans = text.getSpans( 0, text.length(), ImageSpan.class );
