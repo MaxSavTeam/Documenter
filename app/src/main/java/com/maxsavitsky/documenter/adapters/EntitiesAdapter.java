@@ -1,5 +1,6 @@
 package com.maxsavitsky.documenter.adapters;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,7 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.DiffUtil.DiffResult;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.data.types.Entity;
 
@@ -19,12 +21,12 @@ import java.util.ArrayList;
 
 public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHolder> {
 
+	private static final String TAG = MainActivity.TAG + " EntitiesAdapter";
+
 	private ArrayList<? extends Entity> mEntities;
 	private AdapterCallback mAdapterCallback;
 	private boolean isSelectionMode = false;
-	private ArrayList<Boolean> isItemSelected;
-
-	private final ArrayList<ViewHolder> viewHolders = new ArrayList<>();
+	private final ArrayList<Boolean> isItemSelected = new ArrayList<>();
 
 	public interface AdapterCallback {
 		void onEntityClick(String id, Entity.Type type, int index);
@@ -37,25 +39,11 @@ public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHo
 	public EntitiesAdapter(ArrayList<? extends Entity> entities, AdapterCallback callback) {
 		mEntities = copy( entities );
 		mAdapterCallback = callback;
-		initHoldersList();
-	}
-
-	private void initHoldersList() {
-		if ( viewHolders.size() < mEntities.size() ) {
-			while ( viewHolders.size() != mEntities.size() ) {
-				viewHolders.add( null );
-			}
-		} else {
-			while ( viewHolders.size() != mEntities.size() ) {
-				viewHolders.remove( viewHolders.size() - 1 );
-			}
-		}
 	}
 
 	public void setElements(ArrayList<? extends Entity> entities) {
 		DiffResult diffResult = DiffUtil.calculateDiff( new DiffUtilCallback( mEntities, entities ) );
 		mEntities = copy( entities );
-		initHoldersList();
 		diffResult.dispatchUpdatesTo( this );
 	}
 
@@ -78,16 +66,19 @@ public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHo
 
 	public void showCheckBoxes() {
 		isSelectionMode = true;
-		isItemSelected = new ArrayList<>();
+		isItemSelected.clear();
 		for (int i = 0; i < mEntities.size(); i++)
 			isItemSelected.add( false );
 		for (int i = 0; i < getItemCount(); i++) {
 			View view = mAdapterCallback.getViewAt( i );
-			if(view == null)
+			if(view == null) {
+				Log.i( TAG, "showCheckBoxes: view at " + i + " is null" );
+				notifyItemChanged( i );
 				continue;
-			ViewHolder holder = new ViewHolder( view );
-			holder.checkBox.setVisibility( View.VISIBLE );
-			holder.checkBox.setChecked( isItemSelected.get( i ) );
+			}
+			CheckBox checkBox = view.findViewById( R.id.entity_layout_check_box );
+			checkBox.setVisibility( View.VISIBLE );
+			checkBox.setChecked( isItemSelected.get( i ) );
 		}
 	}
 
@@ -96,19 +87,26 @@ public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHo
 		isItemSelected.clear();
 		for (int i = 0; i < getItemCount(); i++) {
 			View view = mAdapterCallback.getViewAt( i );
-			if(view == null)
+			if(view == null) {
+				Log.i( TAG, "hideCheckBoxes: view at " + i + " is null" );
+				notifyItemChanged( i );
 				continue;
-			ViewHolder holder = new ViewHolder( view );
-			holder.checkBox.setVisibility( View.GONE );
-			holder.checkBox.setChecked( false );
+			}
+			CheckBox checkBox = view.findViewById( R.id.entity_layout_check_box );
+			checkBox.setVisibility( View.GONE );
+			checkBox.setChecked( false );
 		}
 	}
 
 	public void setCheckBox(int index, boolean state) {
 		isItemSelected.set( index, state );
 		View view = mAdapterCallback.getViewAt( index );
-		if(view != null)
-			new ViewHolder( view ).checkBox.setChecked( state );
+		if ( view == null ) {
+			notifyItemChanged( index );
+		} else {
+			CheckBox checkBox = view.findViewById( R.id.entity_layout_check_box );
+			checkBox.setChecked( state );
+		}
 	}
 
 	@NonNull
@@ -120,7 +118,6 @@ public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHo
 
 	@Override
 	public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-		viewHolders.set( position, holder );
 		Entity entity = mEntities.get( position );
 		holder.textView.setText( entity.getName() );
 		if ( entity.getType() == Entity.Type.GROUP ) {

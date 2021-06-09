@@ -63,7 +63,7 @@ public class EntitiesListActivity extends ThemeActivity {
 
 	private final ArrayList<Entity> mSelectedEntities = new ArrayList<>();
 
-	private int mFlexboxLayoutHeight;
+	private LinearLayoutManager mLayoutManager;
 
 	private final ActivityResultLauncher<Intent> mEntitiesListLauncher = registerForActivityResult(
 			new ActivityResultContracts.StartActivityForResult(),
@@ -210,7 +210,7 @@ public class EntitiesListActivity extends ThemeActivity {
 
 		@Override
 		public View getViewAt(int position) {
-			return ((RecyclerView) findViewById( R.id.recycler_view_entities )).getLayoutManager().findViewByPosition( position );
+			return mLayoutManager.findViewByPosition( position );
 		}
 	};
 
@@ -526,9 +526,9 @@ public class EntitiesListActivity extends ThemeActivity {
 
 	private void initializeRecyclerView(ArrayList<? extends Entity> entities) {
 		RecyclerView recyclerView = findViewById( R.id.recycler_view_entities );
-		LinearLayoutManager manager = new LinearLayoutManager( this );
-		manager.setOrientation( RecyclerView.VERTICAL );
-		recyclerView.setLayoutManager( manager );
+		mLayoutManager = new LinearLayoutManager( this );
+		mLayoutManager.setOrientation( RecyclerView.VERTICAL );
+		recyclerView.setLayoutManager( mLayoutManager );
 		mEntitiesAdapter = new EntitiesAdapter( entities, ADAPTER_CALLBACK );
 		recyclerView.setAdapter( mEntitiesAdapter );
 	}
