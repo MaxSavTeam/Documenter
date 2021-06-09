@@ -6,10 +6,10 @@ import android.util.AttributeSet;
 
 import androidx.appcompat.widget.AppCompatEditText;
 
-import com.maxsavitsky.documenter.MainActivity;
+import com.maxsavitsky.documenter.App;
 
 public class TextEditor extends AppCompatEditText {
-	private final String TAG = MainActivity.TAG + " Editor";
+	private final String TAG = App.TAG + " Editor";
 
 	private OnSelectionChanges listener = null;
 	private boolean mIgnoreChanges = false;

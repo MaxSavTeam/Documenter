@@ -38,7 +38,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class MainActivity extends ThemeActivity {
-	public static final String TAG = "Documenter";
 
 	private ProgressDialog mDownloadPd = null;
 	private Thread downloadThread;
@@ -84,7 +83,7 @@ public class MainActivity extends ThemeActivity {
 			try {
 				runReformatIfNeeded();
 				initialize();
-				Log.i( TAG, "Initialized" );
+				Log.i( App.TAG, "Initialized" );
 			} catch (final Exception e) {
 				runOnUiThread( ()->Utils.getErrorDialog( e, MainActivity.this ).show() );
 				return;

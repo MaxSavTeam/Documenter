@@ -4,8 +4,8 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.maxsavitsky.documenter.App;
 import com.maxsavitsky.documenter.BuildConfig;
-import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.utils.Utils;
 
 import org.json.JSONException;
@@ -19,7 +19,7 @@ import java.net.URL;
 
 public class UpdatesChecker {
 
-	public static final String TAG = MainActivity.TAG + " UpdatesChecker";
+	public static final String TAG = App.TAG + " UpdatesChecker";
 	private final Thread mThread;
 	private final CheckResults mCheckResults;
 

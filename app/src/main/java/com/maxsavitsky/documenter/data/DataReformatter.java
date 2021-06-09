@@ -6,7 +6,6 @@ import android.text.style.ImageSpan;
 import android.util.Log;
 
 import com.maxsavitsky.documenter.App;
-import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.data.html.ImageSpanLoader;
 import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.data.types.Group;
@@ -35,7 +34,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 public class DataReformatter {
-	private static final String TAG = MainActivity.TAG + " DataReformatter";
+	private static final String TAG = App.TAG + " DataReformatter";
 
 	private static JSONObject prepareInfoJSON() throws Exception {
 		SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();

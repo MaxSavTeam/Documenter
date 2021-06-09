@@ -15,7 +15,7 @@ import java.util.Arrays;
 public class AfterExceptionActivity extends ThemeActivity {
 	private String path;
 
-	private static final String TAG = MainActivity.TAG + " ErrHandler";
+	private static final String TAG = App.TAG + " ErrHandler";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

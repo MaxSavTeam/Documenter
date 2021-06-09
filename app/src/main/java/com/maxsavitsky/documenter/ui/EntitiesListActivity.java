@@ -29,8 +29,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.transition.TransitionManager;
 
+import com.maxsavitsky.documenter.App;
 import com.maxsavitsky.documenter.BuildConfig;
-import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.ThemeActivity;
 import com.maxsavitsky.documenter.adapters.EntitiesAdapter;
@@ -47,7 +47,7 @@ import java.util.Optional;
 
 public class EntitiesListActivity extends ThemeActivity {
 
-	private static final String TAG = MainActivity.TAG + " EntitiesList";
+	private static final String TAG = App.TAG + " EntitiesList";
 	protected boolean isRoot;
 
 	protected Group mGroup;

@@ -5,7 +5,6 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 
 import com.maxsavitsky.documenter.App;
-import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.utils.Utils;
 
 import java.io.File;
@@ -17,7 +16,7 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 public class BackupInstruments {
-	private static final String THIS_TAG = MainActivity.TAG + " BInstruments";
+	private static final String THIS_TAG = App.TAG + " BInstruments";
 
 	public static void restoreFromBackup(File backupFile, @Nullable BackupCallback backupCallback) throws IOException {
 		File dataDir = new File( App.appDataPath );

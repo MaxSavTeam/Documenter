@@ -8,6 +8,8 @@ import com.maxsavitsky.exceptionhandler.ExceptionHandler;
 
 public class App extends Application {
 
+	public static final String TAG = "Documenter";
+
 	public static String appDataPath, appStoragePath;
 
 	public static App instance;

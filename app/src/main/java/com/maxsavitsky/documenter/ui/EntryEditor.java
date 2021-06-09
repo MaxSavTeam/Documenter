@@ -68,8 +68,8 @@ import androidx.core.content.ContextCompat;
 
 import com.flask.colorpicker.ColorPickerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.maxsavitsky.documenter.App;
 import com.maxsavitsky.documenter.BuildConfig;
-import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.ThemeActivity;
 import com.maxsavitsky.documenter.codes.Results;
@@ -120,7 +120,7 @@ public class EntryEditor extends ThemeActivity {
 	private int mDefaultTextColor = Color.BLACK;
 	private final float INDEX_PROPORTION = 0.75f;
 	private final int DEFAULT_TOOLS_COLOR = Color.WHITE;
-	private final String TAG = MainActivity.TAG + " EntryEditor";
+	private final String TAG = App.TAG + " EntryEditor";
 	private Group mParentGroup;
 
 	private interface OnLoadedTextListener {

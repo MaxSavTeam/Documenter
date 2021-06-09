@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.DiffUtil.DiffResult;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.maxsavitsky.documenter.MainActivity;
+import com.maxsavitsky.documenter.App;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.data.types.Entity;
 
@@ -21,7 +21,7 @@ import java.util.ArrayList;
 
 public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHolder> {
 
-	private static final String TAG = MainActivity.TAG + " EntitiesAdapter";
+	private static final String TAG = App.TAG + " EntitiesAdapter";
 
 	private ArrayList<? extends Entity> mEntities;
 	private AdapterCallback mAdapterCallback;

@@ -4,12 +4,12 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.RadioGroup;
 
-import com.maxsavitsky.documenter.MainActivity;
+import com.maxsavitsky.documenter.App;
 
 import java.util.ArrayList;
 
 public class CustomRadioGroup extends RadioGroup {
-	private static final String TAG = MainActivity.TAG + " RadioGroup";
+	private static final String TAG = App.TAG + " RadioGroup";
 
 	private ArrayList<Integer> childrenIds;
 

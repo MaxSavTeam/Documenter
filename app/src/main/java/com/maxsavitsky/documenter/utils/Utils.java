@@ -20,7 +20,6 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 
 import com.maxsavitsky.documenter.App;
-import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.data.EntitiesStorage;
 import com.maxsavitsky.documenter.data.types.Entry;
@@ -42,7 +41,7 @@ public class Utils {
 	private static SharedPreferences mDefaultSharedPreferences;
 
 	public static final String APP_PREFERENCES = "main_settings";
-	private static final String THIS_TAG = MainActivity.TAG + " Utils";
+	private static final String THIS_TAG = App.TAG + " Utils";
 
 	public static Context getContext() {
 		return sContext;

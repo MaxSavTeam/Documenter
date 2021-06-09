@@ -3,7 +3,6 @@ package com.maxsavitsky.documenter.data;
 import android.util.Log;
 
 import com.maxsavitsky.documenter.App;
-import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.data.types.Entity;
 import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.data.types.Group;
@@ -24,7 +23,7 @@ import java.util.Optional;
 
 public class EntitiesStorage {
 
-	private static final String TAG = MainActivity.TAG + " EntitiesStorage";
+	private static final String TAG = App.TAG + " EntitiesStorage";
 	private static EntitiesStorage instance;
 
 	public static EntitiesStorage get() {

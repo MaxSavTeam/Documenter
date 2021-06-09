@@ -31,8 +31,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.maxsavitsky.documenter.App;
 import com.maxsavitsky.documenter.BuildConfig;
-import com.maxsavitsky.documenter.MainActivity;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.ThemeActivity;
 import com.maxsavitsky.documenter.codes.Results;
@@ -49,7 +49,7 @@ import java.util.Optional;
 
 public class EntryViewer extends ThemeActivity {
 
-	private static final String TAG = MainActivity.TAG + " EntryViewer";
+	private static final String TAG = App.TAG + " EntryViewer";
 	private Entry mEntry;
 	private Group mParentGroup;
 	private SharedPreferences sp;
