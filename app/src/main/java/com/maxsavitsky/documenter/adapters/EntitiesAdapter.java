@@ -126,19 +126,18 @@ public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHo
 			holder.imageView.setImageTintList( ColorStateList.valueOf( holder.itemView.getContext().getColor( R.color.yellow ) ) );
 		} else {
 			holder.imageView.setImageResource( R.drawable.ic_document );
-			/*TypedValue value = new TypedValue();
-			holder.itemView.getContext().getTheme().resolveAttribute( R.attr.textColor, value, true );
-			holder.imageView.setImageTintList( ColorStateList.valueOf( value.data ) );*/
 		}
+
+		int adapterPosition = holder.getAbsoluteAdapterPosition();
 
 		holder.itemView.setOnClickListener( v->{
 			if ( mAdapterCallback != null ) {
-				mAdapterCallback.onEntityClick( entity.getId(), entity.getType(), holder.getAdapterPosition() );
+				mAdapterCallback.onEntityClick( entity.getId(), entity.getType(), adapterPosition );
 			}
 		} );
 
 		holder.itemView.setOnLongClickListener( v->{
-			mAdapterCallback.onLongClick( holder.getAdapterPosition() );
+			mAdapterCallback.onLongClick( adapterPosition );
 			return true;
 		} );
 
@@ -149,6 +148,10 @@ public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHo
 			holder.checkBox.setVisibility( View.GONE );
 			holder.checkBox.setChecked( false );
 		}
+		holder.checkBox.setOnClickListener( v->{
+			if(isSelectionMode)
+				mAdapterCallback.onEntityClick( entity.getId(), entity.getType(), adapterPosition );
+		} );
 	}
 
 	@Override
