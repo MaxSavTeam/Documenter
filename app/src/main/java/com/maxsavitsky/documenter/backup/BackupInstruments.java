@@ -12,6 +12,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -63,21 +64,26 @@ public class BackupInstruments {
 		restoreFromStream( new FileInputStream( backupFile ), backupCallback );
 	}
 
-	public static void createBackupToFile(File path, @Nullable BackupCallback backupCallback) throws IOException {
+	public static void createBackupToOutputStream(OutputStream os, BackupCallback backupCallback) throws IOException {
 		long startTime = System.currentTimeMillis();
 		Utils.removeAllUnusedImages();
 		File dir = new File( App.appDataPath );
-		path.createNewFile();
-		ZipOutputStream zipOutputStream = new ZipOutputStream( new FileOutputStream( path ) );
+		ZipOutputStream zipOutputStream = new ZipOutputStream( os );
 		zipOutputStream.setLevel( 9 );
 
 		myPack( dir, dir.getName(), zipOutputStream );
 		zipOutputStream.close();
+		os.close();
 
 		long end = System.currentTimeMillis();
 		Log.i( THIS_TAG, "packed in " + ((end - startTime) / 1000) + "s" );
 		if( backupCallback != null)
 			backupCallback.onSuccess( System.currentTimeMillis() );
+	}
+
+	public static void createBackupToFile(File path, @Nullable BackupCallback backupCallback) throws IOException {
+		path.createNewFile();
+		createBackupToOutputStream( new FileOutputStream( path ), backupCallback );
 	}
 
 	public static void createOldBackup(File path, BackupCallback backupCallback) throws IOException {

@@ -1,15 +1,11 @@
 package com.maxsavitsky.documenter.ui;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.text.Html;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
@@ -21,13 +17,14 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.content.ContextCompat;
 import androidx.core.text.HtmlCompat;
+import androidx.documentfile.provider.DocumentFile;
 
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.maxsavitsky.documenter.App;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.ThemeActivity;
 import com.maxsavitsky.documenter.backup.BackupInstruments;
@@ -40,12 +37,13 @@ import com.maxsavitsky.documenter.utils.ApkInstaller;
 import com.maxsavitsky.documenter.utils.Utils;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 public class SettingsActivity extends ThemeActivity {
 
-	private boolean mMemoryAccessGranted = false;
 	private FirebaseAuth mAuth;
 
 	private final ActivityResultLauncher<Intent> mSignInLauncher = registerForActivityResult(
@@ -64,13 +62,13 @@ public class SettingsActivity extends ThemeActivity {
 
 			}
 	);
-	
+
 	private final ActivityResultLauncher<Intent> mChooseBackupFileLauncher = registerForActivityResult(
 			new ActivityResultContracts.StartActivityForResult(),
-			result -> {
-				if(result.getResultCode() == Activity.RESULT_OK){
+			result->{
+				if ( result.getResultCode() == Activity.RESULT_OK ) {
 					Intent data = result.getData();
-					if(data != null){
+					if ( data != null ) {
 						Uri uri = data.getData();
 						AlertDialog.Builder builder = new AlertDialog.Builder( this )
 								.setTitle( R.string.confirmation )
@@ -82,6 +80,19 @@ public class SettingsActivity extends ThemeActivity {
 								} )
 								.setNeutralButton( R.string.cancel, (dialog, which)->dialog.cancel() );
 						builder.create().show();
+					}
+				}
+			}
+	);
+
+	private final ActivityResultLauncher<Intent> mChooseFolderForBackupLauncher = registerForActivityResult(
+			new ActivityResultContracts.StartActivityForResult(),
+			result->{
+				if ( result.getResultCode() == Activity.RESULT_OK ) {
+					Intent data = result.getData();
+					if ( data != null ) {
+						Uri uri = data.getData();
+						createBackupToFolder( uri );
 					}
 				}
 			}
@@ -144,7 +155,7 @@ public class SettingsActivity extends ThemeActivity {
 		}
 		updateUserUi( mAuth.getCurrentUser() );
 
-		findViewById( R.id.btn_about_app ).setOnClickListener( v->startActivity( new Intent(this, AboutAppActivity.class ) ) );
+		findViewById( R.id.btn_about_app ).setOnClickListener( v->startActivity( new Intent( this, AboutAppActivity.class ) ) );
 	}
 
 	private void updateUserUi(FirebaseUser user) {
@@ -171,8 +182,8 @@ public class SettingsActivity extends ThemeActivity {
 	public void signButtonsAction(View v) {
 		if ( v.getId() == R.id.btnSignIn ) {
 			mSignInLauncher.launch( AuthUI.getInstance()
-							.createSignInIntentBuilder()
-							.build());
+					.createSignInIntentBuilder()
+					.build() );
 		} else if ( v.getId() == R.id.btnSignOut || v.getId() == R.id.btnSignOutVer ) {
 			AuthUI.getInstance().signOut( this )
 					.addOnCompleteListener( task->updateUserUi( mAuth.getCurrentUser() ) );
@@ -196,12 +207,6 @@ public class SettingsActivity extends ThemeActivity {
 
 	private ProgressDialog mCheckUpdatesDialog = null;
 
-	private boolean isMemoryAccessGranted() {
-		boolean write = ContextCompat.checkSelfPermission( this, Manifest.permission.WRITE_EXTERNAL_STORAGE ) == PackageManager.PERMISSION_GRANTED;
-		boolean read = ContextCompat.checkSelfPermission( this, Manifest.permission.READ_EXTERNAL_STORAGE ) == PackageManager.PERMISSION_GRANTED;
-		return write && read;
-	}
-
 	private final UpdatesChecker.CheckResults mCheckResults = new UpdatesChecker.CheckResults() {
 		@Override
 		public void noUpdates() {
@@ -220,7 +225,7 @@ public class SettingsActivity extends ThemeActivity {
 					mCheckUpdatesDialog.dismiss();
 				}
 				AlertDialog.Builder builder = new AlertDialog.Builder( SettingsActivity.this, SettingsActivity.super.mAlertDialogStyle );
-				builder.setTitle( String.format( getString(R.string.update_available), versionInfo.getVersionName() ) )
+				builder.setTitle( String.format( getString( R.string.update_available ), versionInfo.getVersionName() ) )
 						.setCancelable( false )
 						.setMessage( R.string.would_you_like_to_download_and_install )
 						.setPositiveButton( R.string.yes, (dialog, which)->{
@@ -274,17 +279,8 @@ public class SettingsActivity extends ThemeActivity {
 
 	private Thread downloadThread;
 	private ProgressDialog mDownloadPd = null;
-	private VersionInfo tempVersionInfo;
 
 	private void download(VersionInfo versionInfo) {
-		if ( !mMemoryAccessGranted ) {
-			if ( !isMemoryAccessGranted() ) {
-				tempVersionInfo = versionInfo;
-				requestPermissions( new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE }, 1 );
-				return;
-			}
-		}
-		mMemoryAccessGranted = false;
 		final UpdatesDownloader downloader = new UpdatesDownloader( versionInfo, mCheckResults );
 		mDownloadPd = new ProgressDialog( SettingsActivity.this );
 		mDownloadPd.setProgressStyle( ProgressDialog.STYLE_HORIZONTAL );
@@ -301,13 +297,13 @@ public class SettingsActivity extends ThemeActivity {
 	}
 
 	public void initialUnpack(View v) {
-		Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+		Intent intent = new Intent( Intent.ACTION_OPEN_DOCUMENT );
 		intent.setType( "*/*" );
-		intent.putExtra( Intent.EXTRA_MIME_TYPES, new String[]{"application/zip", "application/dbf"} );
+		intent.putExtra( Intent.EXTRA_MIME_TYPES, new String[]{ "application/zip", "application/dbf" } );
 		mChooseBackupFileLauncher.launch( intent );
 	}
 
-	private void restoreFromUri(Uri uri){
+	private void restoreFromUri(Uri uri) {
 		final ProgressDialog pd = new ProgressDialog( this );
 		pd.setMessage( HtmlCompat.fromHtml( getString( R.string.restoring_please_donot_close_app ), HtmlCompat.FROM_HTML_MODE_COMPACT ) );
 		pd.setCancelable( false );
@@ -327,7 +323,7 @@ public class SettingsActivity extends ThemeActivity {
 		pd.show();
 		new Thread( ()->{
 			try {
-				InputStream is = getContentResolver().openInputStream(uri);
+				InputStream is = getContentResolver().openInputStream( uri );
 				BackupInstruments.restoreFromStream( is, backupCallback );
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -337,21 +333,13 @@ public class SettingsActivity extends ThemeActivity {
 	}
 
 	public void initialBackup(View v) {
-		if ( ContextCompat.checkSelfPermission( this, Manifest.permission.WRITE_EXTERNAL_STORAGE )
-				== PackageManager.PERMISSION_DENIED ||
-				ContextCompat.checkSelfPermission( this, Manifest.permission.READ_EXTERNAL_STORAGE )
-						== PackageManager.PERMISSION_DENIED ) {
-			requestPermissions( new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE }, 10 );
-			//requestPermissions( new String[]{ Manifest.permission.READ_EXTERNAL_STORAGE}, 11 );
-		} else {
-			createMyBackup();
-		}
+		Intent intent = new Intent( Intent.ACTION_OPEN_DOCUMENT_TREE );
+		mChooseFolderForBackupLauncher.launch( intent );
 	}
 
-	private void createMyBackup() {
-		final File outputFile = new File( Environment.getExternalStorageDirectory().getPath() + "/documenter_backup.zip" );
+	private void createBackupToFolder(Uri uri) {
 		final ProgressDialog pd = new ProgressDialog( this );
-		pd.setMessage( Html.fromHtml( getString( R.string.creating_backup ) ) );
+		pd.setMessage( HtmlCompat.fromHtml( getString( R.string.creating_backup ), HtmlCompat.FROM_HTML_MODE_COMPACT ) );
 		pd.setCancelable( false );
 		final BackupInstruments.BackupCallback backupCallback = new BackupInstruments.BackupCallback() {
 			@Override
@@ -373,32 +361,29 @@ public class SettingsActivity extends ThemeActivity {
 		pd.show();
 		new Thread( ()->{
 			try {
-				BackupInstruments.createBackupToFile( outputFile, backupCallback );
+				DocumentFile documentFile = DocumentFile.fromTreeUri( this, uri );
+				if ( documentFile != null ) {
+					String ext = App.backupFileExtension;
+					String fileName = "documenter_backup." + ext;
+					int i = 1;
+					while ( documentFile.findFile( fileName ) != null ) {
+						fileName = "documenter_backup (" + i + ")." + ext;
+						i++;
+					}
+					DocumentFile doc = documentFile.createFile( "application/" + ext, fileName );
+					if ( doc != null ) {
+						OutputStream os = getContentResolver().openOutputStream( doc.getUri() );
+						BackupInstruments.createBackupToOutputStream( os, backupCallback );
+					} else {
+						backupCallback.onException( new IOException( "Failed to create new file" ) );
+					}
+				} else {
+					backupCallback.onException( new FileNotFoundException( "Cannot get document file from provided uri" ) );
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 				backupCallback.onException( e );
 			}
 		} ).start();
-	}
-
-	@Override
-	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-		super.onRequestPermissionsResult( requestCode, permissions, grantResults );
-		if ( requestCode == 10 ) {
-			if ( grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED && grantResults[ 1 ] == PackageManager.PERMISSION_GRANTED ) {
-				createMyBackup();
-			} else {
-				Toast.makeText( this, "Denied", Toast.LENGTH_SHORT ).show();
-			}
-		}
-		if ( requestCode == 1 ) {
-			if ( grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED && grantResults[ 1 ] == PackageManager.PERMISSION_GRANTED ) {
-				mMemoryAccessGranted = true;
-				download( tempVersionInfo );
-				tempVersionInfo = null;
-			} else {
-				Toast.makeText( this, "Permission denied", Toast.LENGTH_SHORT ).show();
-			}
-		}
 	}
 }
