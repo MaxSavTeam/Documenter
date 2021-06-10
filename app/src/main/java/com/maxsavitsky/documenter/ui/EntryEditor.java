@@ -1,7 +1,5 @@
 package com.maxsavitsky.documenter.ui;
 
-import static com.maxsavitsky.documenter.codes.Requests.PICK_IMAGE;
-
 import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -59,8 +57,9 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
@@ -122,6 +121,52 @@ public class EntryEditor extends ThemeActivity {
 	private final int DEFAULT_TOOLS_COLOR = Color.WHITE;
 	private final String TAG = App.TAG + " EntryEditor";
 	private Group mParentGroup;
+
+	private final ActivityResultLauncher<Intent> mPickImageLauncher = registerForActivityResult(
+			new ActivityResultContracts.StartActivityForResult(),
+			result -> {
+				if ( result.getResultCode() == Activity.RESULT_OK ) {
+					Intent data = result.getData();
+					if ( data == null ) {
+						Toast.makeText( this, "Data is null", Toast.LENGTH_SHORT ).show();
+						return;
+					}
+					Uri uri = data.getData();
+					if ( uri == null ) {
+						Toast.makeText( this, "Some error occurred", Toast.LENGTH_SHORT ).show();
+						return;
+					}
+					try (InputStream in = getContentResolver().openInputStream( uri )) {
+						String type = getContentResolver().getType( uri );
+						if ( in == null || type == null ) {
+							Toast.makeText( this, "Some problems with reading", Toast.LENGTH_SHORT ).show();
+							return;
+						}
+						File file = Utils.getEntryImagesMediaFolder( mId );
+						String format = MimeTypeMap.getSingleton().getExtensionFromMimeType( getContentResolver().getType( uri ) );
+						file = new File( file, Utils.generateUniqueId() + "." + format );
+						if ( !EntitiesStorage.get().getEntry( mId ).isPresent() ) {
+							mMediaToMove.add( file );
+						}
+						FileOutputStream fos = new FileOutputStream( file );
+						int len;
+						byte[] buffer = new byte[ 1024 ];
+						while ( ( len = in.read( buffer ) ) != -1 ) {
+							fos.write( buffer, 0, len );
+						}
+						fos.close();
+						in.close();
+
+						setImageAtSelBounds( file );
+					} catch (IOException | NullPointerException e) {
+						e.printStackTrace();
+						Utils.getErrorDialog( e, this ).show();
+						Toast.makeText( this, "Picture could be damaged.\n" +
+								"We recommend deleting and re-adding.", Toast.LENGTH_LONG ).show();
+					}
+				}
+			}
+	);
 
 	private interface OnLoadedTextListener {
 		void loaded(Spannable spannable, Entry entry);
@@ -647,63 +692,13 @@ public class EntryEditor extends ThemeActivity {
 					.show();
 			return;
 		}
-		Intent picker = new Intent( Intent.ACTION_GET_CONTENT );
+		Intent picker = new Intent( Intent.ACTION_OPEN_DOCUMENT );
 		picker.setType( "image/*" );
-		startActivityForResult( picker, PICK_IMAGE );
+		mPickImageLauncher.launch( picker );
 	}
 
 	private boolean isReadMemoryAccess() {
 		return ContextCompat.checkSelfPermission( this, Manifest.permission.READ_EXTERNAL_STORAGE ) == PackageManager.PERMISSION_GRANTED;
-	}
-
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-		if ( requestCode == PICK_IMAGE ) {
-			if ( resultCode == Activity.RESULT_OK ) {
-				if ( data == null ) {
-					Toast.makeText( this, "Data is null", Toast.LENGTH_SHORT ).show();
-					return;
-				}
-				Uri uri = data.getData();
-				if ( uri == null ) {
-					Toast.makeText( this, "Some error occurred", Toast.LENGTH_SHORT ).show();
-					return;
-				}
-				InputStream in;
-				try {
-					in = getContentResolver().openInputStream( uri );
-					String type = getContentResolver().getType( uri );
-					if ( in == null || type == null ) {
-						Toast.makeText( this, "Some problems with reading", Toast.LENGTH_SHORT ).show();
-						return;
-					}
-					File file = Utils.getEntryImagesMediaFolder( mId );
-					file = new File( file.getPath() + "/" + Utils.generateUniqueId() );
-					String format = "";
-					format = MimeTypeMap.getSingleton().getExtensionFromMimeType( getContentResolver().getType( uri ) );
-					file = new File( file.getPath() + "." + format );
-					if ( !EntitiesStorage.get().getEntry( mId ).isPresent() ) {
-						mMediaToMove.add( file );
-					}
-					FileOutputStream fos = new FileOutputStream( file );
-					int len;
-					byte[] buffer = new byte[ 1024 ];
-					while ( ( len = in.read( buffer ) ) != -1 ) {
-						fos.write( buffer, 0, len );
-					}
-					fos.close();
-					in.close();
-
-					setImageAtSelBounds( file );
-				} catch (IOException | NullPointerException e) {
-					e.printStackTrace();
-					Utils.getErrorDialog( e, this ).show();
-					Toast.makeText( this, "Picture could be damaged.\n" +
-							"We recommend deleting and re-adding.", Toast.LENGTH_LONG ).show();
-				}
-			}
-		}
-		super.onActivityResult( requestCode, resultCode, data );
 	}
 
 	private void setImageAtSelBounds(File file) {
