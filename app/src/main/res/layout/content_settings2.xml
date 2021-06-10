@@ -6,13 +6,11 @@
     android:layout_height="match_parent"
     android:layout_marginTop="?attr/actionBarSize"
     android:orientation="vertical"
-    android:padding="7dp"
     tools:context=".ui.SettingsActivity">
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="20dp"
         android:layout_gravity="center_horizontal|top">
 
         <LinearLayout
