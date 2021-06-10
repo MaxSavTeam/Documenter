@@ -156,4 +156,6 @@
     <string name="displaying_mode">Режим отображения</string>
     <string name="legacy">Устаревший</string>
     <string name="present">Актуальный</string>
+    <string name="about_app">О приложении</string>
+    <string name="close">Закрыть</string>
 </resources>

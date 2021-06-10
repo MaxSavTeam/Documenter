@@ -329,6 +329,23 @@
 
             </LinearLayout>
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bottom_border"
+                android:orientation="vertical">
+
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/about_app"
+                    android:id="@+id/btn_about_app"
+                    style="@style/Widget.AppCompat.Button.Borderless.Colored"
+                    android:textColor="?colored_buttons_text_color"
+                    android:textSize="16sp" />
+
+            </LinearLayout>
+
         </LinearLayout>
     </ScrollView>
 

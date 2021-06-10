@@ -25,6 +25,7 @@ import com.firebase.ui.auth.AuthUI;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.maxsavitsky.documenter.AboutAppActivity;
 import com.maxsavitsky.documenter.BuildConfig;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.ThemeActivity;
@@ -121,6 +122,8 @@ public class SettingsActivity extends ThemeActivity {
 			mAuth.getCurrentUser().reload();
 		}
 		updateUserUi( mAuth.getCurrentUser() );
+
+		findViewById( R.id.btn_about_app ).setOnClickListener( v->startActivity( new Intent(this, AboutAppActivity.class ) ) );
 	}
 
 	private void updateUserUi(FirebaseUser user) {

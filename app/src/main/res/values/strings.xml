@@ -166,4 +166,6 @@
     <string name="displaying_mode">Displaying mode</string>
     <string name="legacy">Legacy</string>
     <string name="present">Present</string>
+    <string name="about_app">About app</string>
+    <string name="close">Close</string>
 </resources>
