@@ -3,6 +3,7 @@ package com.maxsavitsky.documenter.ui;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -342,9 +343,10 @@ public class SettingsActivity extends ThemeActivity {
 
 	@SuppressLint("SetTextI18n")
 	private void enterNameOfBackupFileAndThenCreate(Uri uri){
+		SharedPreferences sp = getSharedPreferences( Utils.APP_PREFERENCES, Context.MODE_PRIVATE );
 		EditText editText = new EditText(this);
 		editText.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT ) );
-		editText.setText( "documenter_backup" );
+		editText.setText( sp.getString( "last_backup_name", "documenter_backup" ) );
 		editText.setTextColor( getColor( super.mTextColor ) );
 		AlertDialog.Builder builder = new AlertDialog.Builder(this, super.mAlertDialogStyle);
 		builder
@@ -366,6 +368,7 @@ public class SettingsActivity extends ThemeActivity {
 					if(name.isEmpty() || name.length() > 255 || containsBadSymbol){
 						Toast.makeText( this, R.string.invalid_name, Toast.LENGTH_SHORT ).show();
 					}else{
+						sp.edit().putString( "last_backup_name", name ).apply();
 						createBackupToFolder( uri, name );
 					}
 				} )
