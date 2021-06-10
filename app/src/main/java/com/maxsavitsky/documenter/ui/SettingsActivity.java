@@ -1,10 +1,12 @@
 package com.maxsavitsky.documenter.ui;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.text.Html;
@@ -20,6 +22,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
+import androidx.core.text.HtmlCompat;
 
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.material.switchmaterial.SwitchMaterial;
@@ -38,6 +41,7 @@ import com.maxsavitsky.documenter.utils.Utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class SettingsActivity extends ThemeActivity {
 
@@ -58,6 +62,28 @@ public class SettingsActivity extends ThemeActivity {
 			new ActivityResultContracts.StartActivityForResult(),
 			result->{
 
+			}
+	);
+	
+	private final ActivityResultLauncher<Intent> mChooseBackupFileLauncher = registerForActivityResult(
+			new ActivityResultContracts.StartActivityForResult(),
+			result -> {
+				if(result.getResultCode() == Activity.RESULT_OK){
+					Intent data = result.getData();
+					if(data != null){
+						Uri uri = data.getData();
+						AlertDialog.Builder builder = new AlertDialog.Builder( this )
+								.setTitle( R.string.confirmation )
+								.setMessage( R.string.confirm_restore_message )
+								.setCancelable( false )
+								.setPositiveButton( "OK", (dialog, which)->{
+									dialog.cancel();
+									restoreFromUri( uri );
+								} )
+								.setNeutralButton( R.string.cancel, (dialog, which)->dialog.cancel() );
+						builder.create().show();
+					}
+				}
 			}
 	);
 
@@ -274,14 +300,16 @@ public class SettingsActivity extends ThemeActivity {
 		downloadThread.start();
 	}
 
-	private void unpack() {
-		final File file = new File( Environment.getExternalStorageDirectory().getPath() + "/documenter_backup.zip" );
-		if ( !file.exists() ) {
-			Toast.makeText( this, R.string.file_not_found, Toast.LENGTH_SHORT ).show();
-			return;
-		}
+	public void initialUnpack(View v) {
+		Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+		intent.setType( "*/*" );
+		intent.putExtra( Intent.EXTRA_MIME_TYPES, new String[]{"application/zip", "application/dbf"} );
+		mChooseBackupFileLauncher.launch( intent );
+	}
+
+	private void restoreFromUri(Uri uri){
 		final ProgressDialog pd = new ProgressDialog( this );
-		pd.setMessage( Html.fromHtml( getString( R.string.restoring_please_donot_close_app ) ) );
+		pd.setMessage( HtmlCompat.fromHtml( getString( R.string.restoring_please_donot_close_app ), HtmlCompat.FROM_HTML_MODE_COMPACT ) );
 		pd.setCancelable( false );
 		final BackupInstruments.BackupCallback backupCallback = new BackupInstruments.BackupCallback() {
 			@Override
@@ -299,29 +327,13 @@ public class SettingsActivity extends ThemeActivity {
 		pd.show();
 		new Thread( ()->{
 			try {
-				BackupInstruments.restoreFromBackup( file, backupCallback );
+				InputStream is = getContentResolver().openInputStream(uri);
+				BackupInstruments.restoreFromStream( is, backupCallback );
 			} catch (IOException e) {
 				e.printStackTrace();
 				backupCallback.onException( e );
 			}
 		} ).start();
-	}
-
-	public void initialUnpack(View v) {
-		AlertDialog.Builder builder = new AlertDialog.Builder( this )
-				.setTitle( R.string.confirmation )
-				.setMessage( R.string.confirm_restore_message )
-				.setCancelable( false )
-				.setPositiveButton( "OK", (dialog, which)->{
-					dialog.cancel();
-					if ( ContextCompat.checkSelfPermission( SettingsActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE ) == PackageManager.PERMISSION_DENIED ) {
-						requestPermissions( new String[]{ Manifest.permission.READ_EXTERNAL_STORAGE }, 11 );
-					} else {
-						unpack();
-					}
-				} )
-				.setNeutralButton( R.string.cancel, (dialog, which)->dialog.cancel() );
-		builder.create().show();
 	}
 
 	public void initialBackup(View v) {
@@ -375,12 +387,6 @@ public class SettingsActivity extends ThemeActivity {
 		if ( requestCode == 10 ) {
 			if ( grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED && grantResults[ 1 ] == PackageManager.PERMISSION_GRANTED ) {
 				createMyBackup();
-			} else {
-				Toast.makeText( this, "Denied", Toast.LENGTH_SHORT ).show();
-			}
-		} else if ( requestCode == 11 ) {
-			if ( grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED ) {
-				unpack();
 			} else {
 				Toast.makeText( this, "Denied", Toast.LENGTH_SHORT ).show();
 			}

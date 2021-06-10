@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -18,7 +19,7 @@ import java.util.zip.ZipOutputStream;
 public class BackupInstruments {
 	private static final String THIS_TAG = App.TAG + " BInstruments";
 
-	public static void restoreFromBackup(File backupFile, @Nullable BackupCallback backupCallback) throws IOException {
+	public static void restoreFromStream(InputStream is, BackupCallback backupCallback) throws IOException {
 		File dataDir = new File( App.appDataPath );
 		if(!dataDir.exists())
 			dataDir.mkdirs();
@@ -34,7 +35,7 @@ public class BackupInstruments {
 		}
 
 		File dest = dataDir.getParentFile();
-		ZipInputStream zis = new ZipInputStream( new FileInputStream( backupFile ) );
+		ZipInputStream zis = new ZipInputStream( is );
 		byte[] buffer = new byte[ 1024 ];
 		ZipEntry zipEntry;
 		while ( ( zipEntry = zis.getNextEntry() ) != null ) {
@@ -56,6 +57,10 @@ public class BackupInstruments {
 		zis.close();
 		if( backupCallback != null)
 			backupCallback.onSuccess( System.currentTimeMillis() );
+	}
+
+	public static void restoreFromBackup(File backupFile, @Nullable BackupCallback backupCallback) throws IOException {
+		restoreFromStream( new FileInputStream( backupFile ), backupCallback );
 	}
 
 	public static void createBackupToFile(File path, @Nullable BackupCallback backupCallback) throws IOException {
