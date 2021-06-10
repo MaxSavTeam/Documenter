@@ -158,4 +158,6 @@
     <string name="present">Актуальный</string>
     <string name="about_app">О приложении</string>
     <string name="close">Закрыть</string>
+    <string name="specify_backup_name">Укажите имя резервной копии</string>
+    <string name="specify_backup_name_note">Если файл с указанным именем существует, то к имени в скобках будет добавлен порядковый номер</string>
 </resources>

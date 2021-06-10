@@ -1,5 +1,6 @@
 package com.maxsavitsky.documenter.ui;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -8,6 +9,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -92,7 +95,7 @@ public class SettingsActivity extends ThemeActivity {
 					Intent data = result.getData();
 					if ( data != null ) {
 						Uri uri = data.getData();
-						createBackupToFolder( uri );
+						enterNameOfBackupFileAndThenCreate( uri );
 					}
 				}
 			}
@@ -337,7 +340,44 @@ public class SettingsActivity extends ThemeActivity {
 		mChooseFolderForBackupLauncher.launch( intent );
 	}
 
-	private void createBackupToFolder(Uri uri) {
+	@SuppressLint("SetTextI18n")
+	private void enterNameOfBackupFileAndThenCreate(Uri uri){
+		EditText editText = new EditText(this);
+		editText.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT ) );
+		editText.setText( "documenter_backup" );
+		editText.setTextColor( getColor( super.mTextColor ) );
+		AlertDialog.Builder builder = new AlertDialog.Builder(this, super.mAlertDialogStyle);
+		builder
+				.setTitle( R.string.specify_backup_name )
+				.setMessage( R.string.specify_backup_name_note )
+				.setView( editText )
+				.setNegativeButton( R.string.cancel, (dialog, which)->dialog.cancel() )
+				.setPositiveButton( "OK", (dialog, which) -> {
+					dialog.cancel();
+					String name = editText.getText().toString().trim();
+					String badSymbols = "<>:/\\|&\"";
+					boolean containsBadSymbol = false;
+					for(char c : badSymbols.toCharArray()){
+						if(name.contains( String.valueOf( c ) )){
+							containsBadSymbol = true;
+							break;
+						}
+					}
+					if(name.isEmpty() || name.length() > 255 || containsBadSymbol){
+						Toast.makeText( this, R.string.invalid_name, Toast.LENGTH_SHORT ).show();
+					}else{
+						createBackupToFolder( uri, name );
+					}
+				} )
+				.setCancelable( false );
+		AlertDialog alertDialog = builder.create();
+		alertDialog.setOnShowListener( dialog->{
+			Utils.showKeyboard( editText, this );
+		} );
+		alertDialog.show();
+	}
+
+	private void createBackupToFolder(Uri uri, String initialName) {
 		final ProgressDialog pd = new ProgressDialog( this );
 		pd.setMessage( HtmlCompat.fromHtml( getString( R.string.creating_backup ), HtmlCompat.FROM_HTML_MODE_COMPACT ) );
 		pd.setCancelable( false );
@@ -364,10 +404,10 @@ public class SettingsActivity extends ThemeActivity {
 				DocumentFile documentFile = DocumentFile.fromTreeUri( this, uri );
 				if ( documentFile != null ) {
 					String ext = App.backupFileExtension;
-					String fileName = "documenter_backup." + ext;
+					String fileName = initialName + "." + ext;
 					int i = 1;
 					while ( documentFile.findFile( fileName ) != null ) {
-						fileName = "documenter_backup (" + i + ")." + ext;
+						fileName = initialName + " (" + i + ")." + ext;
 						i++;
 					}
 					DocumentFile doc = documentFile.createFile( "application/" + ext, fileName );
