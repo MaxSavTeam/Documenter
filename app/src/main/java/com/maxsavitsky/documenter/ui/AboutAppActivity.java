@@ -1,4 +1,4 @@
-package com.maxsavitsky.documenter;
+package com.maxsavitsky.documenter.ui;
 
 import android.app.AlertDialog;
 import android.os.Build;
@@ -9,6 +9,10 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
+
+import com.maxsavitsky.documenter.BuildConfig;
+import com.maxsavitsky.documenter.R;
+import com.maxsavitsky.documenter.ThemeActivity;
 
 public class AboutAppActivity extends ThemeActivity {
 
