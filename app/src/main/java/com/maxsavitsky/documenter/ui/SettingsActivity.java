@@ -26,7 +26,6 @@ import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.maxsavitsky.documenter.AboutAppActivity;
-import com.maxsavitsky.documenter.BuildConfig;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.ThemeActivity;
 import com.maxsavitsky.documenter.backup.BackupInstruments;
@@ -40,7 +39,6 @@ import com.maxsavitsky.documenter.utils.Utils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Locale;
 
 public class SettingsActivity extends ThemeActivity {
 
@@ -89,8 +87,6 @@ public class SettingsActivity extends ThemeActivity {
 		setSupportActionBar( toolbar );
 
 		applyTheme();
-
-		( (TextView) findViewById( R.id.txtVersion ) ).setText( String.format( Locale.ROOT, "%s: %s", getString( R.string.version ), BuildConfig.VERSION_NAME ) );
 
 		SharedPreferences sp = Utils.getDefaultSharedPreferences();
 
