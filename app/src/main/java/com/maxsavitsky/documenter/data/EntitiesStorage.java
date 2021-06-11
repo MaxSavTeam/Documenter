@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class EntitiesStorage {
 
@@ -41,7 +42,10 @@ public class EntitiesStorage {
 	}
 
 	public void setEntryEntities(ArrayList<Entry> entryEntities) {
-		mEntryEntities = entryEntities;
+		mEntryEntities = entryEntities
+				.stream()
+				.filter( e->!e.getId().equals( "temp_entry" ) )
+				.collect( Collectors.toCollection(ArrayList::new));
 	}
 
 	public ArrayList<Entry> getEntryEntities() {

@@ -1,13 +1,11 @@
 package com.maxsavitsky.documenter.ui;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Point;
@@ -142,10 +140,10 @@ public class EntryEditor extends ThemeActivity {
 							Toast.makeText( this, "Some problems with reading", Toast.LENGTH_SHORT ).show();
 							return;
 						}
-						File file = Utils.getEntryImagesMediaFolder( mId );
+						File file = Utils.getEntryImagesMediaFolder( mEntry.getId() );
 						String format = MimeTypeMap.getSingleton().getExtensionFromMimeType( getContentResolver().getType( uri ) );
 						file = new File( file, Utils.generateUniqueId() + "." + format );
-						if ( !EntitiesStorage.get().getEntry( mId ).isPresent() ) {
+						if ( mEntry.getId().equals( "temp_entry" ) ) {
 							mMediaToMove.add( file );
 						}
 						FileOutputStream fos = new FileOutputStream( file );
@@ -682,23 +680,9 @@ public class EntryEditor extends ThemeActivity {
 	}
 
 	public void pickImages(View v) {
-		if ( !isReadMemoryAccess() ) {
-			AlertDialog.Builder builder = new AlertDialog.Builder( this );
-			builder.setTitle( R.string.warning )
-					.setMessage( R.string.image_picker_warning_memory_not_accessed )
-					.setCancelable( true )
-					.setPositiveButton( R.string.request, (dialog, which)->requestPermissions( new String[]{ Manifest.permission.READ_EXTERNAL_STORAGE }, 100 ) )
-					.create()
-					.show();
-			return;
-		}
 		Intent picker = new Intent( Intent.ACTION_GET_CONTENT );
 		picker.setType( "image/*" );
 		mPickImageLauncher.launch( picker );
-	}
-
-	private boolean isReadMemoryAccess() {
-		return ContextCompat.checkSelfPermission( this, Manifest.permission.READ_EXTERNAL_STORAGE ) == PackageManager.PERMISSION_GRANTED;
 	}
 
 	private void setImageAtSelBounds(File file) {
@@ -1466,7 +1450,6 @@ public class EntryEditor extends ThemeActivity {
 		sendBroadcast( new Intent( BuildConfig.APPLICATION_ID + ".REFRESH_ENTITIES_LISTS" ) );
 		try {
 			copyTempFiles();
-			replaceTempImagesInSpans();
 			mEntry.saveText( text );
 			setResult( Results.REOPEN, new Intent().putExtra( "id", mEntry.getId() ) );
 			super.onBackPressed();
@@ -1478,7 +1461,7 @@ public class EntryEditor extends ThemeActivity {
 
 	private void copyTempFiles() throws IOException {
 		for (File file : mMediaToMove) {
-			File dest = new File( mEntry.getImagesMediaFolder().getPath() + "/" + file.getName() );
+			File dest = new File( mEntry.getImagesMediaFolder(), file.getName() );
 			FileInputStream fis = new FileInputStream( file );
 			FileOutputStream fos = new FileOutputStream( dest );
 			byte[] b = new byte[ 1024 ];
@@ -1581,23 +1564,6 @@ public class EntryEditor extends ThemeActivity {
 			if ( !usedResources.containsKey( f.getName() ) ) {
 				f.delete();
 			}
-		}
-	}
-
-	private void replaceTempImagesInSpans() {
-		Editable e = mTextEditor.getText();
-		if ( e == null ) {
-			return;
-		}
-		for (ImageSpan span : e.getSpans( 0, e.length(), ImageSpan.class )) {
-			int st = e.getSpanStart( span );
-			int end = e.getSpanEnd( span );
-			int flags = e.getSpanFlags( span );
-			File old = new File( span.getSource() );
-			File newFile = new File( Utils.getEntryImagesMediaFolder( mId ).getPath() + "/" + old.getName() );
-			ImageSpan newSpan = new ImageSpan( span.getDrawable(), newFile.getPath() );
-			e.removeSpan( span );
-			e.setSpan( newSpan, st, end, flags );
 		}
 	}
 
