@@ -62,7 +62,10 @@ public class SettingsActivity extends ThemeActivity {
 	private final ActivityResultLauncher<Intent> mCloudBackupParamsLauncher = registerForActivityResult(
 			new ActivityResultContracts.StartActivityForResult(),
 			result->{
-
+				if(result.getResultCode() == Results.RESTART_APP){
+					setResult( result.getResultCode() );
+					onBackPressed();
+				}
 			}
 	);
 

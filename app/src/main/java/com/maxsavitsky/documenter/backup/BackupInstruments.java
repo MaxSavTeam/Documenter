@@ -56,6 +56,7 @@ public class BackupInstruments {
 		}
 		zis.closeEntry();
 		zis.close();
+		is.close();
 		if( backupCallback != null)
 			backupCallback.onSuccess( System.currentTimeMillis() );
 	}

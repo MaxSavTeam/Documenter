@@ -43,6 +43,8 @@ public class Utils {
 	public static final String APP_PREFERENCES = "main_settings";
 	private static final String THIS_TAG = App.TAG + " Utils";
 
+	public static final String DOCUMENTER_API = "https://documenter.maxsavteam.com/api/";
+
 	public static Context getContext() {
 		return sContext;
 	}

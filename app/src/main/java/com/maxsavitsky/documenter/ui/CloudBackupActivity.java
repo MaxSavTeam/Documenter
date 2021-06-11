@@ -2,13 +2,15 @@ package com.maxsavitsky.documenter.ui;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.Html;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,27 +18,29 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.text.HtmlCompat;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.maxsavitsky.documenter.App;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.ThemeActivity;
 import com.maxsavitsky.documenter.backup.BackupInstruments;
 import com.maxsavitsky.documenter.backup.CloudBackupInstruments;
 import com.maxsavitsky.documenter.backup.CloudBackupMaker;
 import com.maxsavitsky.documenter.codes.Results;
+import com.maxsavitsky.documenter.net.RequestMaker;
 import com.maxsavitsky.documenter.utils.Utils;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Date;
 
 public class CloudBackupActivity extends ThemeActivity {
+	private static final String TAG = App.TAG + " CloudBackupActivity";
 	private long mLastBackupTime;
 
 	private void applyTheme() {
@@ -59,10 +63,10 @@ public class CloudBackupActivity extends ThemeActivity {
 		return super.onOptionsItemSelected( item );
 	}
 
-	private interface Loader {
-		void onDataLoaded();
+	private interface Callback {
+		void onSuccess();
 
-		void failed();
+		void onFailed();
 	}
 
 	@Override
@@ -78,61 +82,67 @@ public class CloudBackupActivity extends ThemeActivity {
 
 		final ProgressDialog pd = new ProgressDialog( this );
 		pd.setMessage( getString( R.string.loading ) );
-		pd.setButton( ProgressDialog.BUTTON_NEUTRAL, getString( R.string.cancel ), new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				onBackPressed();
-			}
-		} );
+		pd.setButton( ProgressDialog.BUTTON_NEUTRAL, getString( R.string.cancel ), (dialog, which)->onBackPressed() );
 		pd.show();
-		final Loader loader = new Loader() {
+		final Callback callback = new Callback() {
 			@Override
-			public void onDataLoaded() {
+			public void onSuccess() {
 				pd.dismiss();
 			}
 
 			@Override
-			public void failed() {
+			public void onFailed() {
 				pd.dismiss();
 				Toast.makeText( CloudBackupActivity.this, R.string.something_gone_wrong, Toast.LENGTH_SHORT ).show();
 				onBackPressed();
 			}
 		};
 
-		Thread loadThread = new Thread( new Runnable() {
-			@Override
-			public void run() {
-				FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-				if ( user == null ) {
-					loader.failed();
-					return;
-				}
-				DatabaseReference ref = FirebaseDatabase.getInstance().getReference( "documenter/" + user.getUid() + "/last_backup_time" );
-				ref.addValueEventListener( new ValueEventListener() {
-					@Override
-					public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-						if ( dataSnapshot.getValue() != null ) {
-							long time = (long) dataSnapshot.getValue();
-							mLastBackupTime = time;
-							DateFormat format = DateFormat.getDateTimeInstance();
-							String str = String.format( "%s: %s", getString( R.string.last_backup ), format.format( new Date( time ) ) );
-							( (TextView) findViewById( R.id.lblLastBackup ) ).setText( str );
-						} else {
-							String str = String.format( "%s: %s", getString( R.string.last_backup ), getString( R.string.never ) );
-							( (TextView) findViewById( R.id.lblLastBackup ) ).setText( str );
-							mLastBackupTime = -1;
-						}
-						loader.onDataLoaded();
-					}
+		FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+		if ( user == null ) {
+			callback.onFailed();
+			return;
+		}
 
-					@Override
-					public void onCancelled(@NonNull DatabaseError databaseError) {
-						loader.failed();
+		user.getIdToken( true )
+				.addOnCompleteListener( task->{
+					if ( task.isSuccessful() ) {
+						new Thread( ()->getLastBackup( task.getResult().getToken(), callback ) ).start();
+					} else {
+						callback.onFailed();
 					}
 				} );
+	}
+
+	private void getLastBackup(String authToken, Callback callback) {
+		String url = Utils.DOCUMENTER_API + "backups/getLastBackup?authToken=" + authToken;
+		try {
+			String result = RequestMaker.getRequestTo( url );
+			JSONObject jsonObject = new JSONObject( result );
+			JSONObject last = jsonObject.optJSONObject( "backup" );
+			if ( last == null ) {
+				mLastBackupTime = -1;
+			} else {
+				mLastBackupTime = last.getLong( "creationTime" );
 			}
-		} );
-		loadThread.start();
+			runOnUiThread( this::updateState );
+			callback.onSuccess();
+		} catch (IOException | JSONException e) {
+			e.printStackTrace();
+			Log.i( TAG, "getLastBackup: " + e );
+			callback.onFailed();
+		}
+	}
+
+	private void updateState() {
+		if ( mLastBackupTime == -1 ) {
+			String str = String.format( "%s: %s", getString( R.string.last_backup ), getString( R.string.never ) );
+			( (TextView) findViewById( R.id.lblLastBackup ) ).setText( str );
+		} else {
+			DateFormat format = DateFormat.getDateTimeInstance();
+			String str = String.format( "%s: %s", getString( R.string.last_backup ), format.format( new Date( mLastBackupTime ) ) );
+			( (TextView) findViewById( R.id.lblLastBackup ) ).setText( str );
+		}
 	}
 
 	@Override
@@ -161,8 +171,39 @@ public class CloudBackupActivity extends ThemeActivity {
 	}
 
 	public void createCloudBackup(View v) {
+		showEnterDescriptionDialog();
+	}
+
+	private void showEnterDescriptionDialog() {
+		EditText editText = new EditText( this );
+		editText.setTextColor( getColor( super.mTextColor ) );
+		editText.setHint( R.string.absent );
+		ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT );
+		editText.setLayoutParams( layoutParams );
+		AlertDialog.Builder builder = new AlertDialog.Builder( this, super.mAlertDialogStyle );
+		builder
+				.setTitle( R.string.enter_description )
+				.setView( editText )
+				.setCancelable( false )
+				.setNegativeButton( R.string.cancel, (dialog, which)->dialog.cancel() )
+				.setPositiveButton( "OK", (dialog, which)->{
+					dialog.cancel();
+					String text = editText.getText().toString().trim();
+					if ( text.isEmpty() ) {
+						text = null;
+					}
+					createBackup( text );
+				} );
+		AlertDialog alertDialog = builder.create();
+		alertDialog.setOnShowListener( dialog->{
+			Utils.showKeyboard( editText, this );
+		} );
+		alertDialog.show();
+	}
+
+	private void createBackup(String description) {
 		final ProgressDialog pd = new ProgressDialog( this );
-		pd.setMessage( Html.fromHtml( getString( R.string.creating_backup ) ) );
+		pd.setMessage( HtmlCompat.fromHtml( getString( R.string.creating_backup ), HtmlCompat.FROM_HTML_MODE_COMPACT ) );
 		//pd.setMessage( "Preparing..." );
 		pd.setCancelable( false );
 
@@ -170,6 +211,8 @@ public class CloudBackupActivity extends ThemeActivity {
 			@Override
 			public void onSuccess(long timeOfCreation) {
 				runOnUiThread( ()->{
+					mLastBackupTime = timeOfCreation;
+					updateState();
 					pd.dismiss();
 					Toast.makeText( CloudBackupActivity.this, R.string.successfully, Toast.LENGTH_SHORT ).show();
 				} );
@@ -186,15 +229,7 @@ public class CloudBackupActivity extends ThemeActivity {
 		};
 
 		pd.show();
-		new Thread( ()->{
-			try {
-				long time = System.currentTimeMillis();
-				CloudBackupInstruments.createBackup( backupCallback, "backup_" + time, time );
-			} catch (IOException e) {
-				e.printStackTrace();
-				backupCallback.onException( e );
-			}
-		} ).start();
+		CloudBackupInstruments.createBackup( backupCallback, description );
 	}
 
 	private void restore() {
@@ -223,39 +258,22 @@ public class CloudBackupActivity extends ThemeActivity {
 		};
 
 		pd.show();
-		new Thread( new Runnable() {
-			@Override
-			public void run() {
-				try {
-					CloudBackupInstruments.restoreFromBackup( backupCallback, "backup_" + mLastBackupTime );
-				} catch (IOException e) {
-					e.printStackTrace();
-					backupCallback.onException( e );
-				}
-			}
-		} ).start();
+		CloudBackupInstruments.restoreFromBackup( backupCallback, mLastBackupTime );
 	}
 
 	public void restoreFromCloudBackup(View v) {
-		if(mLastBackupTime == -1)
+		if ( mLastBackupTime == -1 ) {
 			return;
+		}
 		androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder( this )
 				.setTitle( R.string.confirmation )
 				.setMessage( R.string.confirm_restore_message )
 				.setCancelable( false )
-				.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.cancel();
-						restore();
-					}
+				.setPositiveButton( "OK", (dialog, which)->{
+					dialog.cancel();
+					restore();
 				} )
-				.setNeutralButton( R.string.cancel, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.cancel();
-					}
-				} );
+				.setNeutralButton( R.string.cancel, (dialog, which)->dialog.cancel() );
 		builder.create().show();
 	}
 }

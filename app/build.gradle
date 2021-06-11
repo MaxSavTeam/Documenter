@@ -115,6 +115,8 @@ dependencies {
 
     implementation 'org.jetbrains:annotations:21.0.1'
 
+    implementation 'com.koushikdutta.ion:ion:3.1.0'
+
     implementation 'com.firebaseui:firebase-ui-auth:7.1.1'
     implementation 'com.google.firebase:firebase-core:19.0.0'
     implementation 'com.google.firebase:firebase-auth:21.0.1'
