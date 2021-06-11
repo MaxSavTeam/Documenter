@@ -692,7 +692,7 @@ public class EntryEditor extends ThemeActivity {
 					.show();
 			return;
 		}
-		Intent picker = new Intent( Intent.ACTION_OPEN_DOCUMENT );
+		Intent picker = new Intent( Intent.ACTION_GET_CONTENT );
 		picker.setType( "image/*" );
 		mPickImageLauncher.launch( picker );
 	}
