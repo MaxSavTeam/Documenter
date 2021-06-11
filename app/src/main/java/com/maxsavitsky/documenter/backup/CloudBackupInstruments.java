@@ -128,35 +128,6 @@ public class CloudBackupInstruments {
 				} );
 	}
 
-	public static void restoreFromBackup(final BackupInstruments.BackupCallback cloudInterface, String backupName) throws IOException {
-		final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-		if ( user == null ) {
-			return;
-		}
-		StorageReference ref = FirebaseStorage.getInstance().getReference().child( user.getUid() + "/documenter/backups/" + backupName + ".zip" );
-		File file = new File( App.appStoragePath, "backups" );
-		if ( !file.exists() ) {
-			file.mkdirs();
-		}
-		file = new File( file, "cloud_backup.zip" );
-		if ( !file.exists() ) {
-			file.createNewFile();
-		}
-
-		File finalFile = file;
-		ref.getFile( file )
-				.addOnSuccessListener( taskSnapshot->{
-					try {
-						BackupInstruments.restoreFromBackup( finalFile, null );
-						cloudInterface.onSuccess( 0 );
-					} catch (IOException e) {
-						e.printStackTrace();
-						cloudInterface.onException( e );
-					}
-				} )
-				.addOnFailureListener( cloudInterface::onException );
-	}
-
 	public static void restoreFromBackup(BackupInstruments.BackupCallback backupCallback, long time) {
 		FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 		if ( user == null ) {

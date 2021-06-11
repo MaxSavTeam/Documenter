@@ -6,31 +6,34 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
-import android.preference.PreferenceManager;
+import android.util.Log;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.maxsavitsky.documenter.App;
 import com.maxsavitsky.documenter.R;
+import com.maxsavitsky.documenter.net.RequestMaker;
+import com.maxsavitsky.documenter.utils.Utils;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class CloudBackupMaker {
+	private static final String TAG = App.TAG + " CloudBackupMaker";
 	private final Context mContext;
 	private Timer mTimer;
 
 	@SuppressLint("StaticFieldLeak")
 	private static CloudBackupMaker instance = null;
+
+	private final SharedPreferences sp;
 
 	public static CloudBackupMaker getInstance() {
 		return instance;
@@ -39,6 +42,11 @@ public class CloudBackupMaker {
 	public CloudBackupMaker(Context context) {
 		mContext = context;
 		instance = this;
+		sp = App.getInstance().getSharedPreferences( Utils.APP_PREFERENCES, Context.MODE_PRIVATE );
+	}
+
+	private interface Result<T>{
+		void onGet(T result);
 	}
 
 	private long getInterval(int state) {
@@ -57,8 +65,8 @@ public class CloudBackupMaker {
 
 	/**
 	 * @param lastBackup time of last backup in millis
-	 * @param interval check interval in seconds
-	 * */
+	 * @param interval   check interval in seconds
+	 */
 	private void checkTime(long lastBackup, final long interval) {
 		final long cur = System.currentTimeMillis() / 1000;
 		lastBackup /= 1000;
@@ -93,44 +101,15 @@ public class CloudBackupMaker {
 				new Handler( Looper.getMainLooper() ).post( ()->Toast.makeText( mContext, R.string.backup_error, Toast.LENGTH_LONG ).show() );
 			}
 		};
-		new Thread( new Runnable() {
-			@Override
-			public void run() {
-				try {
-					long time = System.currentTimeMillis();
-					CloudBackupInstruments.createBackup( backupCallback, "backup_" + time, time );
-				} catch (IOException e) {
-					e.printStackTrace();
-					backupCallback.onException( e );
-				}
-			}
-		} ).start();
+		CloudBackupInstruments.createBackup( backupCallback, "Auto backup" );
 	}
 
 	synchronized private void checkAndRun() {
-		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences( mContext.getApplicationContext() );
 		int state = sp.getInt( "auto_backup_state", 0 );
 		if ( state != 0 ) {
 			long interval = getInterval( state ); // in seconds
 
-			FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-			if ( user == null ) {
-				return;
-			}
-			DatabaseReference ref = FirebaseDatabase.getInstance().getReference( "documenter/" + user.getUid() + "/last_backup_time" );
-			final long finalInterval = interval;
-			ref.addListenerForSingleValueEvent( new ValueEventListener() {
-				@Override
-				public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-					long lastTime = (long) dataSnapshot.getValue();
-					checkTime( lastTime, finalInterval );
-				}
-
-				@Override
-				public void onCancelled(@NonNull DatabaseError databaseError) {
-
-				}
-			} );
+			getLastBackupTime( time->checkTime( time, interval ) );
 		}
 	}
 
@@ -139,30 +118,46 @@ public class CloudBackupMaker {
 		if ( user == null ) {
 			return;
 		}
-		DatabaseReference ref = FirebaseDatabase.getInstance().getReference( "documenter/" + user.getUid() + "/last_backup_time" );
-		ref.addListenerForSingleValueEvent( new ValueEventListener() {
-			@Override
-			public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-				if(dataSnapshot.getValue() == null)
-					return;
-				long time = (long) dataSnapshot.getValue();
-				long cur = System.currentTimeMillis();
-				long r = cur - time;
-				int state = PreferenceManager.getDefaultSharedPreferences( mContext.getApplicationContext() ).getInt( "auto_backup_state", 0 );
-				long interval = getInterval( state ) * 1000;
-				long delay = 0;
-				if ( r < interval ) {
-					delay = interval - r;
-				}
-				mTimer = new Timer();
-				mTimer.schedule( new MyTimerTask(), delay, interval );
-			}
 
-			@Override
-			public void onCancelled(@NonNull DatabaseError databaseError) {
-
+		getLastBackupTime( time->{
+			long cur = System.currentTimeMillis();
+			long r = cur - time;
+			int state = sp.getInt( "auto_backup_state", 0 );
+			long interval = getInterval( state ) * 1000;
+			long delay = 0;
+			if ( r < interval ) {
+				delay = interval - r;
 			}
+			mTimer = new Timer();
+			Log.i( TAG, "" + interval );
+			mTimer.schedule( new MyTimerTask(), delay, interval );
 		} );
+	}
+
+	private void getLastBackupTime(Result<Long> r) {
+		FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+		if ( user == null ) {
+			return;
+		}
+
+		user.getIdToken( true )
+				.addOnSuccessListener( getTokenResult->{
+					new Thread(()->{
+						String url = Utils.DOCUMENTER_API + "backups/getLastBackup?authToken=" + getTokenResult.getToken();
+						try {
+							String result = RequestMaker.getRequestTo( url );
+							JSONObject jsonObject = new JSONObject( result );
+							JSONObject last = jsonObject.optJSONObject( "backup" );
+							if ( last == null ) {
+								return;
+							}
+							long time = last.getLong( "creationTime" );
+							r.onGet( time );
+						} catch (IOException | JSONException e) {
+							e.printStackTrace();
+						}
+					}).start();
+				} );
 	}
 
 	synchronized public void stateChanged() {

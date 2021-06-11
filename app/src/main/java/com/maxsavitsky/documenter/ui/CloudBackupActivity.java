@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.text.Html;
 import android.util.Log;
 import android.view.MenuItem;
@@ -149,7 +148,7 @@ public class CloudBackupActivity extends ThemeActivity {
 	protected void onPostCreate(@Nullable Bundle savedInstanceState) {
 		super.onPostCreate( savedInstanceState );
 		TextView t = findViewById( R.id.lblAutoBackupState );
-		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
+		SharedPreferences sp = getSharedPreferences( Utils.APP_PREFERENCES, MODE_PRIVATE );
 		int state = sp.getInt( "auto_backup_state", 0 );
 		String[] strings = getResources().getStringArray( R.array.auto_backup_states );
 		t.setText( strings[ state ] );
@@ -157,7 +156,7 @@ public class CloudBackupActivity extends ThemeActivity {
 
 	public void onAutoBackupClick(View v) {
 		final TextView t = findViewById( R.id.lblAutoBackupState );
-		final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
+		final SharedPreferences sp = getSharedPreferences( Utils.APP_PREFERENCES, MODE_PRIVATE );
 		final String[] strings = getResources().getStringArray( R.array.auto_backup_states );
 		AlertDialog.Builder builder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
 				.setTitle( R.string.auto_backup )
