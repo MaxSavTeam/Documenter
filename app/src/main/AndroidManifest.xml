@@ -34,21 +34,23 @@
             android:name=".ui.EntitiesListActivity"
             android:exported="true" />
         <activity
-            android:exported="true"
             android:name=".AfterExceptionActivity"
+            android:exported="true"
             android:process=":exception_process" />
         <activity
-            android:exported="true"
             android:name=".ui.CloudBackupActivity"
+            android:exported="true"
             android:label="@string/title_activity_cloud_backup" />
-        <activity android:name=".ThemeActivity"
-            android:exported="false"/>
-        <activity android:name=".ui.SettingsActivity"
-            android:exported="false"/>
+        <activity
+            android:name=".ThemeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.SettingsActivity"
+            android:exported="false" />
         <activity
             android:name=".ui.EntryEditor"
-            android:label="@string/title_activity_create_entry"
             android:exported="false"
+            android:label="@string/title_activity_create_entry"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize" />
         <activity
@@ -57,8 +59,8 @@
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />
         <activity
             android:name=".MainActivity"
-            android:label="@string/app_name"
             android:exported="true"
+            android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
