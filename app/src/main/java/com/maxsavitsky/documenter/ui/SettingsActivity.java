@@ -28,7 +28,6 @@ import com.firebase.ui.auth.AuthUI;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.maxsavitsky.documenter.App;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.ThemeActivity;
 import com.maxsavitsky.documenter.backup.BackupInstruments;
@@ -301,9 +300,8 @@ public class SettingsActivity extends ThemeActivity {
 	}
 
 	public void initialUnpack(View v) {
-		Intent intent = new Intent( Intent.ACTION_OPEN_DOCUMENT );
-		intent.setType( "*/*" );
-		intent.putExtra( Intent.EXTRA_MIME_TYPES, new String[]{ "application/zip", "application/dbf" } );
+		Intent intent = new Intent( Intent.ACTION_GET_CONTENT );
+		intent.setType( "application/zip" );
 		mChooseBackupFileLauncher.launch( intent );
 	}
 
@@ -406,14 +404,14 @@ public class SettingsActivity extends ThemeActivity {
 			try {
 				DocumentFile documentFile = DocumentFile.fromTreeUri( this, uri );
 				if ( documentFile != null ) {
-					String ext = App.backupFileExtension;
-					String fileName = initialName + "." + ext;
+					String ext = ".zip";
+					String fileName = initialName;
 					int i = 1;
-					while ( documentFile.findFile( fileName ) != null ) {
-						fileName = initialName + " (" + i + ")." + ext;
+					while ( documentFile.findFile( fileName + ext ) != null ) {
+						fileName = initialName + " (" + i + ")";
 						i++;
 					}
-					DocumentFile doc = documentFile.createFile( "application/" + ext, fileName );
+					DocumentFile doc = documentFile.createFile( "application/zip", fileName );
 					if ( doc != null ) {
 						OutputStream os = getContentResolver().openOutputStream( doc.getUri() );
 						BackupInstruments.createBackupToOutputStream( os, backupCallback );

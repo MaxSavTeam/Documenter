@@ -11,8 +11,6 @@ public class App extends Application {
 
 	public static final String TAG = "Documenter";
 
-	public static final String backupFileExtension = "dbf";
-
 	public static String appDataPath, appStoragePath;
 
 	public static App instance;
