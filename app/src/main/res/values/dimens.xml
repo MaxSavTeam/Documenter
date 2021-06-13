@@ -15,4 +15,6 @@
     <dimen name="bottom_cycle_height">50dp</dimen>
 
     <dimen name="speed_buttons_size">50dp</dimen>
+
+    <dimen name="linear_layout_button_height">60dp</dimen>
 </resources>

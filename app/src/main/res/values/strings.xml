@@ -172,4 +172,6 @@
     <string name="specify_backup_name_note">If a file with the specified name exists, an ordinal number will be added to the name in parentheses</string>
     <string name="absent">(absent)</string>
     <string name="enter_description">Enter description (optional)</string>
+    <string name="description">Description</string>
+    <string name="previous_backups">Previous backups</string>
 </resources>

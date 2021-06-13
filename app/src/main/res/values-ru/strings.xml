@@ -162,4 +162,6 @@
     <string name="specify_backup_name_note">Если файл с указанным именем существует, то к имени в скобках будет добавлен порядковый номер</string>
     <string name="absent">(отсутствует)</string>
     <string name="enter_description">Введите описание (по желанию)</string>
+    <string name="description">Описание</string>
+    <string name="previous_backups">Предыдущие копии</string>
 </resources>

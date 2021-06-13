@@ -2,6 +2,7 @@ package com.maxsavitsky.documenter.ui;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Html;
@@ -13,6 +14,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
@@ -41,6 +44,21 @@ import java.util.Date;
 public class CloudBackupActivity extends ThemeActivity {
 	private static final String TAG = App.TAG + " CloudBackupActivity";
 	private long mLastBackupTime;
+
+	private final ActivityResultLauncher<Intent> mCloudBackupsListActivity = registerForActivityResult(
+			new ActivityResultContracts.StartActivityForResult(),
+			result->{
+				if(result.getResultCode() == RESULT_OK){
+					Intent data = result.getData();
+					if(data == null)
+						return;
+					long time = data.getLongExtra( "time", -1 );
+					if(time == -1)
+						return;
+					showWarningAndRestore( time );
+				}
+			}
+	);
 
 	private void applyTheme() {
 		ActionBar actionBar = getSupportActionBar();
@@ -169,6 +187,10 @@ public class CloudBackupActivity extends ThemeActivity {
 		builder.create().show();
 	}
 
+	public void previousBackups(View v) {
+		mCloudBackupsListActivity.launch( new Intent( this, CloudBackupsListActivity.class ) );
+	}
+
 	public void createCloudBackup(View v) {
 		showEnterDescriptionDialog();
 	}
@@ -194,16 +216,13 @@ public class CloudBackupActivity extends ThemeActivity {
 					createBackup( text );
 				} );
 		AlertDialog alertDialog = builder.create();
-		alertDialog.setOnShowListener( dialog->{
-			Utils.showKeyboard( editText, this );
-		} );
+		alertDialog.setOnShowListener( dialog->Utils.showKeyboard( editText, this ) );
 		alertDialog.show();
 	}
 
 	private void createBackup(String description) {
 		final ProgressDialog pd = new ProgressDialog( this );
 		pd.setMessage( HtmlCompat.fromHtml( getString( R.string.creating_backup ), HtmlCompat.FROM_HTML_MODE_COMPACT ) );
-		//pd.setMessage( "Preparing..." );
 		pd.setCancelable( false );
 
 		final BackupInstruments.BackupCallback backupCallback = new BackupInstruments.BackupCallback() {
@@ -231,10 +250,9 @@ public class CloudBackupActivity extends ThemeActivity {
 		CloudBackupInstruments.createBackup( backupCallback, description );
 	}
 
-	private void restore() {
+	private void restore(long time) {
 		final ProgressDialog pd = new ProgressDialog( this );
 		pd.setMessage( getResources().getString( R.string.loading ) );
-		//pd.setMessage( "Preparing..." );
 		pd.setCancelable( false );
 
 		final BackupInstruments.BackupCallback backupCallback = new BackupInstruments.BackupCallback() {
@@ -257,22 +275,27 @@ public class CloudBackupActivity extends ThemeActivity {
 		};
 
 		pd.show();
-		CloudBackupInstruments.restoreFromBackup( backupCallback, mLastBackupTime );
+		CloudBackupInstruments.restoreFromBackup( backupCallback, time );
 	}
 
 	public void restoreFromCloudBackup(View v) {
 		if ( mLastBackupTime == -1 ) {
 			return;
 		}
-		androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder( this )
+		showWarningAndRestore( mLastBackupTime );
+	}
+
+	private void showWarningAndRestore(long backupTime){
+		AlertDialog.Builder builder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
 				.setTitle( R.string.confirmation )
 				.setMessage( R.string.confirm_restore_message )
 				.setCancelable( false )
 				.setPositiveButton( "OK", (dialog, which)->{
 					dialog.cancel();
-					restore();
+					restore( backupTime );
 				} )
 				.setNeutralButton( R.string.cancel, (dialog, which)->dialog.cancel() );
 		builder.create().show();
 	}
+
 }
