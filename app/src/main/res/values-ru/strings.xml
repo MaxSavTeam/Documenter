@@ -73,7 +73,6 @@
         <item>Ежедневно</item>
         <item>Еженедельно</item>
         <item>Ежемесячно</item>
-        <item>1</item>
     </string-array>
 
     <string name="restore">Восстановить</string>
