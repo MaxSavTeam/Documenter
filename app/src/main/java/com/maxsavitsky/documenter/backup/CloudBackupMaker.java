@@ -101,7 +101,7 @@ public class CloudBackupMaker {
 				new Handler( Looper.getMainLooper() ).post( ()->Toast.makeText( mContext, R.string.backup_error, Toast.LENGTH_LONG ).show() );
 			}
 		};
-		CloudBackupInstruments.createBackup( backupCallback, "Auto backup" );
+		CloudBackupInstruments.createBackup( backupCallback, null );
 	}
 
 	synchronized private void checkAndRun() {

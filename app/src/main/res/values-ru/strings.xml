@@ -73,6 +73,7 @@
         <item>Ежедневно</item>
         <item>Еженедельно</item>
         <item>Ежемесячно</item>
+        <item>1</item>
     </string-array>
 
     <string name="restore">Восстановить</string>
@@ -164,4 +165,6 @@
     <string name="enter_description">Введите описание (по желанию)</string>
     <string name="description">Описание</string>
     <string name="previous_backups">Предыдущие копии</string>
+    <string name="created_automatically">Создано автоматически</string>
+    <string name="created_manually">Создано вручную</string>
 </resources>

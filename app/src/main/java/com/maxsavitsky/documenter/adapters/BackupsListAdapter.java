@@ -17,8 +17,8 @@ import java.util.Date;
 
 public class BackupsListAdapter extends RecyclerView.Adapter<BackupsListAdapter.ViewHolder> {
 
-	private ArrayList<CloudBackupsListActivity.BackupEntity> mBackupEntities;
-	private AdapterCallback callback;
+	private final ArrayList<CloudBackupsListActivity.BackupEntity> mBackupEntities;
+	private final AdapterCallback callback;
 
 	public BackupsListAdapter(ArrayList<CloudBackupsListActivity.BackupEntity> backupEntities, AdapterCallback callback) {
 		mBackupEntities = backupEntities;
@@ -50,6 +50,7 @@ public class BackupsListAdapter extends RecyclerView.Adapter<BackupsListAdapter.
 			String d = String.format( "%s: %s", holder.itemView.getContext().getString( R.string.description ), entity.description );
 			holder.description.setText( d );
 		}
+		holder.creationSource.setText( entity.isManually ? R.string.created_manually : R.string.created_automatically );
 
 		holder.itemView.setOnClickListener( v->callback.onBackupClick( entity ) );
 	}
@@ -60,13 +61,14 @@ public class BackupsListAdapter extends RecyclerView.Adapter<BackupsListAdapter.
 	}
 
 	protected static class ViewHolder extends RecyclerView.ViewHolder {
-		public final TextView time, description;
+		public final TextView time, description, creationSource;
 
 		public ViewHolder(@NonNull View itemView) {
 			super( itemView );
 
 			time = itemView.findViewById( R.id.backup_entity_text_view_time );
 			description = itemView.findViewById( R.id.backup_entity_description );
+			creationSource = itemView.findViewById( R.id.backup_entity_creation_source );
 		}
 	}
 

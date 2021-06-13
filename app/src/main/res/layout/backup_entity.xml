@@ -11,14 +11,22 @@
         android:textSize="20sp"
         android:textStyle="bold"
         android:textColor="?textColor"
-        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
         android:id="@+id/backup_entity_text_view_time" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/backup_entity_description"
+        android:layout_marginBottom="10dp"
         android:textColor="?textColor"
+        android:textSize="16sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/backup_entity_creation_source"
+        android:textColor="@color/gray"
         android:textSize="16sp" />
 
 </LinearLayout>

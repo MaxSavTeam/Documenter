@@ -66,6 +66,7 @@ public class CloudBackupInstruments {
 						.setMultipartFile( "file", finalFile )
 						.setMultipartParameter( "authToken", authToken )
 						.setMultipartParameter( "desc", description )
+						.setMultipartParameter( "isManually", "false" )
 						.asString()
 						.setCallback( (e, result)->{
 							if ( e == null ) {

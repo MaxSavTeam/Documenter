@@ -43,7 +43,7 @@ import java.util.Date;
 
 public class CloudBackupActivity extends ThemeActivity {
 	private static final String TAG = App.TAG + " CloudBackupActivity";
-	private long mLastBackupTime;
+	private CloudBackupsListActivity.BackupEntity lastBackup;
 
 	private final ActivityResultLauncher<Intent> mCloudBackupsListActivity = registerForActivityResult(
 			new ActivityResultContracts.StartActivityForResult(),
@@ -109,9 +109,11 @@ public class CloudBackupActivity extends ThemeActivity {
 
 			@Override
 			public void onFailed() {
-				pd.dismiss();
-				Toast.makeText( CloudBackupActivity.this, R.string.something_gone_wrong, Toast.LENGTH_SHORT ).show();
-				onBackPressed();
+				runOnUiThread( ()->{
+					pd.dismiss();
+					Toast.makeText( CloudBackupActivity.this, R.string.something_gone_wrong, Toast.LENGTH_SHORT ).show();
+					onBackPressed();
+				} );
 			}
 		};
 
@@ -138,9 +140,13 @@ public class CloudBackupActivity extends ThemeActivity {
 			JSONObject jsonObject = new JSONObject( result );
 			JSONObject last = jsonObject.optJSONObject( "backup" );
 			if ( last == null ) {
-				mLastBackupTime = -1;
+				lastBackup = null;
 			} else {
-				mLastBackupTime = last.getLong( "creationTime" );
+				lastBackup = new CloudBackupsListActivity.BackupEntity(
+						last.getLong( "creationTime" ),
+						last.optString( "description", null ),
+						last.getBoolean( "isManually" )
+				);
 			}
 			runOnUiThread( this::updateState );
 			callback.onSuccess();
@@ -152,12 +158,13 @@ public class CloudBackupActivity extends ThemeActivity {
 	}
 
 	private void updateState() {
-		if ( mLastBackupTime == -1 ) {
+		if ( lastBackup == null ) {
 			String str = String.format( "%s: %s", getString( R.string.last_backup ), getString( R.string.never ) );
 			( (TextView) findViewById( R.id.lblLastBackup ) ).setText( str );
 		} else {
 			DateFormat format = DateFormat.getDateTimeInstance();
-			String str = String.format( "%s: %s", getString( R.string.last_backup ), format.format( new Date( mLastBackupTime ) ) );
+			String creationSource = getString( lastBackup.isManually ? R.string.created_manually : R.string.created_automatically ).toLowerCase();
+			String str = String.format( "%s: %s (%s)", getString( R.string.last_backup ), format.format( new Date( lastBackup.time ) ), creationSource );
 			( (TextView) findViewById( R.id.lblLastBackup ) ).setText( str );
 		}
 	}
@@ -229,7 +236,11 @@ public class CloudBackupActivity extends ThemeActivity {
 			@Override
 			public void onSuccess(long timeOfCreation) {
 				runOnUiThread( ()->{
-					mLastBackupTime = timeOfCreation;
+					lastBackup = new CloudBackupsListActivity.BackupEntity(
+							timeOfCreation,
+							description,
+							true
+					);
 					updateState();
 					pd.dismiss();
 					Toast.makeText( CloudBackupActivity.this, R.string.successfully, Toast.LENGTH_SHORT ).show();
@@ -279,10 +290,10 @@ public class CloudBackupActivity extends ThemeActivity {
 	}
 
 	public void restoreFromCloudBackup(View v) {
-		if ( mLastBackupTime == -1 ) {
+		if ( lastBackup == null ) {
 			return;
 		}
-		showWarningAndRestore( mLastBackupTime );
+		showWarningAndRestore( lastBackup.time );
 	}
 
 	private void showWarningAndRestore(long backupTime){

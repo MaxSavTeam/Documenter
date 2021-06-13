@@ -174,4 +174,6 @@
     <string name="enter_description">Enter description (optional)</string>
     <string name="description">Description</string>
     <string name="previous_backups">Previous backups</string>
+    <string name="created_automatically">Сreated automatically</string>
+    <string name="created_manually">Created manually</string>
 </resources>

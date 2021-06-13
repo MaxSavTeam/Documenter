@@ -88,7 +88,8 @@ public class CloudBackupsListActivity extends ThemeActivity {
 						JSONObject j = jsonArray.getJSONObject( i );
 						entities.add( new BackupEntity(
 								j.getLong( "creationTime" ),
-								j.optString( "description", null )
+								j.optString( "description", null ),
+								j.getBoolean( "isManually" )
 						) );
 						runOnUiThread( ()->update( entities ) );
 					}
@@ -130,10 +131,12 @@ public class CloudBackupsListActivity extends ThemeActivity {
 	public static class BackupEntity {
 		public final long time;
 		public final String description;
+		public final boolean isManually;
 
-		public BackupEntity(long time, String description) {
+		public BackupEntity(long time, String description, boolean isManually) {
 			this.time = time;
 			this.description = description;
+			this.isManually = isManually;
 		}
 	}
 
