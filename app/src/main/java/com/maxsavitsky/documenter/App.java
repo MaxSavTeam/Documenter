@@ -3,9 +3,10 @@ package com.maxsavitsky.documenter;
 import android.app.Application;
 import android.content.Context;
 
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavitsky.exceptionhandler.ExceptionHandler;
+
+import java.lang.Thread.UncaughtExceptionHandler;
 
 public class App extends Application {
 
@@ -30,11 +31,12 @@ public class App extends Application {
 		appStoragePath = getExternalFilesDir( null ).getPath();
 		appDataPath = appStoragePath + "/data";
 
+		UncaughtExceptionHandler previousHandler = Thread.getDefaultUncaughtExceptionHandler();
 		ExceptionHandler handler = new ExceptionHandler( getApplicationContext(), AfterExceptionActivity.class );
 		Thread.setDefaultUncaughtExceptionHandler( (t, tr)->{
-			FirebaseCrashlytics.getInstance().recordException( tr );
-			FirebaseCrashlytics.getInstance().sendUnsentReports();
 			handler.uncaughtException( t, tr );
+			if(previousHandler != null)
+				previousHandler.uncaughtException( t, tr );
 		} );
 	}
 
