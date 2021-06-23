@@ -166,4 +166,5 @@
     <string name="previous_backups">Предыдущие копии</string>
     <string name="created_automatically">Создано автоматически</string>
     <string name="created_manually">Создано вручную</string>
+    <string name="remember_last_pos">Запоминать последнюю позицию</string>
 </resources>

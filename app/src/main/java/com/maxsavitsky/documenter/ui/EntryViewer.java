@@ -243,6 +243,14 @@ public class EntryViewer extends ThemeActivity {
 						}
 					} );
 			builder.show();
+		} else if(itemId == R.id.item_menu_remember_pos ){
+			item.setChecked( !item.isChecked() );
+			mEntry.getProperties().setSaveLastPos( item.isChecked() );
+			try {
+				mEntry.saveProperties();
+			} catch (IOException | JSONException e) {
+				e.printStackTrace();
+			}
 		}
 		return super.onOptionsItemSelected( item );
 	}
@@ -296,6 +304,7 @@ public class EntryViewer extends ThemeActivity {
 			menu.findItem( R.id.item_menu_remove_from_parent ).setVisible( false );
 		}
 		menu.findItem( R.id.item_debug_show_id ).setVisible( BuildConfig.DEBUG );
+		menu.findItem( R.id.item_menu_remember_pos ).setChecked( mEntry.getProperties().isSaveLastPos() );
 		return super.onCreateOptionsMenu( menu );
 	}
 

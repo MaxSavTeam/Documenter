@@ -176,4 +176,5 @@
     <string name="previous_backups">Previous backups</string>
     <string name="created_automatically">Сreated automatically</string>
     <string name="created_manually">Created manually</string>
+    <string name="remember_last_pos">Remember last scroll position</string>
 </resources>
