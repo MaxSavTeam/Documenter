@@ -23,7 +23,7 @@ import java.net.HttpURLConnection;
 
 public class CloudBackupInstruments {
 
-	public static void createBackup(BackupInstruments.BackupCallback backupCallback, String description) {
+	public static void createBackup(BackupInstruments.BackupCallback backupCallback, boolean isManually, String description) {
 		FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 		if ( user == null ) {
 			return;
@@ -34,7 +34,7 @@ public class CloudBackupInstruments {
 					if ( task.isSuccessful() ) {
 						new Thread( ()->{
 							try {
-								createBackup( backupCallback, description, task.getResult().getToken() );
+								createBackup( backupCallback, isManually, description, task.getResult().getToken() );
 							} catch (IOException e) {
 								e.printStackTrace();
 								backupCallback.onException( e );
@@ -46,7 +46,7 @@ public class CloudBackupInstruments {
 				} );
 	}
 
-	private static void createBackup(BackupInstruments.BackupCallback backupCallback, String description, String authToken) throws IOException {
+	private static void createBackup(BackupInstruments.BackupCallback backupCallback, boolean isManually, String description, String authToken) throws IOException {
 		File file = new File( App.appStoragePath, "backups" );
 		if ( !file.exists() ) {
 			file.mkdirs();
@@ -66,7 +66,7 @@ public class CloudBackupInstruments {
 						.setMultipartFile( "file", finalFile )
 						.setMultipartParameter( "authToken", authToken )
 						.setMultipartParameter( "desc", description )
-						.setMultipartParameter( "isManually", "false" )
+						.setMultipartParameter( "isManually", String.valueOf( isManually ) )
 						.asString()
 						.setCallback( (e, result)->{
 							if ( e == null ) {

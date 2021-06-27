@@ -258,7 +258,7 @@ public class CloudBackupActivity extends ThemeActivity {
 		};
 
 		pd.show();
-		CloudBackupInstruments.createBackup( backupCallback, description );
+		CloudBackupInstruments.createBackup( backupCallback, true, description );
 	}
 
 	private void restore(long time) {
