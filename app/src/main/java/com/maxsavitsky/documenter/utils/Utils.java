@@ -3,7 +3,6 @@ package com.maxsavitsky.documenter.utils;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Point;
@@ -19,11 +18,11 @@ import android.widget.EditText;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.maxsavitsky.documenter.App;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.data.EntitiesStorage;
 import com.maxsavitsky.documenter.data.types.Entry;
-import com.maxsavitsky.exceptionhandler.ExceptionHandler;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -233,7 +232,7 @@ public class Utils {
 	@SuppressLint("DefaultLocale")
 	public static String getStackTrace(StackTraceElement[] stackTraceElements) {
 		String msg = "";
-		int limit = Math.min( 10, stackTraceElements.length );
+		int limit = stackTraceElements.length;
 		for (int i = 0; i < limit; i++) {
 			msg = String.format( "%s%d. %s<br>", msg, limit - i, stackTraceElements[ i ] );
 		}
@@ -241,33 +240,17 @@ public class Utils {
 		return msg;
 	}
 
-	public static AlertDialog getErrorDialog(Exception e, Context context, boolean silentWriteToFile, boolean showSendLogButton) {
-		File stacktraceFile = null;
-		if(showSendLogButton){
-			stacktraceFile = ExceptionHandler.prepareLogToSend( Thread.currentThread(), e );
-		}else {
-			if ( silentWriteToFile )
-				ExceptionHandler.justWriteException( Thread.currentThread(), e );
-		}
-
+	public static AlertDialog getErrorDialog(Exception e, Context context) {
+		FirebaseCrashlytics.getInstance().recordException( e );
+		FirebaseCrashlytics.getInstance().sendUnsentReports();
 		e.printStackTrace();
-		AlertDialog.Builder builder = new AlertDialog.Builder( context ).setTitle( "Error stacktrace" );
-		builder.setMessage( Html.fromHtml( e.getClass().getName() + ": " + e.getMessage() + "<br><br><b>Stacktrace:</b><br><br>" + getExceptionStackTrace( e ) ) )
-				.setPositiveButton( "OK", new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.cancel();
-					}
-				} ).setCancelable( false );
-		if(showSendLogButton){
-			final File finalStacktraceFile = stacktraceFile;
-			builder.setNeutralButton( R.string.send_report, (dialog, which)->sendLog( finalStacktraceFile.getPath() ) );
-		}
+		AlertDialog.Builder builder = new AlertDialog.Builder( context );
+		builder
+				.setTitle( "Error stacktrace" )
+				.setMessage( Html.fromHtml( e.getClass().getName() + ": " + e.getMessage() + "<br><br><b>Stacktrace:</b><br><br>" + getExceptionStackTrace( e ) ) )
+				.setPositiveButton( "OK", (dialog, which)->dialog.cancel() )
+				.setCancelable( false );
 
 		return builder.create();
-	}
-
-	public static AlertDialog getErrorDialog(Exception e, Context context){
-		return getErrorDialog( e, context, true, true );
 	}
 }
