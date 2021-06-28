@@ -3,11 +3,8 @@ package com.maxsavitsky.documenter.utils;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Point;
-import android.net.Uri;
-import android.os.StrictMode;
 import android.text.Html;
 import android.view.Display;
 import android.view.View;
@@ -41,7 +38,6 @@ public class Utils {
 	private static SharedPreferences mDefaultSharedPreferences;
 
 	public static final String APP_PREFERENCES = "main_settings";
-	private static final String THIS_TAG = App.TAG + " Utils";
 
 	public static final String DOCUMENTER_API = "https://documenter.maxsavteam.com/api/";
 
@@ -68,22 +64,6 @@ public class Utils {
 		for(Entry e : EntitiesStorage.get().getEntryEntities()){
 			e.removeUnusedImages();
 		}
-	}
-
-	public static void sendLog(Context context, String path){
-		Intent newIntent = new Intent( Intent.ACTION_SEND );
-		newIntent.setType( "message/rfc822" );
-		newIntent.putExtra( Intent.EXTRA_EMAIL, new String[]{ "maxsavhelp@gmail.com" } );
-		newIntent.putExtra( Intent.EXTRA_SUBJECT, "Error in documenter" );
-		newIntent.putExtra( Intent.EXTRA_STREAM, Uri.parse( "file://" + path ) );
-		newIntent.putExtra( Intent.EXTRA_TEXT, "Log file attached." );
-		StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
-		StrictMode.setVmPolicy( builder.build() );
-		context.startActivity( newIntent );
-	}
-
-	public static void sendLog(String path){
-		sendLog( sContext, path );
 	}
 
 	public static Point getScreenSize(){
