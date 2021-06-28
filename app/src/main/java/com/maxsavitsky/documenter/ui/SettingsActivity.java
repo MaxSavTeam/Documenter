@@ -230,10 +230,11 @@ public class SettingsActivity extends ThemeActivity {
 				if ( mCheckUpdatesDialog != null ) {
 					mCheckUpdatesDialog.dismiss();
 				}
+				String message = String.format( "%s: %s\n%s", getString( R.string.size ), Utils.getFormattedSize( versionInfo.getUpdateSize() ), getString( R.string.would_you_like_to_download_and_install ) );
 				AlertDialog.Builder builder = new AlertDialog.Builder( SettingsActivity.this, SettingsActivity.super.mAlertDialogStyle );
 				builder.setTitle( String.format( getString( R.string.update_available ), versionInfo.getVersionName() ) )
 						.setCancelable( false )
-						.setMessage( R.string.would_you_like_to_download_and_install )
+						.setMessage( message )
 						.setPositiveButton( R.string.yes, (dialog, which)->{
 							download( versionInfo );
 							dialog.cancel();
