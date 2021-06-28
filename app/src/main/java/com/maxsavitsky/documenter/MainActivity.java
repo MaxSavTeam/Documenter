@@ -90,7 +90,7 @@ public class MainActivity extends ThemeActivity {
 			final CloudBackupMaker backupMaker = new CloudBackupMaker( this );
 			new Thread( backupMaker::stateChanged, "AutoBackupMaker" ).start();
 			try {
-				Thread.sleep( 1000 );
+				Thread.sleep( 500 );
 				Intent intent = new Intent( this, EntitiesListActivity.class );
 				mEntitiesListLauncher.launch( intent );
 			} catch (InterruptedException e) {
