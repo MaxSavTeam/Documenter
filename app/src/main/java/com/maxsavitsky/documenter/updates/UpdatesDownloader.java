@@ -19,15 +19,9 @@ public class UpdatesDownloader {
 
 	public void download()  {
 		File file = new File( App.appStoragePath, "updates" );
-		String dUrl = mVersionInfo.getDownloadUrl();
-		int s = dUrl.length();
-		while ( dUrl.charAt( s - 1 ) != '/' ) {
-			s--;
-		}
-		final String name = dUrl.substring( s );
 		if(!file.exists())
-			file.mkdir();
-		file = new File( file, name );
+			file.mkdirs();
+		file = new File( file, mVersionInfo.getVersionName() );
 
 		URL url;
 		InputStream in = null;
@@ -35,7 +29,7 @@ public class UpdatesDownloader {
 		try {
 			if(!file.exists())
 				file.createNewFile();
-			url = new URL( dUrl );
+			url = new URL( mVersionInfo.getDownloadUrl() );
 			in = url.openConnection().getInputStream();
 			os = new FileOutputStream( file );
 			byte[] buffer = new byte[ 1024 ];

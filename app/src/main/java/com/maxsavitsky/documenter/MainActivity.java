@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -258,11 +257,13 @@ public class MainActivity extends ThemeActivity {
 	}
 
 	private void deleteInstalledApks() {
-		File file = new File( Environment.getExternalStorageDirectory().getPath() + "/.documenter" );
+		File file = new File( App.appStoragePath, "updates" );
 		if ( file.exists() ) {
 			File[] files = file.listFiles();
-			for (File subFile : files) {
-				subFile.delete();
+			if(files != null) {
+				for (File subFile : files) {
+					subFile.delete();
+				}
 			}
 
 			file.delete();
