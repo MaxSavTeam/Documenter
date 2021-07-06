@@ -89,13 +89,8 @@ public class MainActivity extends ThemeActivity {
 			}
 			final CloudBackupMaker backupMaker = new CloudBackupMaker( this );
 			new Thread( backupMaker::stateChanged, "AutoBackupMaker" ).start();
-			try {
-				Thread.sleep( 500 );
-				Intent intent = new Intent( this, EntitiesListActivity.class );
-				mEntitiesListLauncher.launch( intent );
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			Intent intent = new Intent( this, EntitiesListActivity.class );
+			mEntitiesListLauncher.launch( intent );
 		} ).start();
 	}
 
@@ -167,13 +162,14 @@ public class MainActivity extends ThemeActivity {
 
 	private void runReformatIfNeeded() throws Exception {
 		File file = new File( App.appDataPath );
-		if(!file.exists())
+		if ( !file.exists() ) {
 			file.mkdirs();
+		}
 		file = new File( App.appDataPath, "data.json" );
 		if ( !file.exists() ) {
-			if(new File( App.appStoragePath, "entries.xml" ).exists() &&
+			if ( new File( App.appStoragePath, "entries.xml" ).exists() &&
 					new File( App.appStoragePath, "documents.xml" ).exists() &&
-					new File( App.appStoragePath, "categories.xml" ).exists()) {
+					new File( App.appStoragePath, "categories.xml" ).exists() ) {
 				File f = new File( App.appStoragePath, "backups" );
 				if ( !f.exists() ) {
 					f.mkdirs();
@@ -186,9 +182,9 @@ public class MainActivity extends ThemeActivity {
 
 	private void initialize() throws Exception {
 		File dataFile = new File( App.appDataPath, "data.json" );
-		if(!dataFile.exists()){
+		if ( !dataFile.exists() ) {
 			dataFile.createNewFile();
-			EntitiesStorage.get().setGroups( new ArrayList<>(){{
+			EntitiesStorage.get().setGroups( new ArrayList<>() {{
 				add( new Group( "root", "root" ) );
 			}} );
 			EntitiesStorage.get().save(); // create file with empty data
