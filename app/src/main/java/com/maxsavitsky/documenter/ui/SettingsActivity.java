@@ -1,17 +1,13 @@
 package com.maxsavitsky.documenter.ui;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,7 +18,6 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.text.HtmlCompat;
-import androidx.documentfile.provider.DocumentFile;
 
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.material.switchmaterial.SwitchMaterial;
@@ -40,7 +35,6 @@ import com.maxsavitsky.documenter.utils.ApkInstaller;
 import com.maxsavitsky.documenter.utils.Utils;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -48,6 +42,9 @@ import java.io.OutputStream;
 public class SettingsActivity extends ThemeActivity {
 
 	private FirebaseAuth mAuth;
+
+	private Thread downloadThread;
+	private ProgressDialog mDownloadPd = null;
 
 	private final ActivityResultLauncher<Intent> mSignInLauncher = registerForActivityResult(
 			new ActivityResultContracts.StartActivityForResult(),
@@ -91,14 +88,14 @@ public class SettingsActivity extends ThemeActivity {
 			}
 	);
 
-	private final ActivityResultLauncher<Intent> mChooseFolderForBackupLauncher = registerForActivityResult(
+	private final ActivityResultLauncher<Intent> mCreateBackupLauncher = registerForActivityResult(
 			new ActivityResultContracts.StartActivityForResult(),
 			result->{
 				if ( result.getResultCode() == Activity.RESULT_OK ) {
 					Intent data = result.getData();
 					if ( data != null ) {
 						Uri uri = data.getData();
-						enterNameOfBackupFileAndThenCreate( uri );
+						createBackupToFileUri( uri );
 					}
 				}
 			}
@@ -284,9 +281,6 @@ public class SettingsActivity extends ThemeActivity {
 		new Thread( checker::runCheck ).start();
 	}
 
-	private Thread downloadThread;
-	private ProgressDialog mDownloadPd = null;
-
 	private void download(VersionInfo versionInfo) {
 		final UpdatesDownloader downloader = new UpdatesDownloader( versionInfo, mCheckResults );
 		mDownloadPd = new ProgressDialog( SettingsActivity.this );
@@ -339,50 +333,13 @@ public class SettingsActivity extends ThemeActivity {
 	}
 
 	public void initialBackup(View v) {
-		Intent intent = new Intent( Intent.ACTION_OPEN_DOCUMENT_TREE );
-		mChooseFolderForBackupLauncher.launch( intent );
+		Intent intent = new Intent( Intent.ACTION_CREATE_DOCUMENT );
+		intent.setType( "application/zip" );
+		intent.putExtra( Intent.EXTRA_TITLE, "Documenter backup" );
+		mCreateBackupLauncher.launch( intent );
 	}
 
-	@SuppressLint("SetTextI18n")
-	private void enterNameOfBackupFileAndThenCreate(Uri uri){
-		SharedPreferences sp = getSharedPreferences( Utils.APP_PREFERENCES, Context.MODE_PRIVATE );
-		EditText editText = new EditText(this);
-		editText.setLayoutParams( new ViewGroup.LayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT ) );
-		editText.setText( sp.getString( "last_backup_name", "documenter_backup" ) );
-		editText.setTextColor( getColor( super.mTextColor ) );
-		AlertDialog.Builder builder = new AlertDialog.Builder(this, super.mAlertDialogStyle);
-		builder
-				.setTitle( R.string.specify_backup_name )
-				.setMessage( R.string.specify_backup_name_note )
-				.setView( editText )
-				.setNegativeButton( R.string.cancel, (dialog, which)->dialog.cancel() )
-				.setPositiveButton( "OK", (dialog, which) -> {
-					dialog.cancel();
-					String name = editText.getText().toString().trim();
-					String badSymbols = "<>:/\\|&\"";
-					boolean containsBadSymbol = false;
-					for(char c : badSymbols.toCharArray()){
-						if(name.contains( String.valueOf( c ) )){
-							containsBadSymbol = true;
-							break;
-						}
-					}
-					if(name.isEmpty() || name.length() > 255 || containsBadSymbol){
-						Toast.makeText( this, R.string.invalid_name, Toast.LENGTH_SHORT ).show();
-					}else{
-						sp.edit().putString( "last_backup_name", name ).apply();
-						createBackupToFolder( uri, name );
-					}
-				} )
-				.setCancelable( false );
-		AlertDialog alertDialog = builder.create();
-		alertDialog.setOnShowListener( dialog->{
-			Utils.showKeyboard( editText, this );
-		} );
-		alertDialog.show();
-	}
-
-	private void createBackupToFolder(Uri uri, String initialName) {
+	private void createBackupToFileUri(Uri uri){
 		final ProgressDialog pd = new ProgressDialog( this );
 		pd.setMessage( HtmlCompat.fromHtml( getString( R.string.creating_backup ), HtmlCompat.FROM_HTML_MODE_COMPACT ) );
 		pd.setCancelable( false );
@@ -406,25 +363,8 @@ public class SettingsActivity extends ThemeActivity {
 		pd.show();
 		new Thread( ()->{
 			try {
-				DocumentFile documentFile = DocumentFile.fromTreeUri( this, uri );
-				if ( documentFile != null ) {
-					String ext = ".zip";
-					String fileName = initialName;
-					int i = 1;
-					while ( documentFile.findFile( fileName + ext ) != null ) {
-						fileName = initialName + " (" + i + ")";
-						i++;
-					}
-					DocumentFile doc = documentFile.createFile( "application/zip", fileName );
-					if ( doc != null ) {
-						OutputStream os = getContentResolver().openOutputStream( doc.getUri() );
-						BackupInstruments.createBackupToOutputStream( os, backupCallback );
-					} else {
-						backupCallback.onException( new IOException( "Failed to create new file" ) );
-					}
-				} else {
-					backupCallback.onException( new FileNotFoundException( "Cannot get document file from provided uri" ) );
-				}
+				OutputStream os = getContentResolver().openOutputStream( uri );
+				BackupInstruments.createBackupToOutputStream( os, backupCallback );
 			} catch (IOException e) {
 				e.printStackTrace();
 				backupCallback.onException( e );
