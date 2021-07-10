@@ -8,16 +8,18 @@ import com.maxsavitsky.documenter.media.images.ImageRenderer;
 
 public class ImageSpanLoader implements Html.ImageGetter {
 
-   private final int width;
-   private final String entryId;
+	private final int width;
+	private final String entryId;
+	private final boolean stretchImages;
 
-   public ImageSpanLoader(String entryId, int width) {
-      this.width = width;
-      this.entryId = entryId;
-   }
+	public ImageSpanLoader(String entryId, int width, boolean stretchImages) {
+		this.width = width;
+		this.entryId = entryId;
+		this.stretchImages = stretchImages;
+	}
 
-   @Override
-   public Drawable getDrawable(String source) {
-      return ImageRenderer.renderDrawable( App.appDataPath + "/entries/" + entryId + "/media/images/" + source, width );
-   }
+	@Override
+	public Drawable getDrawable(String source) {
+		return ImageRenderer.renderDrawable( App.appDataPath + "/entries/" + entryId + "/media/images/" + source, width, stretchImages );
+	}
 }

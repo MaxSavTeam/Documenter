@@ -20,6 +20,10 @@ public class ImageRenderer {
 	}
 
 	public static Drawable renderDrawable(String source, int width){
+		return renderDrawable( source, width, false );
+	}
+
+	public static Drawable renderDrawable(String source, int screenWidth, boolean fitWidth){
 		File file = new File( source );
 
 		BitmapFactory.Options options = new BitmapFactory.Options();
@@ -30,8 +34,8 @@ public class ImageRenderer {
 			Drawable d = ContextCompat.getDrawable( Utils.getContext(), R.drawable.image_not_found_or_damaged );
 			int w = d.getIntrinsicWidth();
 			int h = d.getIntrinsicHeight();
-			int h1 = ( width * h) / w;
-			d.setBounds( 0, 0, width, h1 );
+			int h1 = ( screenWidth * h) / w;
+			d.setBounds( 0, 0, screenWidth, h1 );
 			String msg = "";
 			if(b == null)
 				msg += "bitmap render error\n";
@@ -42,14 +46,15 @@ public class ImageRenderer {
 			return d;
 		}
 		Drawable d = new BitmapDrawable(Utils.getContext().getResources(), b);
-		if(width > 0 && options.outWidth > width){
-			int w = options.outWidth;
-			int h = options.outHeight;
-			int h1 = ( width * h) / w;
-			d.setBounds( 0, 0, width, h1 );
-		}else{
-			d.setBounds( 0, 0, options.outWidth, options.outHeight );
+		int height = options.outHeight;
+		int width = options.outWidth;
+		if(fitWidth || screenWidth > 0 && options.outWidth > screenWidth){
+			int h1 = ( screenWidth * height) / width;
+			height = h1;
+			width = screenWidth;
+			d.setBounds( 0, 0, screenWidth, h1 );
 		}
+		d.setBounds( 0, 0, width, height );
 
 		return d;
 	}

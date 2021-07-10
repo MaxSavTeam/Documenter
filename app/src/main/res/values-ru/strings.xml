@@ -168,4 +168,5 @@
     <string name="created_manually">Создано вручную</string>
     <string name="remember_last_pos">Запоминать последнюю позицию</string>
     <string name="size">Размер</string>
+    <string name="stretch_images_to_width_of_screen">Растягивать изображения по ширине экрана</string>
 </resources>

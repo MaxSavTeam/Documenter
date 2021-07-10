@@ -258,7 +258,7 @@ public class DataReformatter {
 				for (ImageSpan span : imageSpans) {
 					String[] strings = span.getSource().split( "/" );
 					String imageId = strings[ strings.length - 1 ];
-					spanEntries.add( new SpanEntry<>( new ImageSpan( new ImageSpanLoader( id, 100 ).getDrawable( imageId ), imageId ), text.getSpanStart( span ), text.getSpanEnd( span ) ) );
+					spanEntries.add( new SpanEntry<>( new ImageSpan( new ImageSpanLoader( id, 100, false ).getDrawable( imageId ), imageId ), text.getSpanStart( span ), text.getSpanEnd( span ) ) );
 					text.removeSpan( span );
 				}
 				for (SpanEntry<ImageSpan> spanEntry : spanEntries) {

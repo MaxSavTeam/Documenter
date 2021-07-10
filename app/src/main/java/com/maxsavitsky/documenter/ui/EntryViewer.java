@@ -251,6 +251,16 @@ public class EntryViewer extends ThemeActivity {
 			} catch (IOException | JSONException e) {
 				e.printStackTrace();
 			}
+		} else if( itemId == R.id.item_menu_stretch_images ){
+			item.setChecked( !item.isChecked() );
+			mEntry.getProperties().setStretchImages( item.isChecked() );
+			try {
+				mEntry.saveProperties();
+			} catch (IOException | JSONException e) {
+				e.printStackTrace();
+			}
+			setResult( Results.REOPEN, getIntent().putExtra( "scroll_position", mScrollView.getScrollY() ) );
+			onBackPressed();
 		}
 		return super.onOptionsItemSelected( item );
 	}
@@ -305,6 +315,7 @@ public class EntryViewer extends ThemeActivity {
 		}
 		menu.findItem( R.id.item_debug_show_id ).setVisible( BuildConfig.DEBUG );
 		menu.findItem( R.id.item_menu_remember_pos ).setChecked( mEntry.getProperties().isSaveLastPos() );
+		menu.findItem( R.id.item_menu_stretch_images ).setChecked( mEntry.getProperties().isStretchImages() );
 		return super.onCreateOptionsMenu( menu );
 	}
 

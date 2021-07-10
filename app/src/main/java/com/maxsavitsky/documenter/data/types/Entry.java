@@ -65,7 +65,7 @@ public class Entry extends Entity {
 		if ( rawText == null ) {
 			rawText = loadTextFromStorage();
 		}
-		Spannable spannable = (Spannable) Html.fromHtml( rawText, flags, new ImageSpanLoader( getId(), imageMaxWidth ), null );
+		Spannable spannable = (Spannable) Html.fromHtml( rawText, flags, new ImageSpanLoader( getId(), imageMaxWidth, mProperties.stretchImages ), null );
 		if ( alignments == null || relativeSizeSpans == null ) {
 			loadAdditional();
 		}
@@ -329,6 +329,8 @@ public class Entry extends Entity {
 
 		private int displayingMode = 1;
 
+		private boolean stretchImages = false;
+
 		public int getDefaultTextColor() {
 			return mDefaultTextColor;
 		}
@@ -362,6 +364,7 @@ public class Entry extends Entity {
 			this.mSaveLastPos = other.mSaveLastPos;
 			this.mDefaultTextColor = other.mDefaultTextColor;
 			this.displayingMode = other.displayingMode;
+			this.stretchImages = other.stretchImages;
 		}
 
 		public Properties() {}
@@ -406,6 +409,14 @@ public class Entry extends Entity {
 			this.displayingMode = displayingMode;
 		}
 
+		public boolean isStretchImages() {
+			return stretchImages;
+		}
+
+		public void setStretchImages(boolean stretchImages) {
+			this.stretchImages = stretchImages;
+		}
+
 		@Override
 		public boolean equals(Object o) {
 			if ( this == o ) {
@@ -435,6 +446,8 @@ public class Entry extends Entity {
 			if ( mSaveLastPos != that.mSaveLastPos ) {
 				return false;
 			}
+			if( stretchImages != that.stretchImages )
+				return false;
 			return mDefaultTextColor == that.mDefaultTextColor;
 		}
 
@@ -448,7 +461,8 @@ public class Entry extends Entity {
 					.put( "saveLastPosition", mSaveLastPos )
 					.put( "textAlignment", mTextAlignment )
 					.put( "defaultTextColor", mDefaultTextColor )
-					.put( "displayingMode", displayingMode );
+					.put( "displayingMode", displayingMode )
+					.put( "stretchImages", stretchImages );
 			return jsonObject;
 		}
 
@@ -462,6 +476,7 @@ public class Entry extends Entity {
 			properties.mTextAlignment = jsonObject.optInt( "textAlignment", properties.mTextAlignment );
 			properties.mDefaultTextColor = jsonObject.optInt( "defaultTextColor", properties.mDefaultTextColor );
 			properties.displayingMode = jsonObject.optInt( "displayingMode", properties.displayingMode );
+			properties.stretchImages = jsonObject.optBoolean( "stretchImages", properties.stretchImages );
 			return properties;
 		}
 
