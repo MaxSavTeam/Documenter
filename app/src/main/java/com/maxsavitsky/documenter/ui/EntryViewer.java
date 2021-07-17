@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.Html;
 import android.text.Spannable;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
@@ -415,6 +416,7 @@ public class EntryViewer extends ThemeActivity {
 		TextView textView = findViewById( R.id.textViewContent );
 		textView.setTextSize( TypedValue.COMPLEX_UNIT_DIP, mEntry.getProperties().getTextSize() );
 		textView.setTextColor( mEntry.getProperties().getDefaultTextColor() );
+		textView.setMovementMethod( LinkMovementMethod.getInstance() );
 
 		mScrollView = findViewById( R.id.viewEntryScrollView );
 		mScrollView.setOnScrollChangeListener( (v, scrollX, scrollY, oldScrollX, oldScrollY)->{
