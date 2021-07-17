@@ -1,6 +1,5 @@
 package com.maxsavitsky.documenter.adapters;
 
-import android.content.res.ColorStateList;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -123,7 +122,6 @@ public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHo
 		holder.textView.setText( entity.getName() );
 		if ( entity.getType() == Entity.Type.GROUP ) {
 			holder.imageView.setImageResource( R.drawable.ic_folder );
-			holder.imageView.setImageTintList( ColorStateList.valueOf( holder.itemView.getContext().getColor( R.color.yellow ) ) );
 		} else {
 			holder.imageView.setImageResource( R.drawable.ic_document );
 		}
