@@ -10,8 +10,8 @@ int buildCode = -1
 String globalVersionName = ""
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion '31.0.0 rc5'
+    compileSdkVersion 31
+    buildToolsVersion '31.0.0'
 
     def buildPropFile = file('build.properties')
     if (buildPropFile.canRead()) {
@@ -26,7 +26,7 @@ android {
         applicationId "com.maxsavitsky.documenter"
         minSdkVersion 24
         
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode 76
         versionName "2.2.0"
 
@@ -105,7 +105,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.4.0'
     implementation 'com.google.android:flexbox:2.0.1'
 
-    implementation 'com.android.support:design:30.0.0'
+    implementation 'com.android.support:design:31.0.0'
     implementation 'com.github.clans:fab:1.6.4'
 
     implementation 'com.github.MaxSavTeam:ExceptionHandler-Library:1.1.2'
