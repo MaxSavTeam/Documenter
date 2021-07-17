@@ -27,8 +27,8 @@ android {
         minSdkVersion 24
         
         targetSdkVersion 31
-        versionCode 76
-        versionName "2.2.0"
+        versionCode 77
+        versionName "2.2.1"
 
         globalVersionName = versionName
         
