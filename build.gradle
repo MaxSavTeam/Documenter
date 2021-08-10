@@ -22,6 +22,9 @@ allprojects {
         mavenCentral()
         jcenter()
         maven { url "https://jitpack.io" }
+        maven {
+            url 'https://repo.maxsavteam.com'
+        }
     }
 }
 

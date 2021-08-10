@@ -1,15 +1,15 @@
 package com.maxsavitsky.documenter;
 
-import android.app.ProgressDialog;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 
 import com.maxsavitsky.documenter.backup.BackupInstruments;
@@ -21,10 +21,6 @@ import com.maxsavitsky.documenter.data.types.Entity;
 import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.data.types.Group;
 import com.maxsavitsky.documenter.ui.EntitiesListActivity;
-import com.maxsavitsky.documenter.updates.UpdatesChecker;
-import com.maxsavitsky.documenter.updates.UpdatesDownloader;
-import com.maxsavitsky.documenter.updates.VersionInfo;
-import com.maxsavitsky.documenter.utils.ApkInstaller;
 import com.maxsavitsky.documenter.utils.Utils;
 
 import org.json.JSONArray;
@@ -33,13 +29,11 @@ import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
 public class MainActivity extends ThemeActivity {
-
-	private ProgressDialog mDownloadPd = null;
-	private Thread downloadThread;
 
 	private final ActivityResultLauncher<Intent> mEntitiesListLauncher = registerForActivityResult(
 			new ActivityResultContracts.StartActivityForResult(),
@@ -68,12 +62,43 @@ public class MainActivity extends ThemeActivity {
 
 		deleteInstalledApks();
 
-		if ( sharedPreferences.getBoolean( "check_updates", true ) ) {
-			final UpdatesChecker checker = new UpdatesChecker( mCheckResults );
-			new Thread( checker::runCheck ).start();
-		} else {
-			startInitialization();
-		}
+		checkForUpdates();
+		startInitialization();
+	}
+
+	private void checkForUpdates(){
+		Activity a = this;
+		com.maxsavteam.updateschecker.Utils.runFullCheck( this, Utils.getDefaultSharedPreferences().getInt( "updates_channel", 0 ), new com.maxsavteam.updateschecker.Utils.FullCheckCallback() {
+			@Override
+			public File createDestinationFile(com.maxsavteam.updateschecker.VersionInfo versionInfo) {
+				File file = new File( App.appStoragePath, "updates" );
+				if(!file.exists())
+					file.mkdirs();
+				file = new File( file, versionInfo.getVersionName() );
+				if(!file.exists()) {
+					try {
+						file.createNewFile();
+					} catch (IOException e) {
+						e.printStackTrace();
+						onFailure( e );
+						return null;
+					}
+				}
+				return file;
+			}
+
+			@Override
+			public void onNoUpdates() {
+
+			}
+
+			@Override
+			public void onFailure(Exception e) {
+				runOnUiThread( ()->{
+					Toast.makeText( a, e.toString(), Toast.LENGTH_SHORT ).show();
+				} );
+			}
+		} );
 	}
 
 	private void startInitialization() {
@@ -91,72 +116,6 @@ public class MainActivity extends ThemeActivity {
 			Intent intent = new Intent( this, EntitiesListActivity.class );
 			mEntitiesListLauncher.launch( intent );
 		} ).start();
-	}
-
-	private final UpdatesChecker.CheckResults mCheckResults = new UpdatesChecker.CheckResults() {
-		@Override
-		public void noUpdates() {
-			startInitialization();
-		}
-
-		@Override
-		public void onUpdateAvailable(final VersionInfo versionInfo) {
-			runOnUiThread( ()->{
-				String message = String.format( "%s: %s\n%s", getString( R.string.size ), Utils.getFormattedSize( versionInfo.getUpdateSize() ), getString( R.string.would_you_like_to_download_and_install ) );
-				AlertDialog.Builder builder = new AlertDialog.Builder( MainActivity.this, MainActivity.super.mAlertDialogStyle );
-				builder.setTitle( String.format( getString( R.string.update_available ), versionInfo.getVersionName() ) )
-						.setCancelable( false )
-						.setMessage( message )
-						.setPositiveButton( R.string.yes, (dialog, which)->{
-							download( versionInfo );
-							dialog.cancel();
-						} )
-						.setNegativeButton( R.string.no, (dialog, which)->{
-							dialog.cancel();
-							startInitialization();
-						} );
-				builder.create().show();
-			} );
-		}
-
-		@Override
-		public void onDownloaded(File path) {
-			if ( mDownloadPd != null ) {
-				mDownloadPd.dismiss();
-			}
-
-			ApkInstaller.installApk( MainActivity.this, path );
-		}
-
-		@Override
-		public void onException(Exception e) {
-			noUpdates();
-		}
-
-		@Override
-		public void onDownloadProgress(final int bytesCount, final int totalBytesCount) {
-			runOnUiThread( ()->{
-				mDownloadPd.setIndeterminate( false );
-				mDownloadPd.setMax( 100 );
-				mDownloadPd.setProgress( bytesCount * 100 / totalBytesCount );
-			} );
-		}
-	};
-
-	private void download(VersionInfo versionInfo) {
-		final UpdatesDownloader downloader = new UpdatesDownloader( versionInfo, mCheckResults );
-		mDownloadPd = new ProgressDialog( this );
-		mDownloadPd.setMessage( getString( R.string.downloading ) );
-		mDownloadPd.setCancelable( false );
-		mDownloadPd.setProgressStyle( ProgressDialog.STYLE_HORIZONTAL );
-		mDownloadPd.setIndeterminate( true );
-		mDownloadPd.setButton( ProgressDialog.BUTTON_NEGATIVE, getResources().getString( R.string.cancel ), (dialog, which)->{
-			downloadThread.interrupt();
-			runOnUiThread( dialog::cancel );
-		} );
-		mDownloadPd.show();
-		downloadThread = new Thread( downloader::download );
-		downloadThread.start();
 	}
 
 	private void runReformatIfNeeded() throws Exception {
