@@ -121,5 +121,5 @@ dependencies {
     implementation 'com.firebaseui:firebase-ui-auth:8.0.0'
     implementation 'com.google.firebase:firebase-auth:21.0.1'
     implementation 'com.google.firebase:firebase-perf:20.0.2'
-    implementation 'com.google.firebase:firebase-crashlytics:18.2.0'
+    implementation 'com.google.firebase:firebase-crashlytics:18.2.1'
 }
