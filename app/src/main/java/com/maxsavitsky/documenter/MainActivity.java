@@ -67,7 +67,7 @@ public class MainActivity extends ThemeActivity {
 		startInitialization();
 	}
 
-	private void checkForUpdates(){
+	private void checkForUpdates() {
 		Activity a = this;
 		com.maxsavteam.updateschecker.Utils.runFullCheck( this, Utils.getDefaultSharedPreferences().getInt( "updates_channel", 0 ), new com.maxsavteam.updateschecker.Utils.FullCheckCallback() {
 			@Override
@@ -78,10 +78,11 @@ public class MainActivity extends ThemeActivity {
 			@Override
 			public File createDestinationFile(com.maxsavteam.updateschecker.VersionInfo versionInfo) {
 				File file = new File( App.appStoragePath, "updates" );
-				if(!file.exists())
+				if ( !file.exists() ) {
 					file.mkdirs();
+				}
 				file = new File( file, versionInfo.getVersionName() );
-				if(!file.exists()) {
+				if ( !file.exists() ) {
 					try {
 						file.createNewFile();
 					} catch (IOException e) {
@@ -225,7 +226,7 @@ public class MainActivity extends ThemeActivity {
 		File file = new File( App.appStoragePath, "updates" );
 		if ( file.exists() ) {
 			File[] files = file.listFiles();
-			if(files != null) {
+			if ( files != null ) {
 				for (File subFile : files) {
 					subFile.delete();
 				}
