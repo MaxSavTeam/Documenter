@@ -22,6 +22,7 @@ import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.data.types.Group;
 import com.maxsavitsky.documenter.ui.EntitiesListActivity;
 import com.maxsavitsky.documenter.utils.Utils;
+import com.maxsavteam.updateschecker.VersionInfo;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -69,6 +70,11 @@ public class MainActivity extends ThemeActivity {
 	private void checkForUpdates(){
 		Activity a = this;
 		com.maxsavteam.updateschecker.Utils.runFullCheck( this, Utils.getDefaultSharedPreferences().getInt( "updates_channel", 0 ), new com.maxsavteam.updateschecker.Utils.FullCheckCallback() {
+			@Override
+			public void onUpdateAvailable(VersionInfo versionInfo) {
+
+			}
+
 			@Override
 			public File createDestinationFile(com.maxsavteam.updateschecker.VersionInfo versionInfo) {
 				File file = new File( App.appStoragePath, "updates" );

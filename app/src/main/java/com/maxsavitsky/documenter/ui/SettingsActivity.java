@@ -23,15 +23,12 @@ import com.firebase.ui.auth.AuthUI;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.maxsavitsky.documenter.App;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.ThemeActivity;
 import com.maxsavitsky.documenter.backup.BackupInstruments;
 import com.maxsavitsky.documenter.codes.Results;
 import com.maxsavitsky.documenter.ui.widget.ButtonWithDropdown;
-import com.maxsavitsky.documenter.updates.UpdatesChecker;
-import com.maxsavitsky.documenter.updates.UpdatesDownloader;
-import com.maxsavitsky.documenter.updates.VersionInfo;
-import com.maxsavitsky.documenter.utils.ApkInstaller;
 import com.maxsavitsky.documenter.utils.Utils;
 
 import java.io.File;
@@ -42,9 +39,6 @@ import java.io.OutputStream;
 public class SettingsActivity extends ThemeActivity {
 
 	private FirebaseAuth mAuth;
-
-	private Thread downloadThread;
-	private ProgressDialog mDownloadPd = null;
 
 	private final ActivityResultLauncher<Intent> mSignInLauncher = registerForActivityResult(
 			new ActivityResultContracts.StartActivityForResult(),
@@ -208,93 +202,51 @@ public class SettingsActivity extends ThemeActivity {
 		mCloudBackupParamsLauncher.launch( intent );
 	}
 
-	private ProgressDialog mCheckUpdatesDialog = null;
-
-	private final UpdatesChecker.CheckResults mCheckResults = new UpdatesChecker.CheckResults() {
-		@Override
-		public void noUpdates() {
-			runOnUiThread( ()->{
-				if ( mCheckUpdatesDialog != null ) {
-					mCheckUpdatesDialog.dismiss();
-				}
-				Toast.makeText( SettingsActivity.this, R.string.app_is_up_to_date, Toast.LENGTH_LONG ).show();
-			} );
-		}
-
-		@Override
-		public void onUpdateAvailable(final VersionInfo versionInfo) {
-			runOnUiThread( ()->{
-				if ( mCheckUpdatesDialog != null ) {
-					mCheckUpdatesDialog.dismiss();
-				}
-				String message = String.format( "%s: %s\n%s", getString( R.string.size ), Utils.getFormattedSize( versionInfo.getUpdateSize() ), getString( R.string.would_you_like_to_download_and_install ) );
-				AlertDialog.Builder builder = new AlertDialog.Builder( SettingsActivity.this, SettingsActivity.super.mAlertDialogStyle );
-				builder.setTitle( String.format( getString( R.string.update_available ), versionInfo.getVersionName() ) )
-						.setCancelable( false )
-						.setMessage( message )
-						.setPositiveButton( R.string.yes, (dialog, which)->{
-							download( versionInfo );
-							dialog.cancel();
-						} )
-						.setNegativeButton( R.string.no, (dialog, which)->dialog.cancel() );
-				builder.create().show();
-			} );
-		}
-
-		@Override
-		public void onDownloaded(File path) {
-			if ( mDownloadPd != null ) {
-				mDownloadPd.dismiss();
-			}
-			ApkInstaller.installApk( SettingsActivity.this, path );
-		}
-
-		@Override
-		public void onDownloadProgress(final int bytesCount, final int totalBytesCount) {
-			runOnUiThread( ()->{
-				mDownloadPd.setIndeterminate( false );
-				mDownloadPd.setMax( 100 );
-				mDownloadPd.setProgress( bytesCount * 100 / totalBytesCount );
-			} );
-		}
-
-		@Override
-		public void onException(final Exception e) {
-			runOnUiThread( ()->{
-				if ( mCheckUpdatesDialog != null ) {
-					mCheckUpdatesDialog.dismiss();
-				}
-				if ( mDownloadPd != null ) {
-					mDownloadPd.dismiss();
-				}
-				Utils.getErrorDialog( e, SettingsActivity.this ).show();
-			} );
-		}
-	};
-
 	public void checkForUpdates(View v) {
-		mCheckUpdatesDialog = new ProgressDialog( this );
-		mCheckUpdatesDialog.setMessage( getResources().getString( R.string.checking_for_updates ) );
-		mCheckUpdatesDialog.setCancelable( false );
-		mCheckUpdatesDialog.show();
-		final UpdatesChecker checker = new UpdatesChecker( mCheckResults );
-		new Thread( checker::runCheck ).start();
-	}
+		ProgressDialog progressDialog = new ProgressDialog( this );
+		progressDialog.setMessage( getResources().getString( R.string.checking_for_updates ) );
+		progressDialog.setCancelable( false );
+		progressDialog.show();
+		com.maxsavteam.updateschecker.Utils.runFullCheck( this, Utils.getDefaultSharedPreferences().getInt( "updates_channel", 0 ), new com.maxsavteam.updateschecker.Utils.FullCheckCallback() {
+			@Override
+			public void onUpdateAvailable(com.maxsavteam.updateschecker.VersionInfo versionInfo) {
+				runOnUiThread( progressDialog::dismiss );
+			}
 
-	private void download(VersionInfo versionInfo) {
-		final UpdatesDownloader downloader = new UpdatesDownloader( versionInfo, mCheckResults );
-		mDownloadPd = new ProgressDialog( SettingsActivity.this );
-		mDownloadPd.setProgressStyle( ProgressDialog.STYLE_HORIZONTAL );
-		mDownloadPd.setMessage( getString( R.string.downloading ) );
-		mDownloadPd.setCancelable( false );
-		mDownloadPd.setIndeterminate( true );
-		mDownloadPd.setButton( ProgressDialog.BUTTON_NEGATIVE, getResources().getString( R.string.cancel ), (dialog, which)->{
-			downloadThread.interrupt();
-			runOnUiThread( dialog::cancel );
+			@Override
+			public File createDestinationFile(com.maxsavteam.updateschecker.VersionInfo versionInfo) {
+				File file = new File( App.appStoragePath, "updates" );
+				if(!file.exists())
+					file.mkdirs();
+				file = new File( file, versionInfo.getVersionName() );
+				if(!file.exists()) {
+					try {
+						file.createNewFile();
+					} catch (IOException e) {
+						e.printStackTrace();
+						onFailure( e );
+						return null;
+					}
+				}
+				return file;
+			}
+
+			@Override
+			public void onNoUpdates() {
+				runOnUiThread( ()->{
+						progressDialog.dismiss();
+					Toast.makeText( SettingsActivity.this, R.string.app_is_up_to_date, Toast.LENGTH_LONG ).show();
+				} );
+			}
+
+			@Override
+			public void onFailure(Exception e) {
+				runOnUiThread( ()->{
+						progressDialog.dismiss();
+					Toast.makeText( SettingsActivity.this, e.toString(), Toast.LENGTH_LONG ).show();
+				} );
+			}
 		} );
-		mDownloadPd.show();
-		downloadThread = new Thread( downloader::download );
-		downloadThread.start();
 	}
 
 	public void initialUnpack(View v) {
