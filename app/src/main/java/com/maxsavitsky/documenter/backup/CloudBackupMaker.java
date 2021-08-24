@@ -90,6 +90,16 @@ public class CloudBackupMaker {
 
 		final BackupInstruments.BackupCallback backupCallback = new BackupInstruments.BackupCallback() {
 			@Override
+			public void onBackupStateChanged(BackupInstruments.BackupState state) {
+
+			}
+
+			@Override
+			public void onProgress(int percent) {
+
+			}
+
+			@Override
 			public void onSuccess(long timeOfCreation) {
 				manager.cancelAll();
 			}
@@ -98,7 +108,7 @@ public class CloudBackupMaker {
 			public void onException(Exception e) {
 				manager.cancelAll();
 				e.printStackTrace();
-				new Handler( Looper.getMainLooper() ).post( ()->Toast.makeText( mContext, R.string.backup_error, Toast.LENGTH_LONG ).show() );
+				new Handler( Looper.getMainLooper() ).post( ()->Toast.makeText( mContext, mContext.getString( R.string.backup_error ) + "\n" + e, Toast.LENGTH_LONG ).show() );
 			}
 		};
 		CloudBackupInstruments.createBackup( backupCallback, false, null );

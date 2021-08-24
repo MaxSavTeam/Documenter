@@ -259,7 +259,22 @@ public class SettingsActivity extends ThemeActivity {
 		final ProgressDialog pd = new ProgressDialog( this );
 		pd.setMessage( HtmlCompat.fromHtml( getString( R.string.restoring_please_donot_close_app ), HtmlCompat.FROM_HTML_MODE_COMPACT ) );
 		pd.setCancelable( false );
+		pd.setProgressStyle( ProgressDialog.STYLE_HORIZONTAL );
+		pd.setIndeterminate( true );
 		final BackupInstruments.BackupCallback backupCallback = new BackupInstruments.BackupCallback() {
+			@Override
+			public void onBackupStateChanged(BackupInstruments.BackupState state) {
+
+			}
+
+			@Override
+			public void onProgress(int percent) {
+				runOnUiThread( ()->{
+					pd.setIndeterminate( false );
+					pd.setProgress( percent );
+				} );
+			}
+
 			@Override
 			public void onSuccess(long timeOfCreation) {
 				runOnUiThread( pd::dismiss );
@@ -293,9 +308,24 @@ public class SettingsActivity extends ThemeActivity {
 
 	private void createBackupToFileUri(Uri uri){
 		final ProgressDialog pd = new ProgressDialog( this );
-		pd.setMessage( HtmlCompat.fromHtml( getString( R.string.creating_backup ), HtmlCompat.FROM_HTML_MODE_COMPACT ) );
+		pd.setMessage( getString( R.string.creating_backup ) );
 		pd.setCancelable( false );
+		pd.setProgressStyle( ProgressDialog.STYLE_HORIZONTAL );
+		pd.setIndeterminate( true );
 		final BackupInstruments.BackupCallback backupCallback = new BackupInstruments.BackupCallback() {
+			@Override
+			public void onBackupStateChanged(BackupInstruments.BackupState state) {
+
+			}
+
+			@Override
+			public void onProgress(int percent) {
+				runOnUiThread( ()->{
+					pd.setIndeterminate( false );
+					pd.setProgress( percent );
+				} );
+			}
+
 			@Override
 			public void onSuccess(long timeOfCreation) {
 				runOnUiThread( ()->{

@@ -82,7 +82,7 @@
     </string-array>
 
     <string name="restore">Restore</string>
-    <string name="creating_backup"><![CDATA[Creating a backup…<br><br>The speed of creation depends on the number of categories, documents, records, as well as the number and size of pictures.]]></string>
+    <string name="creating_backup">Creating a backup…</string>
     <string name="backup_error">Backup error</string>
     <string name="never">never</string>
     <string name="need_to_restart_app">Need to restart app</string>
@@ -179,4 +179,6 @@
     <string name="remember_last_pos">Remember last scroll position</string>
     <string name="size">Size</string>
     <string name="stretch_images_to_width_of_screen">Stretch images to the width of the screen</string>
+    <string name="uploading_backup">Uploading backup...</string>
+    <string name="unpacking">Unpacking...</string>
 </resources>

@@ -18,7 +18,25 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 public class BackupInstruments {
-	private static final String THIS_TAG = App.TAG + " BInstruments";
+	private static final String TAG = App.TAG + " BInstruments";
+
+	public enum BackupState {
+		UNPACKING,
+		DOWNLOADING,
+
+		PACKING,
+		UPLOADING
+	}
+
+	public interface BackupCallback {
+		void onBackupStateChanged(BackupState state);
+
+		void onProgress(int percent);
+
+		void onSuccess(long timeOfCreation);
+
+		void onException(final Exception e);
+	}
 
 	public static void restoreFromStream(InputStream is, BackupCallback backupCallback) throws IOException {
 		File dataDir = new File( App.appDataPath );
@@ -61,8 +79,8 @@ public class BackupInstruments {
 			backupCallback.onSuccess( System.currentTimeMillis() );
 	}
 
-	public static void restoreFromBackup(File backupFile, @Nullable BackupCallback backupCallback) throws IOException {
-		restoreFromStream( new FileInputStream( backupFile ), backupCallback );
+	public static void restoreFromBackup(File file, BackupCallback backupCallback) throws IOException {
+		restoreFromStream( new FileInputStream( file ), backupCallback );
 	}
 
 	public static void createBackupToOutputStream(OutputStream os, BackupCallback backupCallback) throws IOException {
@@ -72,12 +90,14 @@ public class BackupInstruments {
 		ZipOutputStream zipOutputStream = new ZipOutputStream( os );
 		zipOutputStream.setLevel( 9 );
 
-		myPack( dir, dir.getName(), zipOutputStream );
+		long totalSize = getFileSize( dir );
+		long[] alreadyPackedSize = new long[]{0};
+		myPack( dir, dir.getName(), zipOutputStream, alreadyPackedSize, totalSize, backupCallback );
 		zipOutputStream.close();
 		os.close();
 
 		long end = System.currentTimeMillis();
-		Log.i( THIS_TAG, "packed in " + ((end - startTime) / 1000) + "s" );
+		Log.i( TAG, "packed in " + ((end - startTime) / 1000) + "s" );
 		if( backupCallback != null)
 			backupCallback.onSuccess( System.currentTimeMillis() );
 	}
@@ -107,18 +127,30 @@ public class BackupInstruments {
 						!file.getName().equals( "backups" ) &&
 						!file.getName().equals( "data" ) &&
 						!file.getName().equals( "updates" ) )
-					myPack( file, file.getName(), zipOutputStream );
+					myPack( file, file.getName(), zipOutputStream, new long[]{0}, 1, backupCallback );
 			}
 		}
 		zipOutputStream.close();
 
 		long end = System.currentTimeMillis();
-		Log.i( THIS_TAG, "packed in " + ((end - startTime) / 1000) + "s" );
+		Log.i( TAG, "packed in " + ((end - startTime) / 1000) + "s" );
 		if( backupCallback != null)
 			backupCallback.onSuccess( System.currentTimeMillis() );
 	}
 
-	private static void myPack(File path, String fileName, ZipOutputStream out) throws IOException {
+	private static long getFileSize(File file){
+		long size = file.length();
+		if(file.isDirectory()){
+			File[] files = file.listFiles();
+			if( files != null){
+				for(File f : files)
+					size += getFileSize( f );
+			}
+		}
+		return size;
+	}
+
+	private static void myPack(File path, String fileName, ZipOutputStream out, long[] alreadyPackedSize, long totalSize, BackupCallback backupCallback) throws IOException {
 		if ( path.isHidden() ) {
 			return;
 		}
@@ -133,7 +165,7 @@ public class BackupInstruments {
 			File[] children = path.listFiles();
 			if(children != null) {
 				for (File child : children) {
-					myPack( child, fileName + "/" + child.getName(), out );
+					myPack( child, fileName + "/" + child.getName(), out, alreadyPackedSize, totalSize, backupCallback );
 				}
 			}
 			return;
@@ -143,11 +175,7 @@ public class BackupInstruments {
 		ZipEntry zipEntry = new ZipEntry( fileName );
 		out.putNextEntry( zipEntry );
 		out.write( content, 0, content.length );
-	}
-
-	public interface BackupCallback {
-		void onSuccess(long timeOfCreation);
-
-		void onException(final Exception e);
+		alreadyPackedSize[0] += content.length;
+		backupCallback.onProgress( (int) (alreadyPackedSize[0] * 100 / totalSize) );
 	}
 }

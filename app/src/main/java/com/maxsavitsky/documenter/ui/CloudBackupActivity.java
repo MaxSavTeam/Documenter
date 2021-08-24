@@ -48,13 +48,15 @@ public class CloudBackupActivity extends ThemeActivity {
 	private final ActivityResultLauncher<Intent> mCloudBackupsListActivity = registerForActivityResult(
 			new ActivityResultContracts.StartActivityForResult(),
 			result->{
-				if(result.getResultCode() == RESULT_OK){
+				if ( result.getResultCode() == RESULT_OK ) {
 					Intent data = result.getData();
-					if(data == null)
+					if ( data == null ) {
 						return;
+					}
 					long time = data.getLongExtra( "time", -1 );
-					if(time == -1)
+					if ( time == -1 ) {
 						return;
+					}
 					showWarningAndRestore( time );
 				}
 			}
@@ -231,8 +233,29 @@ public class CloudBackupActivity extends ThemeActivity {
 		final ProgressDialog pd = new ProgressDialog( this );
 		pd.setMessage( HtmlCompat.fromHtml( getString( R.string.creating_backup ), HtmlCompat.FROM_HTML_MODE_COMPACT ) );
 		pd.setCancelable( false );
+		pd.setProgressStyle( ProgressDialog.STYLE_HORIZONTAL );
+		pd.setIndeterminate( true );
 
 		final BackupInstruments.BackupCallback backupCallback = new BackupInstruments.BackupCallback() {
+			@Override
+			public void onBackupStateChanged(BackupInstruments.BackupState state) {
+				if(state == BackupInstruments.BackupState.UPLOADING){
+					runOnUiThread( ()->{
+						pd.setIndeterminate( true );
+						pd.setMessage( getString( R.string.uploading_backup ) );
+						pd.setProgress( 0 );
+					} );
+				}
+			}
+
+			@Override
+			public void onProgress(int percent) {
+				runOnUiThread( ()->{
+					pd.setIndeterminate( false );
+					pd.setProgress( percent );
+				});
+			}
+
 			@Override
 			public void onSuccess(long timeOfCreation) {
 				runOnUiThread( ()->{
@@ -263,10 +286,30 @@ public class CloudBackupActivity extends ThemeActivity {
 
 	private void restore(long time) {
 		final ProgressDialog pd = new ProgressDialog( this );
-		pd.setMessage( getResources().getString( R.string.loading ) );
+		pd.setMessage( getResources().getString( R.string.downloading ) );
 		pd.setCancelable( false );
+		pd.setProgressStyle( ProgressDialog.STYLE_HORIZONTAL );
 
 		final BackupInstruments.BackupCallback backupCallback = new BackupInstruments.BackupCallback() {
+			@Override
+			public void onBackupStateChanged(BackupInstruments.BackupState state) {
+				if(state == BackupInstruments.BackupState.UNPACKING) {
+					runOnUiThread( ()->{
+						pd.setMessage( getString( R.string.unpacking ) );
+						pd.setIndeterminate( true );
+						pd.setProgress( 0 );
+					} );
+				}
+			}
+
+			@Override
+			public void onProgress(int percent) {
+				runOnUiThread( ()->{
+					pd.setIndeterminate( false );
+					pd.setProgress( percent );
+				} );
+			}
+
 			@Override
 			public void onSuccess(long timeOfCreation) {
 				runOnUiThread( ()->{
@@ -296,7 +339,7 @@ public class CloudBackupActivity extends ThemeActivity {
 		showWarningAndRestore( lastBackup.time );
 	}
 
-	private void showWarningAndRestore(long backupTime){
+	private void showWarningAndRestore(long backupTime) {
 		AlertDialog.Builder builder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
 				.setTitle( R.string.confirmation )
 				.setMessage( R.string.confirm_restore_message )

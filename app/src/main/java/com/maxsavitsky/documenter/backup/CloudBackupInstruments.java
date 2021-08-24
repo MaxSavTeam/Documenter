@@ -11,11 +11,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 
 public class CloudBackupInstruments {
+
+	private static final String TAG = App.TAG + " CloudBInstruments";
 
 	public static void createBackup(BackupInstruments.BackupCallback backupCallback, boolean isManually, String description) {
 		FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -52,8 +55,19 @@ public class CloudBackupInstruments {
 		File finalFile = file;
 		BackupInstruments.createBackupToFile( file, new BackupInstruments.BackupCallback() {
 			@Override
+			public void onBackupStateChanged(BackupInstruments.BackupState state) {
+				backupCallback.onBackupStateChanged( state );
+			}
+
+			@Override
+			public void onProgress(int percent) {
+				backupCallback.onProgress( percent );
+			}
+
+			@Override
 			public void onSuccess(long timeOfCreation) {
 				String url = Utils.DOCUMENTER_API + "backups/uploadBackup";
+				backupCallback.onBackupStateChanged( BackupInstruments.BackupState.UPLOADING );
 				Ion
 						.with( App.getInstance().getApplicationContext() )
 						.load( url )
@@ -96,16 +110,16 @@ public class CloudBackupInstruments {
 		}
 		user.getIdToken( true )
 				.addOnCompleteListener( task->{
-					if(task.isSuccessful()){
-						new Thread(()->{
+					if ( task.isSuccessful() ) {
+						new Thread( ()->{
 							try {
 								restoreFromBackup( backupCallback, time, task.getResult().getToken() );
 							} catch (IOException e) {
 								e.printStackTrace();
 								backupCallback.onException( e );
 							}
-						}).start();
-					}else{
+						} ).start();
+					} else {
 						backupCallback.onException( task.getException() );
 					}
 				} );
@@ -116,9 +130,29 @@ public class CloudBackupInstruments {
 		HttpURLConnection connection = RequestMaker.resolveHttpProtocol( url );
 		connection.setRequestMethod( "GET" );
 		connection.connect();
-		InputStream inputStream = connection.getInputStream();
-		BackupInstruments.restoreFromStream( inputStream, backupCallback );
+		File file = new File( App.appStoragePath, "updates" );
+		if ( !file.exists() ) {
+			file.mkdir();
+		}
+		file = new File( file, "downloaded_backup" );
+		if ( !file.exists() ) {
+			file.createNewFile();
+		}
+		try (InputStream inputStream = connection.getInputStream();
+			 FileOutputStream fos = new FileOutputStream( file )) {
+			long totalSize = connection.getContentLengthLong();
+			int downloadedSize = 0;
+			int len;
+			byte[] buffer = new byte[ 1024 ];
+			while ( ( len = inputStream.read( buffer ) ) != -1 ) {
+				fos.write( buffer, 0, len );
+				downloadedSize += len;
+				backupCallback.onProgress( (int) (downloadedSize * 100L / totalSize) );
+			}
+		}
 		connection.disconnect();
+		backupCallback.onBackupStateChanged( BackupInstruments.BackupState.UNPACKING );
+		BackupInstruments.restoreFromBackup( file, backupCallback );
 	}
 
 }
