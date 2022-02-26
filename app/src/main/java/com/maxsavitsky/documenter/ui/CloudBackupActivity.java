@@ -190,7 +190,7 @@ public class CloudBackupActivity extends ThemeActivity {
 				.setSingleChoiceItems( strings, sp.getInt( "auto_backup_state", 0 ), (dialog, which)->{
 					sp.edit().putInt( "auto_backup_state", which ).apply();
 					t.setText( strings[ which ] );
-					CloudBackupMaker.getInstance().stateChanged();
+					CloudBackupMaker.getInstance().restartWorker();
 					dialog.dismiss();
 				} );
 		builder.create().show();
@@ -268,7 +268,7 @@ public class CloudBackupActivity extends ThemeActivity {
 					pd.dismiss();
 					Toast.makeText( CloudBackupActivity.this, R.string.successfully, Toast.LENGTH_SHORT ).show();
 				} );
-				CloudBackupMaker.getInstance().stateChanged();
+				CloudBackupMaker.getInstance().restartWorker();
 			}
 
 			@Override

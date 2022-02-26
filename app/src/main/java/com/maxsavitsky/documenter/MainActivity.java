@@ -118,8 +118,7 @@ public class MainActivity extends ThemeActivity {
 				runOnUiThread( ()->Utils.getErrorDialog( e, MainActivity.this ).show() );
 				return;
 			}
-			final CloudBackupMaker backupMaker = new CloudBackupMaker( this );
-			new Thread( backupMaker::stateChanged, "AutoBackupMaker" ).start();
+			CloudBackupMaker.init( this ).startWorker();
 			Intent intent = new Intent( this, EntitiesListActivity.class );
 			mEntitiesListLauncher.launch( intent );
 		} ).start();

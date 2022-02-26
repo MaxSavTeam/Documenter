@@ -171,4 +171,5 @@
     <string name="stretch_images_to_width_of_screen">Растягивать изображения по ширине экрана</string>
     <string name="uploading_backup">Загрузка резервной копии...</string>
     <string name="unpacking">Распаковка...</string>
+    <string name="backup_error_desc">Произошла какая-то ошибка. Пожалуйста, сообщите нам.</string>
 </resources>

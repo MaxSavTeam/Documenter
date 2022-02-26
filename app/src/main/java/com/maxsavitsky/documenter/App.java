@@ -12,6 +12,8 @@ public class App extends Application {
 
 	public static final String TAG = "Documenter";
 
+	public static final String NOTIFICATION_CHANNEL_ID = "documenter_app_channel";
+
 	public static String appDataPath, appStoragePath;
 
 	public static App instance;

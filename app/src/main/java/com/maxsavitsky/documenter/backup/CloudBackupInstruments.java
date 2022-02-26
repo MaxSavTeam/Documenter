@@ -29,14 +29,12 @@ public class CloudBackupInstruments {
 		user.getIdToken( true )
 				.addOnCompleteListener( task->{
 					if ( task.isSuccessful() ) {
-						new Thread( ()->{
-							try {
-								createBackup( backupCallback, isManually, description, task.getResult().getToken() );
-							} catch (IOException e) {
-								e.printStackTrace();
-								backupCallback.onException( e );
-							}
-						} ).start();
+						try {
+							createBackup( backupCallback, isManually, description, task.getResult().getToken() );
+						} catch (IOException e) {
+							e.printStackTrace();
+							backupCallback.onException( e );
+						}
 					} else {
 						backupCallback.onException( task.getException() );
 					}
@@ -147,7 +145,7 @@ public class CloudBackupInstruments {
 			while ( ( len = inputStream.read( buffer ) ) != -1 ) {
 				fos.write( buffer, 0, len );
 				downloadedSize += len;
-				backupCallback.onProgress( (int) (downloadedSize * 100L / totalSize) );
+				backupCallback.onProgress( (int) ( downloadedSize * 100L / totalSize ) );
 			}
 		}
 		connection.disconnect();
