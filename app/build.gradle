@@ -117,12 +117,12 @@ dependencies {
 
     implementation 'com.android.support:multidex:1.0.3'
 
-    implementation 'org.jetbrains:annotations:22.0.0'
+    implementation 'org.jetbrains:annotations:23.0.0'
 
     implementation 'com.koushikdutta.ion:ion:3.1.0'
 
     implementation 'com.firebaseui:firebase-ui-auth:8.0.0'
-    implementation 'com.google.firebase:firebase-auth:21.0.1'
-    implementation 'com.google.firebase:firebase-perf:20.0.5'
-    implementation 'com.google.firebase:firebase-crashlytics:18.2.8'
+    implementation 'com.google.firebase:firebase-auth:21.0.2'
+    implementation 'com.google.firebase:firebase-perf:20.0.6'
+    implementation 'com.google.firebase:firebase-crashlytics:18.2.9'
 }
