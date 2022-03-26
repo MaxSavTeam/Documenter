@@ -21,6 +21,13 @@ public abstract class Entity {
 		creationTimestamp = System.currentTimeMillis();
 	}
 
+	public Entity(Entity other) {
+		this.id = other.id;
+		this.name = other.name;
+		this.creationTimestamp = other.creationTimestamp;
+		parents.addAll( other.parents );
+	}
+
 	public String getId() {
 		return id;
 	}

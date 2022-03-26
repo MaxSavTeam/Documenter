@@ -106,7 +106,7 @@ public class EntitiesListActivity extends ThemeActivity {
 
 	private final ActivityResultLauncher<Intent> mCreateEntryLauncher = registerForActivityResult(
 			new ActivityResultContracts.StartActivityForResult(),
-			result -> {
+			result->{
 				if ( result.getResultCode() == Results.REOPEN ) {
 					Intent intent = new Intent( this, EntryViewer.class );
 					if ( result.getData() != null ) {
@@ -146,7 +146,7 @@ public class EntitiesListActivity extends ThemeActivity {
 					if ( groupId != null ) {
 						boolean success = true;
 						int mode = data.getIntExtra( "mode", 0 );
-						for(Entity e : mSelectedEntities) {
+						for (Entity e : mSelectedEntities) {
 							if ( mode == 0 ) {
 								success &= EntitiesStorage.get().addEntityTo( e, groupId );
 							} else {
@@ -156,17 +156,18 @@ public class EntitiesListActivity extends ThemeActivity {
 						if ( success ) {
 							Toast.makeText( this, R.string.success, Toast.LENGTH_SHORT ).show();
 						} else {
-							if ( mSelectedEntities.size() == 1 )
+							if ( mSelectedEntities.size() == 1 ) {
 								Toast.makeText( this, R.string.move_add_fail_reason, Toast.LENGTH_LONG ).show();
-							else {
+							} else {
 								Toast.makeText( this, R.string.some_entities_were_not_moved_added, Toast.LENGTH_LONG ).show();
 							}
 						}
 						sendRefreshIntent();
 						refresh();
 					}
-					if( selectionMode )
+					if ( selectionMode ) {
 						exitSelectionMode();
+					}
 					mSelectedEntities.clear();
 				}
 			}
@@ -175,16 +176,17 @@ public class EntitiesListActivity extends ThemeActivity {
 	private final EntitiesAdapter.AdapterCallback ADAPTER_CALLBACK = new EntitiesAdapter.AdapterCallback() {
 		@Override
 		public void onEntityClick(String id, Entity.Type type, int index) {
-			if( selectionMode ){
+			if ( selectionMode ) {
 				boolean contains = mSelectedEntities.contains( mEntities.get( index ) );
-				if(contains)
+				if ( contains ) {
 					mSelectedEntities.remove( mEntities.get( index ) );
-				else
+				} else {
 					mSelectedEntities.add( mEntities.get( index ) );
+				}
 				mEntitiesAdapter.setCheckBox( index, !contains );
 				CheckBox checkBox = findViewById( R.id.checkbox_toggle_all );
 				checkBox.setChecked( mSelectedEntities.size() == mEntities.size() );
-			}else {
+			} else {
 				if ( type == Entity.Type.GROUP ) {
 					mEntitiesListLauncher.launch( new Intent( EntitiesListActivity.this, EntitiesListActivity.class ).putExtra( "groupId", id ).putExtra( "parentId", mGroup.getId() ) );
 				} else {
@@ -195,7 +197,7 @@ public class EntitiesListActivity extends ThemeActivity {
 
 		@Override
 		public void onLongClick(int index) {
-			if(!selectionMode ) {
+			if ( !selectionMode ) {
 				TransitionManager.beginDelayedTransition( (ViewGroup) getWindow().getDecorView() );
 				mEntitiesAdapter.showCheckBoxes();
 				selectionMode = true;
@@ -206,7 +208,7 @@ public class EntitiesListActivity extends ThemeActivity {
 				findViewById( R.id.flexboxLayout ).setVisibility( View.VISIBLE );
 				findViewById( R.id.fab_menu ).setVisibility( View.GONE );
 
-				((CheckBox) findViewById( R.id.checkbox_toggle_all )).setChecked( mEntities.size() == 1 );
+				( (CheckBox) findViewById( R.id.checkbox_toggle_all ) ).setChecked( mEntities.size() == 1 );
 			}
 		}
 
@@ -218,14 +220,14 @@ public class EntitiesListActivity extends ThemeActivity {
 
 	@Override
 	public void onBackPressed() {
-		if( selectionMode ){
+		if ( selectionMode ) {
 			exitSelectionMode();
-		}else{
+		} else {
 			super.onBackPressed();
 		}
 	}
 
-	private void exitSelectionMode(){
+	private void exitSelectionMode() {
 		selectionMode = false;
 		TransitionManager.beginDelayedTransition( (ViewGroup) getWindow().getDecorView() );
 		mEntitiesAdapter.hideCheckBoxes();
@@ -234,7 +236,7 @@ public class EntitiesListActivity extends ThemeActivity {
 		mSelectedEntities.clear();
 	}
 
-	private void refresh(){
+	private void refresh() {
 		sortAndUpdateList();
 		invalidateOptionsMenu();
 	}
@@ -243,7 +245,7 @@ public class EntitiesListActivity extends ThemeActivity {
 	protected void onDestroy() {
 		try {
 			unregisterReceiver( mNeedToRefreshReceiver );
-		}catch (IllegalArgumentException e){
+		} catch (IllegalArgumentException e) {
 			Log.i( TAG, "onDestroy: " + e );
 			e.printStackTrace();
 		}
@@ -285,7 +287,7 @@ public class EntitiesListActivity extends ThemeActivity {
 				dialog.cancel();
 			} ).setNegativeButton( R.string.cancel, (dialog, which)->dialog.cancel() ).setCancelable( false );
 			AlertDialog alertDialog = builder.create();
-			alertDialog.setOnShowListener( dialog ->Utils.showKeyboard(editText, this) );
+			alertDialog.setOnShowListener( dialog->Utils.showKeyboard( editText, this ) );
 			alertDialog.show();
 		} else if ( itemId == R.id.item_menu_delete ) {
 			showDeletionDialog();
@@ -295,26 +297,28 @@ public class EntitiesListActivity extends ThemeActivity {
 		} else if ( itemId == R.id.item_menu_move_to ) {
 			mSelectedEntities.add( mGroup );
 			openCopyMoveActivity( 1 );
-		} else if(itemId == R.id.item_menu_remove_from_parent){
+		} else if ( itemId == R.id.item_menu_remove_from_parent ) {
 			mGroup.removeParent( mParentGroup.getId() );
 			mParentGroup.removeContainingEntity( mGroup.getId() );
-			if(mGroup.getParents().size() == 0){
+			if ( mGroup.getParents().size() == 0 ) {
 				EntitiesStorage.get().addEntityTo( mGroup, "root" );
 			}
 			EntitiesStorage.get().save();
 			sendRefreshIntent();
+		} else if ( itemId == R.id.item_search ) {
+			startActivity( new Intent( this, SearchActivity.class ).putExtra( "groupId", mGroup.getId() ) );
 		}
 		return super.onOptionsItemSelected( item );
 	}
 
-	private void openCopyMoveActivity(int mode){
+	private void openCopyMoveActivity(int mode) {
 		mCopyMoveLauncher.launch(
 				new Intent( this, CopyMoveActivity.class )
 						.putExtra( "mode", mode )
 		);
 	}
 
-	private void sendRefreshIntent(){
+	private void sendRefreshIntent() {
 		sendBroadcast( new Intent( BuildConfig.APPLICATION_ID + ".REFRESH_ENTITIES_LISTS" ) );
 	}
 
@@ -363,12 +367,14 @@ public class EntitiesListActivity extends ThemeActivity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate( R.menu.entities_list_menu, menu );
 		if ( isRoot ) {
-			for(int i = 0; i < menu.size(); i++)
+			for (int i = 0; i < menu.size(); i++)
 				menu.getItem( i ).setVisible( false );
 			menu.findItem( R.id.item_menu_sort_mode ).setVisible( true );
+			menu.findItem( R.id.item_search ).setVisible( true );
 		}
-		if(mParentGroup != null && mParentGroup.getId().equals( "root" ) && mGroup.getParents().size() == 1)
+		if ( mParentGroup != null && mParentGroup.getId().equals( "root" ) && mGroup.getParents().size() == 1 ) {
 			menu.findItem( R.id.item_menu_remove_from_parent ).setVisible( false );
+		}
 		return super.onCreateOptionsMenu( menu );
 	}
 
@@ -401,8 +407,9 @@ public class EntitiesListActivity extends ThemeActivity {
 		}
 		mGroup = op.get();
 
-		if(!isRoot)
+		if ( !isRoot ) {
 			setTitle( mGroup.getName() );
+		}
 
 		initializeRecyclerView( mGroup.getContainingEntities() );
 		sortAndUpdateList();
@@ -419,7 +426,7 @@ public class EntitiesListActivity extends ThemeActivity {
 		} );
 
 		findViewById( R.id.fabCreateEntry ).setOnClickListener( v->{
-			Intent intent = new Intent(this, EntryEditor.class);
+			Intent intent = new Intent( this, EntryEditor.class );
 			intent.putExtra( "parentId", mGroup.getId() );
 			intent.putExtra( "type", "create" );
 			mCreateEntryLauncher.launch( intent );
@@ -428,18 +435,18 @@ public class EntitiesListActivity extends ThemeActivity {
 		registerReceiver( mNeedToRefreshReceiver, new IntentFilter( BuildConfig.APPLICATION_ID + ".REFRESH_ENTITIES_LISTS" ) );
 
 		findViewById( R.id.layout_add_to ).setOnClickListener( v->{
-			if(mSelectedEntities.size() > 0){
+			if ( mSelectedEntities.size() > 0 ) {
 				openCopyMoveActivity( 0 );
 			}
 		} );
 		findViewById( R.id.layout_move_to ).setOnClickListener( v->{
-			if(mSelectedEntities.size() > 0){
+			if ( mSelectedEntities.size() > 0 ) {
 				openCopyMoveActivity( 1 );
 			}
 		} );
 		findViewById( R.id.layout_remove ).setOnClickListener( v->{
-			if(mSelectedEntities.size() > 0){
-				for(Entity e : mSelectedEntities){
+			if ( mSelectedEntities.size() > 0 ) {
+				for (Entity e : mSelectedEntities) {
 					EntitiesStorage.get().removeEntityFrom( e, mGroup );
 				}
 				exitSelectionMode();
@@ -447,7 +454,7 @@ public class EntitiesListActivity extends ThemeActivity {
 			}
 		} );
 		findViewById( R.id.layout_delete ).setOnClickListener( v->{
-			if(mSelectedEntities.size() > 0){
+			if ( mSelectedEntities.size() > 0 ) {
 				AlertDialog.Builder deletionBuilder = new AlertDialog.Builder( this, super.mAlertDialogStyle )
 						.setMessage( R.string.delete_confirmation_text )
 						.setTitle( R.string.confirmation )
@@ -463,30 +470,30 @@ public class EntitiesListActivity extends ThemeActivity {
 		CheckBox checkBox = findViewById( R.id.checkbox_toggle_all );
 		checkBox.setOnClickListener( v->{
 			boolean state = checkBox.isChecked();
-			for(int i = 0; i < mEntitiesAdapter.getItemCount(); i++)
+			for (int i = 0; i < mEntitiesAdapter.getItemCount(); i++)
 				mEntitiesAdapter.setCheckBox( i, state );
 			mSelectedEntities.clear();
-			if(state){
-				mSelectedEntities.addAll(mEntities);
+			if ( state ) {
+				mSelectedEntities.addAll( mEntities );
 			}
 		} );
 	}
 
-	private void prepareMultipleDeletion(){
+	private void prepareMultipleDeletion() {
 		boolean areThereGroups = false;
-		for(Entity e : mSelectedEntities){
-			if(e instanceof Group){
+		for (Entity e : mSelectedEntities) {
+			if ( e instanceof Group ) {
 				areThereGroups = true;
 				break;
 			}
 		}
-		if(areThereGroups){
+		if ( areThereGroups ) {
 			View view = getLayoutInflater().inflate( R.layout.group_deletion_menu, null );
 			CustomRadioGroup radioGroup = view.findViewById( R.id.radio_group_delete );
 			radioGroup.setCheckedIndex( 0 );
 
 			LinearLayout layout = (LinearLayout) view;
-			TextView textView = new TextView(this);
+			TextView textView = new TextView( this );
 			textView.setText( R.string.multiple_deletion_note );
 			MarginLayoutParams params = new MarginLayoutParams( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT );
 			params.topMargin = (int) TypedValue.applyDimension( TypedValue.COMPLEX_UNIT_DIP, 10, getResources().getDisplayMetrics() );
@@ -496,7 +503,7 @@ public class EntitiesListActivity extends ThemeActivity {
 			getTheme().resolveAttribute( R.attr.textColor, typedValue, true );
 			textView.setTextColor( typedValue.data );
 			textView.setTextSize( 18 );
-			layout.addView(textView);
+			layout.addView( textView );
 
 			AlertDialog.Builder builder = new AlertDialog.Builder( this, super.mAlertDialogStyle );
 			builder
@@ -508,17 +515,17 @@ public class EntitiesListActivity extends ThemeActivity {
 					} )
 					.setCancelable( false );
 			builder.show();
-		}else{
+		} else {
 			deleteMultipleEntities( 0 );
 		}
 	}
 
-	private void deleteMultipleEntities(int groupDeletionMode){
-		for(Entity e : mSelectedEntities){
-			if(e instanceof Group){
+	private void deleteMultipleEntities(int groupDeletionMode) {
+		for (Entity e : mSelectedEntities) {
+			if ( e instanceof Group ) {
 				EntitiesStorage.get()
 						.deleteGroup( e.getId(), groupDeletionMode );
-			}else{
+			} else {
 				EntitiesStorage.get()
 						.deleteEntry( e.getId() );
 			}
@@ -569,7 +576,7 @@ public class EntitiesListActivity extends ThemeActivity {
 		findViewById( R.id.text_view_list_is_empty ).setVisibility( entities.isEmpty() ? View.VISIBLE : View.GONE );
 	}
 
-	protected ArrayList<? extends Entity> filterList(ArrayList<? extends Entity> entities){
+	protected ArrayList<? extends Entity> filterList(ArrayList<? extends Entity> entities) {
 		return entities;
 	}
 

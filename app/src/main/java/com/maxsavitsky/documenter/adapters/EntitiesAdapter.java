@@ -23,10 +23,10 @@ public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHo
 
 	private static final String TAG = App.TAG + " EntitiesAdapter";
 
-	private ArrayList<? extends Entity> mEntities;
-	private AdapterCallback mAdapterCallback;
-	private boolean isSelectionMode = false;
-	private final ArrayList<Boolean> isItemSelected = new ArrayList<>();
+	protected ArrayList<Entity> mEntities;
+	protected AdapterCallback mAdapterCallback;
+	protected boolean isSelectionMode = false;
+	protected final ArrayList<Boolean> isItemSelected = new ArrayList<>();
 
 	public interface AdapterCallback {
 		void onEntityClick(String id, Entity.Type type, int index);
@@ -51,7 +51,7 @@ public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHo
 		mAdapterCallback = adapterCallback;
 	}
 
-	private ArrayList<? extends Entity> copy(ArrayList<? extends Entity> entities) {
+	private ArrayList<Entity> copy(ArrayList<? extends Entity> entities) {
 		ArrayList<Entity> res = new ArrayList<>();
 		for (Entity e : entities) {
 			res.add( new Entity( e.getId(), e.getName() ) {
@@ -159,6 +159,7 @@ public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHo
 
 	public static class ViewHolder extends RecyclerView.ViewHolder {
 		private final TextView textView;
+		private final TextView subtext;
 		private final ImageView imageView;
 		private final CheckBox checkBox;
 
@@ -168,6 +169,12 @@ public class EntitiesAdapter extends RecyclerView.Adapter<EntitiesAdapter.ViewHo
 			textView = itemView.findViewById( R.id.entity_layout_text );
 			imageView = itemView.findViewById( R.id.entity_layout_icon );
 			checkBox = itemView.findViewById( R.id.entity_layout_check_box );
+
+			subtext = itemView.findViewById( R.id.entity_layout_subtext );
+		}
+
+		public TextView getSubtext() {
+			return subtext;
 		}
 	}
 

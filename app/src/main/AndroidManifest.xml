@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     package="com.maxsavitsky.documenter">
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -15,8 +14,10 @@
         android:resizeableActivity="false"
         android:roundIcon="@mipmap/ic_documenter_icon_white_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme"
-        tools:targetApi="n">
+        android:theme="@style/AppTheme">
+        <activity
+            android:name=".ui.SearchActivity"
+            android:exported="false" />
         <activity
             android:name=".ui.CloudBackupsListActivity"
             android:exported="true" />

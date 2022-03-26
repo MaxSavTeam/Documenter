@@ -179,7 +179,11 @@
     <string name="remember_last_pos">Remember last scroll position</string>
     <string name="size">Size</string>
     <string name="stretch_images_to_width_of_screen">Stretch images to the width of the screen</string>
-    <string name="uploading_backup">Uploading backup...</string>
-    <string name="unpacking">Unpacking...</string>
+    <string name="uploading_backup">Uploading backup…</string>
+    <string name="unpacking">Unpacking…</string>
     <string name="backup_error_desc">Some error has occurred. Please let us know.</string>
+    <string name="search">Search</string>
+    <string name="search_in">Search in</string>
+    <string name="search_hint">Enter name to search</string>
+    <string name="press_enter_to_search">Press Enter to search</string>
 </resources>

@@ -172,4 +172,8 @@
     <string name="uploading_backup">Загрузка резервной копии...</string>
     <string name="unpacking">Распаковка...</string>
     <string name="backup_error_desc">Произошла какая-то ошибка. Пожалуйста, сообщите нам.</string>
+    <string name="search">Поиск</string>
+    <string name="search_in">Поиск в</string>
+    <string name="search_hint">Введите имя для поиска</string>
+    <string name="press_enter_to_search">Нажмите Ввод для поиска</string>
 </resources>

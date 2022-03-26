@@ -21,12 +21,26 @@
         android:background="@null"
         android:id="@+id/entity_layout_icon" />
 
-    <TextView
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/entity_layout_text"
-        android:textColor="?textColor"
-        android:textSize="24sp"
-        android:layout_marginStart="10dp"/>
+        android:layout_marginStart="10dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/entity_layout_text"
+            android:textColor="?textColor"
+            android:textSize="24sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/entity_layout_subtext"
+            android:visibility="gone"
+            android:textColor="@color/gray" />
+
+    </LinearLayout>
 
 </LinearLayout>
