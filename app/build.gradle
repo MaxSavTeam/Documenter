@@ -114,6 +114,7 @@ dependencies {
     implementation 'com.github.MaxSavTeam:ExceptionHandler-Library:1.1.2'
 
     implementation 'com.maxsavteam:updates-checker:1.0.1'
+    implementation 'com.maxsavteam.stringalgorithms:string-algorithms:1.0'
 
     implementation 'com.android.support:multidex:1.0.3'
 
@@ -122,7 +123,7 @@ dependencies {
     implementation 'com.koushikdutta.ion:ion:3.1.0'
 
     implementation 'com.firebaseui:firebase-ui-auth:8.0.0'
-    implementation 'com.google.firebase:firebase-auth:21.0.2'
+    implementation 'com.google.firebase:firebase-auth:21.0.3'
     implementation 'com.google.firebase:firebase-perf:20.0.6'
     implementation 'com.google.firebase:firebase-crashlytics:18.2.9'
 }

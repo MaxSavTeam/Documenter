@@ -2,6 +2,7 @@ package com.maxsavitsky.documenter.utils;
 
 import com.maxsavitsky.documenter.data.types.Entity;
 import com.maxsavitsky.documenter.data.types.Group;
+import com.maxsavteam.stringalgorithms.StringAlgorithms;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +36,7 @@ public class SearchUtil {
 	}
 
 	private static boolean matches(String s, String q){
-		return s.toLowerCase().contains( q );
+		return StringAlgorithms.indexOf( s.toLowerCase(), q ) != -1;
 	}
 
 }
