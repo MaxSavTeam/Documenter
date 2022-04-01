@@ -98,7 +98,7 @@ public class EntitiesStorage {
 			}
 			result.put( "groupsContent", groupsContent );
 
-			outString = result.toString();
+			outString = result.toString(2);
 		} catch (JSONException e) {
 			Log.i( TAG, "save: " + e );
 			return;

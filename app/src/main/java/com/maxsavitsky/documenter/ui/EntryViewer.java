@@ -167,6 +167,7 @@ public class EntryViewer extends ThemeActivity {
 							mEntry.rename( newName );
 							applyTheme();
 							setResult( Results.NEED_TO_REFRESH );
+							EntitiesStorage.get().save();
 						} else {
 							Toast.makeText( EntryViewer.this, R.string.invalid_name, Toast.LENGTH_SHORT ).show();
 						}
