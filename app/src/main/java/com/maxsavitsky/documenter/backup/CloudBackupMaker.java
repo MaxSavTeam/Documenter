@@ -23,6 +23,7 @@ import com.maxsavitsky.documenter.App;
 import com.maxsavitsky.documenter.R;
 import com.maxsavitsky.documenter.utils.Utils;
 
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 public class CloudBackupMaker {
@@ -37,6 +38,8 @@ public class CloudBackupMaker {
 
 	private final SharedPreferences sp;
 
+	private final ArrayList<BackupCreationCallback> callbacks = new ArrayList<>();
+
 	public static CloudBackupMaker getInstance() {
 		return instance;
 	}
@@ -49,6 +52,10 @@ public class CloudBackupMaker {
 	private CloudBackupMaker(Context context) {
 		this.context = context;
 		sp = App.getInstance().getSharedPreferences( Utils.APP_PREFERENCES, Context.MODE_PRIVATE );
+	}
+
+	public void addBackupCreationCallback(@NonNull BackupCreationCallback callback){
+		callbacks.add( callback );
 	}
 
 	private static void createNotificationChannel(NotificationManager manager) {
@@ -129,7 +136,12 @@ public class CloudBackupMaker {
 		return null;
 	}
 
-	public void startWorker() {
+	private long getDelay(long time, Pair<Long, TimeUnit> p){
+		long scheduledTimeInMillis = TimeUnit.MILLISECONDS.convert( p.first, p.second );
+		return Math.max(0L, time + scheduledTimeInMillis - System.currentTimeMillis());
+	}
+
+	public void startWorker(long lastBackupTime) {
 		FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 		if ( user == null ) {
 			return;
@@ -140,11 +152,18 @@ public class CloudBackupMaker {
 		if ( pair == null ) {
 			return;
 		}
+		long delay = getDelay( lastBackupTime, pair );
 		PeriodicWorkRequest request = new PeriodicWorkRequest.Builder( BackupWorker.class, pair.first, pair.second )
+				.setInitialDelay( delay, TimeUnit.MILLISECONDS )
 				.build();
 		WorkManager
 				.getInstance( context )
 				.enqueueUniquePeriodicWork( WORKER_ID, ExistingPeriodicWorkPolicy.REPLACE, request );
+	}
+
+	private void onBackupCreated(long time){
+		for(BackupCreationCallback callback : callbacks)
+			callback.onCallbackCreated( time );
 	}
 
 	public void stopWorker() {
@@ -153,9 +172,9 @@ public class CloudBackupMaker {
 				.cancelUniqueWork( WORKER_ID );
 	}
 
-	public void restartWorker() {
+	public void restartWorker(long lastBackupTime) {
 		stopWorker();
-		startWorker();
+		startWorker(lastBackupTime);
 	}
 
 	public static class BackupWorker extends ListenableWorker {
@@ -186,6 +205,7 @@ public class CloudBackupMaker {
 					@Override
 					public void onSuccess(long timeOfCreation) {
 						completer.set( Result.success() );
+						CloudBackupMaker.getInstance().onBackupCreated( timeOfCreation );
 					}
 
 					@Override
@@ -201,6 +221,10 @@ public class CloudBackupMaker {
 			} );
 		}
 
+	}
+
+	public interface BackupCreationCallback{
+		void onCallbackCreated(long time);
 	}
 
 }

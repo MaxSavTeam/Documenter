@@ -5,7 +5,6 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.text.Html;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -97,7 +96,12 @@ public class CloudBackupActivity extends ThemeActivity {
 
 		applyTheme();
 
-		( (TextView) findViewById( R.id.lblCloud1 ) ).setText( Html.fromHtml( getString( R.string.cloud_backup_activity_text1 ) ) );
+		( (TextView) findViewById( R.id.lblCloud1 ) )
+				.setText(
+						HtmlCompat.fromHtml(
+								getString( R.string.cloud_backup_activity_text1 ),
+								HtmlCompat.FROM_HTML_MODE_LEGACY )
+				);
 
 		final ProgressDialog pd = new ProgressDialog( this );
 		pd.setMessage( getString( R.string.loading ) );
@@ -133,6 +137,17 @@ public class CloudBackupActivity extends ThemeActivity {
 						callback.onFailed();
 					}
 				} );
+
+		CloudBackupMaker.getInstance().addBackupCreationCallback( time->
+				runOnUiThread( ()->{
+					lastBackup = new CloudBackupsListActivity.BackupEntity(
+							time,
+							null,
+							false
+					);
+					updateState();
+				} )
+		 );
 	}
 
 	private void getLastBackup(String authToken, Callback callback) {
@@ -190,7 +205,7 @@ public class CloudBackupActivity extends ThemeActivity {
 				.setSingleChoiceItems( strings, sp.getInt( "auto_backup_state", 0 ), (dialog, which)->{
 					sp.edit().putInt( "auto_backup_state", which ).apply();
 					t.setText( strings[ which ] );
-					CloudBackupMaker.getInstance().restartWorker();
+					CloudBackupMaker.getInstance().restartWorker( lastBackup.time );
 					dialog.dismiss();
 				} );
 		builder.create().show();
@@ -239,7 +254,7 @@ public class CloudBackupActivity extends ThemeActivity {
 		final BackupInstruments.BackupCallback backupCallback = new BackupInstruments.BackupCallback() {
 			@Override
 			public void onBackupStateChanged(BackupInstruments.BackupState state) {
-				if(state == BackupInstruments.BackupState.UPLOADING){
+				if ( state == BackupInstruments.BackupState.UPLOADING ) {
 					runOnUiThread( ()->{
 						pd.setIndeterminate( true );
 						pd.setMessage( getString( R.string.uploading_backup ) );
@@ -253,7 +268,7 @@ public class CloudBackupActivity extends ThemeActivity {
 				runOnUiThread( ()->{
 					pd.setIndeterminate( false );
 					pd.setProgress( percent );
-				});
+				} );
 			}
 
 			@Override
@@ -268,7 +283,7 @@ public class CloudBackupActivity extends ThemeActivity {
 					pd.dismiss();
 					Toast.makeText( CloudBackupActivity.this, R.string.successfully, Toast.LENGTH_SHORT ).show();
 				} );
-				CloudBackupMaker.getInstance().restartWorker();
+				CloudBackupMaker.getInstance().restartWorker( timeOfCreation );
 			}
 
 			@Override
@@ -293,7 +308,7 @@ public class CloudBackupActivity extends ThemeActivity {
 		final BackupInstruments.BackupCallback backupCallback = new BackupInstruments.BackupCallback() {
 			@Override
 			public void onBackupStateChanged(BackupInstruments.BackupState state) {
-				if(state == BackupInstruments.BackupState.UNPACKING) {
+				if ( state == BackupInstruments.BackupState.UNPACKING ) {
 					runOnUiThread( ()->{
 						pd.setMessage( getString( R.string.unpacking ) );
 						pd.setIndeterminate( true );

@@ -12,6 +12,8 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.widget.Toolbar;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.maxsavitsky.documenter.backup.BackupInstruments;
 import com.maxsavitsky.documenter.backup.CloudBackupMaker;
 import com.maxsavitsky.documenter.codes.Results;
@@ -20,11 +22,13 @@ import com.maxsavitsky.documenter.data.EntitiesStorage;
 import com.maxsavitsky.documenter.data.types.Entity;
 import com.maxsavitsky.documenter.data.types.Entry;
 import com.maxsavitsky.documenter.data.types.Group;
+import com.maxsavitsky.documenter.net.RequestMaker;
 import com.maxsavitsky.documenter.ui.EntitiesListActivity;
 import com.maxsavitsky.documenter.utils.Utils;
 import com.maxsavteam.updateschecker.VersionInfo;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
@@ -60,6 +64,8 @@ public class MainActivity extends ThemeActivity {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
+		CloudBackupMaker.init( this );
 
 		deleteInstalledApks();
 
@@ -118,7 +124,7 @@ public class MainActivity extends ThemeActivity {
 				runOnUiThread( ()->Utils.getErrorDialog( e, MainActivity.this ).show() );
 				return;
 			}
-			CloudBackupMaker.init( this ).startWorker();
+			getLastBackupTimeAndStartWorker();
 			Intent intent = new Intent( this, EntitiesListActivity.class );
 			mEntitiesListLauncher.launch( intent );
 		} ).start();
@@ -142,6 +148,34 @@ public class MainActivity extends ThemeActivity {
 				DataReformatter.runReformat();
 			}
 		}
+	}
+
+	private void getLastBackupTimeAndStartWorker(){
+		FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+		if(user == null)
+			return;
+
+		user.getIdToken( true )
+				.addOnSuccessListener( getTokenResult->getLastBackupTime( getTokenResult.getToken() ) );
+	}
+
+	private void getLastBackupTime(String token){
+		new Thread(()->{
+			String url = Utils.DOCUMENTER_API + "backups/getLastBackup?authToken=" + token;
+			try {
+				String result = RequestMaker.getRequestTo( url );
+				JSONObject jsonObject = new JSONObject( result );
+				JSONObject last = jsonObject.optJSONObject( "backup" );
+				if ( last == null ) {
+					return;
+				}
+				long time = last.getLong( "creationTime" );
+
+				runOnUiThread( ()->CloudBackupMaker.getInstance().startWorker(time) );
+			} catch (IOException | JSONException e) {
+				e.printStackTrace();
+			}
+		}).start();
 	}
 
 	private void initialize() throws Exception {
