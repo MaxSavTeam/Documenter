@@ -27,8 +27,8 @@ android {
         minSdkVersion 24
         
         targetSdkVersion 31
-        versionCode 80
-        versionName "2.4.0"
+        versionCode 81
+        versionName "2.4.1"
 
         globalVersionName = versionName
         
@@ -114,7 +114,7 @@ dependencies {
     implementation 'com.github.MaxSavTeam:ExceptionHandler-Library:1.1.2'
 
     implementation 'com.maxsavteam:updates-checker:1.0.1'
-    implementation 'com.maxsavteam.stringalgorithms:string-algorithms:1.0'
+    implementation 'com.maxsavteam.stringalgorithms:string-algorithms:1.0.0'
 
     implementation 'com.android.support:multidex:1.0.3'
 
