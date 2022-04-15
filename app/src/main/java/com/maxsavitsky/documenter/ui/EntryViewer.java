@@ -31,7 +31,6 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.maxsavitsky.documenter.App;
 import com.maxsavitsky.documenter.BuildConfig;
 import com.maxsavitsky.documenter.R;
@@ -376,18 +375,6 @@ public class EntryViewer extends ThemeActivity {
 		}
 	};
 
-	private void hideUpButton() {
-		FloatingActionButton fab = findViewById( R.id.fabUpView );
-		fab.animate().setDuration( 500 ).scaleX( 0 ).scaleY( 0 ).start();
-		fab.setEnabled( false );
-	}
-
-	private void showUpButton() {
-		FloatingActionButton fab = findViewById( R.id.fabUpView );
-		fab.animate().setDuration( 500 ).scaleX( 1 ).scaleY( 1 ).start();
-		fab.setEnabled( true );
-	}
-
 	@SuppressLint("ClickableViewAccessibility")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -421,11 +408,6 @@ public class EntryViewer extends ThemeActivity {
 
 		mScrollView = findViewById( R.id.viewEntryScrollView );
 		mScrollView.setOnScrollChangeListener( (v, scrollX, scrollY, oldScrollX, oldScrollY)->{
-			if ( oldScrollY > scrollY && scrollY > 5 ) {
-				showUpButton();
-			} else if ( scrollY <= 5 || oldScrollY < scrollY ) {
-				hideUpButton();
-			}
 			mEntry.getProperties().setScrollPosition( mScrollView.getScrollY() );
 			try {
 				mEntry.saveProperties();
@@ -445,7 +427,6 @@ public class EntryViewer extends ThemeActivity {
 			mEntry.getProperties().setScrollPosition( mScrollView.getScrollY() ); // just remember
 			return false;
 		} );
-		findViewById( R.id.fabUpView ).setOnClickListener( v->mScrollView.smoothScrollTo( 0, 0 ) );
 
 		setupSpeedSeekBar();
 		findViewById( R.id.speed_button_close ).setOnClickListener( view->{
