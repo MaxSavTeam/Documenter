@@ -26,8 +26,8 @@ android {
         applicationId "com.maxsavitsky.documenter"
         minSdkVersion 24
         
-        targetSdkVersion 31
-        versionCode 82
+        targetSdkVersion 32
+        versionCode 83
         versionName "2.4.2"
 
         globalVersionName = versionName

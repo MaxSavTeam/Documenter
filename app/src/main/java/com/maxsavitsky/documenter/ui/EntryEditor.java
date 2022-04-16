@@ -324,16 +324,6 @@ public class EntryEditor extends ThemeActivity {
 		mHistoryIterator = mHistory.size() - 1;
 	}
 
-	private void hideUpButton() {
-		FloatingActionButton fab = findViewById( R.id.fabUp );
-		fab.animate().setDuration( 500 ).scaleX( 0 ).scaleY( 0 ).start();
-	}
-
-	private void showUpButton() {
-		FloatingActionButton fab = findViewById( R.id.fabUp );
-		fab.animate().setDuration( 500 ).scaleX( 1 ).scaleY( 1 ).start();
-	}
-
 	private void loadTextFromHistory(int historyIterator) {
 		final ChangeEntry changeEntry = mHistory.get( historyIterator );
 		final Spannable source = changeEntry.getSpannable();
@@ -453,7 +443,6 @@ public class EntryEditor extends ThemeActivity {
 			mEntry = new Entry( "temp_entry", "" );
 			tempProperties = new Entry.Properties();
 			mId = Utils.generateUniqueId() + "_0";
-			hideUpButton();
 		} else if ( "copy".equals( type ) ) {
 			String toId = startIntent.getStringExtra( "to_id" );
 			String fromId = startIntent.getStringExtra( "from_id" );
@@ -483,21 +472,10 @@ public class EntryEditor extends ThemeActivity {
 
 		invalidateOptionsMenu();
 		applyTheme();
-		findViewById( R.id.fabUp ).setOnClickListener( v->{
-			ScrollView scrollView = findViewById( R.id.scrollView );
-			scrollView.smoothScrollTo( 0, 0 );
-		} );
 		readColorHistory();
 
 		ScrollView scrollView = findViewById( R.id.scrollView );
 		scrollView.setSmoothScrollingEnabled( true );
-		scrollView.setOnScrollChangeListener( (v, scrollX, scrollY, oldScrollX, oldScrollY)->{
-			if ( oldScrollY > scrollY && scrollY > 5 ) {
-				showUpButton();
-			} else if ( scrollY <= 5 || oldScrollY < scrollY ) {
-				hideUpButton();
-			}
-		} );
 
 		setEditTextSize();
 		FloatingActionButton fab = findViewById( R.id.fabSaveEntry );
@@ -623,9 +601,6 @@ public class EntryEditor extends ThemeActivity {
 				Display d = w.getDefaultDisplay();
 				Point p = new Point();
 				d.getSize( p );
-				if ( scrollView.getHeight() <= p.y ) {
-					hideUpButton();
-				}
 
 				calculateMainAlignment();
 
