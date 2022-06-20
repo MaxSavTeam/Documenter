@@ -31,6 +31,7 @@
         android:id="@+id/viewEntryScrollView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:fadeScrollbars="true"
         android:scrollIndicators="end|right"
         android:scrollbarSize="@dimen/scrollbars_size"
         app:layout_constraintBottom_toTopOf="@+id/speedLayout"
@@ -40,10 +41,10 @@
 
         <TextView
             android:id="@+id/textViewContent"
-            android:textIsSelectable="true"
-            android:autoLink="all"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:autoLink="all"
+            android:textIsSelectable="true" />
 
     </com.maxsavitsky.documenter.ui.widget.CustomScrollView>
 
