@@ -20,6 +20,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.text.HtmlCompat;
 
 import com.firebase.ui.auth.AuthUI;
+import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -35,17 +36,20 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.List;
 
 public class SettingsActivity extends ThemeActivity {
 
 	private FirebaseAuth mAuth;
 
 	private final ActivityResultLauncher<Intent> mSignInLauncher = registerForActivityResult(
-			new ActivityResultContracts.StartActivityForResult(),
+			new FirebaseAuthUIActivityResultContract(),
 			result->{
-				updateUserUi( mAuth.getCurrentUser() );
-				if ( mAuth.getCurrentUser() != null && !mAuth.getCurrentUser().isEmailVerified() ) {
-					mAuth.getCurrentUser().sendEmailVerification();
+				FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+				updateUserUi( user );
+				if ( user != null && !user.isEmailVerified() ) {
+					user.sendEmailVerification();
 				}
 			}
 	);
@@ -53,7 +57,7 @@ public class SettingsActivity extends ThemeActivity {
 	private final ActivityResultLauncher<Intent> mCloudBackupParamsLauncher = registerForActivityResult(
 			new ActivityResultContracts.StartActivityForResult(),
 			result->{
-				if(result.getResultCode() == Results.RESTART_APP){
+				if ( result.getResultCode() == Results.RESTART_APP ) {
 					setResult( result.getResultCode() );
 					onBackPressed();
 				}
@@ -178,9 +182,14 @@ public class SettingsActivity extends ThemeActivity {
 
 	public void signButtonsAction(View v) {
 		if ( v.getId() == R.id.btnSignIn ) {
-			mSignInLauncher.launch( AuthUI.getInstance()
+			List<AuthUI.IdpConfig> providers = Arrays.asList(
+					new AuthUI.IdpConfig.EmailBuilder().build(),
+					new AuthUI.IdpConfig.GoogleBuilder().build() );
+			Intent intent = AuthUI.getInstance()
 					.createSignInIntentBuilder()
-					.build() );
+					.setAvailableProviders( providers )
+					.build();
+			mSignInLauncher.launch( intent );
 		} else if ( v.getId() == R.id.btnSignOut || v.getId() == R.id.btnSignOutVer ) {
 			AuthUI.getInstance().signOut( this )
 					.addOnCompleteListener( task->updateUserUi( mAuth.getCurrentUser() ) );
@@ -216,10 +225,11 @@ public class SettingsActivity extends ThemeActivity {
 			@Override
 			public File createDestinationFile(com.maxsavteam.updateschecker.VersionInfo versionInfo) {
 				File file = new File( App.appStoragePath, "updates" );
-				if(!file.exists())
+				if ( !file.exists() ) {
 					file.mkdirs();
+				}
 				file = new File( file, versionInfo.getVersionName() );
-				if(!file.exists()) {
+				if ( !file.exists() ) {
 					try {
 						file.createNewFile();
 					} catch (IOException e) {
@@ -234,7 +244,7 @@ public class SettingsActivity extends ThemeActivity {
 			@Override
 			public void onNoUpdates() {
 				runOnUiThread( ()->{
-						progressDialog.dismiss();
+					progressDialog.dismiss();
 					Toast.makeText( SettingsActivity.this, R.string.app_is_up_to_date, Toast.LENGTH_LONG ).show();
 				} );
 			}
@@ -242,7 +252,7 @@ public class SettingsActivity extends ThemeActivity {
 			@Override
 			public void onFailure(Exception e) {
 				runOnUiThread( ()->{
-						progressDialog.dismiss();
+					progressDialog.dismiss();
 					Toast.makeText( SettingsActivity.this, e.toString(), Toast.LENGTH_LONG ).show();
 				} );
 			}
@@ -306,7 +316,7 @@ public class SettingsActivity extends ThemeActivity {
 		mCreateBackupLauncher.launch( intent );
 	}
 
-	private void createBackupToFileUri(Uri uri){
+	private void createBackupToFileUri(Uri uri) {
 		final ProgressDialog pd = new ProgressDialog( this );
 		pd.setMessage( getString( R.string.creating_backup ) );
 		pd.setCancelable( false );

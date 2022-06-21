@@ -124,6 +124,7 @@ dependencies {
 
     implementation 'com.firebaseui:firebase-ui-auth:8.0.1'
     implementation 'com.google.firebase:firebase-auth:21.0.5'
+    implementation "com.google.android.gms:play-services-auth:20.2.0"
     implementation 'com.google.firebase:firebase-perf:20.1.0'
     implementation 'com.google.firebase:firebase-crashlytics:18.2.11'
 }
